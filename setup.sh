@@ -2,6 +2,19 @@
 #######################################################################
 #	zgame zskill znet  Jade Dynasty Server side compilation
 #######################################################################
+
+LOGFILE="/root/zx_source/build.log"
+
+# Redirect ALL output (stdout + stderr) to console AND logfile
+exec > >(tee -a "$LOGFILE") 2>&1
+
+BUILD_START_TS=$(date +%s)
+echo ""
+echo "=================================================================="
+echo " BUILD STARTED: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "=================================================================="
+echo ""
+
 GS=`echo *game`;
 NET=`echo *net`;
 SKILL=`echo *skill`;
@@ -58,7 +71,6 @@ echo ""
 	echo "========================== $NET rpcgen ============================"
 echo ""
 	cd $NET
-	svn up
 	./rpcgen
 	cd ..
 
@@ -94,7 +106,6 @@ echo ""
 	echo "============================ make libgs ============================"
 echo ""
 	cd $GS
-	svn up
 	cd libgs
 	mkdir -p io
 	mkdir -p gs
@@ -119,13 +130,12 @@ buildskill()
  echo ""
          echo "===================== scp libskills.o =============================="
  echo ""
-      	 scp game@10.68.20.122:game_final/libskill.so $GS/gs
-         md5sum $GS/gs/libskill.so
+      	 # scp game@10.68.20.122:game_final/libskill.so $GS/gs
+         # md5sum $GS/gs/libskill.so
 #echo ""
 #	echo "============================= ant gen =============================="
 #echo ""
 #	cd $SKILL
-#	svn up
 #	cd gen
 #	if [ ! -d skills ]; then
 #		mkdir skills
@@ -156,7 +166,6 @@ echo ""
 	cd $GS
 	cd gs
 	cd task
-	svn up
 	make clean
 	make lib -j8
 	cd ../../../
@@ -234,7 +243,6 @@ echo ""
 	echo "========================== build gs =============================="
 echo ""
 	cd $GS
-	svn up
 	cd gs
 	make clean
 	make -j8
@@ -249,7 +257,7 @@ rebuildlibgs()
 {
 	buildrpcgen;
 	buildgslib;
-	buildskill;
+	# buildskill;
 	buildtask;
 	buildgs;
 }
@@ -262,7 +270,7 @@ rebuildall()
 	buildrpcgen;
 	builddeliver;
 	buildgslib;
-	buildskill;
+	# buildskill;
 	buildtask;
 	buildgs;
 
@@ -285,3 +293,13 @@ if [ $# -gt 0 ]; then
 		builddumpitem;
 	fi
 fi
+
+BUILD_END_TS=$(date +%s)
+BUILD_DURATION=$((BUILD_END_TS - BUILD_START_TS))
+echo ""
+echo "=================================================================="
+echo " BUILD ENDED  : $(date '+%Y-%m-%d %H:%M:%S')"
+echo " DURATION     : ${BUILD_DURATION} seconds"
+echo " EXIT CODE    : $?"
+echo "=================================================================="
+echo ""
