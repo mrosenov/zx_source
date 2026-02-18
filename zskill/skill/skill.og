@@ -1,0 +1,156 @@
+/*
+# .              # 的
+# &              # 并且
+# |              # 或者
+# >              # 大于
+# <              # 小于
+# =              # 等于
+# >=             # 至少
+# <=             # 最多
+
+# probability    # 概率参数
+# time           # 时间参数
+# ratio          # 比率参数
+# amount         # 总量参数
+# value          # 数值参数
+# buffid         # 是否显示图标
+
+# level          # 玩家级别
+# hp             # HP
+# mp             # MP
+# maxhp          # HP上限
+# maxmp          # MP上限
+# dechp          # 降低HP上限
+# decmp          # 降低MP上限
+# inchp          # 增加HP上限
+# incmp          # 增加MP上限
+# addhp          # 增加HP上限固定值
+# addmp          # 增加MP上限固定值
+# hpgen          # 持续恢复HP
+# mpgen          # 持续恢复MP
+# hpleak         # 持续减少HP
+# mpleak         # 持续减少MP
+# inchpgen       # HP恢复加快
+# incmpgen       # MP恢复加快
+# attack         # 攻击力
+# range          # 玩家默认射程
+# pray           # 开始吟唱
+# perform        # 执行攻击
+# dizzy          # 昏迷
+# sleep          # 睡眠
+# weak           # 虚弱
+# silent         # 沉默
+# wrap           # 缠绕
+# slow           # 缓慢
+# addantidizzy   # 增加眩晕抗性
+# addantisleep   # 增加睡眠抗性
+# addantiweak    # 增加虚弱抗性
+# addantisilent  # 增加沉默抗性
+# addantiwrap    # 增加缠绕抗性
+# addantislow    # 增加缓慢抗性
+# subantidizzy   # 降低眩晕抗性
+# subantisleep   # 降低睡眠抗性
+# subantiweak    # 降低虚弱抗性
+# subantisilent  # 降低沉默抗性
+# subantiwrap    # 降低缠绕抗性
+# subantislow    # 降低缓慢抗性
+# cleardizzy     # 取消眩晕
+# clearsleep     # 取消睡眠
+# clearweak      # 取消虚弱
+# clearsilent    # 取消沉默
+# clearwrap      # 取消缠绕
+# clearslow      # 取消缓慢
+# addattack      # 提高攻击力
+# adddefence     # 提高防御力
+# incattack      # 增加攻击力百分比
+# incdefence     # 增加防御力百分比
+# addspeed       # 加速
+# heal           # 治疗
+# resurrect      # 复活 
+# adddodge       # 增加躲避
+# crazy          # 消耗血魔增加攻击力
+# barehanded     # 空手
+# assault        # 挑衅
+# magicshield    # 魔法盾
+# dechurt        # 保护盾
+# dodge          # 轻功
+# pasaddattack   # 被动增加攻击力
+# pasincattack   # 被动增强攻击力
+# pasadddefence  # 被动增加防御力
+# pasincdefence  # 被动增强防御力
+# pasaddhp       # 被动增加HP
+# pasaddmp       # 被动增加MP
+# pasinchp       # 被动增强HP
+# pasincmp       # 被动增强MP
+# pasaddaccuracy # 被动增加准确度
+# pasadddodge  
+# pasaddsilent  
+# pasaddweak  
+# pasadddizzy  
+# pasaddsleep  
+# pasaddslow  
+# pasaddwrap  
+# pasinchpgen  
+# repel           # 击退
+# overawe         # 震慑
+# subdefence      # 降低防御固定值 
+# decdefence      # 降低防御百分比
+# decdamage       # 降低伤害
+# bloodshield     # 受伤增强防御
+# immunedizzy     # 免疫昏迷
+# immunesleep     # 免疫睡眠
+# immunesilent    # 免疫沉默
+# immuneweak      # 免疫虚弱 
+# immunewrap      # 免疫缠绕
+# immuneslow      # 免疫缓慢
+# drainmagic      # 吸收魔力
+# pasaddsmite     # 被动
+# cursed          # 被攻击附加伤害
+# diet            # 禁食
+# salvation       # 复活
+# blessed         # 免疫伤害和负面效果
+# powerup         # 增加下次攻击伤害
+# inchurt         # 受攻击伤害增加
+# randcurse       # 随机进入负面状态
+# clearcooldown   # 清除技能冷却   
+# secondattack    # 忽视防御百分比的伤害
+# shouyi          # 增防降攻固定值
+# ningjin         # 凝劲之术
+# pasaddantisleep  
+# pasaddantiwrap  
+# pasaddantiweak  
+# pasaddantidizzy  
+# inccritrate  
+
+# gohome         # 回城
+# invincible     # 无敌
+# break          # 中断
+# combat         # 进入战斗状态
+
+# valid          # 是否有效ID
+
+# id             # 技能ID
+# level          # 技能级别
+# showlevel      # 技能级别
+# playerlevel    # 攻击者级别
+# charging       # 蓄力时间比例
+# rand           # 随机数(0-99)
+# player         # 攻击者
+# target         # 被攻击者
+# victim         # 被攻击者
+# ratio          # 攻击力加乘比例
+# crit          # 攻击力加乘比例
+# plus           # 附加攻击力
+# attack         # 攻击力
+
+*/
+bool=<>;
+int=<>;
+float=<>;
+long=<>;
+SkillLevel=<@value,int>;
+MasterWrapper=<hp,int>,<maxhp,int>,<mp,int>,<maxmp,int>,<dmgl,int>,<dmgh,int>,<defense,int>,<critrate,int>,<critdmg,float>,<anticrit,int>,<anticritdmg,float>,<dmgreduce,int>,<holyhitrate,int>,<holyhitdmg,float>,<rdizzy,int>,<rweak,int>,<rslow,int>,<rsilent,int>,<rsleep,int>,<rwrapp,int>,<fdizzy,int>,<fweak,int>,<fslow,int>,<fsilent,int>,<fsleep,int>,<fwrapp,int>;
+PlayerWrapper=<targetinfo,TargetInfoWrapper>,<skilllevel, int>,<probability,float>,<time,int>,<ratio,float>,<amount,float>,<value,float>,<attack,float>,<level,int>,<mp,int>,<hp,int>,<maxhp,int>,<maxmp,int>,<inchp,bool>,<incmp,bool>,<addhp,bool>,<addmp,bool>,<hpgen,bool>,<mpgen,bool>,<hpleak,bool>,<mpleak,bool>,<inchpgen,bool>,<incmpgen,bool>,<range,float>,<pray,int>,<perform,int>,<dizzy,bool>,<sleep,bool>,<weak,bool>,<silent,bool>,<wrap,bool>,<slow,bool>,<heal,bool>,<addattack,bool>,<adddefence,bool>,<incattack,bool>,<incdefence,bool>,<addantidizzy,bool>,<addantisleep,bool>,<addantiweak,bool>,<addantisilent,bool>,<addantiwrap,bool>,<addantislow,bool>,<subantidizzy,bool>,<subantisleep,bool>,<subantiweak,bool>,<subantisilent,bool>,<subantiwrap,bool>,<subantislow,bool>,<cleardizzy,bool>,<clearsleep,bool>,<clearweak,bool>,<clearsilent,bool>,<clearwrap,bool>,<clearslow,bool>,<addspeed,bool>,<resurrect,bool>,<adddodge,bool>,<crazy,bool>,<barehanded,bool>,<assault,bool>,<magicshield,bool>,<dechurt,bool>,<gohome,bool>,<invincible,bool>,<break,bool>,<combat,bool>,<pasaddattack,float>,<buffid,int>,<pasaddattack,float>,<pasincattack,float>,<pasadddefence,float>,<pasincdefence,float>,<pasaddhp,float>,<pasaddmp,float>,<pasinchpgen,float>,<pasinchp,float>,<pasincmp,float>,<pasaddaccuracy,float>,<pasadddodge,float>,<pasaddsilent,float>,<pasaddweak,float>,<pasadddizzy,float>,<pasaddsleep,float>,<pasaddslow,float>,<pasaddwrap,float>,<dodge,bool>,<repel,bool>,<overawe,bool>,<subdefence,bool>,<decdefence,bool>,<decdamage,bool>,<bloodshield,bool>,<immunesleep,bool>,<immunedizzy,bool>,<immuneslow,bool>,<immuneweak,bool>,<immunesilent,bool>,<immunewrap,bool>,<drainmagic,bool>,<pasaddsmite,float>,<cursed,bool>,<diet,bool>,<salvation,bool>,<blessed,bool>,<powerup,bool>,<inchurt,bool>,<randcurse,bool>,<clearcooldown,bool>,<secondattack,bool>,<shouyi,bool>,<ningjin,bool>,<inccritrate,bool>,<disappear,bool>,<usemagic,bool>,<damage2hp,bool>,<attack2hp,bool>,<swift,bool>,<retort,bool>,<clearbuff,bool>,<sealed,bool>,<dechp,bool>,<decmp,bool>,<subhp,bool>,<submp,bool>,<incanti,bool>,<decanti,bool>,<incdodge,bool>,<decdodge,bool>,<smiteattack,bool>,<addhpgen,bool>,<pasaddcrit,float>,<defence,int>,<damagehigh,int>,<damagelow,int>,<walkspeed,float>,<runspeed,float>,<accuracy,int>,<armor,int>,<crit,int>,<smite,float>,<anticrit,int>,<antismite,int>,<dizzystate,bool>,<wrapstate,bool>,<silentstate,bool>,<sleepstate,bool>,<slowstate,bool>,<weakstate,bool>,<dizzyresist,int>,<weakresist,int>,<slowresist,int>,<silentresist,int>,<sleepresist,int>,<wrapresist,int>,<filter,int>,<bufflevel,int>,<clear,int>,<pasaddanticrit,float>,<pasaddantismite,float>,<master,MasterWrapper>,<pasaddsummonbl,float>,<pasaddsummonal,float>,<pasaddsummoncl,float>,<pasaddsilentf,float>,<pasaddweakf,float>,<pasadddizzyf,float>,<pasaddsleepf,float>,<pasaddslowf,float>,<pasaddwrapf,float>,<checkbuff,int>,<faction,int>,<pasaddskillattack,bool>,<pasaddskillarmor,bool>,<pasaddfactdmgrat,bool>,<pasaddantifactdmgrat,bool>,<pasaddfactdmg,bool>,<pasaddantifactdmg,bool>,<pasaddqinglong,bool>,<pasaddbaihu,bool>,<pasaddzhuque,bool>,<pasaddxuanwu,bool>,<pasaddholyhitrat,bool>,<pasaddholyhitdmg,bool>,<checkfaction,bool>,<checkenemyfaction,bool>,<pasmaxvigour,float>,<pasmaxvitality,float>,<pasfilterid,int>,<pasaddsneakpoint,float>,<pasaddantisneakpoint,float>,<sneakstate,int>,<pasaddqinglongdef,bool>,<pasaddbaihudef,bool>,<pasaddzhuquedef,bool>,<pasaddxuanwudef,bool>,<pasaddantidmgrat,bool>,<pasaddantiantidmgrat,bool>;
+TargetWrapper=<valid,bool>;
+TargetInfoWrapper=<level,int>;
+Skill=<id,int>,<level,int>,<playerlevel,int>,<showlevel,int>,<charging,float>,<rand,int>,<player,PlayerWrapper>,<target,TargetWrapper>,<victim,PlayerWrapper>,<ratio,float>,<plus,float>,<attack,int>,<crit,float>,<t0,int>,<t1,int>,<t2,int>,<t3,int>,<t4,int>,<t5,int>,<t6,int>,<t7,int>,<smite,float>,<livetime,int>,<targetcamps,long>,<dmgattrt,int>,<dmgattrv,int>,<campsdamageratio,float>,<campsdamageplus,int>,<attackrat,int>,<adam,int>;
