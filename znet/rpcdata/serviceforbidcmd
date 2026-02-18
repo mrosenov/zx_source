@@ -1,0 +1,82 @@
+#ifndef __GNET_SERVICEFORBIDCMD_RPCDATA
+#define __GNET_SERVICEFORBIDCMD_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class ServiceForbidCmd : public GNET::Rpc::Data
+	{
+	public:
+		int cmdtype;
+		std::vector<int> arglist;
+		int dst;
+		int timestamp;
+		int reserved2;
+
+	public:
+		ServiceForbidCmd (int l_cmdtype = 0,const std::vector<int>& l_arglist = std::vector<int>(),int l_dst = 0
+			,int l_timestamp = 0,int l_reserved2 = 0)
+			: cmdtype(l_cmdtype),arglist(l_arglist),dst(l_dst)
+			,timestamp(l_timestamp),reserved2(l_reserved2)
+		{
+		}
+
+		ServiceForbidCmd(const ServiceForbidCmd &rhs)
+			: cmdtype(rhs.cmdtype),arglist(rhs.arglist),dst(rhs.dst),
+			timestamp(rhs.timestamp),reserved2(rhs.reserved2) { }
+
+		Rpc::Data *Clone() const { return new ServiceForbidCmd(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const ServiceForbidCmd *r = dynamic_cast<const ServiceForbidCmd *>(&rhs);
+			if (r && r != this)
+			{
+				cmdtype = r->cmdtype;
+				arglist = r->arglist;
+				dst = r->dst;
+				timestamp = r->timestamp;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		ServiceForbidCmd& operator = (const ServiceForbidCmd &rhs)
+		{
+			const ServiceForbidCmd *r = &rhs;
+			if (r && r != this)
+			{
+				cmdtype = r->cmdtype;
+				arglist = r->arglist;
+				dst = r->dst;
+				timestamp = r->timestamp;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << cmdtype;
+			os << arglist;
+			os << dst;
+			os << timestamp;
+			os << reserved2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> cmdtype;
+			os >> arglist;
+			os >> dst;
+			os >> timestamp;
+			os >> reserved2;
+			return os;
+		}
+
+	};
+};
+#endif

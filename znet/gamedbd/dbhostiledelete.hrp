@@ -1,0 +1,101 @@
+
+#ifndef __GNET_DBDELETEHOSTILE_HPP
+#define __GNET_DBDELETEHOSTILE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhostiledeletearg"
+#include "deffactionres"
+#include "hostilefaction"
+#include "hostileinfo"
+
+namespace GNET
+{
+
+class DBHostileDelete : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhostiledelete"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHostileDeleteArg *arg = (DBHostileDeleteArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+		Marshal::OctetsStream key, khost, value;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+
+			key << arg->factionid;
+			Log::formatlog("hostiledelete","factionid=%d:hostile size=%d", arg->factionid, arg->hostile.size());
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GFactionInfo faction, hostile;
+				Marshal::OctetsStream(pfaction->find(key, txn )) >> faction;
+				std::vector<unsigned int>::iterator hit = arg->hostile.begin(), hie = arg->hostile.end();
+				for (; hit != hie; ++ hit)
+				{
+					std::vector<HostileFaction>::iterator it, ie;
+					it = Hostiles(faction).begin();
+					ie = Hostiles(faction).end();
+					for (; it != ie; ++it)
+					{
+						if (it->fid == *hit)
+						{
+							Hostiles(faction).erase(it);
+							break;
+						}
+
+					}
+
+					khost << *hit;
+					if (pfaction->find(khost, value, txn))
+					{
+						value >> hostile;
+						it = Hostiles(hostile).begin();
+						ie = Hostiles(hostile).end();
+						for (; it != ie; ++ it)
+						{
+							if (it->fid == arg->factionid)
+							{
+								Hostiles(hostile).erase(it);
+								pfaction->insert( khost, Marshal::OctetsStream()<<hostile, txn );
+								break;
+							}
+						}
+					}
+				}
+				pfaction->insert( key, Marshal::OctetsStream()<<faction, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBHostileDelete, factionid=%d what=%s." , arg->factionid, e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

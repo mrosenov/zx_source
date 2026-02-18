@@ -1,0 +1,112 @@
+
+#ifndef __GNET_PRECHANGEFACTIONNAME_HPP
+#define __GNET_PRECHANGEFACTIONNAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "prechangefactionnamearg"
+#include "prechangefactionnameres"
+
+namespace GNET
+{
+
+class PreChangeFactionname : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "prechangefactionname"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PreChangeFactionnameArg *arg = (PreChangeFactionnameArg *)argument;
+		PreChangeFactionnameRes *res = (PreChangeFactionnameRes *)result;
+
+		Octets name;
+		CharsetConverter::conv_charset_u2l(arg->newname, name);
+		LOG_TRACE( "PreChangeFactionname(zoneid=%d, fid=%d, newname=%.*s, scale=%d)", arg->zoneid, arg->fid, name.size(),(char*)name.begin(), arg->scale);
+
+		UniqueNameServer::GetInstance()->TransformName(arg->newname);
+
+		try
+		{
+			StorageEnv::Storage * puname = NULL;
+			if (arg->scale == 0)
+				puname = StorageEnv::GetStorage("unamefaction");
+			else
+				puname = StorageEnv::GetStorage("unamefamily");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				Marshal::OctetsStream key_nextid, value_uname, value_nextid;   
+				int nextid_forkey = 0;
+				key_nextid << nextid_forkey;
+				if (key_nextid == arg->newname)
+				{
+					res->retcode = ERR_DUPLICATRECORD;
+					Log::log(LOG_ERR, "PreChangeFactionname(zoneid=%d,fid=%d,name=%.*s), duplicate, equals to next_id",
+							arg->zoneid, arg->fid, name.size(), (char*)name.begin() );
+					return;
+				}
+				if (puname->find(arg->newname, value_uname, txn))
+				{
+					int zoneid, fid, status, time;
+					value_uname >> zoneid >> fid >> status >> time;
+					if (!(UNIQUENAME_ENGAGED == status && Timer::GetTime() - time > 300))
+					{
+						res->retcode = ERR_DUPLICATRECORD;
+						LOG_TRACE("PreChangeFactionname(zoneid=%d,fid=%d,name=%.*s,scale=%d),duplicate,old:zoneid=%d,fid=%d,status=%d,time=%d.",
+								arg->zoneid,arg->fid,name.size(),(char*)name.begin(),arg->scale,zoneid,fid,status,time);
+						return;
+					}
+					else
+					{
+						res->retcode = ERR_DUPLICATRECORD;
+						LOG_TRACE("PreChangeFactionname(zoneid=%d,fid=%d,name=%.*s,scale=%d), duplicate2, old:zoneid=%d,fid=%d,status=%d,time=%d.",
+								arg->zoneid,arg->fid,name.size(),(char*)name.begin(),arg->scale,zoneid,fid,status,time);
+						return;
+					}
+				}
+				int status = UNIQUENAME_ENGAGED;
+				value_uname.clear();
+				value_uname<< arg->zoneid << arg->fid << status << (int)Timer::GetTime();
+				puname->insert(arg->newname, value_uname, txn);
+
+				res->retcode  = ERR_SUCCESS;
+
+				LOG_TRACE("PreChangeFactionname(zoneid=%d,fid=%d,name=%.*s), ok",
+						arg->zoneid, arg->fid, name.size(),(char*)name.begin());
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PreChangeFactionname, zoneid=%d, fid=%d, sacle=%d, what=%s\n", arg->zoneid, arg->fid, arg->scale, e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PreChangeFactionnameArg *arg = (PreChangeFactionnameArg *)argument;
+		// PreChangeFactionnameRes *res = (PreChangeFactionnameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,55 @@
+
+#ifndef __GNET_DBFACTIONGET_HPP
+#define __GNET_DBFACTIONGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "gamedbclient.hpp"
+#include "factionid"
+#include "factioninfores"
+#include "gtmanager.h"
+namespace GNET
+{
+
+class DBFactionGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionget"
+#undef	RPC_BASECLASS
+	int64_t localuid;
+	int pt_type;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// FactionId *arg = (FactionId *)argument;
+		// FactionInfoRes *res = (FactionInfoRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FactionId *arg = (FactionId *)argument;
+		FactionInfoRes *res = (FactionInfoRes *)result;
+		DEBUG_PRINT("dbfactionget. localuid=%lld,factionid=%d,pt_type=%d", localuid,arg->fid,pt_type);
+		if(res->retcode == ERR_SUCCESS)
+		{
+			if(GTManager::Instance()->OnDBFactionGet(arg->fid,res->value,pt_type))
+				DEBUG_PRINT("DBFactionGet: OnDBFactionGet error");
+		}
+		else
+			GTManager::Instance()->OnDBFactionGetErr(arg->fid,localuid,res->retcode,pt_type);
+	}
+
+	void OnTimeout()
+	{
+		FactionId *arg = (FactionId *)argument;
+		DEBUG_PRINT("dbfactionget: timeout. localuid=%lld,factionid=%d,pt_type=%d", localuid,arg->fid,pt_type);
+		DBFactionGet * rpc=(DBFactionGet*)Rpc::Call(RPC_DBFACTIONGET,arg);
+		rpc->localuid = localuid;
+		rpc->pt_type= pt_type;
+		GameDBClient::GetInstance()->SendProtocol(rpc);
+	}
+
+};
+
+};
+#endif

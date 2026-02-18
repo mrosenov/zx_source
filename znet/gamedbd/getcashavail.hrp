@@ -1,0 +1,108 @@
+
+#ifndef __GNET_GETCASHAVAIL_HPP
+#define __GNET_GETCASHAVAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "getcashavailarg"
+#include "getcashavailres"
+
+namespace GNET
+{
+
+class GetCashAvail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getcashavail"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GetCashAvailArg *arg = (GetCashAvailArg *)argument;
+		GetCashAvailRes *res = (GetCashAvailRes *)result;
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pweborder = StorageEnv::GetStorage("weborder");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				Marshal::OctetsStream key_user, os_user;
+				key_user << arg->userid;
+				if (!puser->find(key_user, os_user, txn))
+				{
+					res->retcode = ERR_SUCCESS;
+					res->cash_avail = 0;
+					LOG_TRACE("GetCashAvail userid %d roleid %d flag %d, cash_avail %d", arg->userid, arg->roleid, arg->flag, res->cash_avail);
+					return;
+				}
+				User user;
+				os_user >> user;
+				//此处逻辑应与 dbsaveweborder 保持一致
+				res->cash_avail = user.cash_add+user.cash_buy-user.cash_sell-user.cash_used-user.cash;
+				std::vector<int64_t>::const_iterator it, ite = user.unprocessed_orders.end();
+				for (it = user.unprocessed_orders.begin(); it != ite; ++it)
+				{
+					Marshal::OctetsStream key_order, os_order;
+					key_order << *it;
+					if (!pweborder->find(key_order, os_order, txn))
+					{
+						Log::log(LOG_ERR, "GetCashAvail, can not find weborder %lld for user %d", *it, arg->userid);
+						continue;
+					}
+					WebOrder order;
+					os_order >> order;
+					//此处的验证逻辑 应与 GetRole 保持一致
+					if (order.userid != arg->userid)
+					{
+						Log::log(LOG_ERR, "GetCashAvail, userid %d order %lld -> userid %d", arg->userid, *it, order.userid);
+						continue;
+					}
+					if (order.status != WEB_ORDER_UNPROCESSED)
+					{
+						Log::log(LOG_ERR, "GetCashAvail, userid %d order %lld status %d invalid", arg->userid, *it, order.status);
+						continue;
+					}
+					if (order.paytype != WEB_ORDER_PAY_CASH)
+						continue;
+					WebMallFunctionVector::const_iterator fit, fite = order.functions.end();
+					for (fit = order.functions.begin(); fit != fite; ++fit)
+						res->cash_avail -= (fit->price * fit->count);
+				}
+				res->retcode = ERR_SUCCESS;
+				LOG_TRACE("GetCashAvail userid %d roleid %d flag %d, cash_avail %d", arg->userid, arg->roleid, arg->flag, res->cash_avail);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetCashAvail, userid=%d, what=%s\n", arg->userid, e.what() );
+			res->retcode = ERR_DATANOTFIND;
+			return;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GetCashAvailArg *arg = (GetCashAvailArg *)argument;
+		// GetCashAvailRes *res = (GetCashAvailRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

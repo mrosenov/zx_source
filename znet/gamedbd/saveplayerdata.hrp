@@ -1,0 +1,338 @@
+
+#ifndef __GNET_SAVEPLAYERDATA_HPP
+#define __GNET_SAVEPLAYERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "saveplayerdataarg"
+#include "saveplayerdatares"
+
+namespace GNET
+{
+void AbstractPlayerData(GRoleBase & base, const GRoleBase & old_base, GRoleBase2 & base2, const GRoleBase2 & old_base2,
+			GRoleStatus & status, const GRoleStatus & old_status);
+class SavePlayerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "saveplayerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SavePlayerDataArg *arg = (SavePlayerDataArg *)argument;
+		SavePlayerDataRes *res = (SavePlayerDataRes *)result;
+		LOG_TRACE("SavePlayerData roleid %d userid %d flag %d src_zoneid %d version %d", arg->roleid, arg->userid, arg->flag, arg->src_zoneid, arg->data_timestamp);
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * pstorehouse = StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage * ptask = StorageEnv::GetStorage("task");
+			StorageEnv::Storage * pachieve = StorageEnv::GetStorage("achievement");
+			StorageEnv::Storage * psnsplayerinfo = StorageEnv::GetStorage("snsplayerinfo");
+			StorageEnv::Storage * paward = StorageEnv::GetStorage("award");
+			StorageEnv::Storage * prolename = StorageEnv::GetStorage("rolename");
+			StorageEnv::Storage * prolenamehis = StorageEnv::GetStorage("rolenamehis");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream role_key, user_key, user_value, base2_value, base_value, sns_value; 
+			GRoleBase2 base2;
+			try
+			{
+				user_key << arg->userid;
+				role_key << arg->roleid;
+				if (arg->flag == DIRECT_TO_CENTRALDS)
+				{
+					GRoleBase base;
+					if (!pbase->find(role_key, base_value, txn))
+					{
+						Log::log(LOG_ERR, "SavePlayerData(DIRECT_TO_CENTRALDS) roleid %d does not exist", arg->roleid);
+						//如果跨服回档 可能找不到玩家数据 需要激活原服数据？
+						//res->retcode = -3;
+						res->retcode = ERR_REMOTE_VERIFYFAILED;
+						return;
+					}
+					base_value >> base;
+					int base_userid = (base.userid==0 ? LOGICUID(base.id) : base.userid);
+					if (base_userid != arg->userid)
+					{
+						Log::log(LOG_ERR, "SavePlayerData(DIRECT_TO_CENTRALDS) roleid %d is belong to another user %d, cur_user %d",
+									arg->roleid, base_userid, arg->userid);
+						res->retcode = -11;
+						return;
+					}
+					if (arg->data.base.create_time != base.create_time) //加强验证 防止角色复制 20120830
+					{
+						Log::log(LOG_ERR, "SavePlayerData(DIRECT_TO_CENTRALDS roleid %d create_time not match %d : %d",
+								arg->roleid, arg->data.base.create_time, base.create_time);
+						res->retcode = -12;
+						return;
+					}
+					Marshal::OctetsStream(pbase2->find(role_key, txn)) >> base2;
+					if (base2.data_timestamp <= arg->data_timestamp)
+					{
+						Log::log(LOG_ERR, "SavePlayerData(DIRECT_TO_CENTRALDS) roleid %d data_timestamp does not match local %d remote %d",
+								 arg->roleid, arg->data_timestamp, base2.data_timestamp);
+						res->retcode = ERR_REMOTE_VERIFYFAILED;
+						return;
+					}
+					if (base2.src_zoneid != arg->src_zoneid)
+					{//回档可能造成此错误 内服已经验证过 如果外服出现并确认属于此情况 可以临时把此开关打开 自动激活原服数据
+						Log::log(LOG_ERR, "SavePlayerData(DIRECT_TO_CENTRALDS) roleid %d srczoneid does not match local %d remote %d",
+								 arg->roleid, arg->src_zoneid, base2.src_zoneid);
+						res->retcode = -4;
+						//res->retcode = ERR_REMOTE_VERIFYFAILED;
+						return;
+					}
+					if (base.status == _ROLE_STATUS_FROZEN)
+					{
+						//激活frozen数据时 还要验证rolelist 否则激活后也无法正常登陆 
+						//正常情况下logicuid不会变 rolelist只会增加 但如果同一个user在两个服务器上分配不同的Logicuid时 跨服保存的logicuid和rolelist可能会修改
+						User user;
+						if (/*base_userid == arg->userid &&*/ puser->find(user_key, user_value, txn))
+						{
+							user_value >> user;	
+							RoleList t(user.rolelist);
+							if (user.logicuid == (unsigned int)LOGICUID(arg->roleid) && t.IsRoleListInitialed() && t.IsRoleExist(arg->roleid))
+							{
+								//可能是原服回档造成
+								Log::log(LOG_ERR, "SavePlayerData(DIRECT_TO_CENTRALDB) roleid %d status _ROLE_STATUS_FROZEN,fix it!", arg->roleid);
+								base.status = _ROLE_STATUS_NORMAL;
+								pbase->insert(role_key, Marshal::OctetsStream() << base, txn);
+								res->retcode = ERR_SUCCESS;
+								return;
+							}
+						}
+						Log::log(LOG_ERR, "SavePlayerData(DIRECT_TO_CENTRALDS) activate frozen failed. roleid %d userid %d logicuid %d rolelist %d",
+								arg->roleid, arg->userid, user.logicuid, user.rolelist);
+						res->retcode = -8;
+						return;
+					}	
+					res->retcode = ERR_SUCCESS;
+					return;
+				}
+				else if (IsTransToCentralDS(arg->flag) || IsTransToNormalDS(arg->flag))
+				{
+					if (IsTransToCentralDS(arg->flag))
+					{
+						RoleList old_rolelist;
+						old_rolelist.InitialRoleList();
+						if (puser->find(user_key, user_value, txn))
+						{
+							User user;
+							user_value >> user;
+							RoleList t(user.rolelist);
+							if (user.logicuid != arg->data.user.logicuid)
+							{
+								//同一个user在两个服务器上分配了不同的logicuid 只要前一个logicuid的角色都不在跨服normal状态 就可以换成新的logicuid并重新初始化rolelist
+								int role = -1;
+								while ((role=t.GetNextRole()) != -1)
+								{
+									Marshal::OctetsStream _os_base;
+									GRoleBase _base;
+									int _roleid = user.logicuid+role;
+									if (pbase->find(Marshal::OctetsStream()<<_roleid, _os_base, txn))
+									{
+										_os_base >> _base;
+										if (_base.status == _ROLE_STATUS_NORMAL && arg->data.base.create_time != _base.create_time)
+										{
+											Log::log(LOG_ERR, "SavePlayerData user %d logicuid %d does not match local logicuid %d, and local logicuid has active role %d", 
+													arg->userid, arg->data.user.logicuid, user.logicuid, _roleid);
+											res->retcode = -2;
+											return;
+										}
+									}
+								}
+							}
+							else
+							{
+							//	RoleList t(user.rolelist);
+								old_rolelist = t;
+							}
+						}
+						int old_version = -1;
+						Octets oldname;
+						if (pbase->find(role_key, base_value, txn))
+						{
+							GRoleBase base;
+							base_value >> base;
+							int old_userid = (base.userid==0 ? LOGICUID(base.id) : base.userid);
+							//if (old_userid != arg->userid && base.status == _ROLE_STATUS_NORMAL)
+							if (old_userid != arg->userid)
+							{
+								Log::log(LOG_ERR, "SavePlayerData same role %d of another user(%d) has ever been or is already active here,cur_user %d",
+											arg->roleid, old_userid, arg->userid);
+								res->retcode = -10;
+								return;
+							}
+							oldname = base.name;
+							Marshal::OctetsStream(pbase2->find(role_key, txn)) >> base2;
+							//if (base2.src_zoneid != arg->src_zoneid && old_userid != arg->userid)
+							//if (base2.src_zoneid != arg->src_zoneid)
+							if (arg->data.base.create_time != base.create_time) //20120830 因为合服之后zoneid会变化 所以不再用zoneid判断是否是同一个角色 而是使用创建时间判断
+							{
+								//同一个user在两个不同的服务器上分配了同样的roleid  或者在同一个服务器上先后分配了相同的roleid
+								//内服回档出现过 外服角色删除时间为7天 只要回档不超过7天 应该不会出现
+								//除非确定玩家在其他服务器上分配的roleid角色已经被删除 此处才能打开开关 允许玩家覆盖数据
+								if (base.status != _ROLE_STATUS_FROZEN)
+								{
+									res->retcode = -9; //其中一个处于跨服状态 不会是被删除的角色 禁止另外一个跨服
+									return;
+								}
+								//20110302 合服之后玩家zoneid可能变化 幸运的是 AbstractPlayers()时会将玩家跨服数据置为 frozen
+							}
+							old_version = base2.data_timestamp;
+							if (base.status == _ROLE_STATUS_NORMAL)
+								Log::log(LOG_ERR, "Warning! SavePlayerData role %d is active", arg->roleid);
+						}
+						//原服到跨服才会拷贝user表
+						RoleList new_rolelist = old_rolelist;
+						if (new_rolelist.AddRole(arg->roleid%MAX_ROLE_COUNT) == -1)
+						{
+							Log::log(LOG_ERR, "SavePlayerData Add rolelist error, user %d role %d old_rolelist 0x%x", arg->userid, arg->roleid, old_rolelist.GetRoleList());
+							res->retcode = -7;
+							return;
+						}
+						User user_remote(arg->data.user.logicuid, new_rolelist.GetRoleList());
+						user_remote.autolock = arg->data.user.autolock;
+						if (arg->data.user.referrer != 0)
+							user_remote.referrer = arg->data.user.referrer;
+						//user_remote.forbid = arg->data.user.forbid;
+						user_remote.lastlogin_ip = arg->data.user.lastlogin_ip;
+						puser->insert(user_key, Marshal::OctetsStream() << user_remote, txn);
+						//base
+						arg->data.base.familyid = 0;
+						arg->data.base.title = 0;
+						arg->data.base.jointime = 0;
+						//防止夫妻技能被清除
+						//arg->data.base.spouse = 0;
+						arg->data.base.sectid = 0;
+						arg->data.base.circletrack.clear();
+						arg->data.base.status = _ROLE_STATUS_FROZEN; //临时置为 frozen 状态 待 playeridentitymatch 成功时再改为 normal 状态
+						//base2
+						arg->data.base2.bonus_withdraw = arg->data.base2.bonus_reward = arg->data.base2.bonus_used = arg->data.base2.exp_withdraw_today = arg->data.base2.exp_withdraw_time = 0;
+						//status
+						arg->data.base2.src_zoneid = arg->src_zoneid;
+						if(arg->flag == DS_TO_BATTLENPC || arg->flag == DS_TO_BATTLEMAP)
+						{
+							// 如果是进入跨服战场，设置其位置为跨服战场的报名地图
+							arg->data.status.worldtag = 615;
+							arg->data.status.posx = -398;
+							arg->data.status.posy = 175;
+							arg->data.status.posz = 138;
+						}
+						else
+						{
+							arg->data.status.worldtag = 32;
+							arg->data.status.posx = -8.f;
+							arg->data.status.posy = 355.f;
+							arg->data.status.posz = -423.f;
+						}
+						arg->data.status.contribution = 0;
+						arg->data.status.devotion = 0;
+						//单向覆盖 begin: rolename rolenamehis
+						prolename->insert(arg->data.base.name, role_key, txn);
+						if (arg->data.rolenamehis.size() > 0 && oldname != arg->data.base.name)
+						{
+							prolenamehis->insert(role_key, Marshal::OctetsStream() << arg->data.rolenamehis, txn);
+							Marshal::OctetsStream key_all, value_all, value_rolenamehis;
+							key_all << (int)0;
+							std::map<int, Octets> name_map;
+							if (prolenamehis->find(key_all, value_all, txn))
+								value_all >> name_map;
+							name_map[arg->roleid] = arg->data.base.name;
+							LOG_TRACE("total namemap.size %d", name_map.size());
+							prolenamehis->insert(key_all, Marshal::OctetsStream() << name_map, txn);
+							res->oldname = oldname; //不为空 表示有名字修改
+						}
+						//单向覆盖 end
+						Log::formatlog("SavePlayerData(DS_TO_CENTRALDS)", "roleid %d userid %d src_zoneid %d old-version %d new-version %d old_rolelist 0x%x final_rolelist 0x%x",
+								arg->roleid, arg->userid, arg->src_zoneid, old_version, arg->data.base2.data_timestamp, old_rolelist.GetRoleList(), new_rolelist.GetRoleList());
+					}
+					else
+					{
+						GRoleBase base;
+						Marshal::OctetsStream(pbase->find(role_key, txn)) >> base;
+						if (base.status != _ROLE_STATUS_FROZEN)
+						{
+							Log::log(LOG_ERR, "SavePlayerData(CENTRALDS_TO_DS) roleid %d status %d invalid",
+								arg->roleid, base.status);
+							res->retcode = -6;
+							return;
+						}
+						int old_version = -1;
+						if (pbase2->find(role_key, base2_value, txn))
+						{
+							base2_value >> base2;
+							old_version = base2.data_timestamp;
+						}
+						GRoleStatus status;
+						Marshal::OctetsStream(pstatus->find(role_key, txn)) >> status;
+						AbstractPlayerData(arg->data.base, base, arg->data.base2, base2, arg->data.status, status);
+						Log::formatlog("SavePlayerData(CENTRALDS_TO_DS)", "roleid %d userid %d src_zoneid %d old-version %d new-version %d",
+								arg->roleid, arg->userid, arg->src_zoneid, old_version, arg->data.base2.data_timestamp);
+					}
+					pbase->insert(role_key, Marshal::OctetsStream() << arg->data.base, txn);
+					pstatus->insert(role_key, Marshal::OctetsStream() << arg->data.status, txn);
+					pbase2->insert(role_key, Marshal::OctetsStream() << arg->data.base2, txn);
+					pinventory->insert(role_key, Marshal::OctetsStream() << arg->data.inventory, txn);
+					pstorehouse->insert(role_key, Marshal::OctetsStream() << arg->data.storehouse, txn);
+					ptask->insert(role_key, Marshal::OctetsStream() << arg->data.task, txn);
+					pachieve->insert(role_key, Marshal::OctetsStream() << arg->data.achievement, txn);
+					psnsplayerinfo->insert(role_key, Marshal::OctetsStream() << arg->data.snsplayerinfo, txn);
+
+					Marshal::OctetsStream award_value;
+					GRoleAward award;
+					if(paward->find(role_key, award_value, txn))
+					{
+						award_value >> award;
+					}
+					award.onlineaward = arg->data.onlineaward;
+					paward->insert(role_key, Marshal::OctetsStream() << award, txn);
+
+					res->retcode = ERR_SUCCESS;
+					return;
+				}
+				else
+				{
+					res->retcode = -5;
+					return;
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException e)
+		{
+			Log::log(LOG_ERR, "SavePlayerData, roleid %d userid %d flag %d what=%s", arg->roleid, arg->userid, arg->flag, e.what());
+			res->retcode = -1;
+			return;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// SavePlayerDataArg *arg = (SavePlayerDataArg *)argument;
+		// SavePlayerDataRes *res = (SavePlayerDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

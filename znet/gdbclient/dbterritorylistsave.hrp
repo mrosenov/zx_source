@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBTERRITORYLISTSAVE_HPP
+#define __GNET_DBTERRITORYLISTSAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbterritorylistsavearg"
+#include "dbterritorylistsaveres"
+
+namespace GNET
+{
+
+class DBTerritoryListSave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbterritorylistsave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBTerritoryListSaveArg *arg = (DBTerritoryListSaveArg *)argument;
+		// DBTerritoryListSaveRes *res = (DBTerritoryListSaveRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBTerritoryListSaveArg *arg = (DBTerritoryListSaveArg *)argument;
+		// DBTerritoryListSaveRes *res = (DBTerritoryListSaveRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

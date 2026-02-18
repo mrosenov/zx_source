@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCIRCLEHISGET_HPP
+#define __GNET_DBCIRCLEHISGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "dbcirclehisgetres"
+
+namespace GNET
+{
+
+class DBCircleHisGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcirclehisget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleId *arg = (RoleId *)argument;
+		// DBCircleHisGetRes *res = (DBCircleHisGetRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// RoleId *arg = (RoleId *)argument;
+		// DBCircleHisGetRes *res = (DBCircleHisGetRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

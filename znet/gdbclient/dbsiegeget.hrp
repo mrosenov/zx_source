@@ -1,0 +1,46 @@
+
+#ifndef __GNET_DBSIEGEGET_HPP
+#define __GNET_DBSIEGEGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegegetarg"
+#include "dbsiegegetres"
+
+namespace GNET
+{
+
+class DBSiegeGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegeget"
+#undef	RPC_BASECLASS
+
+	GDB::City_Op_Result* _callback;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSiegeGetArg *arg = (DBSiegeGetArg *)argument;
+		// DBSiegeGetRes *res = (DBSiegeGetRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSiegeGetArg *arg = (DBSiegeGetArg *)argument;
+		DBSiegeGetRes *res = (DBSiegeGetRes *)result;
+		if(_callback)
+		{
+			_callback->OnGetCity(arg->battle_id,res->city_info.timestamp,res->retcode,res->city_info.detail.begin(),res->city_info.detail.size());
+		}
+	}
+
+	void OnTimeout()
+	{
+		if(_callback) _callback->OnTimeOut();
+	}
+
+};
+
+};
+#endif

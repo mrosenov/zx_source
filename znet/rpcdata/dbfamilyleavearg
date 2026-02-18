@@ -1,0 +1,69 @@
+#ifndef __GNET_DBFAMILYLEAVEARG_RPCDATA
+#define __GNET_DBFAMILYLEAVEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFamilyLeaveArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int familyid;
+		unsigned int rid;
+		int contribution;
+
+	public:
+		DBFamilyLeaveArg (unsigned int l_familyid = 0,unsigned int l_rid = 0,int l_contribution = 0)
+			: familyid(l_familyid),rid(l_rid),contribution(l_contribution)
+		{
+		}
+
+		DBFamilyLeaveArg(const DBFamilyLeaveArg &rhs)
+			: familyid(rhs.familyid),rid(rhs.rid),contribution(rhs.contribution) { }
+
+		Rpc::Data *Clone() const { return new DBFamilyLeaveArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFamilyLeaveArg *r = dynamic_cast<const DBFamilyLeaveArg *>(&rhs);
+			if (r && r != this)
+			{
+				familyid = r->familyid;
+				rid = r->rid;
+				contribution = r->contribution;
+			}
+			return *this;
+		}
+
+		DBFamilyLeaveArg& operator = (const DBFamilyLeaveArg &rhs)
+		{
+			const DBFamilyLeaveArg *r = &rhs;
+			if (r && r != this)
+			{
+				familyid = r->familyid;
+				rid = r->rid;
+				contribution = r->contribution;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << familyid;
+			os << rid;
+			os << contribution;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> familyid;
+			os >> rid;
+			os >> contribution;
+			return os;
+		}
+
+	};
+};
+#endif

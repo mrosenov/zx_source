@@ -1,0 +1,59 @@
+
+#ifndef __GNET_DBHOSTILEDELETE_HPP
+#define __GNET_DBHOSTILEDELETE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhostiledeletearg"
+#include "deffactionres"
+#include "hostiledelete_re.hpp"
+
+namespace GNET
+{
+
+class DBHostileDelete : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhostiledelete"
+#undef	RPC_BASECLASS
+
+	int localsid;
+	int linksid;
+	bool sendclient;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHostileDeleteArg *arg = (DBHostileDeleteArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+		DEBUG_PRINT("DBHostileDelete, retcode=%d, factionid=%d, hostile size=%d"
+				, res->retcode, arg->factionid, arg->hostile.size());
+		if (res->retcode == ERR_SUCCESS)
+		{
+			FactionManager::Instance()->OnDeleteHostile(arg->factionid, arg->hostile);
+		}
+		if (sendclient)
+		{
+			HostileDelete_Re re(res->retcode, arg->factionid, arg->hostile.front(), localsid);
+			GDeliveryServer::GetInstance()->Send(linksid, re);
+		}
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBHostileDeleteArg *arg = (DBHostileDeleteArg *)argument;
+		DEBUG_PRINT("DBHostileDelete, timeout!, factionid=%d, hostile size=%d", arg->factionid, arg->hostile.size());
+		if (sendclient)
+			GDeliveryServer::GetInstance()->Send(linksid,
+					HostileDelete_Re(ERR_DATABASE_TIMEOUT, arg->factionid, arg->hostile.front(), localsid));
+	}
+
+};
+
+};
+#endif

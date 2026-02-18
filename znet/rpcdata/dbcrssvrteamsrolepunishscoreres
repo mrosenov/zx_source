@@ -1,0 +1,59 @@
+#ifndef __GNET_DBCRSSVRTEAMSROLEPUNISHSCORERES_RPCDATA
+#define __GNET_DBCRSSVRTEAMSROLEPUNISHSCORERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCrssvrTeamsRolePunishScoreRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DBCrssvrTeamsRolePunishScoreRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBCrssvrTeamsRolePunishScoreRes(const DBCrssvrTeamsRolePunishScoreRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsRolePunishScoreRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsRolePunishScoreRes *r = dynamic_cast<const DBCrssvrTeamsRolePunishScoreRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsRolePunishScoreRes& operator = (const DBCrssvrTeamsRolePunishScoreRes &rhs)
+		{
+			const DBCrssvrTeamsRolePunishScoreRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		char need_readDB;
+		enum { PROTOCOL_TYPE = PROTOCOL_GCONSIGNEND };
+	public:
+		GConsignEnd() { type = PROTOCOL_GCONSIGNEND; }
+		GConsignEnd(void*) : Protocol(PROTOCOL_GCONSIGNEND) { }
+		GConsignEnd (int l_roleid,char l_need_readDB)
+			 : roleid(l_roleid),need_readDB(l_need_readDB)
+		{
+			type = PROTOCOL_GCONSIGNEND;
+		}
+
+		GConsignEnd(const GConsignEnd &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),need_readDB(rhs.need_readDB) { }
+
+		GNET::Protocol *Clone() const { return new GConsignEnd(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << need_readDB;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> need_readDB;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

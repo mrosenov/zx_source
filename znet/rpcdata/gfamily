@@ -1,0 +1,158 @@
+#ifndef __GNET_GFAMILY_RPCDATA
+#define __GNET_GFAMILY_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfolk"
+#include "gfamilyskill"
+
+namespace GNET
+{
+	class GFamily : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int id;
+		Octets name;
+		unsigned int master;
+		unsigned int factionid;
+		std::vector<GFolk> member;
+		std::vector<GFamilySkill> skills;
+		std::vector<int> task_record;
+		Octets task_data;
+		Octets announce;
+		int createtime;
+		int jointime;
+		int deletetime;
+		int changenametime;
+		Octets namehis;
+		char reserved1;
+		short reserved2;
+		int reserved3;
+		int reserved4;
+
+	public:
+		GFamily (const Octets& l_task_data = Octets(0),const Octets& l_announce = Octets(0),int l_createtime = 0
+			,int l_jointime = 0,int l_deletetime = 0,int l_changenametime = 0
+			,const Octets& l_namehis = Octets(0),char l_reserved1 = 0,short l_reserved2 = 0
+			,int l_reserved3 = 0,int l_reserved4 = 0)
+			: task_data(l_task_data),announce(l_announce),createtime(l_createtime)
+			,jointime(l_jointime),deletetime(l_deletetime),changenametime(l_changenametime)
+			,namehis(l_namehis),reserved1(l_reserved1),reserved2(l_reserved2)
+			,reserved3(l_reserved3),reserved4(l_reserved4)
+		{
+		}
+
+		GFamily(const GFamily &rhs)
+			: id(rhs.id),name(rhs.name),master(rhs.master),
+			factionid(rhs.factionid),member(rhs.member),skills(rhs.skills),
+			task_record(rhs.task_record),task_data(rhs.task_data),announce(rhs.announce),
+			createtime(rhs.createtime),jointime(rhs.jointime),deletetime(rhs.deletetime),
+			changenametime(rhs.changenametime),namehis(rhs.namehis),reserved1(rhs.reserved1),
+			reserved2(rhs.reserved2),reserved3(rhs.reserved3),reserved4(rhs.reserved4) { }
+
+		Rpc::Data *Clone() const { return new GFamily(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFamily *r = dynamic_cast<const GFamily *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				name = r->name;
+				master = r->master;
+				factionid = r->factionid;
+				member = r->member;
+				skills = r->skills;
+				task_record = r->task_record;
+				task_data = r->task_data;
+				announce = r->announce;
+				createtime = r->createtime;
+				jointime = r->jointime;
+				deletetime = r->deletetime;
+				changenametime = r->changenametime;
+				namehis = r->namehis;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+			}
+			return *this;
+		}
+
+		GFamily& operator = (const GFamily &rhs)
+		{
+			const GFamily *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				name = r->name;
+				master = r->master;
+				factionid = r->factionid;
+				member = r->member;
+				skills = r->skills;
+				task_record = r->task_record;
+				task_data = r->task_data;
+				announce = r->announce;
+				createtime = r->createtime;
+				jointime = r->jointime;
+				deletetime = r->deletetime;
+				changenametime = r->changenametime;
+				namehis = r->namehis;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << name;
+			os << master;
+			os << factionid;
+			os << member;
+			os << skills;
+			os << task_record;
+			os << task_data;
+			os << announce;
+			os << createtime;
+			os << jointime;
+			os << deletetime;
+			os << changenametime;
+			os << namehis;
+			os << reserved1;
+			os << reserved2;
+			os << reserved3;
+			os << reserved4;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> name;
+			os >> master;
+			os >> factionid;
+			os >> member;
+			os >> skills;
+			os >> task_record;
+			os >> task_data;
+			os >> announce;
+			os >> createtime;
+			os >> jointime;
+			os >> deletetime;
+			os >> changenametime;
+			os >> namehis;
+			os >> reserved1;
+			os >> reserved2;
+			os >> reserved3;
+			os >> reserved4;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<GFamily>	GFamilyVector;
+};
+#endif

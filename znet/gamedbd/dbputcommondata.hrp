@@ -1,0 +1,69 @@
+
+#ifndef __GNET_DBPUTCOMMONDATA_HPP
+#define __GNET_DBPUTCOMMONDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gcommondata"
+#include "dbputcommondataarg"
+#include "integer"
+
+namespace GNET
+{
+
+class DBPutCommonData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbputcommondata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBPutCommonDataArg *arg = (DBPutCommonDataArg *)argument;
+		Integer *res = (Integer *)result;
+		LOG_TRACE( "DBPutCommonData, size=%d.\n", arg->data.size());
+		try
+		{
+			StorageEnv::Storage * ptable = StorageEnv::GetStorage("commondata");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream key;
+			try
+			{
+				for(std::vector<GCommonData>::iterator it=arg->data.begin(),ie=arg->data.end();it!=ie;++it)
+				{
+					int64_t key = (((int64_t)it->scole)<<32) + (int64_t)it->key;
+					ptable->insert(Marshal::OctetsStream()<<key,it->value,txn);
+				}
+				res->value = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBPutCommonData, size=%d, what=%s\n", arg->data.size(), e.what() );
+			res->value = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBPutCommonDataArg *arg = (DBPutCommonDataArg *)argument;
+		// Integer *res = (Integer *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

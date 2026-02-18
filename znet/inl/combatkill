@@ -1,0 +1,44 @@
+	public:
+		int mapid;
+		int killer;
+		int victim;
+		int victim_faction;
+		enum { PROTOCOL_TYPE = PROTOCOL_COMBATKILL };
+	public:
+		CombatKill() { type = PROTOCOL_COMBATKILL; }
+		CombatKill(void*) : Protocol(PROTOCOL_COMBATKILL) { }
+		CombatKill (int l_mapid,int l_killer,int l_victim = 0,
+			int l_victim_faction = 0)
+			 : mapid(l_mapid),killer(l_killer),victim(l_victim)
+			,victim_faction(l_victim_faction)
+		{
+			type = PROTOCOL_COMBATKILL;
+		}
+
+		CombatKill(const CombatKill &rhs)
+			: Protocol(rhs),mapid(rhs.mapid),killer(rhs.killer),victim(rhs.victim)
+			,victim_faction(rhs.victim_faction) { }
+
+		GNET::Protocol *Clone() const { return new CombatKill(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << mapid;
+			os << killer;
+			os << victim;
+			os << victim_faction;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> mapid;
+			os >> killer;
+			os >> victim;
+			os >> victim_faction;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

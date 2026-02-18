@@ -1,0 +1,91 @@
+
+#ifndef __GNET_DBHOMETOWNEXCHGMONEY_HPP
+#define __GNET_DBHOMETOWNEXCHGMONEY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhometownexchgmoneyarg"
+#include "dbhometownexchgmoneyres"
+#include "ghometowninfo"
+
+namespace GNET
+{
+
+class DBHometownExchgMoney : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhometownexchgmoney"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHometownExchgMoneyArg *arg = (DBHometownExchgMoneyArg *)argument;
+		DBHometownExchgMoneyRes *res = (DBHometownExchgMoneyRes *)result;
+
+		try
+		{
+			StorageEnv::CommonTransaction txn;
+			StorageEnv::Storage *pinv = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage *phometown = StorageEnv::GetStorage("hometown");
+
+			try
+			{
+				GRolePocket pocket;
+				Marshal::OctetsStream key;
+				key << arg->roleid;
+				Marshal::OctetsStream(pinv->find(key, txn)) >> pocket;
+				if (arg->syncdata.inventory.timestamp-pocket.timestamp <= 0)
+				{
+					Log::log(LOG_ERR, "DBHometownExchgMoney, timestamp mismatch, %d<%d\n", arg->syncdata.inventory.timestamp, pocket.timestamp);
+					res->retcode = ERR_VERIFYFAILED;
+					return;
+				}
+
+				GHometownInfo htinfo;
+				Marshal::OctetsStream htkey, htvalue;
+				htkey << ((int64_t)arg->roleid<<32);
+				if (phometown->find(htkey, htvalue, txn))
+					htvalue >> htinfo;
+				htinfo.player.money = arg->hometown_money+arg->amount;
+				phometown->insert(htkey, Marshal::OctetsStream()<<htinfo, txn);
+
+				arg->syncdata.inventory.money -= arg->amount*10000;
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				pinv->insert(key, Marshal::OctetsStream()<<arg->syncdata.inventory, txn);
+
+				res->retcode = ERR_SUCCESS;
+				GLog::action("hometownexchgmoney, roleid=%d, amount=%d, hometown_money=%lld, pocket_money=%d", arg->roleid, arg->amount, htinfo.player.money, arg->syncdata.inventory.money);
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException e(DB_OLD_VERSION);
+				txn.abort(e);
+				throw e;
+			}
+		}
+		catch (DbException &e)
+		{
+			Log::log(LOG_ERR, "DBHometownExchgMoney, error, roleid=%d, amount=%d, what=%s\n", arg->roleid, arg->amount, e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBHometownExchgMoneyArg *arg = (DBHometownExchgMoneyArg *)argument;
+		// DBHometownExchgMoneyRes *res = (DBHometownExchgMoneyRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

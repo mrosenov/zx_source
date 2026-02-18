@@ -1,0 +1,35 @@
+	public:
+		Octets data;
+		int lineid;
+		enum { PROTOCOL_TYPE = PROTOCOL_S2CLINEBROADCAST };
+	public:
+		S2CLineBroadcast() { type = PROTOCOL_S2CLINEBROADCAST; }
+		S2CLineBroadcast(void*) : Protocol(PROTOCOL_S2CLINEBROADCAST) { }
+		S2CLineBroadcast (const Octets& l_data,int l_lineid = -1)
+			 : data(l_data),lineid(l_lineid)
+		{
+			type = PROTOCOL_S2CLINEBROADCAST;
+		}
+
+		S2CLineBroadcast(const S2CLineBroadcast &rhs)
+			: Protocol(rhs),data(rhs.data),lineid(rhs.lineid) { }
+
+		GNET::Protocol *Clone() const { return new S2CLineBroadcast(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << data;
+			os << lineid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> data;
+			os >> lineid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 100; }
+
+		bool SizePolicy(size_t size) const { return size <= 102400; }

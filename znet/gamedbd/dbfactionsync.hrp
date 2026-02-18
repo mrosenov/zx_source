@@ -1,0 +1,98 @@
+
+#ifndef __GNET_DBFACTIONSYNC_HPP
+#define __GNET_DBFACTIONSYNC_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionsyncarg"
+#include "dbfactionsyncres"
+#include "gfactionbase"
+
+namespace GNET
+{
+
+class DBFactionSync : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionsync"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionSyncArg *arg = (DBFactionSyncArg *)argument;
+		DBFactionSyncRes *res = (DBFactionSyncRes *)result;
+
+		LOG_TRACE( "DBFactionSync,factionid=%d,prosperity=%d,population=%d,nimbus=%d,syncmask=%d,act=%d,act_uptime=%d",
+			arg->fid,arg->prosperity,arg->population, arg->nimbus, arg->syncmask, arg->activity, arg->act_uptime);
+		Marshal::OctetsStream key, krole;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pfactionbase = StorageEnv::GetStorage("factionbase");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GFactionInfo faction;
+
+				key << arg->fid;
+
+				Marshal::OctetsStream(pfaction->find(key, txn )) >> faction;
+				if(arg->population>0)
+					faction.population = arg->population;
+				faction.prosperity = arg->prosperity;
+				faction.contribution = arg->contribution;
+				faction.nimbus = arg->nimbus;
+				faction.charm = arg->charm;
+				faction.datagroup[FAC_DATA_MULTI_EXP] = arg->multi_exp;
+				faction.datagroup[FAC_DATA_MULTI_EXP_ENDTIME] = arg->multi_exp_endtime;
+				if (arg->syncmask & FAC_DIRTY_DYNAMIC)
+					faction.dynamic = arg->dynamic;
+				/*
+				if (arg->syncmask & FAC_DIRTY_MSGS)
+					faction.msgs = arg->msgs;
+					*/
+				pfaction->insert( key, Marshal::OctetsStream()<<faction, txn );
+				if (arg->syncmask & FAC_DIRTY_ACT)
+				{
+					Marshal::OctetsStream os_base;
+					GFactionBase base;
+					if (pfactionbase->find(key, os_base, txn))
+						os_base >> base;
+					base.activity = arg->activity;
+					base.act_uptime = arg->act_uptime;
+					pfactionbase->insert(key, Marshal::OctetsStream()<<base, txn);
+				}
+
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionSync, factionid=%d what=%s.",arg->fid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFactionSyncArg *arg = (DBFactionSyncArg *)argument;
+		// DBFactionSyncRes *res = (DBFactionSyncRes *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

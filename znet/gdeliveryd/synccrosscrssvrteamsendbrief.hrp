@@ -1,0 +1,50 @@
+
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSENDBRIEF_HPP
+#define __GNET_SYNCCROSSCRSSVRTEAMSENDBRIEF_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrosscrssvrteamsendbriefarg"
+#include "synccrosscrssvrteamsendbriefres"
+#include "crssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class SyncCrossCrssvrTeamsEndBrief : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrosscrssvrteamsendbrief"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsEndBriefArg *arg = (SyncCrossCrssvrTeamsEndBriefArg *)argument;
+		//SyncCrossCrssvrTeamsEndBriefRes *res = (SyncCrossCrssvrTeamsEndBriefRes *)result;
+
+		//Log::formatlog("SyncCrossCrssvrTeamsBrief","teamid=%d:team_b_score=%d:result=%d",arg->teamid, arg->team_b_score, arg->result);
+		CrssvrTeamsManager::Instance()->CalcTeamScore(arg->teamid, arg->team_b_score, arg->result);
+		CrssvrTeamsManager::Instance()->CalcRoleScore(arg->teamid, arg->team_roles, arg->team_b_score, arg->result);
+		Log::formatlog("SyncCrossCrssvrTeamsBrief", "SyncCrossCrssvrTeamsBrief teamid=%d:team_roles=%d:team_b_score=%d:result=%d",arg->teamid, arg->team_roles.size(), arg->team_b_score, arg->result);
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsEndBriefArg *arg = (SyncCrossCrssvrTeamsEndBriefArg *)argument;
+		SyncCrossCrssvrTeamsEndBriefRes *res = (SyncCrossCrssvrTeamsEndBriefRes *)result;
+		LOG_TRACE("SyncCrossCrssvrTeamsBrief teamid=%d:result=%d, retcode=%d",arg->teamid, arg->result, res->retcode);
+
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

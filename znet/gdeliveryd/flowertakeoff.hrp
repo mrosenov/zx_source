@@ -1,0 +1,212 @@
+
+#ifndef __GNET_FLOWERTAKEOFF_HPP
+#define __GNET_FLOWERTAKEOFF_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "localmacro.h"
+
+#include "flowertakeoffarg"
+#include "flowertakeoffres"
+#include "topflowermanager.h"
+#include "gdeliveryserver.hpp"
+#include "topflower_err.hpp"
+#include "topflowermsg_re.hpp"
+#include "open_controler.hpp"
+#include "mapuser.h"
+#include "maplinkserver.h"
+#include "gproviderserver.hpp"
+#include "game2au.hpp"
+#include "gauthclient.hpp"
+
+namespace GNET
+{
+
+class FlowerTakeOff : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "flowertakeoff"
+#undef	RPC_BASECLASS
+
+	int recv_roleid;
+	int send_roleid;
+	int recv_userid;
+	int send_userid;
+	Octets recv_rolename;
+	Octets send_rolename;
+	Octets lover_msg; // 爱情宣言
+	int add_count;
+	int send_gender;
+	int recv_gender;
+	unsigned int localsid;
+	unsigned int linksid;
+	void SendResult( int retcode )
+	{
+		GDeliveryServer::GetInstance()->Send(
+				linksid,
+				TopFlower_Err(retcode, localsid)
+			);	
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// FlowerTakeOffArg *arg = (FlowerTakeOffArg *)argument;
+		// FlowerTakeOffRes *res = (FlowerTakeOffRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//FlowerTakeOffArg *arg = (FlowerTakeOffArg *)argument;
+		FlowerTakeOffRes *res = (FlowerTakeOffRes *)result;
+		
+		DEBUG_PRINT("FlowerTakeOff rpc: retcode=%d, recv_userid:%d,send_userid:%d", res->retcode, recv_userid, send_userid);
+		
+		if(res->retcode==TOPFLOWER_FLOWER_TAKEOFF_SUCCESS) 
+		{
+			Thread::RWLock::RDScoped l(TopFlowerManager::Instance()->GetLocker());	
+			ETopFlowerStatus recv_status = TopFlowerManager::Instance()->UpdateTop(true, recv_roleid, recv_userid, add_count, recv_gender, recv_rolename);
+			ETopFlowerStatus send_status = TopFlowerManager::Instance()->UpdateTop(false, send_roleid, send_userid, add_count, send_gender, send_rolename);
+			if(recv_status == TOPFLOWER_NOTREADY || send_status == TOPFLOWER_NOTREADY)
+			{
+				// 告诉客户端未榜单未准备好
+				LOG_TRACE("flowertakeoff Client, TOPFLOWER_NOTREADY");
+				SendResult(S2C_TOPFLOWER_TOP_NOTREADY);
+				return;
+			}
+			else
+			{
+				// 终于成功了
+				LOG_TRACE("flowertakeoff Client, TOPLOWER_SUCCESS, zoneid:%d",GDeliveryServer::GetInstance()->zoneid);
+				// 通知自己
+				SendResult(S2C_TOPFLOWER_SUCESS);
+
+				// 通知或广播
+				TopFlowerMsg_Re _msg_re;
+				_msg_re.district_id = GDeliveryServer::GetInstance()->district_id;
+				_msg_re.zoneid = GDeliveryServer::GetInstance()->zoneid;
+				_msg_re.recv_rolename = recv_rolename;
+				_msg_re.send_rolename = send_rolename;
+				_msg_re.msg = lover_msg;
+				_msg_re.count = add_count;
+				_msg_re.localsid = localsid;
+
+				if(add_count>=1 && add_count<520)
+				{
+					Thread::RWLock::RDScoped l(UserContainer::GetInstance().GetLocker());
+					PlayerInfo* _pinfo = UserContainer::GetInstance().FindRoleOnline(recv_roleid);
+
+					if (_pinfo == NULL)
+					{
+						LOG_TRACE("flowertakeoff _pinfo is NULL, recv_roleid:%d, add_count:%d", recv_roleid, add_count);
+						return;
+					}
+
+					_msg_re.myself_roleid = recv_roleid;	
+					_msg_re.localsid = _pinfo->localsid;
+					GDeliveryServer::GetInstance()->Send(_pinfo->linksid, _msg_re);
+				}
+				else if(add_count>=520)
+				{
+					if(add_count < 9999)
+					{
+						// 本服广播
+						_msg_re.myself_roleid = recv_roleid;
+						LinkServer::GetInstance().BroadcastProtocol(_msg_re);
+						
+						Thread::RWLock::RDScoped l(UserContainer::GetInstance().GetLocker());
+						PlayerInfo* _pinfo = UserContainer::GetInstance().FindRoleOnline(recv_roleid);
+
+						if (_pinfo == NULL)
+						{
+							LOG_TRACE("flowertakeoff _pinfo is NULL, recv_roleid:%d, add_count:%d", recv_roleid, add_count);
+							return;
+						}
+
+
+						// 花瓣雨
+						FlowerGiftTake* rpc = (FlowerGiftTake*) Rpc::Call(RPC_FLOWERGIFTTAKE, FlowerGiftTakeArg(recv_roleid/*roleid*/, 1/*is buff*/, 4735/*buffid*/));
+						rpc->linksid = sid;
+						rpc->localsid = localsid;
+						rpc->roleid = recv_roleid;
+						GProviderServer::GetInstance()->DispatchProtocol(_pinfo->gameid, rpc);
+
+					}
+
+					if(add_count >= 9999)
+					{	
+						// 全区全服广播
+						Game2AU game2au;
+						game2au.qtype = AU_REQ_BROADCAST;
+						game2au.reserved = 0;
+						
+						Marshal::OctetsStream co;
+						co << recv_rolename << send_rolename << lover_msg << add_count << recv_roleid <<_msg_re.district_id << _msg_re.zoneid;
+						game2au.info = co;
+						
+						LOG_TRACE("flowertakeoff game2au.info.size:%d", game2au.info.size());
+						
+						GAuthClient::GetInstance()->SendProtocol(game2au);
+						
+						/*Marshal::OctetsStream os(game2au.info);
+						try
+						{
+							os >> recv_rolename >> send_rolename >> lover_msg >> add_count >> recv_roleid;
+						}
+						catch ( Marshal::Exception & )
+						{
+							Log::log(LOG_ERR, "au2game info.size %d unmarshal error",
+									game2au.info.size());
+							return;
+						}*/
+
+
+						
+						Thread::RWLock::RDScoped l(UserContainer::GetInstance().GetLocker());
+						PlayerInfo* _pinfo = UserContainer::GetInstance().FindRoleOnline(recv_roleid);
+
+						if (_pinfo == NULL)
+						{
+							LOG_TRACE("flowertakeoff _pinfo is NULL, recv_roleid:%d, add_count:%d", recv_roleid, add_count);
+							return;
+						}
+
+						// 花瓣雨
+						FlowerGiftTake* rpc = (FlowerGiftTake*) Rpc::Call(RPC_FLOWERGIFTTAKE, FlowerGiftTakeArg(recv_roleid/*roleid*/, 1/*is buff*/, 4736/*buffid*/));
+						rpc->linksid = sid;
+						rpc->localsid = localsid;
+						rpc->roleid = recv_roleid;
+						GProviderServer::GetInstance()->DispatchProtocol(_pinfo->gameid, rpc);
+	
+						Open_Controler _msg_controller;
+						_msg_controller.id = 788;
+						GProviderServer::GetInstance()->BroadcastProtocol(  _msg_controller );
+
+					}
+
+
+				}
+				else{}
+				
+				//SendResult(S2C_TOPFLOWER_SUCESS);				
+				return;
+
+			}
+
+		}
+		
+		if(res->retcode==TOPFLOWER_FLOWER_TAKEOFF_ERR)
+		{
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

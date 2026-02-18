@@ -1,0 +1,68 @@
+
+#ifndef __GNET_DBGETTOUCHORDER_HPP
+#define __GNET_DBGETTOUCHORDER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbgettouchorderarg"
+#include "dbgettouchorderres"
+
+#include "touchpointexchange_re.hpp"
+#include "gtouchpointexchange_re.hpp"
+
+namespace GNET
+{
+
+class DBGetTouchOrder : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgettouchorder"
+#undef	RPC_BASECLASS
+
+	int flag;
+	int count;
+	int points_need;
+	int linksid;
+	int localsid;
+	int gssid;
+	int userid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBGetTouchOrderArg *arg = (DBGetTouchOrderArg *)argument;
+		// DBGetTouchOrderRes *res = (DBGetTouchOrderRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBGetTouchOrderArg *arg = (DBGetTouchOrderArg *)argument;
+		DBGetTouchOrderRes *res = (DBGetTouchOrderRes *)result;
+
+		TouchPointExchange_Re client_re(-1, arg->roleid, flag, count, 0, localsid);
+		GTouchPointExchange_Re gs_re(-1, arg->roleid, flag, count);
+		if (res->retcode != ERR_SUCCESS)
+		{
+			client_re.retcode = gs_re.retcode = ERR_TOUCH_GEN_ORDERID;
+			GProviderServer::GetInstance()->Send(gssid, gs_re);
+			GDeliveryServer::GetInstance()->Send(linksid, client_re);
+			return;
+		}
+		Marshal::OctetsStream context;
+		context << arg->roleid << flag << count;
+		Marshal::OctetsStream info;
+		info << res->order << points_need << context << (int)0;
+		Game2AU req(userid, AU_REQ_TOUCH_POINT_EXCHG, info, 0);
+		GAuthClient::GetInstance()->SendProtocol(req);
+		Log::formatlog("touchpointexchange", "send to au, roleid %d userid %d orderid %lld flag %d count %d points_need %d", arg->roleid, userid, res->order, flag, count, points_need);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

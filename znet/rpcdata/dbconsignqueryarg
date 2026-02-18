@@ -1,0 +1,58 @@
+#ifndef __GNET_DBCONSIGNQUERYARG_RPCDATA
+#define __GNET_DBCONSIGNQUERYARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignQueryArg : public GNET::Rpc::Data
+	{
+	public:
+		std::vector<int64_t> snlist;
+
+	public:
+		DBConsignQueryArg ()
+		{
+		}
+
+		DBConsignQueryArg(const DBConsignQueryArg &rhs)
+			: snlist(rhs.snlist) { }
+
+		Rpc::Data *Clone() const { return new DBConsignQueryArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignQueryArg *r = dynamic_cast<const DBConsignQueryArg *>(&rhs);
+			if (r && r != this)
+			{
+				snlist = r->snlist;
+			}
+			return *this;
+		}
+
+		DBConsignQueryArg& operator = (const DBConsignQueryArg &rhs)
+		{
+			const DBConsignQueryArg *r = &rhs;
+			if (r && r != this)
+			{
+				snlist = r->snlist;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << snlist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> snlist;
+			return os;
+		}
+
+	};
+};
+#endif

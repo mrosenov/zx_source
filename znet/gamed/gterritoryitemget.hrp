@@ -1,0 +1,44 @@
+
+#ifndef __GNET_GTERRITORYITEMGET_HPP
+#define __GNET_GTERRITORYITEMGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gterritoryitemgetarg"
+#include "gterritoryitemgetres"
+
+void territory_item_get(int retcode, int roleid, int itemid, int itemcount, int money); 
+
+namespace GNET
+{
+
+class GTerritoryItemGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "gterritoryitemget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GTerritoryItemGetArg *arg = (GTerritoryItemGetArg *)argument;
+		// GTerritoryItemGetRes *res = (GTerritoryItemGetRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		 GTerritoryItemGetArg *arg = (GTerritoryItemGetArg *)argument;
+		 GTerritoryItemGetRes *res = (GTerritoryItemGetRes *)result;
+		 territory_item_get(res->retcode, arg->roleid, res->itemid, res->item_count, res->money);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSHOPLOGPUT_HPP
+#define __GNET_DBSHOPLOGPUT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbshoplogputarg"
+#include "dbshoplogputres"
+
+namespace GNET
+{
+
+class DBShopLogPut : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbshoplogput"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBShopLogPutArg *arg = (DBShopLogPutArg *)argument;
+		// DBShopLogPutRes *res = (DBShopLogPutRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBShopLogPutArg *arg = (DBShopLogPutArg *)argument;
+		// DBShopLogPutRes *res = (DBShopLogPutRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,149 @@
+
+#ifndef __GNET_GETROLEINFO_HPP
+#define __GNET_GETROLEINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "groleinfo"
+#include "roleinfores"
+#include "grolebase"
+#include "grolestatus"
+#include "grolepocket"
+
+namespace GNET
+{
+
+class GetRoleInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getroleinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		RoleInfoRes *res = (RoleInfoRes *)result;
+
+		Marshal::OctetsStream key, value_items, value_status, value_base2;
+
+		LOG_TRACE( "GetRoleInfo, roleid=%d.\n",arg->id);
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::AtomTransaction txn;
+			try
+			{
+				key << *arg;
+				GRoleBase	base;
+				Marshal::OctetsStream(pbase->find( key, txn )) >> base;
+
+				res->userid = base.userid;
+				if (res->userid == 0) res->userid = LOGICUID(base.id);
+
+				res->value.id = arg->id;
+				res->value.name = base.name;
+				res->value.faceid = base.faceid;
+				res->value.hairid = base.hairid;
+				res->value.gender = base.gender;
+				res->value.earid = base.earid;
+				res->value.tailid = base.tailid;
+				res->value.delete_flag = base.status;
+				res->value.create_time = base.create_time;
+				res->value.delete_time = base.delete_time;
+				res->value.lastlogin_time = base.lastlogin_time;
+				res->value.forbid.swap(base.forbid);
+				res->value.sectid = base.sectid;
+				res->value.spouse = base.spouse;
+				res->value.familyid = base.familyid;
+				res->value.title = base.title;
+				res->value.config_data = base.config_data;
+				res->value.help_states = base.help_states;
+				res->value.fashionid = base.fashionid;
+				res->value.ct_leave_cool = base.datagroup[KEY_DATAGOURP_ROLE_CT_COOLTIME];
+				res->value.ct_teamid = base.datagroup[KEY_DATAGOURP_ROLE_CT_TEAMID];			
+				res->value.ct_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE];
+				res->value.ct_last_max_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_MAX_SCORE];			
+				res->value.ct_last_punish_time = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME];
+				res->value.ct_last_battle_count = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_BATTLE_COUNT];
+				
+				//LOG_TRACE( "GetRoleInfo, roleid=%d, crssvrteams_teamid=%d",arg->id, res->value.ct_teamid);
+				if(GameDBManager::GetInstance()->MustDelete(base))
+					res->value.delete_flag =  _ROLE_STATUS_MUSTDEL; 
+				res->retcode = ERR_SUCCESS;
+
+				GRoleStatus	status;
+				if(pstatus->find( key, value_status, txn ))
+				{
+					value_status >> status;
+					//2013年12月24日更新的时候,误把32号地图配置在下界,更新后下界地图删除了32号图，需要将32号图上的玩家转移到1号地图
+					if (status.worldtag == 1 || (!GameDBManager::GetInstance()->IsCentralDB() && status.worldtag == 32))
+					{
+						//老河阳城没了 改成新河阳城地图
+						status.worldtag = 401;
+						status.posx = 368.f;
+						status.posy = 481.f;
+						status.posz = 348.f;
+						pstatus->insert(key, Marshal::OctetsStream()<<status, txn);
+					}
+					res->value.occupation = status.occupation;
+					res->value.level = status.level;
+					res->value.posx = status.posx;
+					res->value.posy = status.posy;
+					res->value.posz = status.posz;
+					res->value.worldtag = status.worldtag;
+					res->value.custom_status = status.custom_status;
+					res->value.charactermode = status.charactermode;
+					res->value.reborndata = status.reborndata;
+					res->value.reborn_cnt = status.reborndata.size()/sizeof(int);
+					res->value.cultivation = status.cultivation;
+				}
+
+				GRolePocket items;
+				if( pinventory->find( key, value_items, txn ) )
+				{
+					value_items >> items;
+					res->value.equipment.swap(items.equipment);
+				}
+				GRoleBase2 base2;
+				if ( pbase2->find(key, value_base2, txn))
+				{
+					value_base2 >> base2;
+					res->value.data_timestamp = base2.data_timestamp;
+					res->value.src_zoneid = base2.src_zoneid;
+					res->value.fac_coupon_add = base2.datagroup[BASE2_DATA_FAC_COUPON_ADD];
+				}
+				//!!!与PlayerIdentityMatch保持一致
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetRoleInfo, roleid=%d, what=%s\n", arg->id, e.what() );
+			res->retcode = ERR_DATANOTFIND;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

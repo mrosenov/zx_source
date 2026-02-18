@@ -1,0 +1,47 @@
+	public:
+		int roleid;
+		int fid;
+		int prop_type;
+		int delta;
+		int base_tag;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACBASEPROPCHANGE };
+	public:
+		FacBasePropChange() { type = PROTOCOL_FACBASEPROPCHANGE; }
+		FacBasePropChange(void*) : Protocol(PROTOCOL_FACBASEPROPCHANGE) { }
+		FacBasePropChange (int l_roleid,int l_fid = 0,int l_prop_type = 0,
+			int l_delta = 0,int l_base_tag = 0)
+			 : roleid(l_roleid),fid(l_fid),prop_type(l_prop_type)
+			,delta(l_delta),base_tag(l_base_tag)
+		{
+			type = PROTOCOL_FACBASEPROPCHANGE;
+		}
+
+		FacBasePropChange(const FacBasePropChange &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),fid(rhs.fid),prop_type(rhs.prop_type)
+			,delta(rhs.delta),base_tag(rhs.base_tag) { }
+
+		GNET::Protocol *Clone() const { return new FacBasePropChange(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << fid;
+			os << prop_type;
+			os << delta;
+			os << base_tag;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> fid;
+			os >> prop_type;
+			os >> delta;
+			os >> base_tag;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

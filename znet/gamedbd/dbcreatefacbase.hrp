@@ -1,0 +1,79 @@
+
+#ifndef __GNET_DBCREATEFACBASE_HPP
+#define __GNET_DBCREATEFACBASE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcreatefacbasearg"
+#include "dbcreatefacbaseres"
+#include "gfactionbase"
+
+namespace GNET
+{
+
+class DBCreateFacBase : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcreatefacbase"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCreateFacBaseArg *arg = (DBCreateFacBaseArg *)argument;
+		DBCreateFacBaseRes *res = (DBCreateFacBaseRes *)result;
+		Log::formatlog("factionbase", "faction %d base create", arg->fid);
+		try
+		{
+			StorageEnv::Storage * pfactionbase = StorageEnv::GetStorage("factionbase");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				GFactionBase base;
+				Marshal::OctetsStream key, os_base;
+				key << arg->fid;
+				if (pfactionbase->find(key, os_base, txn))
+					os_base >> base;
+				if (base.status_mask & ST_FAC_BASE_OPEN)
+				{
+					Log::log(LOG_ERR, "dbcreatefacbase repeat, status %d fid %d createtime %d", base.status_mask, arg->fid, base.createtime);
+					res->retcode = ERR_EXCEPTION;
+					return;
+				}
+				base.status_mask |= ST_FAC_BASE_OPEN;
+				base.createtime = time(NULL);
+				pfactionbase->insert(key, Marshal::OctetsStream()<<base, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "dbcreatefacbase, factionid=%d what=%s.",arg->fid, e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCreateFacBaseArg *arg = (DBCreateFacBaseArg *)argument;
+		// DBCreateFacBaseRes *res = (DBCreateFacBaseRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

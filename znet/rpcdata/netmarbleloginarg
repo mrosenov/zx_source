@@ -1,0 +1,77 @@
+#ifndef __GNET_NETMARBLELOGINARG_RPCDATA
+#define __GNET_NETMARBLELOGINARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class NetMarbleLoginArg : public GNET::Rpc::Data
+	{
+	public:
+		int userid;
+		int ipaddress;
+		int aid;
+		int zoneid;
+
+	public:
+		NetMarbleLoginArg (int l_userid = 0,int l_ipaddress = 0,int l_aid = -1
+			,int l_zoneid = -1)
+			: userid(l_userid),ipaddress(l_ipaddress),aid(l_aid)
+			,zoneid(l_zoneid)
+		{
+		}
+
+		NetMarbleLoginArg(const NetMarbleLoginArg &rhs)
+			: userid(rhs.userid),ipaddress(rhs.ipaddress),aid(rhs.aid),
+			zoneid(rhs.zoneid) { }
+
+		Rpc::Data *Clone() const { return new NetMarbleLoginArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const NetMarbleLoginArg *r = dynamic_cast<const NetMarbleLoginArg *>(&rhs);
+			if (r && r != this)
+			{
+				userid = r->userid;
+				ipaddress = r->ipaddress;
+				aid = r->aid;
+				zoneid = r->zoneid;
+			}
+			return *this;
+		}
+
+		NetMarbleLoginArg& operator = (const NetMarbleLoginArg &rhs)
+		{
+			const NetMarbleLoginArg *r = &rhs;
+			if (r && r != this)
+			{
+				userid = r->userid;
+				ipaddress = r->ipaddress;
+				aid = r->aid;
+				zoneid = r->zoneid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			os << ipaddress;
+			os << aid;
+			os << zoneid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			os >> ipaddress;
+			os >> aid;
+			os >> zoneid;
+			return os;
+		}
+
+	};
+};
+#endif

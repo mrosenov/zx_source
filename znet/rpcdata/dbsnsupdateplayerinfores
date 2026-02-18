@@ -1,0 +1,58 @@
+#ifndef __GNET_DBSNSUPDATEPLAYERINFORES_RPCDATA
+#define __GNET_DBSNSUPDATEPLAYERINFORES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSNSUpdatePlayerInfoRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DBSNSUpdatePlayerInfoRes ()
+		{
+		}
+
+		DBSNSUpdatePlayerInfoRes(const DBSNSUpdatePlayerInfoRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBSNSUpdatePlayerInfoRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSNSUpdatePlayerInfoRes *r = dynamic_cast<const DBSNSUpdatePlayerInfoRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBSNSUpdatePlayerInfoRes& operator = (const DBSNSUpdatePlayerInfoRes &rhs)
+		{
+			const DBSNSUpdatePlayerInfoRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,69 @@
+#ifndef __GNET_DBCHECKAWARDRES_RPCDATA
+#define __GNET_DBCHECKAWARDRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCheckAwardRes : public GNET::Rpc::Data
+	{
+	public:
+		unsigned char retcode;
+		unsigned char award_type;
+		std::vector<int> recaller_list;
+
+	public:
+		DBCheckAwardRes (unsigned char l_retcode = 0,unsigned char l_award_type = 0)
+			: retcode(l_retcode),award_type(l_award_type)
+		{
+		}
+
+		DBCheckAwardRes(const DBCheckAwardRes &rhs)
+			: retcode(rhs.retcode),award_type(rhs.award_type),recaller_list(rhs.recaller_list) { }
+
+		Rpc::Data *Clone() const { return new DBCheckAwardRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCheckAwardRes *r = dynamic_cast<const DBCheckAwardRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				award_type = r->award_type;
+				recaller_list = r->recaller_list;
+			}
+			return *this;
+		}
+
+		DBCheckAwardRes& operator = (const DBCheckAwardRes &rhs)
+		{
+			const DBCheckAwardRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				award_type = r->award_type;
+				recaller_list = r->recaller_list;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << award_type;
+			os << recaller_list;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> award_type;
+			os >> recaller_list;
+			return os;
+		}
+
+	};
+};
+#endif

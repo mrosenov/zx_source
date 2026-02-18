@@ -1,0 +1,59 @@
+#ifndef __GNET_DBCHECKAWARDARG_RPCDATA
+#define __GNET_DBCHECKAWARDARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCheckAwardArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+
+	public:
+		DBCheckAwardArg (int l_roleid = 0)
+			: roleid(l_roleid)
+		{
+		}
+
+		DBCheckAwardArg(const DBCheckAwardArg &rhs)
+			: roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new DBCheckAwardArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCheckAwardArg *r = dynamic_cast<const DBCheckAwardArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		DBCheckAwardArg& operator = (const DBCheckAwardArg &rhs)
+		{
+			const DBCheckAwardArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,71 @@
+	public:
+		unsigned int rid;
+		unsigned int factionid;
+		unsigned int familyid;
+		unsigned char title;
+		unsigned char level;
+		int contribution;
+		int devotion;
+		int battlescore;
+		int reborn_cnt;
+		unsigned int circleid;
+		Octets factionname;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYNCPLAYERFACTION };
+	public:
+		SyncPlayerFaction() { type = PROTOCOL_SYNCPLAYERFACTION; }
+		SyncPlayerFaction(void*) : Protocol(PROTOCOL_SYNCPLAYERFACTION) { }
+		SyncPlayerFaction (unsigned int l_rid = 0,unsigned int l_factionid = 0,unsigned int l_familyid = 0,
+			unsigned char l_title = 0,unsigned char l_level = 0,int l_contribution = 0,
+			int l_devotion = 0,int l_battlescore = 0,int l_reborn_cnt = 0,
+			unsigned int l_circleid = 0,const Octets& l_factionname = Octets())
+			 : rid(l_rid),factionid(l_factionid),familyid(l_familyid)
+			,title(l_title),level(l_level),contribution(l_contribution)
+			,devotion(l_devotion),battlescore(l_battlescore),reborn_cnt(l_reborn_cnt)
+			,circleid(l_circleid),factionname(l_factionname)
+		{
+			type = PROTOCOL_SYNCPLAYERFACTION;
+		}
+
+		SyncPlayerFaction(const SyncPlayerFaction &rhs)
+			: Protocol(rhs),rid(rhs.rid),factionid(rhs.factionid),familyid(rhs.familyid)
+			,title(rhs.title),level(rhs.level),contribution(rhs.contribution)
+			,devotion(rhs.devotion),battlescore(rhs.battlescore),reborn_cnt(rhs.reborn_cnt)
+			,circleid(rhs.circleid),factionname(rhs.factionname) { }
+
+		GNET::Protocol *Clone() const { return new SyncPlayerFaction(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << rid;
+			os << factionid;
+			os << familyid;
+			os << title;
+			os << level;
+			os << contribution;
+			os << devotion;
+			os << battlescore;
+			os << reborn_cnt;
+			os << circleid;
+			os << factionname;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> rid;
+			os >> factionid;
+			os >> familyid;
+			os >> title;
+			os >> level;
+			os >> contribution;
+			os >> devotion;
+			os >> battlescore;
+			os >> reborn_cnt;
+			os >> circleid;
+			os >> factionname;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

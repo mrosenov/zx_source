@@ -1,0 +1,119 @@
+#ifndef __GNET_MATRIXPASSWDRES2_RPCDATA
+#define __GNET_MATRIXPASSWDRES2_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "groleforbid"
+
+namespace GNET
+{
+	class MatrixPasswdRes2 : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int userid;
+		int algorithm;
+		Octets response;
+		Octets matrix;
+		Octets seed;
+		Octets pin;
+		int rtime;
+		int currenttime;
+		GRoleForbidVector forbid;
+		Octets last_used_elec_number;
+
+	public:
+		MatrixPasswdRes2 (int l_retcode = -1,int l_userid = -1,int l_algorithm = 0
+			,const Octets& l_response = Octets(0),const Octets& l_matrix = Octets(0),const Octets& l_seed = Octets(0)
+			,const Octets& l_pin = Octets(0),int l_rtime = 0,int l_currenttime = 0
+			,const Octets& l_last_used_elec_number = Octets())
+			: retcode(l_retcode),userid(l_userid),algorithm(l_algorithm)
+			,response(l_response),matrix(l_matrix),seed(l_seed)
+			,pin(l_pin),rtime(l_rtime),currenttime(l_currenttime)
+			,last_used_elec_number(l_last_used_elec_number)
+		{
+		}
+
+		MatrixPasswdRes2(const MatrixPasswdRes2 &rhs)
+			: retcode(rhs.retcode),userid(rhs.userid),algorithm(rhs.algorithm),
+			response(rhs.response),matrix(rhs.matrix),seed(rhs.seed),
+			pin(rhs.pin),rtime(rhs.rtime),currenttime(rhs.currenttime),
+			forbid(rhs.forbid),last_used_elec_number(rhs.last_used_elec_number) { }
+
+		Rpc::Data *Clone() const { return new MatrixPasswdRes2(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const MatrixPasswdRes2 *r = dynamic_cast<const MatrixPasswdRes2 *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				userid = r->userid;
+				algorithm = r->algorithm;
+				response = r->response;
+				matrix = r->matrix;
+				seed = r->seed;
+				pin = r->pin;
+				rtime = r->rtime;
+				currenttime = r->currenttime;
+				forbid = r->forbid;
+				last_used_elec_number = r->last_used_elec_number;
+			}
+			return *this;
+		}
+
+		MatrixPasswdRes2& operator = (const MatrixPasswdRes2 &rhs)
+		{
+			const MatrixPasswdRes2 *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				userid = r->userid;
+				algorithm = r->algorithm;
+				response = r->response;
+				matrix = r->matrix;
+				seed = r->seed;
+				pin = r->pin;
+				rtime = r->rtime;
+				currenttime = r->currenttime;
+				forbid = r->forbid;
+				last_used_elec_number = r->last_used_elec_number;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << userid;
+			os << algorithm;
+			os << response;
+			os << matrix;
+			os << seed;
+			os << pin;
+			os << rtime;
+			os << currenttime;
+			os << forbid;
+			os << last_used_elec_number;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> userid;
+			os >> algorithm;
+			os >> response;
+			os >> matrix;
+			os >> seed;
+			os >> pin;
+			os >> rtime;
+			os >> currenttime;
+			os >> forbid;
+			os >> last_used_elec_number;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,56 @@
+	public:
+		int battle_id;
+		int world_tag;
+		int owner;
+		int attacker;
+		int assistant;
+		int endtime;
+		unsigned char force;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDSIEGESTART };
+	public:
+		SendSiegeStart() { type = PROTOCOL_SENDSIEGESTART; }
+		SendSiegeStart(void*) : Protocol(PROTOCOL_SENDSIEGESTART) { }
+		SendSiegeStart (int l_battle_id,int l_world_tag = 0,int l_owner = 0,
+			int l_attacker = 0,int l_assistant = 0,int l_endtime = 0,
+			unsigned char l_force = 0)
+			 : battle_id(l_battle_id),world_tag(l_world_tag),owner(l_owner)
+			,attacker(l_attacker),assistant(l_assistant),endtime(l_endtime)
+			,force(l_force)
+		{
+			type = PROTOCOL_SENDSIEGESTART;
+		}
+
+		SendSiegeStart(const SendSiegeStart &rhs)
+			: Protocol(rhs),battle_id(rhs.battle_id),world_tag(rhs.world_tag),owner(rhs.owner)
+			,attacker(rhs.attacker),assistant(rhs.assistant),endtime(rhs.endtime)
+			,force(rhs.force) { }
+
+		GNET::Protocol *Clone() const { return new SendSiegeStart(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << battle_id;
+			os << world_tag;
+			os << owner;
+			os << attacker;
+			os << assistant;
+			os << endtime;
+			os << force;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> battle_id;
+			os >> world_tag;
+			os >> owner;
+			os >> attacker;
+			os >> assistant;
+			os >> endtime;
+			os >> force;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

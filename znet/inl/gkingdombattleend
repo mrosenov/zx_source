@@ -1,0 +1,38 @@
+	public:
+		char fieldtype;
+		int tagid;
+		int winnerid;
+		enum { PROTOCOL_TYPE = PROTOCOL_GKINGDOMBATTLEEND };
+	public:
+		GKingdomBattleEnd() { type = PROTOCOL_GKINGDOMBATTLEEND; }
+		GKingdomBattleEnd(void*) : Protocol(PROTOCOL_GKINGDOMBATTLEEND) { }
+		GKingdomBattleEnd (char l_fieldtype,int l_tagid,int l_winnerid = 0)
+			 : fieldtype(l_fieldtype),tagid(l_tagid),winnerid(l_winnerid)
+		{
+			type = PROTOCOL_GKINGDOMBATTLEEND;
+		}
+
+		GKingdomBattleEnd(const GKingdomBattleEnd &rhs)
+			: Protocol(rhs),fieldtype(rhs.fieldtype),tagid(rhs.tagid),winnerid(rhs.winnerid) { }
+
+		GNET::Protocol *Clone() const { return new GKingdomBattleEnd(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fieldtype;
+			os << tagid;
+			os << winnerid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fieldtype;
+			os >> tagid;
+			os >> winnerid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

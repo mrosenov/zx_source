@@ -1,0 +1,65 @@
+#ifndef __GNET_DBUNIQUEAUCTIONLOADRES_RPCDATA
+#define __GNET_DBUNIQUEAUCTIONLOADRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "guniqueauction"
+
+namespace GNET
+{
+	class DBUniqueAuctionLoadRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GUniqueAuction data;
+
+	public:
+		DBUniqueAuctionLoadRes (int l_retcode = 0,const GUniqueAuction& l_data = GUniqueAuction())
+			: retcode(l_retcode),data(l_data)
+		{
+		}
+
+		DBUniqueAuctionLoadRes(const DBUniqueAuctionLoadRes &rhs)
+			: retcode(rhs.retcode),data(rhs.data) { }
+
+		Rpc::Data *Clone() const { return new DBUniqueAuctionLoadRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBUniqueAuctionLoadRes *r = dynamic_cast<const DBUniqueAuctionLoadRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				data = r->data;
+			}
+			return *this;
+		}
+
+		DBUniqueAuctionLoadRes& operator = (const DBUniqueAuctionLoadRes &rhs)
+		{
+			const DBUniqueAuctionLoadRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				data = r->data;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> data;
+			return os;
+		}
+
+	};
+};
+#endif

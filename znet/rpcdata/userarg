@@ -1,0 +1,64 @@
+#ifndef __GNET_USERARG_RPCDATA
+#define __GNET_USERARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class UserArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int id;
+		int loginip;
+
+	public:
+		UserArg (unsigned int l_id = 0,int l_loginip = 0)
+			: id(l_id),loginip(l_loginip)
+		{
+		}
+
+		UserArg(const UserArg &rhs)
+			: id(rhs.id),loginip(rhs.loginip) { }
+
+		Rpc::Data *Clone() const { return new UserArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const UserArg *r = dynamic_cast<const UserArg *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				loginip = r->loginip;
+			}
+			return *this;
+		}
+
+		UserArg& operator = (const UserArg &rhs)
+		{
+			const UserArg *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				loginip = r->loginip;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << loginip;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> loginip;
+			return os;
+		}
+
+	};
+};
+#endif

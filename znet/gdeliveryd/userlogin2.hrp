@@ -1,0 +1,229 @@
+
+#ifndef __GNET_USERLOGIN2_HPP
+#define __GNET_USERLOGIN2_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "userloginarg2"
+#include "userloginres2"
+#include "gauthclient.hpp"
+#include "queryuserprivilege_re.hpp"
+#include "maplinkserver.h"
+#include "mapuser.h"
+#include "kickoutuser.hpp"
+#include "mapphonetoken.h"
+
+namespace GNET
+{
+
+class UserLogin2 : public ProxyRpc
+{
+	GNET::Protocol *Clone() const { return new UserLogin2(*this); }
+public:
+	enum { PROTOCOL_TYPE = RPC_USERLOGIN2 };
+	UserLogin2(Type type, Rpc::Data *argument, Rpc::Data *result) : ProxyRpc(type, argument, result)
+	{}
+	UserLogin2(const UserLogin2 &rhs) : ProxyRpc(rhs) {}
+	int PriorPolicy() const { return 101; }
+	bool SizePolicy(size_t size) const { return size <= 512; }
+	bool TimePolicy(int timeout) const {return timeout <= 30; }
+
+	void SendResponse(int retcode)
+	{
+		UserLoginRes2 res;
+		res.retcode = retcode;
+		SetResult(res);
+		SendToSponsor();
+	}
+
+	void TryLogin(UserLoginArg2 &arg)
+	{
+		// if GAuth is not available, let the user login directly
+		// step1. check out whether kickout user
+		bool useronline = false;
+		bool remoteonline=false;
+		unsigned int _localsid = 0;
+		UserContainer &container = UserContainer::GetInstance();
+		{
+			Thread::RWLock::RDScoped l(container.GetLocker());
+			UserInfo *pinfo = container.FindUser(arg.userid);
+			if (NULL != pinfo)
+			{
+				useronline = true;
+				_localsid = pinfo->localsid;
+				if (pinfo->status == _STATUS_REMOTE_LOGIN)
+					remoteonline = true;
+			}
+		}
+		if(useronline)
+		{
+			if(arg.blkickuser)
+			{
+				LOG_TRACE("UserLogin: kick out previous login, userid=%d", arg.userid);
+				KickoutUser ku(arg.userid, _localsid);
+				ku.Process(NULL, 0);
+			}
+			else
+			{
+				SendResponse(ERR_MULTILOGIN);
+				return;
+			}
+		}
+		container.UserLogin(arg.userid, proxy_sid, arg.localsid, false, 0, 0, arg.loginip, arg.iseckey, arg.oseckey, arg.accountname);
+		if (remoteonline)
+		{
+			UserInfo * pinfo = container.FindUser(arg.userid);
+			if (pinfo)
+				pinfo->status = _STATUS_REMOTE_LOGIN;
+		}
+		SendResponse(ERR_SUCCESS);
+		STAT_MIN5("Login", 1);
+	}
+	
+	bool CheckLoginCondition(Manager::Session::ID proxy_sid, UserLoginArg2 &arg)
+	{
+		// if game master forbid user login, login failed
+		{
+			if(!ForbidLogin::GetInstance().IsLoginAllowedGlobal())
+			{
+				SendResponse(ERR_SRVMAINTAIN);
+				return false;
+			}
+		}
+		{
+			GRoleForbid forbid;
+			if(ForbidLogin::GetInstance().GetForbidLogin(arg.userid, forbid))
+			{
+				GDeliveryServer::GetInstance()->Send(proxy_sid, AnnounceForbidInfo(arg.userid, arg.localsid, forbid));
+				SendResponse(ERR_ACCOUNTFORBID);
+				return false;
+			}
+		}
+		// if game server is handling user, login is forbidden
+		if(ForbiddenUsers::GetInstance().IsExist(arg.userid))
+		{
+			SendResponse(ERR_ACCOUNTLOCKED);
+			return false;
+		}
+		if(RemoteLoggingUsers::GetInstance().IsExist(arg.userid))
+		{
+			SendResponse(ERR_ACCOUNTLOCKED);
+			return false;
+		}
+		// if online user exceed max player number, refuse new connection
+		{
+			if(UserContainer::GetInstance().Size() >= UserContainer::GetInstance().GetPlayerLimit())
+			{
+				SendResponse(ERR_SERVEROVERLOAD);
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		UserLoginArg2 arg;
+		osArg >> arg;
+
+		if(GDeliveryServer::GetInstance()->GetAuthVersion() != 1)
+		{
+			Log::log(LOG_ERR, "gdelivery::not support userlogin2. User(%.*s)", arg.accountname.size(), (char *)arg.accountname.begin());
+			SendResponse(-1);
+			return false;
+		}
+
+		{
+			Thread::RWLock::RDScoped l(UserContainer::GetInstance().GetLocker());
+			UserInfo *pinfo = UserContainer::GetInstance().FindUser(arg.userid);
+			if(pinfo && !arg.blkickuser)
+			{
+				SendResponse(ERR_MULTILOGIN);
+				return false;
+			}
+		}
+		if(!CheckLoginCondition(proxy_sid, arg))
+			return false;
+
+		if(GAuthClient::GetInstance()->SendProtocol(*this))
+		{
+			return true;
+		}
+		else
+		{
+			TryLogin(arg);
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		UserLoginArg2 arg;
+		osArg >> arg;
+		UserLoginRes2 res;
+		osRes >> res;
+
+		LOG_TRACE("gdelivery::Userlogin2, user=%d, proxy=%d, localsid=%d, ret=%d, isgm=%d, func=%d, param=%d, free=%d, remain=%d, gender=%d, auth.size=%d elec_num.size %d\n", arg.userid, proxy_sid, arg.localsid, res.retcode, res.blIsGM, res.func, res.funcparm, res.free_time_left, res.remain_playtime, res.gender, res.auth.size(), arg.used_elec_number.size());
+
+		if(res.retcode != ERR_SUCCESS)
+			return;
+
+		// if user still in usermap, run kickoutuser
+		bool useronline = false;
+		bool remoteonline = false;
+		unsigned int _localsid = 0;
+		UserContainer &container = UserContainer::GetInstance();
+		{
+			Thread::RWLock::RDScoped l(container.GetLocker());
+			UserInfo *pinfo = container.FindUser(arg.userid);
+			if (NULL != pinfo)
+			{
+				useronline = true;
+				_localsid = pinfo->localsid;
+				if (pinfo->status == _STATUS_REMOTE_LOGIN)
+					remoteonline = true;
+			}
+		}
+		if(useronline)
+		{
+			LOG_TRACE("UserLogin2: kick out previous login, userid=%d", arg.userid);
+			KickoutUser ku(arg.userid, _localsid);
+			ku.Process(NULL, 0);
+		}
+		container.UserLogin(arg.userid, proxy_sid, arg.localsid, res.blIsGM, res.func, res.funcparm, arg.loginip, arg.iseckey, arg.oseckey, arg.accountname);
+		if (remoteonline)
+		{
+			UserInfo * pinfo = container.FindUser(arg.userid);
+			if (pinfo)
+				pinfo->status = _STATUS_REMOTE_LOGIN;
+		}
+
+		// if user is a GM, send user's privilege to all linkserver
+		if(0 != res.blIsGM)
+		{
+			Thread::RWLock::RDScoped l(container.GetLocker());
+			UserInfo *pinfo = container.FindUser(arg.userid);
+			if(pinfo == NULL)
+				return;
+
+			QueryUserPrivilege_Re re(arg.userid, res.auth);
+			pinfo->privileges = res.auth;
+			LinkServer::GetInstance().BroadcastProtocol(re);
+		}
+		
+		// announce sellpoint forbid info to client
+		STAT_MIN5("Login", 1);
+	}
+
+	void OnTimeout(const OctetsStream &osArg)
+	{
+		UserLoginArg2 arg;
+		osArg >> arg;
+		TryLogin(arg);
+	}
+};
+
+};
+#endif

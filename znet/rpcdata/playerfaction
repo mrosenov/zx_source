@@ -1,0 +1,70 @@
+#ifndef __GNET_PLAYERFACTION_RPCDATA
+#define __GNET_PLAYERFACTION_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class PlayerFaction : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		unsigned int factionid;
+		char title;
+
+	public:
+		PlayerFaction (int l_roleid = -1,unsigned int l_factionid = 0,char l_title = -1)
+			: roleid(l_roleid),factionid(l_factionid),title(l_title)
+		{
+		}
+
+		PlayerFaction(const PlayerFaction &rhs)
+			: roleid(rhs.roleid),factionid(rhs.factionid),title(rhs.title) { }
+
+		Rpc::Data *Clone() const { return new PlayerFaction(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PlayerFaction *r = dynamic_cast<const PlayerFaction *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				factionid = r->factionid;
+				title = r->title;
+			}
+			return *this;
+		}
+
+		PlayerFaction& operator = (const PlayerFaction &rhs)
+		{
+			const PlayerFaction *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				factionid = r->factionid;
+				title = r->title;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << factionid;
+			os << title;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> factionid;
+			os >> title;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<PlayerFaction>	PlayerFactionVector;
+};
+#endif

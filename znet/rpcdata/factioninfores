@@ -1,0 +1,88 @@
+#ifndef __GNET_FACTIONINFORES_RPCDATA
+#define __GNET_FACTIONINFORES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfactioninfo"
+
+namespace GNET
+{
+	class FactionInfoRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int cachesize;
+		GFactionInfo value;
+		int activity;
+		int act_uptime;
+		int base_status;
+
+	public:
+		FactionInfoRes (int l_retcode = -1,int l_cachesize = 0,int l_activity = 0
+			,int l_act_uptime = 0,int l_base_status = 0)
+			: retcode(l_retcode),cachesize(l_cachesize),activity(l_activity)
+			,act_uptime(l_act_uptime),base_status(l_base_status)
+		{
+		}
+
+		FactionInfoRes(const FactionInfoRes &rhs)
+			: retcode(rhs.retcode),cachesize(rhs.cachesize),value(rhs.value),
+			activity(rhs.activity),act_uptime(rhs.act_uptime),base_status(rhs.base_status) { }
+
+		Rpc::Data *Clone() const { return new FactionInfoRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FactionInfoRes *r = dynamic_cast<const FactionInfoRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				cachesize = r->cachesize;
+				value = r->value;
+				activity = r->activity;
+				act_uptime = r->act_uptime;
+				base_status = r->base_status;
+			}
+			return *this;
+		}
+
+		FactionInfoRes& operator = (const FactionInfoRes &rhs)
+		{
+			const FactionInfoRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				cachesize = r->cachesize;
+				value = r->value;
+				activity = r->activity;
+				act_uptime = r->act_uptime;
+				base_status = r->base_status;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << cachesize;
+			os << value;
+			os << activity;
+			os << act_uptime;
+			os << base_status;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> cachesize;
+			os >> value;
+			os >> activity;
+			os >> act_uptime;
+			os >> base_status;
+			return os;
+		}
+
+	};
+};
+#endif

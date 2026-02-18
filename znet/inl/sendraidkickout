@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		int index;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDRAIDKICKOUT };
+	public:
+		SendRaidKickout() { type = PROTOCOL_SENDRAIDKICKOUT; }
+		SendRaidKickout(void*) : Protocol(PROTOCOL_SENDRAIDKICKOUT) { }
+		SendRaidKickout (int l_roleid,int l_index = 0)
+			 : roleid(l_roleid),index(l_index)
+		{
+			type = PROTOCOL_SENDRAIDKICKOUT;
+		}
+
+		SendRaidKickout(const SendRaidKickout &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),index(rhs.index) { }
+
+		GNET::Protocol *Clone() const { return new SendRaidKickout(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << index;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> index;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 16; }

@@ -1,0 +1,71 @@
+#ifndef __GNET_DBCONSIGNPREPOSTROLERES_RPCDATA
+#define __GNET_DBCONSIGNPREPOSTROLERES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gconsigndb"
+#include "gconsignrole"
+
+namespace GNET
+{
+	class DBConsignPrePostRoleRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GConsignDB detail;
+		GConsignRole roledetail;
+
+	public:
+		DBConsignPrePostRoleRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBConsignPrePostRoleRes(const DBConsignPrePostRoleRes &rhs)
+			: retcode(rhs.retcode),detail(rhs.detail),roledetail(rhs.roledetail) { }
+
+		Rpc::Data *Clone() const { return new DBConsignPrePostRoleRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignPrePostRoleRes *r = dynamic_cast<const DBConsignPrePostRoleRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				detail = r->detail;
+				roledetail = r->roledetail;
+			}
+			return *this;
+		}
+
+		DBConsignPrePostRoleRes& operator = (const DBConsignPrePostRoleRes &rhs)
+		{
+			const DBConsignPrePostRoleRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				detail = r->detail;
+				roledetail = r->roledetail;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << detail;
+			os << roledetail;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> detail;
+			os >> roledetail;
+			return os;
+		}
+
+	};
+};
+#endif

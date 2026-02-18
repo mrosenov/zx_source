@@ -1,0 +1,1246 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.5.2	//
+ARCFOURSECURITY	security.h	/^enum { RANDOM = 0, NULLSECURITY = 1, ARCFOURSECURITY = 2, MD5HASH = 3, HMAC_MD5HASH = 4, $/;"	e	enum:GNET::<anonymous>
+ARCFourSecurity	security.h	/^	ARCFourSecurity() { }$/;"	f	class:GNET::ARCFourSecurity
+ARCFourSecurity	security.h	/^	ARCFourSecurity(Type type) : Security(type) { }$/;"	f	class:GNET::ARCFourSecurity
+ARCFourSecurity	security.h	/^	ARCFourSecurity(const ARCFourSecurity &rhs) : Security(rhs) { memcpy(context, rhs.context, sizeof(context)); }$/;"	f	class:GNET::ARCFourSecurity
+ARCFourSecurity	security.h	/^	ARCFourSecurity(const ARCFourSecurity &rhs) : Security(rhs), index1(rhs.index1), index2(rhs.index2)$/;"	f	class:GNET::ARCFourSecurity
+ARCFourSecurity	security.h	/^class ARCFourSecurity : public Security$/;"	c	namespace:GNET
+AbortSession	protocol.h	/^		void AbortSession(const SockAddr &sa, Session *)$/;"	f	class:GNET::Protocol::Manager
+AbstractBinder	binder.h	/^	AbstractBinder(const AbstractBinder &rhs)$/;"	f	class:GNET::AbstractBinder
+AbstractBinder	binder.h	/^	explicit AbstractBinder(Type type, size_t max) : Protocol(type), maxsize(max), locker_vector("Binder::locker_vector")$/;"	f	class:GNET::AbstractBinder
+AbstractBinder	binder.h	/^class AbstractBinder : public Protocol$/;"	c	namespace:GNET
+AcceptSize	protocol.h	/^			size_t AcceptSize() const { return state->SetSize(); }$/;"	f	class:GNET::Protocol::Manager::Session
+AccumulateSend	timermanager.h	/^		bool AccumulateSend( Protocol::Manager::Session::ID sid,const Protocol & p )$/;"	f	class:GNET::TimerManager
+AccumulateSend	timermanager.h	/^		bool AccumulateSend( Protocol::Manager::Session::ID sid,const Protocol* p )$/;"	f	class:GNET::TimerManager
+AccumulateSend	timermanager.h	/^		void AccumulateSend( _Iterator __first, _Iterator __last, const Protocol& p, _Function __f)$/;"	f	class:GNET::TimerManager
+AccumulateSend	timermanager.h	/^		void AccumulateSend( _Iterator __first, _Iterator __last, const Protocol* p, _Function __f)$/;"	f	class:GNET::TimerManager
+ActiveIO	activeio.h	/^	ActiveIO(int x, const SockAddr &saddr, const NetSession &s, Type t) : PollIO(x), type(t), assoc_session(s.Clone()), sa(saddr)$/;"	f	class:GNET::ActiveIO
+ActiveIO	activeio.h	/^	ActiveIO(int x, const SockAddr &saddr, const NetSession &s, Type t, variant conf) : PollIO(x), type(t), assoc_session(s.Clone()), sa(saddr)$/;"	f	class:GNET::ActiveIO
+ActiveIO	activeio.h	/^class ActiveIO : PollIO$/;"	c	namespace:GNET
+AddSession	protocol.h	/^		void AddSession(Session::ID sid, Session *session)$/;"	f	class:GNET::Protocol::Manager
+Arg	statefulrpc.h	/^	template<typename Arg, typename Res>$/;"	m	class:GNET::StatefulRpc
+Arg	statefulrpc.h	/^template<int callid, typename Arg, typename Res>$/;"	v
+Arg	statefulrpc.h	/^template<typename Arg, typename Res>$/;"	v
+Argument	rpc.h	/^		Argument() { \/* for create seed *\/ }$/;"	f	struct:GNET::Rpc::Argument
+Argument	rpc.h	/^		explicit Argument(const data_type & _data) : data(_data) { }$/;"	f	struct:GNET::Rpc::Argument
+Argument	rpc.h	/^	struct Argument : public Data$/;"	s	class:GNET::Rpc
+AutoPtr	protocol.h	/^		explicit AutoPtr(Protocol * _p) : p(_p) { }$/;"	f	class:GNET::Protocol::AutoPtr
+AutoPtr	protocol.h	/^	class AutoPtr$/;"	c	class:GNET::Protocol
+BE_ATTACKED	coordinate.cpp	/^		BE_ATTACKED,$/;"	e	file:
+BE_HURT	coordinate.cpp	/^		BE_HURT,$/;"	e	file:
+BE_KILLED	coordinate.cpp	/^		BE_KILLED,$/;"	e	file:
+BE_SKILL_ATTACKED	coordinate.cpp	/^		BE_SKILL_ATTACKED,$/;"	e	file:
+Base64Decoder	base64.h	/^	Base64Decoder(){ }$/;"	f	class:GNET::Base64Decoder
+Base64Decoder	base64.h	/^	Base64Decoder(const Base64Decoder &rhs){ }$/;"	f	class:GNET::Base64Decoder
+Base64Decoder	base64.h	/^class Base64Decoder$/;"	c	namespace:GNET
+Base64Encoder	base64.h	/^	Base64Encoder(){ }$/;"	f	class:GNET::Base64Encoder
+Base64Encoder	base64.h	/^	Base64Encoder(const Base64Encoder &rhs){ }$/;"	f	class:GNET::Base64Encoder
+Base64Encoder	base64.h	/^class Base64Encoder$/;"	c	namespace:GNET
+BinderMap	timermanager.h	/^		typedef	gnet_map<Session::ID, AbstractBinder*>	BinderMap;$/;"	t	class:GNET::TimerManager
+Bundle	timeactiveio.h	/^			Bundle( int s, int timo ) : sock(dup(s)), timeout(timo) { }$/;"	f	class:GNET::TimeActiveIO::Checker::Bundle
+Bundle	timeactiveio.h	/^		class Bundle$/;"	c	class:GNET::TimeActiveIO::Checker
+CLEAR_EMBEDDED_CHIP	coordinate.cpp	/^		CLEAR_EMBEDDED_CHIP,                    $/;"	e	file:
+CLOSE_ACTIVE	netio.h	/^	CLOSE_ACTIVE     = 0x40000, \/\/ 本端主动关闭连接$/;"	e	enum:GNET::<anonymous>
+CLOSE_EXCEPTION	netio.h	/^	CLOSE_EXCEPTION  = 0x80000, \/\/ 处理协议时产生异常$/;"	e	enum:GNET::<anonymous>
+CLOSE_EXPIRE	netio.h	/^	CLOSE_EXPIRE     = 0x70000, \/\/ 本端由于TTL超时主动关闭$/;"	e	enum:GNET::<anonymous>
+CLOSE_ONERROR	netio.h	/^	CLOSE_ONERROR    = 0x50000, \/\/ 协议解析或者状态错误$/;"	e	enum:GNET::<anonymous>
+CLOSE_ONRECV	netio.h	/^	CLOSE_ONRECV     = 0x10000, \/\/ 对端调用close正常关闭$/;"	e	enum:GNET::<anonymous>
+CLOSE_ONRESET	netio.h	/^	CLOSE_ONRESET    = 0x20000, \/\/ 连接被对端reset$/;"	e	enum:GNET::<anonymous>
+CLOSE_ONSEND	netio.h	/^	CLOSE_ONSEND     = 0x30000, \/\/ 发送时发生错误$/;"	e	enum:GNET::<anonymous>
+CLOSE_TIMEOUT	netio.h	/^	CLOSE_TIMEOUT    = 0x60000, \/\/ Session状态超时$/;"	e	enum:GNET::<anonymous>
+COMPRESSARCFOURSECURITY	security.h	/^	COMPRESSARCFOURSECURITY = 5, DECOMPRESSARCFOURSECURITY = 6, SHA1HASH = 7 };$/;"	e	enum:GNET::<anonymous>
+CONCURRENT_EMOTE_REQUEST	coordinate.cpp	/^		CONCURRENT_EMOTE_REQUEST, $/;"	e	file:
+COST_SKILL_POINT	coordinate.cpp	/^		COST_SKILL_POINT,$/;"	e	file:
+CTRL_OFF_EOB	streamcompress.h	/^	enum { CTRL_OFF_EOB = 0, MPPC_HIST_LEN = 8192 };$/;"	e	enum:GNET::Compress::<anonymous>
+CTRL_OFF_EOB	streamcompress.h	/^	enum { CTRL_OFF_EOB = 0, MPPC_HIST_LEN = 8192 };$/;"	e	enum:GNET::Decompress::<anonymous>
+Call	rpc.h	/^	static Rpc *Call(Type type) { return Call(type, Argument<NoneData>()); }$/;"	f	class:GNET::Rpc
+Call	rpc.h	/^	static Rpc *Call(Type type, const Data &arg) { return Call(type, &arg); }$/;"	f	class:GNET::Rpc
+Call	rpc.h	/^	static Rpc *Call(Type type, const Data *arg)$/;"	f	class:GNET::Rpc
+Call	rpc.h	/^	static Rpc *Call(Type type, const Octets & arg) { return Call(type, Argument<Octets>(arg)); }$/;"	f	class:GNET::Rpc
+Call	statefulrpc.h	/^	Rpc* Call()$/;"	f	class:GNET::RpcClientTask
+Challenge	login.h	/^	Challenge(Type type) : Protocol(type) { }$/;"	f	class:GNET::Challenge
+Challenge	login.h	/^	Challenge(const Challenge &rhs) : Protocol(rhs) { }$/;"	f	class:GNET::Challenge
+Challenge	login.h	/^class Challenge : public Protocol$/;"	c	namespace:GNET
+ChangeState	protocol.h	/^			void ChangeState(const State *newstate)$/;"	f	class:GNET::Protocol::Manager::Session
+ChangeState	protocol.h	/^		bool ChangeState(Session::ID id, Session::State *state)$/;"	f	class:GNET::Protocol::Manager
+CheckPolicy	protocol.h	/^	static void CheckPolicy(Type type, unsigned int size, const Manager::Session::Stream &is)$/;"	f	class:GNET::Protocol
+CheckSessionTimePolicy	protocol.h	/^		virtual void CheckSessionTimePolicy()$/;"	f	class:GNET::Protocol::Manager
+CheckTimeout	timeactiveio.h	/^			bool CheckTimeout()$/;"	f	class:GNET::TimeActiveIO::Checker::Bundle
+CheckUnknownProtocol	protocol.h	/^		virtual bool CheckUnknownProtocol(Session::ID , Protocol::Type , unsigned int ) { return false; }$/;"	f	class:GNET::Protocol::Manager
+Checker	timeactiveio.h	/^		Checker() : locker_map("TimeActiveIO::Checker::locker_map") { Timer::Attach( this ); }$/;"	f	class:GNET::TimeActiveIO::Checker
+Checker	timeactiveio.h	/^	class Checker : Timer::Observer$/;"	c	class:GNET::TimeActiveIO
+Client	protocol.h	/^	static ActiveIO  *Client(Manager *manager) { return  ActiveIO::Open(Manager::Session(manager)); }$/;"	f	class:GNET::Protocol
+Client	protocol.h	/^	static ActiveIO  *Client(Manager *manager, variant conf) { return  ActiveIO::Open(Manager::Session(manager), conf); }$/;"	f	class:GNET::Protocol
+Client	protocol.h	/^	static TimeActiveIO *Client(Manager *manager, int timo) { return TimeActiveIO::Open(Manager::Session(manager), timo); }$/;"	f	class:GNET::Protocol
+Client	protocol.h	/^	static TimeActiveIO *Client(Manager *manager, variant conf, int timo) { return TimeActiveIO::Open(Manager::Session(manager), conf, timo); }$/;"	f	class:GNET::Protocol
+Client	rpc.h	/^	virtual void Client(Data *argument, Data *result) {  }$/;"	f	class:GNET::Rpc
+Client	rpc.h	/^	virtual void Client(Data *argument, Data *result, Manager *manager, Manager::Session::ID sid)$/;"	f	class:GNET::Rpc
+ClientManager	client.cpp	/^	ClientManager(const char *name, const char *pwd) : identity(name), password(pwd) { }$/;"	f	class:ClientManager
+ClientManager	client.cpp	/^class ClientManager : public Protocol::Manager$/;"	c	file:
+Clone	binder.h	/^	Protocol *Clone() const { return new CompressBinder(*this); }$/;"	f	class:GNET::CompressBinder
+Clone	binder.h	/^	Protocol *Clone() const { return new ProtocolBinder(*this); }$/;"	f	class:GNET::ProtocolBinder
+Clone	login.h	/^	Protocol *Clone() const { return new Challenge(*this); }$/;"	f	class:GNET::Challenge
+Clone	login.h	/^	Protocol *Clone() const { return new Response(*this); }$/;"	f	class:GNET::Response
+Clone	protocol.h	/^			NetSession *Clone () const	{ return new Session(*this); }$/;"	f	class:GNET::Protocol::Manager::Session
+Clone	proxyrpc.h	/^	Protocol *Clone() const { return new ProxyRpc(*this); }$/;"	f	class:GNET::ProxyRpc
+Clone	rpc.h	/^		virtual Data *Clone() const { return new Argument(*this); }$/;"	f	struct:GNET::Rpc::Argument
+Clone	rpc.h	/^		virtual Data *Clone() const { return new Result(*this); }$/;"	f	struct:GNET::Rpc::Result
+Clone	security.h	/^	Security *Clone() const { return new ARCFourSecurity(*this); }$/;"	f	class:GNET::ARCFourSecurity
+Clone	security.h	/^	Security *Clone() const { return new CompressARCFourSecurity(*this); }$/;"	f	class:GNET::CompressARCFourSecurity
+Clone	security.h	/^	Security *Clone() const { return new DecompressARCFourSecurity(*this); }$/;"	f	class:GNET::DecompressARCFourSecurity
+Clone	security.h	/^	Security *Clone() const { return new HMAC_MD5Hash(*this); }$/;"	f	class:GNET::HMAC_MD5Hash
+Clone	security.h	/^	Security *Clone() const { return new MD5Hash(*this); }$/;"	f	class:GNET::MD5Hash
+Clone	security.h	/^	Security *Clone() const { return new NullSecurity(*this); }$/;"	f	class:GNET::NullSecurity
+Clone	security.h	/^	Security *Clone() const { return new Random(*this); }$/;"	f	class:GNET::Random
+Clone	security.h	/^	Security *Clone() const { return new SHA1Hash(*this); }$/;"	f	class:GNET::SHA1Hash
+Close	netio.h	/^	void Close( int code=0, bool locked=false)$/;"	f	class:GNET::NetSession
+Close	pollio.h	/^	void Close()$/;"	f	class:GNET::PollIO
+Close	protocol.h	/^		bool Close(Session::ID id, int status=CLOSE_ACTIVE)$/;"	f	class:GNET::Protocol::Manager
+ClrRequest	proxyrpc.h	/^		void ClrRequest() { is_request = 0; }$/;"	f	class:GNET::ProxyRpc::XID
+ClrRequest	rpc.h	/^		void ClrRequest() { is_request = 0; }$/;"	f	class:GNET::Rpc::XID
+Compress	compress.h	/^static void Compress( Octets & os_src, Octets & os_com )$/;"	f	namespace:GNET
+Compress	streamcompress.h	/^	Compress() : histptr(history), legacy_in(0) { memset (hash, 0, sizeof(hash));}$/;"	f	class:GNET::Compress
+Compress	streamcompress.h	/^	Compress(const Compress& rhs) : histptr(history + (rhs.histptr - rhs.history)), legacy_in(rhs.legacy_in)$/;"	f	class:GNET::Compress
+Compress	streamcompress.h	/^class Compress$/;"	c	namespace:GNET
+CompressARCFourSecurity	security.h	/^	CompressARCFourSecurity(){ }$/;"	f	class:GNET::CompressARCFourSecurity
+CompressARCFourSecurity	security.h	/^	CompressARCFourSecurity(Type type) : Security(type){ }$/;"	f	class:GNET::CompressARCFourSecurity
+CompressARCFourSecurity	security.h	/^class CompressARCFourSecurity : public Security$/;"	c	namespace:GNET
+CompressBinder	binder.h	/^	CompressBinder(const CompressBinder &rhs) : AbstractBinder(rhs) { }$/;"	f	class:GNET::CompressBinder
+CompressBinder	binder.h	/^	explicit CompressBinder(Type type=PROTOCOL_COMPRESSBINDER, size_t maxsize = 0) : AbstractBinder(type, maxsize) { }$/;"	f	class:GNET::CompressBinder
+CompressBinder	binder.h	/^class CompressBinder : public AbstractBinder$/;"	c	namespace:GNET
+CompressSend	timermanager.h	/^		bool CompressSend( Protocol::Manager::Session::ID sid,const Protocol & p )$/;"	f	class:GNET::TimerManager
+CompressSend	timermanager.h	/^		bool CompressSend( Protocol::Manager::Session::ID sid,const Protocol * p )$/;"	f	class:GNET::TimerManager
+Convert	base64.h	/^	static void Convert(Octets& out, const Octets& in) $/;"	f	class:GNET::Base64Decoder
+Convert	base64.h	/^	static void Convert(Octets& out, const Octets& in) $/;"	f	class:GNET::Base64Encoder
+Coordinate	coordinate.h	/^class Coordinate$/;"	c	namespace:GNET
+Create	protocol.h	/^	static Protocol *Create(Type type)$/;"	f	class:GNET::Protocol
+Create	security.h	/^	static Security* Create(Type type)$/;"	f	class:GNET::Security
+D	protocol.h	/^			typedef gnet_map<ID, Session *> Map;$/;"	t	class:GNET::Protocol::Manager::Session
+DECOMPOSE_END	coordinate.cpp	/^		DECOMPOSE_END,$/;"	e	file:
+DECOMPOSE_START	coordinate.cpp	/^		DECOMPOSE_START,                        $/;"	e	file:
+DECOMPRESSARCFOURSECURITY	security.h	/^	COMPRESSARCFOURSECURITY = 5, DECOMPRESSARCFOURSECURITY = 6, SHA1HASH = 7 };$/;"	e	enum:GNET::<anonymous>
+DECOMP_ERROR	mppc.h	6;"	d
+DEFAULTIOBUF	netio.h	/^	enum { DEFAULTIOBUF = 8192 };$/;"	e	enum:GNET::NetSession::<anonymous>
+DGRAM	activeio.h	/^	enum Type { STREAM, DGRAM };$/;"	e	enum:GNET::ActiveIO::Type
+DGRAM	passiveio.h	/^	enum Type { STREAM, DGRAM };$/;"	e	enum:GNET::PassiveIO::Type
+DISPEL_ROOT	coordinate.cpp	/^		DISPEL_ROOT,$/;"	e	file:
+DO_CONCURRENT_EMOTE	coordinate.cpp	/^		DO_CONCURRENT_EMOTE,$/;"	e	file:
+Data	rpc.h	/^	struct Data : public Marshal$/;"	s	class:GNET::Rpc
+Decode	protocol.h	/^	static Protocol *Decode(const Manager::Session::Stream &is)$/;"	f	class:GNET::Protocol
+Decompress	streamcompress.h	/^	Decompress() : histptr(history), l(0) { } $/;"	f	class:GNET::Decompress
+Decompress	streamcompress.h	/^	Decompress(const Decompress& rhs) : histptr(history + (rhs.histptr - rhs.history)), l(rhs.l), $/;"	f	class:GNET::Decompress
+Decompress	streamcompress.h	/^class Decompress$/;"	c	namespace:GNET
+DecompressARCFourSecurity	security.h	/^	DecompressARCFourSecurity() { }$/;"	f	class:GNET::DecompressARCFourSecurity
+DecompressARCFourSecurity	security.h	/^	DecompressARCFourSecurity(Type type) : Security(type) { }$/;"	f	class:GNET::DecompressARCFourSecurity
+DecompressARCFourSecurity	security.h	/^class DecompressARCFourSecurity : public Security$/;"	c	namespace:GNET
+DelSession	protocol.h	/^		void DelSession(Session::ID sid, int status)$/;"	f	class:GNET::Protocol::Manager
+Delivery	proxyrpc.h	/^	virtual bool Delivery(Manager::Session::ID proxy_sid, 		OctetsStream &osArg) { return Delivery(proxy_sid,(const OctetsStream &) osArg); }$/;"	f	class:GNET::ProxyRpc
+Delivery	proxyrpc.h	/^	virtual bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream &osArg) { return false; }$/;"	f	class:GNET::ProxyRpc
+Destroy	netio.h	/^	virtual void Destroy() { delete this; }$/;"	f	class:GNET::NetSession
+Destroy	protocol.h	/^	virtual void Destroy() { delete this; }$/;"	f	class:GNET::Protocol
+Destroy	rpc.h	/^		virtual void Destroy() { delete this; }$/;"	f	struct:GNET::Rpc::Data
+Destroy	security.h	/^	virtual void Destroy() { delete this; }$/;"	f	class:GNET::Security
+DgramClientIO	netio.h	/^	DgramClientIO(int fd, NetSession *s, const SockAddr &sa) : NetIO(fd, s), peer(sa) $/;"	f	class:GNET::DgramClientIO
+DgramClientIO	netio.h	/^class DgramClientIO : public NetIO$/;"	c	namespace:GNET
+DgramServerIO	netio.h	/^	DgramServerIO(int fd, NetSession *s) : NetIO(fd, s)$/;"	f	class:GNET::DgramServerIO
+DgramServerIO	netio.h	/^class DgramServerIO : public NetIO$/;"	c	namespace:GNET
+Digest	security.h	/^	static Octets Digest(const Octets &o)$/;"	f	class:GNET::MD5Hash
+Digest	security.h	/^	static Octets Digest(const Octets &o)$/;"	f	class:GNET::SHA1Hash
+Dispatch	protocol.h	/^		static void Dispatch(Manager *manager, Manager::Session::ID sid, Protocol *protocol)$/;"	f	class:GNET::Protocol::Task
+DispatchUnknownProtocol	protocol.h	/^		virtual void DispatchUnknownProtocol(Session::ID , Protocol::Type , const OctetsStream & ) { }$/;"	f	class:GNET::Protocol::Manager
+EMBED_ITEM	coordinate.cpp	/^		EMBED_ITEM,$/;"	e	file:
+ENCHANT_RESULT	coordinate.cpp	/^		ENCHANT_RESULT,$/;"	e	file:
+EQUIPMENT_DAMAGED	coordinate.cpp	/^		EQUIPMENT_DAMAGED, $/;"	e	file:
+EQUIPMENT_DATA	coordinate.cpp	/^		EQUIPMENT_DATA,$/;"	e	file:
+EQUIPMENT_INFO_CHANGED	coordinate.cpp	/^		EQUIPMENT_INFO_CHANGED,$/;"	e	file:
+EQUIP_ITEM	coordinate.cpp	/^		EQUIP_ITEM,$/;"	e	file:
+ERROR_MESSAGE	coordinate.cpp	/^		ERROR_MESSAGE,$/;"	e	file:
+EXCHANGE_EQUIPMENT_ITEM	coordinate.cpp	/^		EXCHANGE_EQUIPMENT_ITEM,$/;"	e	file:
+EXCHANGE_INVENTORY_ITEM	coordinate.cpp	/^		EXCHANGE_INVENTORY_ITEM,$/;"	e	file:
+EXCHANGE_TRASHBOX_INVENTORY	coordinate.cpp	/^		EXCHANGE_TRASHBOX_INVENTORY,$/;"	e	file:
+EXCHANGE_TRASHBOX_ITEM	coordinate.cpp	/^		EXCHANGE_TRASHBOX_ITEM,$/;"	e	file:
+EXCHANGE_TRASH_MONEY	coordinate.cpp	/^		EXCHANGE_TRASH_MONEY,$/;"	e	file:
+EXES	Makefile	/^EXES = client server$/;"	m
+Encode	protocol.h	/^			Octets Encode(      Protocol *protocol)$/;"	f	struct:GNET::Protocol::Represent::Rep
+Encode	protocol.h	/^			Octets Encode(const Protocol *protocol)$/;"	f	struct:GNET::Protocol::Represent::Rep
+Encode	protocol.h	/^		static Octets Encode(      Protocol *protocol) { return GetRep(protocol).Encode(protocol); }$/;"	f	struct:GNET::Protocol::Represent
+Encode	protocol.h	/^		static Octets Encode(const Protocol *protocol) { return GetRep(protocol).Encode(protocol); }$/;"	f	struct:GNET::Protocol::Represent
+Encode	protocol.h	/^	Octets Encode()       { return Represent::Encode(this); }$/;"	f	class:GNET::Protocol
+Encode	protocol.h	/^	Octets Encode() const { return Represent::Encode(this); }$/;"	f	class:GNET::Protocol
+Encode	protocol.h	/^	void Encode(Marshal::OctetsStream& os) const$/;"	f	class:GNET::Protocol
+EventMap	pollio.h	/^	typedef gnet_map<PollIO*, int> EventMap;$/;"	t	class:GNET::PollIO
+EventSet	pollio.h	/^	typedef std::set<PollIO*> EventSet;$/;"	t	class:GNET::PollIO
+Exception	protocol.h	/^	class Exception { };$/;"	c	class:GNET::Protocol
+Execute	statefulrpc.h	/^	Rpc* Execute(const HardReference<RpcClientAdaptor>& rca)$/;"	f	class:GNET::StatefulRpc
+F1	security.h	502;"	d
+F1	security.h	593;"	d
+F2	security.h	503;"	d
+F2	security.h	594;"	d
+F3	security.h	504;"	d
+F3	security.h	595;"	d
+F4	security.h	505;"	d
+F4	security.h	596;"	d
+FDSet	pollio.h	/^	typedef std::vector<PollFD> FDSet;$/;"	t	class:GNET::PollIO
+FDSet	pollio.h	/^	typedef std::vector<int> FDSet;$/;"	t	class:GNET::PollIO
+FDSet	pollio.h	/^	typedef std::vector<struct epoll_event> FDSet;$/;"	t	class:GNET::PollIO
+FDSet	pollio.h	/^	typedef std::vector<struct kevent> FDSet;$/;"	t	class:GNET::PollIO
+FLYSWORD_TIME_CAPACITY	coordinate.cpp	/^		FLYSWORD_TIME_CAPACITY,                 $/;"	e	file:
+Final	security.h	/^	Octets& Final(Octets &digest)$/;"	f	class:GNET::HMAC_MD5Hash
+Final	security.h	/^	Octets& Final(Octets &digest)$/;"	f	class:GNET::MD5Hash
+Final	security.h	/^	Octets& Final(Octets &digest)$/;"	f	class:GNET::SHA1Hash
+Final	security.h	/^	virtual Octets& Final(Octets &o) { return o; }$/;"	f	class:GNET::Security
+Final	streamcompress.h	/^	Octets& Final(Octets &in)$/;"	f	class:GNET::Compress
+FireResult	statefulrpc.h	/^	void FireResult()  { FireObjectChange(); }$/;"	f	class:GNET::RpcClientAdaptor
+FireTimeout	statefulrpc.h	/^	void FireTimeout() { istimeout=true; FireObjectChange(); }$/;"	f	class:GNET::RpcClientAdaptor
+FlushBuffer	timermanager.h	/^		void FlushBuffer()$/;"	f	class:GNET::TimerManager
+ForbidRecv	pollio.h	/^	void ForbidRecv()$/;"	f	class:GNET::PollIO
+ForbidSend	pollio.h	/^	void ForbidSend()$/;"	f	class:GNET::PollIO
+GET_OWN_MONEY	coordinate.cpp	/^		GET_OWN_MONEY,$/;"	e	file:
+GNET	activeio.h	/^namespace GNET$/;"	n
+GNET	base64.h	/^namespace GNET$/;"	n
+GNET	binder.h	/^namespace GNET$/;"	n
+GNET	compress.h	/^namespace GNET$/;"	n
+GNET	coordinate.cpp	/^namespace GNET$/;"	n	file:
+GNET	coordinate.h	/^namespace GNET$/;"	n
+GNET	login.cpp	/^namespace GNET$/;"	n	file:
+GNET	login.h	/^namespace GNET$/;"	n
+GNET	mppc.h	/^namespace GNET$/;"	n
+GNET	netio.h	/^namespace GNET$/;"	n
+GNET	passiveio.h	/^namespace GNET$/;"	n
+GNET	pollio.cpp	/^namespace GNET$/;"	n	file:
+GNET	pollio.h	/^namespace GNET$/;"	n
+GNET	protocol.cpp	/^namespace GNET$/;"	n	file:
+GNET	protocol.h	/^namespace GNET$/;"	n
+GNET	proxyrpc.cpp	/^namespace GNET$/;"	n	file:
+GNET	proxyrpc.h	/^namespace GNET$/;"	n
+GNET	rpc.cpp	/^namespace GNET$/;"	n	file:
+GNET	rpc.h	/^namespace GNET$/;"	n
+GNET	security.cpp	/^namespace GNET$/;"	n	file:
+GNET	security.h	/^namespace GNET$/;"	n
+GNET	statefulrpc.h	/^namespace GNET$/;"	n
+GNET	streamcompress.h	/^namespace GNET$/;"	n
+GNET	timeactiveio.cpp	/^namespace GNET$/;"	n	file:
+GNET	timeactiveio.h	/^namespace GNET$/;"	n
+GNET	timermanager.h	/^namespace GNET$/;"	n
+GNET	transport.h	/^namespace GNET$/;"	n
+GetArgument	statefulrpc.h	/^	Arg* GetArgument() { return (Arg *)adaptor->rpc->argument; }$/;"	f	class:GNET::RpcClientTask
+GetArgument	statefulrpc.h	/^	Arg* GetArgument() { return (Arg *)adaptor->rpc->argument; }$/;"	f	class:GNET::RpcServerTask
+GetArgument	statefulrpc.h	/^	Arg* GetArgument() { return arg; }$/;"	f	class:GNET::RpcClientTask
+GetArgument	statefulrpc.h	/^	const Arg* GetArgument() const { return (const Arg *)adaptor->rpc->argument; }$/;"	f	class:GNET::RpcClientTask
+GetArgument	statefulrpc.h	/^	const Arg* GetArgument() const { return (const Arg *)adaptor->rpc->argument; }$/;"	f	class:GNET::RpcServerTask
+GetArgument	statefulrpc.h	/^	const Arg* GetArgument() const { return arg; }$/;"	f	class:GNET::RpcClientTask
+GetChallenge	server.cpp	/^	Octets *GetChallenge(Session::ID sid)$/;"	f	class:ServerManager
+GetFirstVector	coordinate.cpp	/^int GetFirstVector( int type, const char * data, int len)$/;"	f	namespace:GNET
+GetIBuffer	netio.h	/^	Octets& GetIBuffer()$/;"	f	class:GNET::NetSession
+GetID	transport.h	/^	Protocol::Manager::Session::ID GetID() const { return sid; }$/;"	f	class:GNET::Transport
+GetId	rpc.h	/^		unsigned int GetId() const { return id; }$/;"	f	class:GNET::Rpc::XID
+GetInitState	client.cpp	/^	const Session::State *GetInitState() const$/;"	f	class:ClientManager	file:
+GetInitState	server.cpp	/^	const Session::State *GetInitState() const$/;"	f	class:ServerManager	file:
+GetInstance	pollio.h	/^		static Task *GetInstance() { return instance ? instance : instance = new Task(Thread::Pool::Size() == 1 ? INT_MAX : 0); }$/;"	f	class:GNET::PollIO::Task
+GetInstance	timeactiveio.h	/^		static Checker& GetInstance() { return checker; }$/;"	f	class:GNET::TimeActiveIO::Checker
+GetLen	netio.h	/^	socklen_t GetLen() const { return addr.size(); }$/;"	f	class:GNET::SockAddr
+GetManager	transport.h	/^	const Protocol::Manager* GetManager() const  { return manager; }$/;"	f	class:GNET::Transport
+GetMap	protocol.h	/^	static Map& GetMap() { static Map map; return map; }$/;"	f	class:GNET::Protocol
+GetMap	security.cpp	/^Security::Map& Security::GetMap()$/;"	f	class:GNET::Security
+GetNextVector	coordinate.cpp	/^int GetNextVector( int type, const char * data, int len)$/;"	f	namespace:GNET
+GetOBuffer	netio.h	/^	Octets& GetOBuffer()$/;"	f	class:GNET::NetSession
+GetOsbytes	protocol.h	/^			size_t GetOsbytes() { return os_bytes; }$/;"	f	class:GNET::Protocol::Manager::Session
+GetOsbytes	protocol.h	/^		size_t GetOsbytes(Session::ID sid)$/;"	f	class:GNET::Protocol::Manager
+GetParameter	security.h	/^	virtual void GetParameter(Octets &) { }$/;"	f	class:GNET::Security
+GetPredecitAddr	streamcompress.h	/^	inline unsigned char * GetPredecitAddr (const unsigned char *s)$/;"	f	class:GNET::Compress
+GetRatio	security.h	/^	static double GetRatio() { return (double)dstsize\/srcsize; }$/;"	f	class:GNET::CompressARCFourSecurity
+GetRep	protocol.h	/^		static Rep& GetRep(const Protocol *protocol)$/;"	f	struct:GNET::Protocol::Represent
+GetResult	statefulrpc.h	/^	Res* GetResult()   { return (Res *)adaptor->rpc->result;   }$/;"	f	class:GNET::RpcClientTask
+GetResult	statefulrpc.h	/^	Res* GetResult()   { return (Res *)adaptor->rpc->result;   }$/;"	f	class:GNET::RpcServerTask
+GetResult	statefulrpc.h	/^	bool GetResult() const { return state == SUCCEED; }$/;"	f	class:GNET::RpcClientTask
+GetResult	statefulrpc.h	/^	const Res* GetResult()   const { return (const Res *)adaptor->rpc->result;   }$/;"	f	class:GNET::RpcClientTask
+GetResult	statefulrpc.h	/^	const Res* GetResult()   const { return (const Res *)adaptor->rpc->result;   }$/;"	f	class:GNET::RpcServerTask
+GetSession	protocol.h	/^		Session *GetSession(Session::ID sid)$/;"	f	class:GNET::Protocol::Manager
+GetSid	protocol.h	/^			ID GetSid() const { return sid; }$/;"	f	class:GNET::Protocol::Manager::Session
+GetState	statefulrpc.h	/^	int GetState() const { return state; }$/;"	f	class:GNET::RpcClientTask
+GetStatus	netio.h	/^	int GetStatus() {  return status; }$/;"	f	class:GNET::NetSession
+GetStub	protocol.h	/^	static const Protocol *GetStub(Type type)$/;"	f	class:GNET::Protocol
+GetTransport	transport.h	/^	Transport& GetTransport() { return transport; }$/;"	f	class:GNET::TransportContext
+GetTransport	transport.h	/^	const Transport& GetTransport() const { return transport; }$/;"	f	class:GNET::TransportContext
+GetType	protocol.h	/^	Type GetType() const { return type; }$/;"	f	class:GNET::Protocol
+GetVerbose	protocol.h	/^			int  GetVerbose() const { return verbose; }$/;"	f	class:GNET::Protocol::Manager::Session
+HASH	streamcompress.h	/^	static inline unsigned short HASH( const unsigned char *x){ $/;"	f	class:GNET::Compress
+HMAC_MD5HASH	security.h	/^enum { RANDOM = 0, NULLSECURITY = 1, ARCFOURSECURITY = 2, MD5HASH = 3, HMAC_MD5HASH = 4, $/;"	e	enum:GNET::<anonymous>
+HMAC_MD5Hash	security.h	/^	HMAC_MD5Hash() : k_opad(64) { k_opad.resize(64); }$/;"	f	class:GNET::HMAC_MD5Hash
+HMAC_MD5Hash	security.h	/^	HMAC_MD5Hash(Type type) : Security(type), k_opad(64) { k_opad.resize(64); }$/;"	f	class:GNET::HMAC_MD5Hash
+HMAC_MD5Hash	security.h	/^	HMAC_MD5Hash(const HMAC_MD5Hash &rhs) : Security(rhs), k_opad(rhs.k_opad),$/;"	f	class:GNET::HMAC_MD5Hash
+HMAC_MD5Hash	security.h	/^class HMAC_MD5Hash : public Security$/;"	c	namespace:GNET
+HURT_RESULT	coordinate.cpp	/^		HURT_RESULT,$/;"	e	file:
+HouseKeeper	proxyrpc.h	/^		HouseKeeper() { Timer::Attach(this); }$/;"	f	class:GNET::ProxyRpc::HouseKeeper
+HouseKeeper	proxyrpc.h	/^	class HouseKeeper : public Timer::Observer$/;"	c	class:GNET::ProxyRpc
+HouseKeeper	rpc.h	/^		HouseKeeper() { Timer::Attach(this); }$/;"	f	class:GNET::Rpc::HouseKeeper
+HouseKeeper	rpc.h	/^	class HouseKeeper : public Timer::Observer$/;"	c	class:GNET::Rpc
+ID	protocol.h	/^			typedef unsigned int ID;$/;"	t	class:GNET::Protocol::Manager::Session
+ID	proxyrpc.h	/^	typedef std::map<XID, ProxyRpc*> Map;$/;"	t	class:GNET::ProxyRpc
+ID	rpc.h	/^	typedef std::map<XID, Rpc*> Map;$/;"	t	class:GNET::Rpc
+ID	server.cpp	/^	typedef std::map<Session::ID, UserTracker> UserMap;$/;"	t	class:ServerManager::ession	file:
+ID	timermanager.h	/^		typedef	gnet_map<Session::ID, AbstractBinder*>	BinderMap;$/;"	t	class:GNET::TimerManager::ession
+INVADER_FADE	coordinate.cpp	/^		INVADER_FADE,$/;"	e	file:
+INVADER_RISE	coordinate.cpp	/^		INVADER_RISE,$/;"	e	file:
+INVENTORY_ITEM_TO_TRASH	coordinate.cpp	/^		INVENTORY_ITEM_TO_TRASH,$/;"	e	file:
+IOMap	pollio.h	/^	typedef gnet_map<int, PollIO*> IOMap;$/;"	t	class:GNET::PollIO
+ITEM_TO_MONEY	coordinate.cpp	/^		ITEM_TO_MONEY,$/;"	e	file:
+Identification	client.cpp	/^	std::string Identification() const { return "Client"; }$/;"	f	class:ClientManager	file:
+Identification	protocol.h	/^			std::string Identification() const { return manager->Identification(); }$/;"	f	class:GNET::Protocol::Manager::Session
+Identification	server.cpp	/^	std::string Identification() const { return "Server"; }$/;"	f	class:ServerManager	file:
+Ignore	protocol.h	/^			bool Ignore() const { return ignore; }$/;"	f	class:GNET::Protocol::Manager::Session
+Init	pollio.h	/^	static void Init()   {  }$/;"	f	class:GNET::PollControl
+Init	pollio.h	/^	static void Init()$/;"	f	class:GNET::PollControl
+Init	pollio.h	/^inline int PollIO::Init()$/;"	f	class:GNET::PollIO
+Init	security.h	/^	static int Init() { return open("\/dev\/urandom", O_RDONLY); }$/;"	f	class:GNET::Random
+Init	security.h	/^	static int Init() { srand( (unsigned int)time( NULL)); return 0; }$/;"	f	class:GNET::Random
+Input	netio.h	/^	Octets& Input()$/;"	f	class:GNET::NetSession
+InputPolicy	client.cpp	/^	bool InputPolicy(Protocol::Type type, size_t len) const$/;"	f	class:ClientManager	file:
+InputPolicy	protocol.h	/^		virtual bool InputPolicy(Protocol::Type type, size_t size) const$/;"	f	class:GNET::Protocol::Manager
+InputPolicy	server.cpp	/^	bool InputPolicy(Protocol::Type type, size_t len) const$/;"	f	class:ServerManager	file:
+IsRequest	proxyrpc.h	/^		bool IsRequest() const { return is_request; }$/;"	f	class:GNET::ProxyRpc::XID
+IsRequest	rpc.h	/^		bool IsRequest() const { return is_request; }$/;"	f	class:GNET::Rpc::XID
+IsTimeout	statefulrpc.h	/^	bool IsTimeout() const { return adaptor->IsTimeout(); }$/;"	f	class:GNET::RpcClientTask
+IsTimeout	statefulrpc.h	/^	bool IsTimeout() const { return istimeout; }$/;"	f	class:GNET::RpcClientAdaptor
+K1	security.h	498;"	d
+K1	security.h	589;"	d
+K2	security.h	499;"	d
+K2	security.h	590;"	d
+K3	security.h	500;"	d
+K3	security.h	591;"	d
+K4	security.h	501;"	d
+K4	security.h	592;"	d
+LEARN_SKILL	coordinate.cpp	/^		LEARN_SKILL,$/;"	e	file:
+LEVEL_UP	coordinate.cpp	/^		LEVEL_UP,$/;"	e	file:
+LoadConfig	netio.h	/^	void LoadConfig( variant conf )$/;"	f	class:GNET::NetSession
+LoadConfig	netio.h	/^	void LoadConfig()$/;"	f	class:GNET::NetSession
+LoadEvent	pollio.h	/^	static void LoadEvent(const EventMap::value_type event_pair)$/;"	f	class:GNET::PollIO
+M	security.h	506;"	d
+M	security.h	597;"	d
+MATTER_ENTER_WORLD	coordinate.cpp	/^		MATTER_ENTER_WORLD,$/;"	e	file:
+MATTER_INFO_LIST	coordinate.cpp	/^		MATTER_INFO_LIST,$/;"	e	file:
+MATTER_PICKUP	coordinate.cpp	/^		MATTER_PICKUP,$/;"	e	file:
+MD5HASH	security.h	/^enum { RANDOM = 0, NULLSECURITY = 1, ARCFOURSECURITY = 2, MD5HASH = 3, HMAC_MD5HASH = 4, $/;"	e	enum:GNET::<anonymous>
+MD5Hash	security.h	/^	MD5Hash() { init(); }$/;"	f	class:GNET::MD5Hash
+MD5Hash	security.h	/^	MD5Hash() { md5_init_context(context); }$/;"	f	class:GNET::MD5Hash
+MD5Hash	security.h	/^	MD5Hash(Type type) : Security(type) { init(); }$/;"	f	class:GNET::MD5Hash
+MD5Hash	security.h	/^	MD5Hash(Type type) : Security(type) { md5_init_context( context ); }$/;"	f	class:GNET::MD5Hash
+MD5Hash	security.h	/^	MD5Hash(const MD5Hash &rhs) : Security(rhs) { memcpy(context, rhs.context, sizeof(context)); }$/;"	f	class:GNET::MD5Hash
+MD5Hash	security.h	/^	MD5Hash(const MD5Hash &rhs) : Security(rhs), low_count(rhs.low_count), high_count(rhs.high_count), remain(rhs.remain)$/;"	f	class:GNET::MD5Hash
+MD5Hash	security.h	/^class MD5Hash : public Security$/;"	c	namespace:GNET
+MOVE_EQUIPMENT_ITEM	coordinate.cpp	/^		MOVE_EQUIPMENT_ITEM,$/;"	e	file:
+MOVE_INVENTORY_ITEM	coordinate.cpp	/^		MOVE_INVENTORY_ITEM, $/;"	e	file:
+MOVE_TRASHBOX_ITEM	coordinate.cpp	/^		MOVE_TRASHBOX_ITEM,$/;"	e	file:
+MPPC_HIST_LEN	streamcompress.h	/^	enum { CTRL_OFF_EOB = 0, MPPC_HIST_LEN = 8192 };$/;"	e	enum:GNET::Compress::<anonymous>
+MPPC_HIST_LEN	streamcompress.h	/^	enum { CTRL_OFF_EOB = 0, MPPC_HIST_LEN = 8192 };$/;"	e	enum:GNET::Decompress::<anonymous>
+MPPE_BITS	ppp_mppe_mppc.c	77;"	d	file:
+MPPE_BIT_COMP	ppp_mppe_mppc.c	69;"	d	file:
+MPPE_BIT_ENCRYPTED	ppp_mppe_mppc.c	70;"	d	file:
+MPPE_BIT_FLUSHED	ppp_mppe_mppc.c	67;"	d	file:
+MPPE_BIT_RESET	ppp_mppe_mppc.c	68;"	d	file:
+MPPE_CCOUNT	ppp_mppe_mppc.c	76;"	d	file:
+MPPE_CTRLHI	ppp_mppe_mppc.c	78;"	d	file:
+MPPE_CTRLLO	ppp_mppe_mppc.c	79;"	d	file:
+MPPE_HIST_LEN	mppc.h	106;"	d
+MPPE_HIST_LEN	ppp_mppe_mppc.c	64;"	d	file:
+MPPE_MAX_CCOUNT	ppp_mppe_mppc.c	65;"	d	file:
+MPPE_SALT0	ppp_mppe_mppc.c	72;"	d	file:
+MPPE_SALT1	ppp_mppe_mppc.c	73;"	d	file:
+MPPE_SALT2	ppp_mppe_mppc.c	74;"	d	file:
+Manager	protocol.h	/^		Manager() : locker_map("Protocol::Manager::locker_map") { }$/;"	f	class:GNET::Protocol::Manager
+Manager	protocol.h	/^	class Manager$/;"	c	class:GNET::Protocol
+Map	netio.h	/^	typedef std::map<SockAddr, NetSession *, compare_SockAddr> Map;$/;"	t	class:GNET::DgramServerIO
+Map	protocol.h	/^			typedef gnet_map<ID, Session *> Map;$/;"	t	class:GNET::Protocol::Manager::Session
+Map	protocol.h	/^		typedef std::map<const Protocol *, Rep> Map;$/;"	t	struct:GNET::Protocol::Represent
+Map	protocol.h	/^	typedef gnet_map<Type, const Protocol*> Map;$/;"	t	class:GNET::Protocol
+Map	proxyrpc.h	/^	typedef std::map<XID, ProxyRpc*> Map;$/;"	t	class:GNET::ProxyRpc
+Map	rpc.h	/^	typedef std::map<XID, Rpc*> Map;$/;"	t	class:GNET::Rpc
+Map	security.h	/^	typedef gnet_map<Type, const Security *> Map;$/;"	t	class:GNET::Security
+Map	timeactiveio.h	/^		typedef std::map< int, Bundle* > Map;$/;"	t	class:GNET::TimeActiveIO::Checker
+Monitor	timeactiveio.h	/^		void Monitor( int s, int timeout )$/;"	f	class:GNET::TimeActiveIO::Checker
+NOTIFY_ROOT	coordinate.cpp	/^		NOTIFY_ROOT,$/;"	e	file:
+NPC_DEAD	coordinate.cpp	/^		NPC_DEAD,$/;"	e	file:
+NPC_ENTER_SLICE	coordinate.cpp	/^		NPC_ENTER_SLICE,$/;"	e	file:
+NPC_ENTER_WORLD	coordinate.cpp	/^		NPC_ENTER_WORLD,$/;"	e	file:
+NPC_GREETING	coordinate.cpp	/^		NPC_GREETING,$/;"	e	file:
+NPC_INFO_00	coordinate.cpp	/^		NPC_INFO_00,$/;"	e	file:
+NPC_INFO_LIST	coordinate.cpp	/^		NPC_INFO_LIST,$/;"	e	file:
+NPC_SERVICE_CONTENT	coordinate.cpp	/^		NPC_SERVICE_CONTENT,$/;"	e	file:
+NULLSECURITY	security.h	/^enum { RANDOM = 0, NULLSECURITY = 1, ARCFOURSECURITY = 2, MD5HASH = 3, HMAC_MD5HASH = 4, $/;"	e	enum:GNET::<anonymous>
+NetIO	netio.h	/^	NetIO(int fd, NetSession *s) : PollIO(fd), session(s) { s->assoc_io = this; }$/;"	f	class:GNET::NetIO
+NetIO	netio.h	/^class NetIO : public PollIO$/;"	c	namespace:GNET
+NetSession	netio.h	/^	NetSession() : assoc_io(NULL), sending(false), closing(false), close_discard(false),status(0),ibuffer(DEFAULTIOBUF), obuffer(DEFAULTIOBUF), $/;"	f	class:GNET::NetSession
+NetSession	netio.h	/^	NetSession(const NetSession &rhs) : assoc_io(rhs.assoc_io), sending(false), closing(false), close_discard(rhs.close_discard),status(0),$/;"	f	class:GNET::NetSession
+NetSession	netio.h	/^	typedef std::map<SockAddr, NetSession *, compare_SockAddr> Map;$/;"	t	class:GNET::DgramServerIO
+NetSession	netio.h	/^class NetSession$/;"	c	namespace:GNET
+NoMoreData	protocol.h	/^			bool NoMoreData() const$/;"	f	class:GNET::Protocol::Manager::Session
+NoneData	rpc.h	/^	struct NoneData : public Marshal$/;"	s	class:GNET::Rpc
+NullSecurity	security.h	/^	NullSecurity() { }$/;"	f	class:GNET::NullSecurity
+NullSecurity	security.h	/^	NullSecurity(Type type) : Security(type) { }$/;"	f	class:GNET::NullSecurity
+NullSecurity	security.h	/^	NullSecurity(const NullSecurity &rhs) : Security(rhs) { }$/;"	f	class:GNET::NullSecurity
+NullSecurity	security.h	/^class NullSecurity : public Security$/;"	c	namespace:GNET
+OBJECT_ATTACK_ONCE	coordinate.cpp	/^		OBJECT_ATTACK_ONCE,$/;"	e	file:
+OBJECT_ATTACK_RESULT	coordinate.cpp	/^		OBJECT_ATTACK_RESULT,$/;"	e	file:
+OBJECT_BE_ATTACKED	coordinate.cpp	/^		OBJECT_BE_ATTACKED,$/;"	e	file:
+OBJECT_CANCEL_USE	coordinate.cpp	/^		OBJECT_CANCEL_USE,                      $/;"	e	file:
+OBJECT_CAST_SKILL	coordinate.cpp	/^		OBJECT_CAST_SKILL,$/;"	e	file:
+OBJECT_DISAPPEAR	coordinate.cpp	/^		OBJECT_DISAPPEAR,$/;"	e	file:
+OBJECT_DO_ACTION	coordinate.cpp	/^		OBJECT_DO_ACTION,$/;"	e	file:
+OBJECT_DO_EMOTE	coordinate.cpp	/^		OBJECT_DO_EMOTE,$/;"	e	file:
+OBJECT_DO_EMOTE_RESTORE	coordinate.cpp	/^		OBJECT_DO_EMOTE_RESTORE,$/;"	e	file:
+OBJECT_LANDING	coordinate.cpp	/^		OBJECT_LANDING,$/;"	e	file:
+OBJECT_LEAVE_SLICE	coordinate.cpp	/^		OBJECT_LEAVE_SLICE,             $/;"	e	file:
+OBJECT_MOVE	coordinate.cpp	/^		OBJECT_MOVE,$/;"	e	file:
+OBJECT_NOTIFY_POS	coordinate.cpp	/^		OBJECT_NOTIFY_POS,$/;"	e	file:
+OBJECT_SIT_DOWN	coordinate.cpp	/^		OBJECT_SIT_DOWN,$/;"	e	file:
+OBJECT_SKILL_ATTACK_RESULT	coordinate.cpp	/^		OBJECT_SKILL_ATTACK_RESULT,$/;"	e	file:
+OBJECT_STAND_UP	coordinate.cpp	/^		OBJECT_STAND_UP,$/;"	e	file:
+OBJECT_START_ATTACK	coordinate.cpp	/^		OBJECT_START_ATTACK, $/;"	e	file:
+OBJECT_START_USE	coordinate.cpp	/^		OBJECT_START_USE,$/;"	e	file:
+OBJECT_START_USE_WITH_TARGET	coordinate.cpp	/^		OBJECT_START_USE_WITH_TARGET,$/;"	e	file:
+OBJECT_STATE_NOTIFY	coordinate.cpp	/^		OBJECT_STATE_NOTIFY,$/;"	e	file:
+OBJECT_STOP_MOVE	coordinate.cpp	/^		OBJECT_STOP_MOVE, $/;"	e	file:
+OBJECT_TAKEOFF	coordinate.cpp	/^		OBJECT_TAKEOFF,$/;"	e	file:
+OBJECT_USE_ITEM	coordinate.cpp	/^		OBJECT_USE_ITEM,$/;"	e	file:
+OBJS	Makefile	/^OBJS = pollio.o protocol.o security.o rpc.o proxyrpc.o md5.o mppc256.o rc4.o sha1.o$/;"	m
+OBJS_M	Makefile	/^OBJS_M = pollio_m.o protocol_m.o security_m.o rpc_m.o proxyrpc_m.o ..\/perf\/i386\/md5.o ..\/perf\/i386\/mppc256.o ..\/perf\/i386\/rc4.o ..\/perf\/i386\/sha1.o$/;"	m
+OBTAIN_ITEM	coordinate.cpp	/^		OBTAIN_ITEM,$/;"	e	file:
+OUTEROBJS	Makefile	/^OUTEROBJS = ..\/common\/octets.o ..\/common\/thread.o ..\/common\/conf.o ..\/common\/timer.o ..\/common\/itimer.o$/;"	m
+OUTEROBJS_M	Makefile	/^OUTEROBJS_M = ..\/common\/octets_m.o ..\/common\/thread_m.o ..\/common\/conf_m.o ..\/common\/timer_m.o ..\/common\/itimer_m.o$/;"	m
+OUT_OF_SIGHT_LIST	coordinate.cpp	/^		OUT_OF_SIGHT_LIST,$/;"	e	file:
+ObjectChange	statefulrpc.h	/^	void ObjectChange(const ObjectChangeSupport *) { FireObjectChange(); }$/;"	f	class:GNET::RpcClientTask
+OctetsVector	binder.h	/^	typedef std::vector<Octets> OctetsVector;$/;"	t	class:GNET::AbstractBinder
+OnAbort	netio.h	/^	virtual void OnAbort(const SockAddr& sa) { }$/;"	f	class:GNET::NetSession
+OnAbort	protocol.h	/^			void OnAbort(const SockAddr &sa) { manager->AbortSession(sa, this); }$/;"	f	class:GNET::Protocol::Manager::Session
+OnAbortSession	protocol.h	/^		virtual void OnAbortSession(Session::ID) { }$/;"	f	class:GNET::Protocol::Manager
+OnAbortSession	protocol.h	/^		virtual void OnAbortSession(const SockAddr&) { }$/;"	f	class:GNET::Protocol::Manager
+OnAddSession	client.cpp	/^	void OnAddSession(Session::ID sid)$/;"	f	class:ClientManager	file:
+OnAddSession	server.cpp	/^	void OnAddSession(Session::ID sid)$/;"	f	class:ServerManager	file:
+OnCheckAccumulate	protocol.h	/^		virtual bool OnCheckAccumulate(size_t) const { return true; }$/;"	f	class:GNET::Protocol::Manager
+OnCheckAddress	netio.h	/^	virtual void OnCheckAddress(SockAddr &) const { }$/;"	f	class:GNET::NetSession
+OnCheckAddress	protocol.h	/^			void OnCheckAddress(SockAddr &sa) const { manager->OnCheckAddress(sa); }$/;"	f	class:GNET::Protocol::Manager::Session
+OnCheckAddress	protocol.h	/^		virtual void OnCheckAddress(SockAddr &) const { }$/;"	f	class:GNET::Protocol::Manager
+OnCheckTimeout	protocol.h	/^			void OnCheckTimeout()$/;"	f	class:GNET::Protocol::Manager::Session
+OnClose	netio.h	/^	virtual void OnClose() { }$/;"	f	class:GNET::NetSession
+OnClose	protocol.h	/^			void OnClose() { manager->DelSession(sid, GetStatus()); }$/;"	f	class:GNET::Protocol::Manager::Session
+OnDelSession	client.cpp	/^	void OnDelSession(Session::ID sid)$/;"	f	class:ClientManager	file:
+OnDelSession	protocol.h	/^		virtual void OnDelSession(Session::ID sid, int status) {  OnDelSession(sid); }$/;"	f	class:GNET::Protocol::Manager
+OnDelSession	server.cpp	/^	void OnDelSession(Session::ID sid)$/;"	f	class:ServerManager	file:
+OnOpen	netio.h	/^	virtual void OnOpen() { }$/;"	f	class:GNET::NetSession
+OnOpen	netio.h	/^	virtual void OnOpen(const SockAddr& local, const SockAddr& peer) { }$/;"	f	class:GNET::NetSession
+OnOpen	protocol.h	/^			void OnOpen()  { timer.Reset(); manager->AddSession(sid, this); }$/;"	f	class:GNET::Protocol::Manager::Session
+OnOpen	protocol.h	/^			void OnOpen(const SockAddr& local, const SockAddr& peer)$/;"	f	class:GNET::Protocol::Manager::Session
+OnRecv	protocol.h	/^			void OnRecv()$/;"	f	class:GNET::Protocol::Manager::Session
+OnSend	protocol.h	/^			void OnSend()$/;"	f	class:GNET::Protocol::Manager::Session
+OnSend	protocol.h	/^		virtual bool OnSend(Session::ID id, const Protocol *protocol) { return true; }$/;"	f	class:GNET::Protocol::Manager
+OnSetTransport	protocol.h	/^		virtual void OnSetTransport(Session::ID sid, const SockAddr& local, const SockAddr& peer) { }$/;"	f	class:GNET::Protocol::Manager
+OnTimeout	proxyrpc.h	/^	virtual void OnTimeout() { proxy_data>>xid; OnTimeout(proxy_data); }$/;"	f	class:GNET::ProxyRpc
+OnTimeout	proxyrpc.h	/^	virtual void OnTimeout(const OctetsStream &osArg) { }$/;"	f	class:GNET::ProxyRpc
+OnTimeout	rpc.h	/^	virtual void OnTimeout() { OnTimeout(argument); }$/;"	f	class:GNET::Rpc
+OnTimeout	rpc.h	/^	virtual void OnTimeout(Data *argument) { }$/;"	f	class:GNET::Rpc
+Open	activeio.h	/^	static ActiveIO *Open(const NetSession &assoc_session) $/;"	f	class:GNET::ActiveIO
+Open	activeio.h	/^	static ActiveIO *Open(const NetSession &assoc_session, variant v ) $/;"	f	class:GNET::ActiveIO
+Open	passiveio.h	/^	static PassiveIO *Open(const NetSession &assoc_session)$/;"	f	class:GNET::PassiveIO
+Open	passiveio.h	/^	static PassiveIO *Open(const NetSession &assoc_session, variant v)$/;"	f	class:GNET::PassiveIO
+Open	timeactiveio.h	/^	static TimeActiveIO *Open(const NetSession &assoc_session, int timeout = 5) $/;"	f	class:GNET::TimeActiveIO
+Open	timeactiveio.h	/^	static TimeActiveIO *Open(const NetSession &assoc_session, variant v, int timeout = 5 ) $/;"	f	class:GNET::TimeActiveIO
+Output	netio.h	/^	bool Output(const Octets &data)$/;"	f	class:GNET::NetSession
+PARIAH_RISE	coordinate.cpp	/^		PARIAH_RISE,$/;"	e	file:
+PICKUP_ITEM	coordinate.cpp	/^		PICKUP_ITEM,$/;"	e	file:
+PICKUP_ITEM_AFTER_TRADE	coordinate.cpp	/^		PICKUP_ITEM_AFTER_TRADE,$/;"	e	file:
+PICKUP_ITEM_IN_TRADE	coordinate.cpp	/^		PICKUP_ITEM_IN_TRADE,$/;"	e	file:
+PICKUP_MONEY	coordinate.cpp	/^		PICKUP_MONEY,$/;"	e	file:
+PICKUP_MONEY_AFTER_TRADE	coordinate.cpp	/^		PICKUP_MONEY_AFTER_TRADE,$/;"	e	file:
+PICKUP_MONEY_IN_TRADE	coordinate.cpp	/^		PICKUP_MONEY_IN_TRADE,$/;"	e	file:
+PLAYER_CLR_ADV_DATA	coordinate.cpp	/^		PLAYER_CLR_ADV_DATA,$/;"	e	file:
+PLAYER_DEAD	coordinate.cpp	/^		PLAYER_DEAD,$/;"	e	file:
+PLAYER_DROP_ITEM	coordinate.cpp	/^		PLAYER_DROP_ITEM,$/;"	e	file:
+PLAYER_ENTER_SLICE	coordinate.cpp	/^		PLAYER_ENTER_SLICE,$/;"	e	file:
+PLAYER_ENTER_WORLD	coordinate.cpp	/^		PLAYER_ENTER_WORLD,$/;"	e	file:
+PLAYER_EXTPROP_ATTACK	coordinate.cpp	/^		PLAYER_EXTPROP_ATTACK,$/;"	e	file:
+PLAYER_EXTPROP_BASE	coordinate.cpp	/^		PLAYER_EXTPROP_BASE,$/;"	e	file:
+PLAYER_EXTPROP_DEFENSE	coordinate.cpp	/^		PLAYER_EXTPROP_DEFENSE,$/;"	e	file:
+PLAYER_EXTPROP_MOVE	coordinate.cpp	/^		PLAYER_EXTPROP_MOVE,$/;"	e	file:
+PLAYER_GATHER_START	coordinate.cpp	/^		PLAYER_GATHER_START,$/;"	e	file:
+PLAYER_GATHER_STOP	coordinate.cpp	/^		PLAYER_GATHER_STOP,$/;"	e	file:
+PLAYER_INFO_00	coordinate.cpp	/^		PLAYER_INFO_00,$/;"	e	file:
+PLAYER_INFO_1	coordinate.cpp	/^		PLAYER_INFO_1,$/;"	e	file:
+PLAYER_INFO_1_LIST	coordinate.cpp	/^		PLAYER_INFO_1_LIST,$/;"	e	file:
+PLAYER_INFO_2	coordinate.cpp	/^		PLAYER_INFO_2,$/;"	e	file:
+PLAYER_INFO_23_LIST	coordinate.cpp	/^		PLAYER_INFO_23_LIST,$/;"	e	file:
+PLAYER_INFO_2_LIST	coordinate.cpp	/^		PLAYER_INFO_2_LIST,$/;"	e	file:
+PLAYER_INFO_3	coordinate.cpp	/^		PLAYER_INFO_3,$/;"	e	file:
+PLAYER_INFO_3_LIST	coordinate.cpp	/^		PLAYER_INFO_3_LIST,$/;"	e	file:
+PLAYER_INFO_4	coordinate.cpp	/^		PLAYER_INFO_4,$/;"	e	file:
+PLAYER_IN_TEAM	coordinate.cpp	/^		PLAYER_IN_TEAM,$/;"	e	file:
+PLAYER_LEAVE_WORLD	coordinate.cpp	/^		PLAYER_LEAVE_WORLD,$/;"	e	file:
+PLAYER_REVIVAL	coordinate.cpp	/^		PLAYER_REVIVAL,$/;"	e	file:
+PLAYER_SET_ADV_DATA	coordinate.cpp	/^		PLAYER_SET_ADV_DATA,$/;"	e	file:
+PLAYER_USE_ITEM	coordinate.cpp	/^		PLAYER_USE_ITEM,$/;"	e	file:
+POLLCLOSE	pollio.h	/^	enum { POLLCLOSE = 0x80000000 };$/;"	e	enum:GNET::PollIO::<anonymous>
+PRODUCE_END	coordinate.cpp	/^		PRODUCE_END,$/;"	e	file:
+PRODUCE_ONCE	coordinate.cpp	/^		PRODUCE_ONCE,$/;"	e	file:
+PRODUCE_START	coordinate.cpp	/^		PRODUCE_START,$/;"	e	file:
+PROTOCOL_BINDER	binder.h	14;"	d
+PROTOCOL_CHALLENGE	login.h	10;"	d
+PROTOCOL_COMPRESSBINDER	binder.h	15;"	d
+PROTOCOL_RESPONSE	login.h	11;"	d
+PURCHASE_ITEM	coordinate.cpp	/^		PURCHASE_ITEM,$/;"	e	file:
+PassiveIO	passiveio.h	/^	PassiveIO (int x, const NetSession &y, Type t) : PollIO(x), assoc_session(y.Clone()), type(t), dgram_server_io(NULL)$/;"	f	class:GNET::PassiveIO
+PassiveIO	passiveio.h	/^	PassiveIO (int x, const NetSession &y, Type t, variant conf) : PollIO(x), assoc_session(y.Clone()), type(t), dgram_server_io(NULL)$/;"	f	class:GNET::PassiveIO
+PassiveIO	passiveio.h	/^class PassiveIO : public PollIO$/;"	c	namespace:GNET
+PermitRecv	pollio.h	/^	void PermitRecv()$/;"	f	class:GNET::PollIO
+PermitSend	pollio.h	/^	void PermitSend()$/;"	f	class:GNET::PollIO
+Poll	pollio.h	/^	static int Poll(int timeout)$/;"	f	class:GNET::PollIO
+PollClose	netio.h	/^	void PollClose()$/;"	f	class:GNET::StdInIO
+PollClose	netio.h	/^	void PollClose()$/;"	f	class:GNET::StreamIO
+PollClose	pollio.h	/^	virtual void PollClose() { }$/;"	f	class:GNET::PollIO
+PollControl	pollio.h	/^	PollControl(int r, int w) : PollIO(r) { writer = w; fcntl(w, F_SETFL, fcntl(w, F_GETFL)|O_NONBLOCK); }$/;"	f	class:GNET::PollControl
+PollControl	pollio.h	/^class PollControl : public PollIO$/;"	c	namespace:GNET
+PollControl	pollio.h	/^class PollControl$/;"	c	namespace:GNET
+PollFD	pollio.h	/^	struct PollFD : public pollfd$/;"	s	class:GNET::PollIO
+PollIO	pollio.h	/^	PollIO(int x) : event(0), newevent(0), update(false), status(0), fd(x)$/;"	f	class:GNET::PollIO
+PollIO	pollio.h	/^class PollIO$/;"	c	namespace:GNET
+PollIn	activeio.h	/^	void PollIn()  { Close(); }$/;"	f	class:GNET::ActiveIO
+PollIn	netio.h	/^	void PollIn()$/;"	f	class:GNET::DgramClientIO
+PollIn	netio.h	/^	void PollIn()$/;"	f	class:GNET::DgramServerIO
+PollIn	netio.h	/^	void PollIn()$/;"	f	class:GNET::StdInIO
+PollIn	netio.h	/^	void PollIn()$/;"	f	class:GNET::StreamIO
+PollIn	passiveio.h	/^	void PollIn()$/;"	f	class:GNET::PassiveIO
+PollIn	pollio.h	/^	void PollIn()  { for(char buff[256]; read(fd, buff, 256) == 256; ); }$/;"	f	class:GNET::PollControl
+PollIn	timeactiveio.h	/^	void PollIn()  { Close(); }$/;"	f	class:GNET::TimeActiveIO
+PollOut	activeio.h	/^	void PollOut() { Close(); }$/;"	f	class:GNET::ActiveIO
+PollOut	netio.h	/^	void PollOut()$/;"	f	class:GNET::DgramClientIO
+PollOut	netio.h	/^	void PollOut()$/;"	f	class:GNET::DgramServerIO
+PollOut	netio.h	/^	void PollOut()$/;"	f	class:GNET::StdInIO
+PollOut	netio.h	/^	void PollOut()$/;"	f	class:GNET::StreamIO
+PollOut	pollio.h	/^	virtual void PollOut() { }$/;"	f	class:GNET::PollIO
+PollOut	timeactiveio.h	/^	void PollOut() { Close(); }$/;"	f	class:GNET::TimeActiveIO
+PostProcess	proxyrpc.h	/^	virtual void PostProcess(Manager::Session::ID proxy_sid, const OctetsStream &osArg, const OctetsStream &osRes) { }$/;"	f	class:GNET::ProxyRpc
+Prepare	statefulrpc.h	/^	static StatefulRpc* Prepare(Type type) { return (StatefulRpc *)Protocol::Create(type); }$/;"	f	class:GNET::StatefulRpc
+PriorPolicy	binder.h	/^	int  PriorPolicy() const { return 1; }$/;"	f	class:GNET::AbstractBinder
+PriorPolicy	client.cpp	/^	int PriorPolicy(Protocol::Type type) const$/;"	f	class:ClientManager	file:
+PriorPolicy	login.h	/^	int PriorPolicy() { return 1; }$/;"	f	class:GNET::Challenge
+PriorPolicy	login.h	/^	int PriorPolicy() { return 1; }$/;"	f	class:GNET::Response
+PriorPolicy	protocol.h	/^		virtual int  PriorPolicy(Protocol::Type type) const$/;"	f	class:GNET::Protocol::Manager
+PriorPolicy	protocol.h	/^	virtual int  PriorPolicy() const { return 0; }$/;"	f	class:GNET::Protocol
+PriorPolicy	server.cpp	/^	int PriorPolicy(Protocol::Type type) const { return 0; }$/;"	f	class:ServerManager	file:
+Process	binder.h	/^	virtual void Process(Manager *manager, Manager::Session::ID sid)$/;"	f	class:GNET::AbstractBinder
+Process	client.cpp	/^void Challenge::Process(Manager *man, Manager::Session::ID sid)$/;"	f	class:Challenge
+Process	client.cpp	/^void Response::Process(Manager *manager, Manager::Session::ID sid) {  }$/;"	f	class:Response
+Process	proxyrpc.h	/^	void Process(Manager *manager, Manager::Session::ID sid)$/;"	f	class:GNET::ProxyRpc
+Process	rpc.h	/^	void Process(Manager *manager, Manager::Session::ID sid)$/;"	f	class:GNET::Rpc
+Process	server.cpp	/^void Challenge::Process(Manager *manager, Manager::Session::ID sid) {  }$/;"	f	class:Challenge
+Process	server.cpp	/^void Response::Process(Manager *man, Manager::Session::ID sid)$/;"	f	class:Response
+Process	statefulrpc.h	/^	void Process(Manager *manager, Manager::Session::ID sid)$/;"	f	class:GNET::StatefulRpc
+Protocol	protocol.h	/^		typedef std::map<const Protocol *, Rep> Map;$/;"	t	struct:GNET::Protocol::Represent
+Protocol	protocol.h	/^	Protocol() { _context = NULL; }$/;"	f	class:GNET::Protocol
+Protocol	protocol.h	/^	Protocol(Type t) : type(t)$/;"	f	class:GNET::Protocol
+Protocol	protocol.h	/^	Protocol(const Protocol &rhs) : type(rhs.type) { _context = NULL; }$/;"	f	class:GNET::Protocol
+Protocol	protocol.h	/^class Protocol : public Marshal$/;"	c	namespace:GNET
+ProtocolBinder	binder.h	/^	ProtocolBinder(const ProtocolBinder &rhs) : AbstractBinder(rhs) { }$/;"	f	class:GNET::ProtocolBinder
+ProtocolBinder	binder.h	/^	explicit ProtocolBinder(Type type=PROTOCOL_BINDER, size_t maxsize = 0) : AbstractBinder(type, maxsize){ }$/;"	f	class:GNET::ProtocolBinder
+ProtocolBinder	binder.h	/^class ProtocolBinder : public AbstractBinder$/;"	c	namespace:GNET
+ProtocolVector	binder.h	/^	typedef std::vector<Protocol *> ProtocolVector;$/;"	t	class:GNET::AbstractBinder
+ProxyRpc	proxyrpc.h	/^	ProxyRpc(Type type) : Protocol(type), proxy_manager(NULL) { }$/;"	f	class:GNET::ProxyRpc
+ProxyRpc	proxyrpc.h	/^	ProxyRpc(Type type, Rpc::Data *argument, Rpc::Data *result)$/;"	f	class:GNET::ProxyRpc
+ProxyRpc	proxyrpc.h	/^	ProxyRpc(const ProxyRpc &rhs) : Protocol(rhs),$/;"	f	class:GNET::ProxyRpc
+ProxyRpc	proxyrpc.h	/^class ProxyRpc : public Protocol$/;"	c	namespace:GNET
+R	security.h	507;"	d
+R	security.h	598;"	d
+RANDOM	security.h	/^enum { RANDOM = 0, NULLSECURITY = 1, ARCFOURSECURITY = 2, MD5HASH = 3, HMAC_MD5HASH = 4, $/;"	e	enum:GNET::<anonymous>
+READ_ADDED	pollio.h	/^	enum { READ_ENABLED = 1, WRITE_ENABLED = 2, READ_ADDED = 4, WRITE_ADDED = 8 };$/;"	e	enum:GNET::PollIO::<anonymous>
+READ_ENABLED	pollio.h	/^	enum { READ_ENABLED = 1, WRITE_ENABLED = 2, READ_ADDED = 4, WRITE_ADDED = 8 };$/;"	e	enum:GNET::PollIO::<anonymous>
+RECEIVE_EXP	coordinate.cpp	/^		RECEIVE_EXP,$/;"	e	file:
+RENEW	coordinate.cpp	/^		RENEW,$/;"	e	file:
+REPAIR	coordinate.cpp	/^		REPAIR,$/;"	e	file:
+REPAIR_ALL	coordinate.cpp	/^		REPAIR_ALL,$/;"	e	file:
+Random	security.h	/^	Random() { }$/;"	f	class:GNET::Random
+Random	security.h	/^	Random(Type type) : Security(type) { }$/;"	f	class:GNET::Random
+Random	security.h	/^	Random(const Random &rhs) : Security(rhs) { }$/;"	f	class:GNET::Random
+Random	security.h	/^class Random : public Security$/;"	c	namespace:GNET
+Register	pollio.h	/^	static PollIO* Register(PollIO *io, bool init_permit_recv, bool init_permit_send)$/;"	f	class:GNET::PollIO
+Release	protocol.h	/^		static void Release(const Protocol *protocol)$/;"	f	struct:GNET::Protocol::Represent
+Rep	protocol.h	/^			Rep() : locker("Protocol::Represent::Rep::locker") { }$/;"	f	struct:GNET::Protocol::Represent::Rep
+Rep	protocol.h	/^			Rep(const Rep& rhs) : rep(rhs.rep), locker("Protocol::Represent::Rep::locker") { }$/;"	f	struct:GNET::Protocol::Represent::Rep
+Rep	protocol.h	/^		struct Rep$/;"	s	struct:GNET::Protocol::Represent
+Represent	protocol.h	/^	struct Represent$/;"	s	class:GNET::Protocol
+Response	login.h	/^	Response(Type type) : Protocol(type) { }$/;"	f	class:GNET::Response
+Response	login.h	/^	Response(const Challenge &rhs) : Protocol(rhs) { }$/;"	f	class:GNET::Response
+Response	login.h	/^class Response : public Protocol$/;"	c	namespace:GNET
+Result	rpc.h	/^	struct Result : public Data$/;"	s	class:GNET::Rpc
+Rpc	rpc.h	/^	Rpc(Type type, Data *arg, Data *res) : Protocol(type), argument(arg), result(res) { }$/;"	f	class:GNET::Rpc
+Rpc	rpc.h	/^	Rpc(const Rpc &rhs) : Protocol(rhs), argument(rhs.argument->Clone()), result(rhs.result->Clone()), xid(rhs.xid) { }$/;"	f	class:GNET::Rpc
+Rpc	rpc.h	/^class Rpc : public Protocol$/;"	c	namespace:GNET
+RpcClientAdaptor	statefulrpc.h	/^	RpcClientAdaptor() : istimeout(false) { }$/;"	f	class:GNET::RpcClientAdaptor
+RpcClientAdaptor	statefulrpc.h	/^class RpcClientAdaptor : public RpcStateAdaptor, public ObjectChangeSupport$/;"	c	namespace:GNET
+RpcClientTask	statefulrpc.h	/^	RpcClientTask() : arg((Arg*)Protocol::Create(callid)), state(SUCCEED)$/;"	f	class:GNET::RpcClientTask
+RpcClientTask	statefulrpc.h	/^	RpcClientTask() : state(INIT), adaptor(new RpcClientAdaptor())$/;"	f	class:GNET::RpcClientTask
+RpcClientTask	statefulrpc.h	/^class RpcClientTask : public Thread::StatefulRunnable$/;"	c	namespace:GNET
+RpcClientTask	statefulrpc.h	/^class RpcClientTask<callid, Arg, bool> : public Thread::StatefulRunnable$/;"	c	namespace:GNET
+RpcServerAdaptor	statefulrpc.h	/^	RpcServerAdaptor(Thread::TaskGraph *g) : graph(g) { }$/;"	f	class:GNET::RpcServerAdaptor
+RpcServerAdaptor	statefulrpc.h	/^class RpcServerAdaptor : public RpcStateAdaptor$/;"	c	namespace:GNET
+RpcServerTask	statefulrpc.h	/^	RpcServerTask(Thread::TaskContext *ctx) : Thread::TaskGraph(ctx), adaptor(new RpcServerAdaptor(this)) { }$/;"	f	class:GNET::RpcServerTask
+RpcServerTask	statefulrpc.h	/^class RpcServerTask : public Thread::TaskGraph$/;"	c	namespace:GNET
+RpcStateAdaptor	statefulrpc.h	/^class RpcStateAdaptor$/;"	c	namespace:GNET
+Run	pollio.h	/^		void Run()$/;"	f	class:GNET::PollIO::Task
+Run	protocol.h	/^		void Run()$/;"	f	class:GNET::Protocol::Task
+Run	statefulrpc.h	/^	void Run()$/;"	f	class:GNET::RpcClientTask
+RunTimerSender	timermanager.h	/^		void RunTimerSender( size_t ticks=1 )$/;"	f	class:GNET::TimerManager
+SELECT_TARGET	coordinate.cpp	/^		SELECT_TARGET,$/;"	e	file:
+SELF_ATTACK_RESULT	coordinate.cpp	/^		SELF_ATTACK_RESULT,$/;"	e	file:
+SELF_GET_EXT_PROPERTY	coordinate.cpp	/^		SELF_GET_EXT_PROPERTY,$/;"	e	file:
+SELF_INFO_00	coordinate.cpp	/^		SELF_INFO_00,$/;"	e	file:
+SELF_INFO_1	coordinate.cpp	/^		SELF_INFO_1,$/;"	e	file:
+SELF_INVENTORY_DATA	coordinate.cpp	/^		SELF_INVENTORY_DATA,$/;"	e	file:
+SELF_INVENTORY_DETAIL_DATA	coordinate.cpp	/^		SELF_INVENTORY_DETAIL_DATA,$/;"	e	file:
+SELF_ITEM_EMPTY_INFO	coordinate.cpp	/^		SELF_ITEM_EMPTY_INFO,$/;"	e	file:
+SELF_ITEM_INFO	coordinate.cpp	/^		SELF_ITEM_INFO,$/;"	e	file:
+SELF_NOTIFY_ROOT	coordinate.cpp	/^		SELF_NOTIFY_ROOT,$/;"	e	file:
+SELF_SKILL_ATTACK_RESULT	coordinate.cpp	/^		SELF_SKILL_ATTACK_RESULT,$/;"	e	file:
+SELF_SKILL_INTERRUPTED	coordinate.cpp	/^		SELF_SKILL_INTERRUPTED,$/;"	e	file:
+SELF_START_ATTACK	coordinate.cpp	/^		SELF_START_ATTACK,$/;"	e	file:
+SELF_STOP_ATTACK	coordinate.cpp	/^		SELF_STOP_ATTACK,$/;"	e	file:
+SELF_STOP_SKILL	coordinate.cpp	/^		SELF_STOP_SKILL,$/;"	e	file:
+SERVER_TIMESTAMP	coordinate.cpp	/^		SERVER_TIMESTAMP,$/;"	e	file:
+SET_STATUS_POINT	coordinate.cpp	/^		SET_STATUS_POINT,$/;"	e	file:
+SHA1HASH	security.h	/^	COMPRESSARCFOURSECURITY = 5, DECOMPRESSARCFOURSECURITY = 6, SHA1HASH = 7 };$/;"	e	enum:GNET::<anonymous>
+SHA1Hash	security.h	/^	SHA1Hash() { init(); }$/;"	f	class:GNET::SHA1Hash
+SHA1Hash	security.h	/^	SHA1Hash() { sha1_init_context(context); }$/;"	f	class:GNET::SHA1Hash
+SHA1Hash	security.h	/^	SHA1Hash(Type type) : Security(type) { init(); }$/;"	f	class:GNET::SHA1Hash
+SHA1Hash	security.h	/^	SHA1Hash(Type type) : Security(type) { sha1_init_context( context ); }$/;"	f	class:GNET::SHA1Hash
+SHA1Hash	security.h	/^	SHA1Hash(const SHA1Hash &rhs) : Security(rhs) { memcpy(context, rhs.context, sizeof(context)); }$/;"	f	class:GNET::SHA1Hash
+SHA1Hash	security.h	/^	SHA1Hash(const SHA1Hash &rhs) : Security(rhs), low_count(rhs.low_count), high_count(rhs.high_count), remain(rhs.remain)$/;"	f	class:GNET::SHA1Hash
+SHA1Hash	security.h	/^class SHA1Hash : public Security$/;"	c	namespace:GNET
+SHA1_PAD_SIZE	ppp_mppe_mppc.c	87;"	d	file:
+SKILL_DATA	coordinate.cpp	/^		SKILL_DATA,$/;"	e	file:
+SKILL_INTERRUPTED	coordinate.cpp	/^		SKILL_INTERRUPTED,$/;"	e	file:
+SKILL_PERFORM	coordinate.cpp	/^		SKILL_PERFORM,$/;"	e	file:
+SPEND_MONEY	coordinate.cpp	/^		SPEND_MONEY,$/;"	e	file:
+STREAM	activeio.h	/^	enum Type { STREAM, DGRAM };$/;"	e	enum:GNET::ActiveIO::Type
+STREAM	passiveio.h	/^	enum Type { STREAM, DGRAM };$/;"	e	enum:GNET::PassiveIO::Type
+Security	security.h	/^	Security() { }$/;"	f	class:GNET::Security
+Security	security.h	/^	Security(Type t) : type(t)$/;"	f	class:GNET::Security
+Security	security.h	/^	Security(const Security &rhs) : type(rhs.type) { }$/;"	f	class:GNET::Security
+Security	security.h	/^class Security$/;"	c	namespace:GNET
+Send	protocol.h	/^			bool Send(      Protocol *protocol, bool urg) { return Send(protocol->Encode(), urg); }$/;"	f	class:GNET::Protocol::Manager::Session
+Send	protocol.h	/^			bool Send(Octets ps, bool urg)$/;"	f	class:GNET::Protocol::Manager::Session
+Send	protocol.h	/^			bool Send(const Protocol *protocol, bool urg) { return Send(protocol->Encode(), urg); }$/;"	f	class:GNET::Protocol::Manager::Session
+Send	protocol.h	/^		bool Send(Session::ID id,       Protocol &protocol, bool urg = false) { return Send(id,&protocol,urg); }$/;"	f	class:GNET::Protocol::Manager
+Send	protocol.h	/^		bool Send(Session::ID id,       Protocol *protocol, bool urg = false)$/;"	f	class:GNET::Protocol::Manager
+Send	protocol.h	/^		bool Send(Session::ID id, const Protocol &protocol, bool urg = false) { return Send(id,&protocol,urg); }$/;"	f	class:GNET::Protocol::Manager
+Send	protocol.h	/^		bool Send(Session::ID id, const Protocol *protocol, bool urg = false)$/;"	f	class:GNET::Protocol::Manager
+Send	transport.h	/^	bool Send(const Protocol &protocol) const { return manager ? manager->Send(sid, protocol) : false; }$/;"	f	class:GNET::Transport
+Send	transport.h	/^	bool Send(const Protocol *protocol) const { return manager ? manager->Send(sid, protocol) : false; }$/;"	f	class:GNET::Transport
+SendFinish	netio.h	/^	void SendFinish()$/;"	f	class:GNET::NetSession
+SendReady	netio.h	/^	void SendReady()$/;"	f	class:GNET::NetSession
+SendToSponsor	proxyrpc.h	/^	void SendToSponsor( )$/;"	f	class:GNET::ProxyRpc
+Server	protocol.h	/^	static PassiveIO *Server(Manager *manager) { return PassiveIO::Open(Manager::Session(manager)); }$/;"	f	class:GNET::Protocol
+Server	protocol.h	/^	static PassiveIO *Server(Manager *manager, variant conf) { return PassiveIO::Open(Manager::Session(manager), conf); }$/;"	f	class:GNET::Protocol
+Server	rpc.h	/^	virtual void Server(Data *argument, Data *result) {  }$/;"	f	class:GNET::Rpc
+Server	rpc.h	/^	virtual void Server(Data *argument, Data *result, Manager *manager, Manager::Session::ID sid)$/;"	f	class:GNET::Rpc
+ServerManager	server.cpp	/^class ServerManager : public Protocol::Manager$/;"	c	file:
+Session	protocol.h	/^			Session(Manager *m) : sid(nextsid()), is(this), os_bytes(0), manager(m), state(m->GetInitState()), verbose(LOG_ERR),ignore(false){ }$/;"	f	class:GNET::Protocol::Manager::Session
+Session	protocol.h	/^			Session(const Session &rhs) : NetSession(rhs), sid(nextsid()), is(this), os_bytes(rhs.os_bytes), manager(rhs.manager),$/;"	f	class:GNET::Protocol::Manager::Session
+Session	protocol.h	/^		class Session : public NetSession$/;"	c	class:GNET::Protocol::Manager
+Set	protocol.h	/^				typedef std::set<Type> Set;$/;"	t	class:GNET::Protocol::Manager::Session::State
+SetArgument	proxyrpc.h	/^	void SetArgument(const Rpc::Data & arg)$/;"	f	class:GNET::ProxyRpc
+SetArgument	proxyrpc.h	/^	void SetArgument(const Rpc::Data *arg)$/;"	f	class:GNET::ProxyRpc
+SetCompress	timermanager.h	/^		void SetCompress( bool b ) { compress = b; }$/;"	f	class:GNET::TimerManager
+SetISecurity	netio.h	/^	void SetISecurity(Security::Type type, const Octets &key)$/;"	f	class:GNET::NetSession
+SetISecurity	protocol.h	/^		bool SetISecurity(Session::ID id, Security::Type type, const Octets &key)$/;"	f	class:GNET::Protocol::Manager
+SetId	rpc.h	/^		void SetId(unsigned int _id) { id = _id; }$/;"	f	class:GNET::Rpc::XID
+SetIgnore	protocol.h	/^			void SetIgnore(bool val) { ignore = true;}$/;"	f	class:GNET::Protocol::Manager::Session
+SetIgnore	protocol.h	/^		bool SetIgnore(Session::ID id, bool val)$/;"	f	class:GNET::Protocol::Manager
+SetOSecurity	netio.h	/^	void SetOSecurity(Security::Type type, const Octets &key)$/;"	f	class:GNET::NetSession
+SetOSecurity	protocol.h	/^		bool SetOSecurity(Session::ID id, Security::Type type, const Octets &key)$/;"	f	class:GNET::Protocol::Manager
+SetParameter	security.h	/^	virtual void SetParameter(const Octets &) { }$/;"	f	class:GNET::Security
+SetParameter	security.h	/^	void SetParameter(const Octets &param) { arc4.SetParameter(param); }$/;"	f	class:GNET::CompressARCFourSecurity
+SetParameter	security.h	/^	void SetParameter(const Octets &param) { arc4.SetParameter(param); }$/;"	f	class:GNET::DecompressARCFourSecurity
+SetParameter	security.h	/^	void SetParameter(const Octets &param) { rc4_init_context(context, param.begin(), param.size()); }$/;"	f	class:GNET::ARCFourSecurity
+SetParameter	security.h	/^	void SetParameter(const Octets &param)$/;"	f	class:GNET::ARCFourSecurity
+SetParameter	security.h	/^	void SetParameter(const Octets &param)$/;"	f	class:GNET::HMAC_MD5Hash
+SetRequest	proxyrpc.h	/^		void SetRequest()$/;"	f	class:GNET::ProxyRpc::XID
+SetRequest	rpc.h	/^		void SetRequest()$/;"	f	class:GNET::Rpc::XID
+SetResult	proxyrpc.h	/^	void SetResult( const Rpc::Data & res)$/;"	f	class:GNET::ProxyRpc
+SetResult	proxyrpc.h	/^	void SetResult( const Rpc::Data * res )$/;"	f	class:GNET::ProxyRpc
+SetRpcServerTask	statefulrpc.h	/^	void SetRpcServerTask(RpcServerTask<Arg, Res> *task) { adaptor = task->adaptor; }$/;"	f	class:GNET::StatefulRpc
+SetSize	protocol.h	/^				size_t SetSize() const { return set.size(); }$/;"	f	class:GNET::Protocol::Manager::Session::State
+SetStartNode	statefulrpc.h	/^	void SetStartNode(Thread::TaskGraph::Node *s) { start_node = s; }$/;"	f	class:GNET::RpcServerAdaptor
+SetTimerSenderSize	timermanager.h	/^		void SetTimerSenderSize(size_t size_limit) { size_threshold = size_limit >=0 ? size_limit : 0; }$/;"	f	class:GNET::TimerManager
+SetTransport	transport.h	/^	void SetTransport(const Transport& tp) { transport = tp; }$/;"	f	class:GNET::TransportContext
+SetVerbose	protocol.h	/^			void SetVerbose(int v) { verbose = v; }$/;"	f	class:GNET::Protocol::Manager::Session
+SetVerbose	protocol.h	/^		void SetVerbose(Session::ID sid, int v)$/;"	f	class:GNET::Protocol::Manager
+Setup	login.h	/^	void Setup(const char *name, const char *passwd, Challenge* challenge)$/;"	f	class:GNET::Response
+Setup	login.h	/^	void Setup(size_t size)$/;"	f	class:GNET::Challenge
+SizePolicy	binder.h	/^	bool SizePolicy(size_t size) const { return size <= maxsize; }$/;"	f	class:GNET::AbstractBinder
+SizePolicy	protocol.h	/^	virtual bool SizePolicy(size_t) const { return true; }$/;"	f	class:GNET::Protocol
+SizePolicy	timermanager.h	/^		bool SizePolicy(size_t size) { return 0 == size_threshold || size<size_threshold; }$/;"	f	class:GNET::TimerManager
+SockAddr	netio.h	/^	SockAddr() {}$/;"	f	class:GNET::SockAddr
+SockAddr	netio.h	/^	SockAddr(const SockAddr &rhs) : addr(rhs.addr) { }$/;"	f	class:GNET::SockAddr
+SockAddr	netio.h	/^	template<typename T> SockAddr(const T &sa) : addr(&sa, sizeof(sa)) { }$/;"	f	class:GNET::SockAddr
+SockAddr	netio.h	/^class SockAddr$/;"	c	namespace:GNET
+Start	netio.h	/^	static void Start(StdInIO *stdinio)$/;"	f	class:GNET::StdInIO
+Start	statefulrpc.h	/^	void Start(Node *init_node) { adaptor->SetStartNode(init_node); }$/;"	f	class:GNET::RpcServerTask
+State	protocol.h	/^				State (Type *first, Type *last, int t = 0) : set(first, last), timeout(t) { }$/;"	f	class:GNET::Protocol::Manager::Session::State
+State	protocol.h	/^				State (Type *first, size_t len, int t = 0) : set(first, first+len), timeout(t) { }$/;"	f	class:GNET::Protocol::Manager::Session::State
+State	protocol.h	/^			class State$/;"	c	class:GNET::Protocol::Manager::Session
+StatePolicy	protocol.h	/^			bool StatePolicy(Type type) const { return state->TypePolicy(type); }$/;"	f	class:GNET::Protocol::Manager::Session
+StatefulRpc	statefulrpc.h	/^	StatefulRpc(Type type, Data *arg, Data *res) : Rpc(type, arg, res) { }$/;"	f	class:GNET::StatefulRpc
+StatefulRpc	statefulrpc.h	/^	StatefulRpc(const StatefulRpc& rhs) : Rpc(rhs), adaptor(rhs.adaptor) { }$/;"	f	class:GNET::StatefulRpc
+StatefulRpc	statefulrpc.h	/^class StatefulRpc : public Rpc$/;"	c	namespace:GNET
+StdInIO	netio.h	/^	StdInIO() : PollIO(0) { }$/;"	f	class:GNET::StdInIO
+StdInIO	netio.h	/^class StdInIO : public PollIO$/;"	c	namespace:GNET
+Stream	protocol.h	/^				Stream(Session *s) : session(s), check_policy(true), proto_ignore(false) { }$/;"	f	struct:GNET::Protocol::Manager::Session::Stream
+Stream	protocol.h	/^			struct Stream : public Marshal::OctetsStream$/;"	s	class:GNET::Protocol::Manager::Session
+StreamIO	netio.h	/^	StreamIO(int fd, NetSession *s) : NetIO(fd, s)$/;"	f	class:GNET::StreamIO
+StreamIO	netio.h	/^class StreamIO : public NetIO$/;"	c	namespace:GNET
+TASK_DATA	coordinate.cpp	/^		TASK_DATA,$/;"	e	file:
+TASK_VAR_DATA	coordinate.cpp	/^		TASK_VAR_DATA,$/;"	e	file:
+TEAMMATE_POS	coordinate.cpp	/^		TEAMMATE_POS, $/;"	e	file:
+TEAM_APPLY_REQUEST	coordinate.cpp	/^		TEAM_APPLY_REQUEST,$/;"	e	file:
+TEAM_JOIN_TEAM	coordinate.cpp	/^		TEAM_JOIN_TEAM,$/;"	e	file:
+TEAM_LEADER_CANCEL_PARTY	coordinate.cpp	/^		TEAM_LEADER_CANCEL_PARTY,$/;"	e	file:
+TEAM_LEADER_INVITE	coordinate.cpp	/^		TEAM_LEADER_INVITE,$/;"	e	file:
+TEAM_LEAVE_PARTY	coordinate.cpp	/^		TEAM_LEAVE_PARTY,$/;"	e	file:
+TEAM_MEMBER_DATA	coordinate.cpp	/^		TEAM_MEMBER_DATA,$/;"	e	file:
+TEAM_MEMBER_LEAVE	coordinate.cpp	/^		TEAM_MEMBER_LEAVE,$/;"	e	file:
+TEAM_MEMBER_PICKUP	coordinate.cpp	/^		TEAM_MEMBER_PICKUP, $/;"	e	file:
+TEAM_NEW_MEMBER	coordinate.cpp	/^		TEAM_NEW_MEMBER,$/;"	e	file:
+TEAM_REJECT_INVITE	coordinate.cpp	/^		TEAM_REJECT_INVITE,$/;"	e	file:
+TOP_SRCDIR	Makefile	/^TOP_SRCDIR = ..$/;"	m
+TRASHBOX_CLOSE	coordinate.cpp	/^		TRASHBOX_CLOSE,$/;"	e	file:
+TRASHBOX_OPEN	coordinate.cpp	/^		TRASHBOX_OPEN,$/;"	e	file:
+TRASHBOX_PASSWD_CHANGED	coordinate.cpp	/^		TRASHBOX_PASSWD_CHANGED,$/;"	e	file:
+TRASHBOX_PASSWD_STATE	coordinate.cpp	/^		TRASHBOX_PASSWD_STATE,$/;"	e	file:
+TRASHBOX_WEALTH	coordinate.cpp	/^		TRASHBOX_WEALTH,$/;"	e	file:
+TRASH_ITEM_TO_INVENTORY	coordinate.cpp	/^		TRASH_ITEM_TO_INVENTORY,$/;"	e	file:
+Task	pollio.h	/^		Task(int prior=1) : Runnable(prior){ }$/;"	f	class:GNET::PollIO::Task
+Task	pollio.h	/^	class Task : public Thread::Runnable$/;"	c	class:GNET::PollIO
+Task	protocol.h	/^		Task(Manager *m, Manager::Session::ID id, Protocol *p) : $/;"	f	class:GNET::Protocol::Task
+Task	protocol.h	/^	class Task : public Thread::Runnable$/;"	c	class:GNET::Protocol
+TestMPPC	m.cpp	/^void TestMPPC( Octets & rand_data, bool btesttime )$/;"	f
+TimeActiveIO	timeactiveio.h	/^	TimeActiveIO(int x, const SockAddr &saddr, const NetSession &s, int timeout) : PollIO(x), assoc_session(s.Clone()), sa(saddr)$/;"	f	class:GNET::TimeActiveIO
+TimeActiveIO	timeactiveio.h	/^	TimeActiveIO(int x, const SockAddr &saddr, const NetSession &s, int timeout, variant conf) : PollIO(x), assoc_session(s.Clone()), sa(saddr)$/;"	f	class:GNET::TimeActiveIO
+TimeActiveIO	timeactiveio.h	/^class TimeActiveIO : PollIO$/;"	c	namespace:GNET
+TimePolicy	protocol.h	/^				bool TimePolicy(int t) const { return timeout <= 0 || t < timeout; }$/;"	f	class:GNET::Protocol::Manager::Session::State
+TimePolicy	proxyrpc.h	/^	virtual bool TimePolicy(int timeout) const { return timeout < 5; }$/;"	f	class:GNET::ProxyRpc
+TimePolicy	rpc.h	/^	virtual bool TimePolicy(int timeout) const { return timeout < 5; }$/;"	f	class:GNET::Rpc
+Timeout	rpc.h	/^	virtual void Timeout() { OnTimeout(); }$/;"	f	class:GNET::Rpc
+Timeout	statefulrpc.h	/^	void Timeout()$/;"	f	class:GNET::StatefulRpc
+Timer	timermanager.h	/^			Timer(TimerManager * m) : manager(m) { }$/;"	f	class:GNET::TimerManager::Timer
+Timer	timermanager.h	/^		class Timer : public IntervalTimer::Observer$/;"	c	class:GNET::TimerManager
+TimerManager	timermanager.h	/^		explicit TimerManager() : locker("TimerManager::locker"), compress(false), size_threshold(0), flush_count(0), timer(this)$/;"	f	class:GNET::TimerManager
+TimerManager	timermanager.h	/^	class TimerManager : public Protocol::Manager$/;"	c	namespace:GNET
+Transport	transport.h	/^	Transport() : manager(NULL), sid(0) { }$/;"	f	class:GNET::Transport
+Transport	transport.h	/^	Transport(Protocol::Manager *m, Protocol::Manager::Session::ID s) : manager(m), sid(s) { }$/;"	f	class:GNET::Transport
+Transport	transport.h	/^class Transport$/;"	c	namespace:GNET
+TransportContext	transport.h	/^class TransportContext : virtual public Thread::TaskContext$/;"	c	namespace:GNET
+TriggerEvent	pollio.h	/^	static void TriggerEvent(const pollfd &fds)$/;"	f	class:GNET::PollIO
+TriggerEvent	pollio.h	/^	static void TriggerEvent(const struct epoll_event &ev)$/;"	f	class:GNET::PollIO
+TriggerEvent	pollio.h	/^	static void TriggerEvent(const struct kevent &kv)$/;"	f	class:GNET::PollIO
+TriggerEvent	pollio.h	/^	static void TriggerEvent(int fd)$/;"	f	class:GNET::PollIO
+Type	activeio.h	/^	enum Type { STREAM, DGRAM };$/;"	g	class:GNET::ActiveIO
+Type	passiveio.h	/^	enum Type { STREAM, DGRAM };$/;"	g	class:GNET::PassiveIO
+Type	protocol.h	/^	typedef unsigned int Type;$/;"	t	class:GNET::Protocol
+Type	security.h	/^	typedef unsigned int Type;$/;"	t	class:GNET::Security
+TypePolicy	protocol.h	/^				bool TypePolicy(Type type) const { return set.find(type) != set.end(); }$/;"	f	class:GNET::Protocol::Manager::Session::State
+UNSELECT	coordinate.cpp	/^		UNSELECT,$/;"	e	file:
+UPDATE_VISIBLE_STATE	coordinate.cpp	/^		UPDATE_VISIBLE_STATE,$/;"	e	file:
+Uncompress	compress.h	/^static void Uncompress( Octets & os_com, Octets & os_src )$/;"	f	namespace:GNET
+Unmonitor	timeactiveio.h	/^		void Unmonitor( int s )$/;"	f	class:GNET::TimeActiveIO::Checker
+Update	base64.h	/^	Octets& Update(Octets &in) $/;"	f	class:GNET::Base64Decoder
+Update	base64.h	/^	Octets& Update(Octets& in) $/;"	f	class:GNET::Base64Encoder
+Update	proxyrpc.h	/^		void Update()$/;"	f	class:GNET::ProxyRpc::HouseKeeper
+Update	rpc.h	/^		void Update()$/;"	f	class:GNET::Rpc::HouseKeeper
+Update	security.h	/^	Octets& Update(Octets &o) { md5_update(context, o.begin(), o.size()); return o; }$/;"	f	class:GNET::MD5Hash
+Update	security.h	/^	Octets& Update(Octets &o) { rc4_update(context, o.begin(), o.size()); return o; }$/;"	f	class:GNET::ARCFourSecurity
+Update	security.h	/^	Octets& Update(Octets &o) { read(fd, o.begin(), o.size()); return o; }$/;"	f	class:GNET::Random
+Update	security.h	/^	Octets& Update(Octets &o) { return decompress.Update(arc4.Update(o)); }$/;"	f	class:GNET::DecompressARCFourSecurity
+Update	security.h	/^	Octets& Update(Octets &o) { return md5hash.Update(o); }$/;"	f	class:GNET::HMAC_MD5Hash
+Update	security.h	/^	Octets& Update(Octets &o) { return o; }$/;"	f	class:GNET::NullSecurity
+Update	security.h	/^	Octets& Update(Octets &o) { sha1_update(context, o.begin(), o.size()); return o; }$/;"	f	class:GNET::SHA1Hash
+Update	security.h	/^	Octets& Update(Octets &o) {$/;"	f	class:GNET::Random
+Update	security.h	/^	Octets& Update(Octets &o)$/;"	f	class:GNET::ARCFourSecurity
+Update	security.h	/^	Octets& Update(Octets &o)$/;"	f	class:GNET::CompressARCFourSecurity
+Update	security.h	/^	Octets& Update(Octets &o)$/;"	f	class:GNET::MD5Hash
+Update	security.h	/^	Octets& Update(Octets &o)$/;"	f	class:GNET::SHA1Hash
+Update	streamcompress.h	/^	Octets& Update(Octets &in)$/;"	f	class:GNET::Compress
+Update	streamcompress.h	/^	Octets& Update(Octets &in)$/;"	f	class:GNET::Decompress
+Update	timeactiveio.h	/^		void Update()$/;"	f	class:GNET::TimeActiveIO::Checker
+Update	timermanager.h	/^			bool Update( )$/;"	f	class:GNET::TimerManager::Timer
+UpdateEvent	pollio.h	/^	static void UpdateEvent()$/;"	f	class:GNET::PollIO
+UpdateEventMap	pollio.h	/^	static void UpdateEventMap()$/;"	f	class:GNET::PollIO
+UserMap	server.cpp	/^	typedef std::map<Session::ID, UserTracker> UserMap;$/;"	t	class:ServerManager	file:
+UserTracker	server.cpp	/^struct UserTracker$/;"	s	file:
+WRITE_ADDED	pollio.h	/^	enum { READ_ENABLED = 1, WRITE_ENABLED = 2, READ_ADDED = 4, WRITE_ADDED = 8 };$/;"	e	enum:GNET::PollIO::<anonymous>
+WRITE_ENABLED	pollio.h	/^	enum { READ_ENABLED = 1, WRITE_ENABLED = 2, READ_ADDED = 4, WRITE_ADDED = 8 };$/;"	e	enum:GNET::PollIO::<anonymous>
+WakeUp	pollio.h	/^	static void WakeUp() {  }$/;"	f	class:GNET::PollControl
+WakeUp	pollio.h	/^	static void WakeUp() { write(writer, "", 1); }$/;"	f	class:GNET::PollControl
+WakeUp	pollio.h	/^inline void PollIO::WakeUp()$/;"	f	class:GNET::PollIO
+WakeUpEventSet	pollio.h	/^	void WakeUpEventSet()$/;"	f	class:GNET::PollIO
+XID	proxyrpc.h	/^		XID() : id(0) { }$/;"	f	class:GNET::ProxyRpc::XID
+XID	proxyrpc.h	/^	class XID : public Marshal$/;"	c	class:GNET::ProxyRpc
+XID	rpc.h	/^		XID() : id(0) { }$/;"	f	class:GNET::Rpc::XID
+XID	rpc.h	/^		XID(const XID& rhs) : id(rhs.id) { }$/;"	f	class:GNET::Rpc::XID
+XID	rpc.h	/^	class XID : public Marshal$/;"	c	class:GNET::Rpc
+_Close	netio.h	/^	void _Close()$/;"	f	class:GNET::NetSession
+_Iterator	timermanager.h	/^		template<typename _Iterator, typename _Function>$/;"	m	class:GNET::TimerManager
+_PermitRecv	pollio.h	/^	void _PermitRecv()$/;"	f	class:GNET::PollIO
+_PermitSend	pollio.h	/^	void _PermitSend()$/;"	f	class:GNET::PollIO
+__ACTIVEIO_H	activeio.h	2;"	d
+__BASE64_H__	base64.h	2;"	d
+__COMPRESS_H	compress.h	2;"	d
+__COORDINATE_H	coordinate.h	2;"	d
+__GNET_BINDER_H	binder.h	2;"	d
+__GNET_STATEFULRPC_H	statefulrpc.h	2;"	d
+__GNET_TRANSPORT_H	transport.h	2;"	d
+__LOGIN_H	login.h	2;"	d
+__MPPC_H	mppc.h	2;"	d
+__NETIO_H	netio.h	2;"	d
+__PASSIVEIO_H	passiveio.h	2;"	d
+__POLLIO_H	pollio.h	2;"	d
+__PROTOCOL_H	protocol.h	2;"	d
+__PROXYRPC_H	proxyrpc.h	2;"	d
+__RPC_H	rpc.h	2;"	d
+__SECURITY_H	security.h	2;"	d
+__STREAMCOMPRESS_H	streamcompress.h	2;"	d
+__TIMEACTIVEIO_H	timeactiveio.h	2;"	d
+__TIMER_MANAGER_H	timermanager.h	2;"	d
+_context	protocol.h	/^	void * _context; \/\/ transient$/;"	m	class:GNET::Protocol
+_state	client.cpp	/^static Protocol::Type _state[] = {$/;"	v	file:
+_state	server.cpp	/^static Protocol::Type _state[] = {$/;"	v	file:
+adaptor	statefulrpc.h	/^	HardReference<RpcClientAdaptor> adaptor;$/;"	m	class:GNET::RpcClientTask
+adaptor	statefulrpc.h	/^	HardReference<RpcServerAdaptor> adaptor;$/;"	m	class:GNET::RpcServerTask
+adaptor	statefulrpc.h	/^	WeakReference<RpcStateAdaptor> adaptor;$/;"	m	class:GNET::StatefulRpc
+addr	netio.h	/^	Octets addr;$/;"	m	class:GNET::SockAddr
+adjust_l	streamcompress.h	/^	unsigned int l, adjust_l;$/;"	m	class:GNET::Decompress
+adjust_rptr	streamcompress.h	/^	unsigned char *rptr, *adjust_rptr;$/;"	m	class:GNET::Decompress
+all_rfds	pollio.cpp	/^fd_set PollIO::all_rfds;$/;"	m	class:GNET::PollIO	file:
+all_rfds	pollio.h	/^	static fd_set rfds, wfds, all_rfds, all_wfds;$/;"	m	class:GNET::PollIO
+all_wfds	pollio.cpp	/^fd_set PollIO::all_wfds;$/;"	m	class:GNET::PollIO	file:
+all_wfds	pollio.h	/^	static fd_set rfds, wfds, all_rfds, all_wfds;$/;"	m	class:GNET::PollIO
+arc4	security.h	/^	ARCFourSecurity arc4;$/;"	m	class:GNET::CompressARCFourSecurity
+arc4	security.h	/^	ARCFourSecurity arc4;$/;"	m	class:GNET::DecompressARCFourSecurity
+arc4_decrypt	ppp_mppe_mppc.c	120;"	d	file:
+arc4_encrypt	ppp_mppe_mppc.c	/^arc4_encrypt(struct ppp_mppe_state *state, const unsigned char *in,$/;"	f	file:
+arc4_setkey	ppp_mppe_mppc.c	/^arc4_setkey(struct ppp_mppe_state *state, const unsigned char *key,$/;"	f	file:
+arc4_tfm	ppp_mppe_mppc.c	/^    struct crypto_tfm *arc4_tfm;$/;"	m	struct:ppp_mppe_state	file:
+arg	statefulrpc.h	/^	Arg *arg;$/;"	m	class:GNET::RpcClientTask
+argument	rpc.h	/^	Data *argument;$/;"	m	class:GNET::Rpc
+assoc_io	netio.h	/^	PollIO  *assoc_io;$/;"	m	class:GNET::NetSession
+assoc_session	activeio.h	/^	NetSession *assoc_session;$/;"	m	class:GNET::ActiveIO
+assoc_session	passiveio.h	/^	NetSession *assoc_session;$/;"	m	class:GNET::PassiveIO
+assoc_session	timeactiveio.h	/^	NetSession *assoc_session;$/;"	m	class:GNET::TimeActiveIO
+bind	binder.h	/^	size_t bind(const Octets & oct)$/;"	f	class:GNET::AbstractBinder
+bind	binder.h	/^	size_t bind(const Protocol &p) { return bind(p.Encode()); }$/;"	f	class:GNET::AbstractBinder
+bind	binder.h	/^	size_t bind(const Protocol *p) { return bind(p->Encode()); }$/;"	f	class:GNET::AbstractBinder
+bindermap	timermanager.h	/^		BinderMap		bindermap;$/;"	m	class:GNET::TimerManager
+bitkeylen	ppp_mppe_mppc.c	/^    u8		bitkeylen;	\/* key length in bits *\/$/;"	m	struct:ppp_mppe_state	file:
+bits	ppp_mppe_mppc.c	/^    u16		bits;		\/* MPPC\/MPPE control bits *\/$/;"	m	struct:ppp_mppe_state	file:
+blen	streamcompress.h	/^	unsigned int blen, blen_total;$/;"	m	class:GNET::Decompress
+blen_total	streamcompress.h	/^	unsigned int blen, blen_total;$/;"	m	class:GNET::Decompress
+buffer	security.h	/^	unsigned char buffer[64];$/;"	m	class:GNET::MD5Hash
+buffer	security.h	/^	unsigned char buffer[64];$/;"	m	class:GNET::SHA1Hash
+callid	statefulrpc.h	/^template<int callid, typename Arg, typename Res>$/;"	v
+callid	statefulrpc.h	/^template<int callid, typename Arg>$/;"	v
+ccount	ppp_mppe_mppc.c	/^    u16		ccount;		\/* coherency counter *\/$/;"	m	struct:ppp_mppe_state	file:
+challenge	server.cpp	/^	Octets challenge;$/;"	m	struct:UserTracker	file:
+check_policy	protocol.h	/^				mutable bool check_policy;$/;"	m	struct:GNET::Protocol::Manager::Session::Stream
+checker	timeactiveio.cpp	/^TimeActiveIO::Checker TimeActiveIO::Checker::checker;$/;"	m	class:GNET::TimeActiveIO::Checker	file:
+checker	timeactiveio.h	/^		static Checker checker;$/;"	m	class:GNET::TimeActiveIO::Checker
+clear	binder.h	/^	virtual void clear()$/;"	f	class:GNET::AbstractBinder
+close_discard	netio.h	/^	bool    close_discard;$/;"	m	class:GNET::NetSession
+closing	netio.h	/^	bool    closing;$/;"	m	class:GNET::NetSession
+compare_SockAddr	netio.h	/^	struct compare_SockAddr$/;"	s	class:GNET::DgramServerIO
+compress	coordinate.h	/^	static inline int compress( const unsigned char * coordinate, int len, Octets & dest )$/;"	f	class:GNET::Coordinate
+compress	coordinate.h	/^	static int compress( int type, const Octets & src, Octets & dest )$/;"	f	class:GNET::Coordinate
+compress	mppc.h	/^	static int compress( unsigned char *dest, int *destLen, const unsigned char *source, int sourceLen )$/;"	f	class:GNET::mppc
+compress	security.h	/^	class Compress compress;$/;"	m	class:GNET::CompressARCFourSecurity
+compress	timermanager.h	/^		bool	compress;$/;"	m	class:GNET::TimerManager
+compress2	mppc.h	/^	static int compress2( unsigned char *dest, int *destLen, const unsigned char *source, int sourceLen )$/;"	f	class:GNET::mppc
+compressBound	mppc.h	/^	static size_t compressBound( size_t sourcelen )$/;"	f	class:GNET::mppc
+compress_block	streamcompress.h	/^	unsigned char* compress_block( unsigned char *obuf, size_t isize )$/;"	f	class:GNET::Compress
+compressfloat	coordinate.h	/^	static inline void compressfloat( float f, unsigned char *&buf, unsigned int& l )$/;"	f	class:GNET::Coordinate
+context	security.h	/^	unsigned char context[264];$/;"	m	class:GNET::ARCFourSecurity
+context	security.h	/^	unsigned char context[88];$/;"	m	class:GNET::MD5Hash
+context	security.h	/^	unsigned char context[92];$/;"	m	class:GNET::SHA1Hash
+count	proxyrpc.h	/^				unsigned int count:31;$/;"	m	struct:GNET::ProxyRpc::XID::<anonymous>::<anonymous>
+count	rpc.h	/^				unsigned int count:31;$/;"	m	struct:GNET::Rpc::XID::<anonymous>::<anonymous>
+data	rpc.h	/^		DataType data;$/;"	m	struct:GNET::Rpc::Argument
+data	rpc.h	/^		DataType data;$/;"	m	struct:GNET::Rpc::Result
+data_type	rpc.h	/^		typedef DataType data_type;$/;"	t	struct:GNET::Rpc::Argument
+data_type	rpc.h	/^		typedef DataType data_type;$/;"	t	struct:GNET::Rpc::Result
+debug	ppp_mppe_mppc.c	/^    int		debug;$/;"	m	struct:ppp_mppe_state	file:
+decodeBound	base64.h	/^	static size_t decodeBound( size_t sourcelen ) { return sourcelen*3\/4+4; }$/;"	f	class:GNET::Base64Decoder
+decompress	security.h	/^	Decompress decompress;$/;"	m	class:GNET::DecompressARCFourSecurity
+dgram_server_io	passiveio.h	/^	DgramServerIO *dgram_server_io;$/;"	m	class:GNET::PassiveIO
+dstsize	security.cpp	/^int64_t CompressARCFourSecurity::dstsize = 0;$/;"	m	class:GNET::CompressARCFourSecurity	file:
+dstsize	security.h	/^	static int64_t srcsize, dstsize;$/;"	m	class:GNET::CompressARCFourSecurity
+dump	m.cpp	/^void dump(const Octets& o)$/;"	f
+encodeBound	base64.h	/^	static size_t encodeBound( size_t sourcelen ) $/;"	f	class:GNET::Base64Encoder
+ep	pollio.cpp	/^int PollIO::ep;$/;"	m	class:GNET::PollIO	file:
+ep	pollio.h	/^	static int ep;$/;"	m	class:GNET::PollIO
+event	pollio.h	/^	int  event;$/;"	m	class:GNET::PollIO
+eventset	pollio.cpp	/^PollIO::EventSet PollIO::eventset;$/;"	m	class:GNET::PollIO	file:
+eventset	pollio.h	/^	static EventSet eventset;$/;"	m	class:GNET::PollIO
+f	security.h	194;"	d
+f	security.h	302;"	d
+fd	pollio.h	/^	int fd;$/;"	m	class:GNET::PollIO
+fd	security.cpp	/^int Random::fd = Random::Init();$/;"	m	class:GNET::Random	file:
+fd	security.h	/^	static int fd;$/;"	m	class:GNET::Random
+fdset	pollio.cpp	/^PollIO::FDSet PollIO::fdset;$/;"	m	class:GNET::PollIO	file:
+fdset	pollio.h	/^	static FDSet fdset;$/;"	m	class:GNET::PollIO
+fetch	mppc.h	/^	static inline unsigned int fetch(const unsigned char *&buf, unsigned int& l)$/;"	f	class:GNET::mppc
+fetch	streamcompress.h	/^	unsigned int fetch()$/;"	f	class:GNET::Decompress
+ff	security.h	204;"	d
+ff	security.h	225;"	d
+flush_count	timermanager.h	/^		int		flush_count;$/;"	m	class:GNET::TimerManager
+flushexpected	ppp_mppe_mppc.c	/^    u8		flushexpected;	\/* drop packets until A bit is received;$/;"	m	struct:ppp_mppe_state	file:
+g	security.h	195;"	d
+g	security.h	301;"	d
+get	protocol.h	/^		Protocol * get()                        { return p; }$/;"	f	class:GNET::Protocol::AutoPtr
+getContext	protocol.h	/^	void * getContext()            { return _context; }$/;"	f	class:GNET::Protocol
+get_new_key_from_sha	ppp_mppe_mppc.c	/^get_new_key_from_sha(struct ppp_mppe_state *state, unsigned char *interim_key)$/;"	f	file:
+getbits	coordinate.h	/^	static inline unsigned int getbits(const unsigned char *&buf, const unsigned int n, unsigned int& l)$/;"	f	class:GNET::Coordinate
+getbits	ppp_mppe_mppc.c	/^static inline u32 getbits(const u8 *buf, const u32 n, u32 *i, u32 *l)$/;"	f	file:
+getbyte	ppp_mppe_mppc.c	/^static inline u32 getbyte(const u8 *buf, const u32 i, const u32 l)$/;"	f	file:
+gg	security.h	228;"	d
+gg	security.h	249;"	d
+graph	statefulrpc.h	/^	Thread::TaskGraph *graph;$/;"	m	class:GNET::RpcServerAdaptor
+h	security.h	196;"	d
+h	security.h	300;"	d
+hash	ppp_mppe_mppc.c	/^    u16		*hash;		\/* Hash table; used only by compressor *\/$/;"	m	struct:ppp_mppe_state	file:
+hash	streamcompress.h	/^	unsigned short hash[MPPC_HIST_LEN];$/;"	m	class:GNET::Compress
+hh	security.h	252;"	d
+hh	security.h	273;"	d
+high_count	security.h	/^	unsigned int low_count, high_count, remain;$/;"	m	class:GNET::MD5Hash
+high_count	security.h	/^	unsigned int low_count, high_count, remain;$/;"	m	class:GNET::SHA1Hash
+hist	ppp_mppe_mppc.c	/^    u8		*hist;		\/* MPPC history *\/$/;"	m	struct:ppp_mppe_state	file:
+history	streamcompress.h	/^	unsigned char history[MPPC_HIST_LEN];$/;"	m	class:GNET::Compress
+history	streamcompress.h	/^	unsigned char history[MPPC_HIST_LEN];$/;"	m	class:GNET::Decompress
+histptr	ppp_mppe_mppc.c	/^    u16		histptr;	\/* history "cursor" *\/$/;"	m	struct:ppp_mppe_state	file:
+histptr	streamcompress.h	/^	unsigned char *histptr;$/;"	m	class:GNET::Compress
+histptr	streamcompress.h	/^	unsigned char *histptr;$/;"	m	class:GNET::Decompress
+housekeeper	proxyrpc.cpp	/^ProxyRpc::HouseKeeper ProxyRpc::housekeeper;$/;"	m	class:GNET::ProxyRpc	file:
+housekeeper	proxyrpc.h	/^	static HouseKeeper housekeeper;$/;"	m	class:GNET::ProxyRpc
+housekeeper	rpc.cpp	/^Rpc::HouseKeeper Rpc::housekeeper;$/;"	m	class:GNET::Rpc	file:
+housekeeper	rpc.h	/^	static HouseKeeper housekeeper;$/;"	m	class:GNET::Rpc
+i	security.h	197;"	d
+i	security.h	299;"	d
+ibuffer	netio.h	/^	Octets	ibuffer;$/;"	m	class:GNET::NetSession
+id	proxyrpc.h	/^			unsigned int id;$/;"	m	union:GNET::ProxyRpc::XID::<anonymous>
+id	rpc.h	/^			unsigned int id;$/;"	m	union:GNET::Rpc::XID::<anonymous>
+identity	client.cpp	/^	std::string identity;$/;"	m	class:ClientManager	file:
+identity	login.h	/^	Octets identity;$/;"	m	class:GNET::Response
+ignore	protocol.h	/^			bool ignore;$/;"	m	class:GNET::Protocol::Manager::Session
+ii	security.h	276;"	d
+ii	security.h	297;"	d
+index1	security.h	/^	unsigned char index1;$/;"	m	class:GNET::ARCFourSecurity
+index2	security.h	/^	unsigned char index2;$/;"	m	class:GNET::ARCFourSecurity
+init	security.h	/^	void init()$/;"	f	class:GNET::MD5Hash
+init	security.h	/^	void init()$/;"	f	class:GNET::SHA1Hash
+instance	pollio.cpp	/^PollIO::Task *PollIO::Task::instance = NULL;$/;"	m	class:GNET::PollIO::Task	file:
+instance	pollio.h	/^		static Task *instance;$/;"	m	class:GNET::PollIO::Task
+iomap	pollio.cpp	/^PollIO::IOMap PollIO::iomap;$/;"	m	class:GNET::PollIO	file:
+iomap	pollio.h	/^	static IOMap iomap;$/;"	m	class:GNET::PollIO
+ionew	pollio.cpp	/^PollIO::IOMap PollIO::ionew;$/;"	m	class:GNET::PollIO	file:
+ionew	pollio.h	/^	static IOMap ionew;$/;"	m	class:GNET::PollIO
+is	protocol.h	/^			Stream is;$/;"	m	class:GNET::Protocol::Manager::Session
+is_request	proxyrpc.h	/^				unsigned int is_request:1;$/;"	m	struct:GNET::ProxyRpc::XID::<anonymous>::<anonymous>
+is_request	rpc.h	/^				unsigned int is_request:1;$/;"	m	struct:GNET::Rpc::XID::<anonymous>::<anonymous>
+isec	netio.h	/^	Security *isec;$/;"	m	class:GNET::NetSession
+isecbuf	netio.h	/^	Octets  isecbuf;$/;"	m	class:GNET::NetSession
+istimeout	statefulrpc.h	/^	bool istimeout;$/;"	m	class:GNET::RpcClientAdaptor
+k_opad	security.h	/^	Octets k_opad;$/;"	m	class:GNET::HMAC_MD5Hash
+keylen	ppp_mppe_mppc.c	/^    u8		keylen;		\/* key length in bytes *\/$/;"	m	struct:ppp_mppe_state	file:
+kq	pollio.cpp	/^int PollIO::kq;$/;"	m	class:GNET::PollIO	file:
+kq	pollio.h	/^	static int kq;$/;"	m	class:GNET::PollIO
+l	streamcompress.h	/^	unsigned int l, adjust_l;$/;"	m	class:GNET::Decompress
+lamecopy	mppc.h	/^	static inline void lamecopy(unsigned char *dst, unsigned char *src, unsigned int len)$/;"	f	class:GNET::mppc
+lamecopy	ppp_mppe_mppc.c	/^static inline void lamecopy(u8 *dst, u8 *src, u32 len)$/;"	f	file:
+lamecopy	streamcompress.h	/^	static inline void lamecopy(unsigned char *dst, unsigned char *src, unsigned int len)$/;"	f	class:GNET::Decompress
+legacy_in	streamcompress.h	/^	Octets   legacy_in;$/;"	m	class:GNET::Decompress
+legacy_in	streamcompress.h	/^	unsigned int  legacy_in;$/;"	m	class:GNET::Compress
+locker	netio.h	/^	Thread::Mutex locker;$/;"	m	class:GNET::NetSession
+locker	protocol.h	/^			Thread::Mutex locker;$/;"	m	struct:GNET::Protocol::Represent::Rep
+locker	protocol.h	/^		static Thread::Mutex locker;$/;"	m	struct:GNET::Protocol::Represent
+locker	timermanager.h	/^		Thread::Mutex	locker;$/;"	m	class:GNET::TimerManager
+locker_event	pollio.h	/^	static Thread::Mutex locker_event;$/;"	m	class:GNET::PollIO
+locker_map	protocol.h	/^		Thread::RWLock locker_map;$/;"	m	class:GNET::Protocol::Manager
+locker_map	proxyrpc.h	/^	static Thread::RWLock locker_map;$/;"	m	class:GNET::ProxyRpc
+locker_map	rpc.h	/^	static Thread::RWLock locker_map;$/;"	m	class:GNET::Rpc
+locker_map	timeactiveio.h	/^		Thread::Mutex locker_map;$/;"	m	class:GNET::TimeActiveIO::Checker
+locker_poll	pollio.h	/^	static Thread::Mutex locker_poll;$/;"	m	class:GNET::PollIO
+locker_umap	server.cpp	/^	Thread::RWLock locker_umap;$/;"	m	class:ServerManager	file:
+locker_vector	binder.h	/^	mutable Thread::RWLock locker_vector;$/;"	m	class:GNET::AbstractBinder
+locker_xid	proxyrpc.h	/^		static Thread::Mutex locker_xid;$/;"	m	class:GNET::ProxyRpc::XID
+locker_xid	rpc.h	/^		static Thread::Mutex locker_xid;$/;"	m	class:GNET::Rpc::XID
+low_count	security.h	/^	unsigned int low_count, high_count, remain;$/;"	m	class:GNET::MD5Hash
+low_count	security.h	/^	unsigned int low_count, high_count, remain;$/;"	m	class:GNET::SHA1Hash
+main	client.cpp	/^int main()$/;"	f
+main	m.cpp	/^int main(int argc, char *argv[])$/;"	f
+main	server.cpp	/^int main()$/;"	f
+manager	protocol.h	/^			Manager *manager;$/;"	m	class:GNET::Protocol::Manager::Session
+manager	protocol.h	/^		Manager *manager;$/;"	m	class:GNET::Protocol::Task
+manager	server.cpp	/^static ServerManager manager;$/;"	v	file:
+manager	statefulrpc.h	/^	Protocol::Manager *manager;$/;"	m	class:GNET::RpcServerAdaptor
+manager	timermanager.h	/^			TimerManager * manager;$/;"	m	class:GNET::TimerManager::Timer
+manager	transport.h	/^	Protocol::Manager *manager;$/;"	m	class:GNET::Transport
+map	netio.h	/^	Map map;$/;"	m	class:GNET::DgramServerIO
+map	protocol.cpp	/^Protocol::Represent::Map* Protocol::Represent::map = new Protocol::Represent::Map();$/;"	m	class:GNET::Protocol::Represent	file:
+map	protocol.h	/^		Session::Map map;$/;"	m	class:GNET::Protocol::Manager
+map	protocol.h	/^		static Map *map;$/;"	m	struct:GNET::Protocol::Represent
+map	proxyrpc.cpp	/^ProxyRpc::Map ProxyRpc::map;$/;"	m	class:GNET::ProxyRpc	file:
+map	proxyrpc.h	/^	static Map map;$/;"	m	class:GNET::ProxyRpc
+map	rpc.cpp	/^Rpc::Map Rpc::map;$/;"	m	class:GNET::Rpc	file:
+map	rpc.h	/^	static Map map;$/;"	m	class:GNET::Rpc
+map	timeactiveio.h	/^		Map map;$/;"	m	class:GNET::TimeActiveIO::Checker
+marshal	binder.h	/^	OctetsStream& marshal(OctetsStream &os) const$/;"	f	class:GNET::CompressBinder
+marshal	binder.h	/^	OctetsStream& marshal(OctetsStream &os) const$/;"	f	class:GNET::ProtocolBinder
+marshal	login.h	/^	OctetsStream& marshal(OctetsStream &os) const { return os << identity << response; }$/;"	f	class:GNET::Response
+marshal	login.h	/^	OctetsStream& marshal(OctetsStream &os) const { return os << time_stamp; }$/;"	f	class:GNET::Challenge
+marshal	proxyrpc.h	/^		OctetsStream& marshal(OctetsStream &os) const { return os << id; }$/;"	f	class:GNET::ProxyRpc::XID
+marshal	proxyrpc.h	/^	OctetsStream& marshal(OctetsStream &os) const$/;"	f	class:GNET::ProxyRpc
+marshal	rpc.h	/^		OctetsStream& marshal(OctetsStream &os) const { return os << id; }$/;"	f	class:GNET::Rpc::XID
+marshal	rpc.h	/^		virtual OctetsStream& marshal(OctetsStream & os) const { os << data; return os; }$/;"	f	struct:GNET::Rpc::Argument
+marshal	rpc.h	/^		virtual OctetsStream& marshal(OctetsStream & os) const { os << retcode << data; return os; }$/;"	f	struct:GNET::Rpc::Result
+marshal	rpc.h	/^		virtual OctetsStream& marshal(OctetsStream & os) const { return os; }$/;"	f	struct:GNET::Rpc::NoneData
+marshal	rpc.h	/^	OctetsStream& marshal(OctetsStream &os) const$/;"	f	class:GNET::Rpc
+master_key	ppp_mppe_mppc.c	/^    u8		master_key[MPPE_MAX_KEY_LEN];$/;"	m	struct:ppp_mppe_state	file:
+maxfd	pollio.cpp	/^int PollIO::maxfd;$/;"	m	class:GNET::PollIO	file:
+maxfd	pollio.h	/^	static int maxfd;$/;"	m	class:GNET::PollIO
+maxsize	binder.h	/^	size_t maxsize;$/;"	m	class:GNET::AbstractBinder
+md5hash	security.h	/^	MD5Hash md5hash;$/;"	m	class:GNET::HMAC_MD5Hash
+mppc	mppc.h	/^class mppc$/;"	c	namespace:GNET
+mppc	ppp_mppe_mppc.c	/^    u8		mppc;		\/* do we use compression (MPPC)? *\/$/;"	m	struct:ppp_mppe_state	file:
+mppc_compress	mppc.h	/^	static int mppc_compress(const unsigned char *ibuf, unsigned char *obuf, int isize, int osize)$/;"	f	class:GNET::mppc
+mppc_compress	ppp_mppe_mppc.c	/^mppc_compress(struct ppp_mppe_state *state, unsigned char *ibuf,$/;"	f	file:
+mppc_decompress	mppc.h	/^	static int mppc_decompress(const unsigned char *ibuf, unsigned char *obuf, int isize, int osize)$/;"	f	class:GNET::mppc
+mppc_decompress	ppp_mppe_mppc.c	/^mppc_decompress(struct ppp_mppe_state *state, unsigned char *ibuf,$/;"	f	file:
+mppe	ppp_mppe_mppc.c	/^    u8		mppe;		\/* do we use encryption (MPPE)? *\/$/;"	m	struct:ppp_mppe_state	file:
+mppe_alloc	ppp_mppe_mppc.c	/^mppe_alloc(unsigned char *options, int opt_len, int comp)$/;"	f	file:
+mppe_change_key	ppp_mppe_mppc.c	/^mppe_change_key(struct ppp_mppe_state *state, int initialize)$/;"	f	file:
+mppe_comp_alloc	ppp_mppe_mppc.c	/^mppe_comp_alloc(unsigned char *options, int opt_len)$/;"	f	file:
+mppe_comp_free	ppp_mppe_mppc.c	/^mppe_comp_free(void *arg)$/;"	f	file:
+mppe_comp_init	ppp_mppe_mppc.c	/^mppe_comp_init(void *arg, unsigned char *options, int opt_len, int unit,$/;"	f	file:
+mppe_comp_reset	ppp_mppe_mppc.c	/^mppe_comp_reset(void *arg)$/;"	f	file:
+mppe_compress	ppp_mppe_mppc.c	/^mppe_compress(void *arg, unsigned char *ibuf, unsigned char *obuf,$/;"	f
+mppe_decomp_alloc	ppp_mppe_mppc.c	/^mppe_decomp_alloc(unsigned char *options, int opt_len)$/;"	f	file:
+mppe_decomp_init	ppp_mppe_mppc.c	/^mppe_decomp_init(void *arg, unsigned char *options, int opt_len, int unit,$/;"	f	file:
+mppe_decomp_reset	ppp_mppe_mppc.c	/^mppe_decomp_reset(void *arg)$/;"	f	file:
+mppe_decompress	ppp_mppe_mppc.c	/^mppe_decompress(void *arg, unsigned char *ibuf, int isize,$/;"	f
+mppe_increase_ccount	ppp_mppe_mppc.c	/^mppe_increase_ccount(struct ppp_mppe_state *state)$/;"	f	file:
+mppe_init	ppp_mppe_mppc.c	/^mppe_init(void *arg, unsigned char *options, int opt_len, int unit,$/;"	f	file:
+mppe_module_cleanup	ppp_mppe_mppc.c	/^module_exit(mppe_module_cleanup);$/;"	v
+mppe_module_cleanup	ppp_mppe_mppc.c	/^void __exit mppe_module_cleanup(void)$/;"	f
+mppe_module_init	ppp_mppe_mppc.c	/^int __init mppe_module_init(void)$/;"	f
+mppe_module_init	ppp_mppe_mppc.c	/^module_init(mppe_module_init);$/;"	v
+mppe_stats	ppp_mppe_mppc.c	/^mppe_stats(void *arg, struct compstat *stats)$/;"	f	file:
+mru	ppp_mppe_mppc.c	/^    int		mru;$/;"	m	struct:ppp_mppe_state	file:
+name	server.cpp	/^	Octets name;$/;"	m	struct:UserTracker	file:
+newevent	pollio.h	/^	int  newevent;$/;"	m	class:GNET::PollIO
+nextflushed	ppp_mppe_mppc.c	/^    u8		nextflushed;	\/* set A bit in the next outgoing packet;$/;"	m	struct:ppp_mppe_state	file:
+nextsid	protocol.h	/^			ID nextsid() { Thread::Mutex::Scoped l(session_id_mutex); return ++session_id; }$/;"	f	class:GNET::Protocol::Manager::Session
+nt	pollio.h	/^	typedef gnet_map<int, PollIO*> IOMap;$/;"	t	class:GNET::PollIO
+obuffer	netio.h	/^	Octets	obuffer;$/;"	m	class:GNET::NetSession
+ockAddr	netio.h	/^	typedef std::map<SockAddr, NetSession *, compare_SockAddr> Map;$/;"	t	class:GNET::DgramServerIO
+ollIO	pollio.h	/^	typedef gnet_map<PollIO*, int> EventMap;$/;"	t	class:GNET::PollIO
+operator ()	netio.h	/^		bool operator() (const SockAddr &sa1, const SockAddr &sa2) const$/;"	f	struct:GNET::DgramServerIO::compare_SockAddr
+operator ()	transport.h	/^	bool operator() (const Protocol &protocol) const { return manager ? manager->Send(sid, protocol) : false; }$/;"	f	class:GNET::Transport
+operator ()	transport.h	/^	bool operator() (const Protocol *protocol) const { return manager ? manager->Send(sid, protocol) : false; }$/;"	f	class:GNET::Transport
+operator ->	protocol.h	/^		Protocol * operator -> ()               { return p; }$/;"	f	class:GNET::Protocol::AutoPtr
+operator <	pollio.h	/^		bool operator <  (const PollFD &rhs) const { return fd <  rhs.fd; }$/;"	f	struct:GNET::PollIO::PollFD
+operator <	proxyrpc.h	/^		bool operator < (const XID &rhs) const { return count < rhs.count; }$/;"	f	class:GNET::ProxyRpc::XID
+operator <	rpc.h	/^		bool operator < (const XID &rhs) const { return count < rhs.count; }$/;"	f	class:GNET::Rpc::XID
+operator <	transport.h	/^	bool operator < (const Transport &rhs) const { return sid < rhs.sid; }$/;"	f	class:GNET::Transport
+operator =	proxyrpc.h	/^		XID& operator =(const XID &rhs) { if (&rhs != this) id = rhs.id; return *this; }$/;"	f	class:GNET::ProxyRpc::XID
+operator =	rpc.h	/^		XID& operator =(const XID &rhs) { if (&rhs != this) id = rhs.id; return *this; }$/;"	f	class:GNET::Rpc::XID
+operator =	rpc.h	/^		virtual Data& operator = (const Data &rhs) { return *this; }$/;"	f	struct:GNET::Rpc::Data
+operator =	rpc.h	/^		virtual Data& operator = (const Data &rhs)$/;"	f	struct:GNET::Rpc::Argument
+operator =	rpc.h	/^		virtual Data& operator = (const Data &rhs)$/;"	f	struct:GNET::Rpc::Result
+operator ==	pollio.h	/^		bool operator == (const PollFD &rhs) const { return fd == rhs.fd; }$/;"	f	struct:GNET::PollIO::PollFD
+operator Octets&	login.h	/^	operator Octets& () { return time_stamp; }$/;"	f	class:GNET::Challenge
+operator T*	netio.h	/^	template<typename T> operator T* () { addr.resize(sizeof(T)); return (T *)addr.begin(); }$/;"	f	class:GNET::SockAddr
+operator const Octets&	login.h	/^	operator const Octets& () const { return time_stamp; }$/;"	f	class:GNET::Challenge
+operator const T*	netio.h	/^	template<typename T> operator const T* () const { return (const T *)addr.begin(); }$/;"	f	class:GNET::SockAddr
+os	protocol.h	/^			std::deque<Octets>os;$/;"	m	class:GNET::Protocol::Manager::Session
+os_bytes	protocol.h	/^			size_t os_bytes;$/;"	m	class:GNET::Protocol::Manager::Session
+osec	netio.h	/^	Security *osec;$/;"	m	class:GNET::NetSession
+osecbuf	netio.h	/^	Octets  osecbuf;$/;"	m	class:GNET::NetSession
+ov	binder.h	/^	OctetsVector ov;$/;"	m	class:GNET::AbstractBinder
+p	protocol.h	/^		Protocol * p;$/;"	m	class:GNET::Protocol::AutoPtr
+passbits	mppc.h	/^	static inline void passbits(const unsigned int n, unsigned int& l, unsigned int& blen)$/;"	f	class:GNET::mppc
+passbits	streamcompress.h	/^	bool passbits(const unsigned int n)$/;"	f	class:GNET::Decompress
+passwd	server.cpp	/^static char *passwd = "hello";$/;"	v	file:
+password	client.cpp	/^	std::string password;$/;"	m	class:ClientManager	file:
+peer	netio.h	/^	SockAddr peer;$/;"	m	class:GNET::DgramClientIO
+perm	security.h	/^	unsigned char perm[256];$/;"	m	class:GNET::ARCFourSecurity
+ppp_mppe	ppp_mppe_mppc.c	/^struct compressor ppp_mppe = {$/;"	v
+ppp_mppe_state	ppp_mppe_mppc.c	/^struct ppp_mppe_state {$/;"	s	file:
+proto_ignore	protocol.h	/^				mutable bool proto_ignore;$/;"	m	struct:GNET::Protocol::Manager::Session::Stream
+protocol	protocol.h	/^		Protocol *protocol;$/;"	m	class:GNET::Protocol::Task
+proxy_data	proxyrpc.h	/^	OctetsStream proxy_data;$/;"	m	class:GNET::ProxyRpc
+proxy_manager	proxyrpc.h	/^	Manager *proxy_manager;$/;"	m	class:GNET::ProxyRpc
+proxy_sid	proxyrpc.h	/^	Manager::Session::ID proxy_sid;$/;"	m	class:GNET::ProxyRpc
+proxy_xid	proxyrpc.h	/^	ProxyRpc::XID proxy_xid;$/;"	m	class:GNET::ProxyRpc
+putbits	coordinate.h	/^	static inline void putbits(unsigned char *&buf, unsigned int val, unsigned int n, unsigned int& l)$/;"	f	class:GNET::Coordinate
+putbits	mppc.h	/^	static inline void putbits(unsigned char *&buf, unsigned int val, unsigned int n, unsigned int& l)$/;"	f	class:GNET::mppc
+putbits	mppc.h	/^	static inline void putbits(unsigned int val, unsigned int n)$/;"	f	class:GNET::mppc
+putbits	streamcompress.h	/^	static inline void putbits(unsigned int val, unsigned int n)$/;"	f	class:GNET::Compress
+putbits	streamcompress.h	/^	void putbits(unsigned char *&buf, unsigned int val, unsigned int n, unsigned int& l)$/;"	f	class:GNET::Compress
+putbits16	ppp_mppe_mppc.c	/^static inline void putbits16(u8 *buf, u32 val, const u32 n, u32 *i, u32 *l)$/;"	f	file:
+putbits24	ppp_mppe_mppc.c	/^static inline void putbits24(u8 *buf, u32 val, const u32 n, u32 *i, u32 *l)$/;"	f	file:
+putbits8	ppp_mppe_mppc.c	/^static inline void putbits8(u8 *buf, u32 val, const u32 n, u32 *i, u32 *l)$/;"	f	file:
+putlit	mppc.h	/^	static inline void putlit(unsigned char *&buf, unsigned int c, unsigned int& l)$/;"	f	class:GNET::mppc
+putlit	mppc.h	/^	static inline void putlit(unsigned int c)$/;"	f	class:GNET::mppc
+putlit	streamcompress.h	/^	static inline void putlit(unsigned int c)$/;"	f	class:GNET::Compress
+putlit	streamcompress.h	/^	void putlit(unsigned char *&buf, unsigned int c, unsigned int& l)$/;"	f	class:GNET::Compress
+putoff	mppc.h	/^	static inline void putoff(unsigned char *&buf, unsigned int off, unsigned int& l)$/;"	f	class:GNET::mppc
+putoff	mppc.h	/^	static inline void putoff(unsigned int off)$/;"	f	class:GNET::mppc
+putoff	streamcompress.h	/^	static inline void putoff(unsigned int off)$/;"	f	class:GNET::Compress
+putoff	streamcompress.h	/^	void putoff(unsigned char *&buf, unsigned int off, unsigned int& l)$/;"	f	class:GNET::Compress
+pv	binder.h	/^	ProtocolVector pv;$/;"	m	class:GNET::AbstractBinder
+ref_last	protocol.h	/^		HardReference<const Protocol>	ref_last;$/;"	m	class:GNET::Protocol::Manager
+release	protocol.h	/^		void release()                          { p = NULL; }$/;"	f	class:GNET::Protocol::AutoPtr
+remain	security.h	/^	unsigned int low_count, high_count, remain;$/;"	m	class:GNET::MD5Hash
+remain	security.h	/^	unsigned int low_count, high_count, remain;$/;"	m	class:GNET::SHA1Hash
+rep	protocol.h	/^			Octets rep;$/;"	m	struct:GNET::Protocol::Represent::Rep
+rep	protocol.h	/^		Octets rep;$/;"	m	class:GNET::Protocol::Manager
+response	login.h	/^	Octets response;$/;"	m	class:GNET::Response
+result	rpc.h	/^	Data *result;$/;"	m	class:GNET::Rpc
+retcode	rpc.h	/^		int retcode;$/;"	m	struct:GNET::Rpc::Result
+rfds	pollio.cpp	/^fd_set PollIO::rfds;$/;"	m	class:GNET::PollIO	file:
+rfds	pollio.h	/^	static fd_set rfds, wfds, all_rfds, all_wfds;$/;"	m	class:GNET::PollIO
+rol1	security.h	/^	static inline unsigned int rol1(unsigned int x)  { return (x << 1) | (x >> 31); }$/;"	f	class:GNET::SHA1Hash
+rol30	security.h	/^	static inline unsigned int rol30(unsigned int x) { return (x << 30) | (x >> 2); }$/;"	f	class:GNET::SHA1Hash
+rol5	security.h	/^	static inline unsigned int rol5(unsigned int x)  { return (x << 5) | (x >> 27); }$/;"	f	class:GNET::SHA1Hash
+rotate_left	security.h	198;"	d
+rotate_left	security.h	298;"	d
+rpc	statefulrpc.h	/^	StatefulRpc *rpc;$/;"	m	class:GNET::RpcStateAdaptor
+rptr	streamcompress.h	/^	unsigned char *rptr, *adjust_rptr;$/;"	m	class:GNET::Decompress
+sa	activeio.h	/^	SockAddr sa;$/;"	m	class:GNET::ActiveIO
+sa	timeactiveio.h	/^	SockAddr sa;$/;"	m	class:GNET::TimeActiveIO
+sending	netio.h	/^	bool	sending;$/;"	m	class:GNET::NetSession
+session	netio.h	/^	NetSession *session;$/;"	m	class:GNET::NetIO
+session	protocol.h	/^				Session *session;$/;"	m	struct:GNET::Protocol::Manager::Session::Stream
+session_id	protocol.cpp	/^Protocol::Manager::Session::ID Protocol::Manager::Session::session_id = 0;$/;"	m	class:GNET::Protocol::Manager::Session	file:
+session_id	protocol.h	/^			static ID session_id;$/;"	m	class:GNET::Protocol::Manager::Session
+session_id_mutex	protocol.h	/^			static Thread::Mutex session_id_mutex;$/;"	m	class:GNET::Protocol::Manager::Session
+session_key	ppp_mppe_mppc.c	/^    u8		session_key[MPPE_MAX_KEY_LEN];$/;"	m	struct:ppp_mppe_state	file:
+set	protocol.h	/^				Set set;$/;"	m	class:GNET::Protocol::Manager::Session::State
+setContext	protocol.h	/^	void setContext(void * c)      { _context = c; }$/;"	f	class:GNET::Protocol
+setup_sg	ppp_mppe_mppc.c	/^setup_sg(struct scatterlist *sg, const void  *address, unsigned int length)$/;"	f	file:
+sha1_digest	ppp_mppe_mppc.c	/^    u8		*sha1_digest;$/;"	m	struct:ppp_mppe_state	file:
+sha1_tfm	ppp_mppe_mppc.c	/^    struct crypto_tfm *sha1_tfm;$/;"	m	struct:ppp_mppe_state	file:
+sha_pad	ppp_mppe_mppc.c	/^static struct sha_pad *sha_pad;$/;"	v	file:
+sha_pad	ppp_mppe_mppc.c	/^struct sha_pad {$/;"	s	file:
+sha_pad1	ppp_mppe_mppc.c	/^    unsigned char sha_pad1[SHA1_PAD_SIZE];$/;"	m	struct:sha_pad	file:
+sha_pad2	ppp_mppe_mppc.c	/^    unsigned char sha_pad2[SHA1_PAD_SIZE];$/;"	m	struct:sha_pad	file:
+sid	protocol.h	/^			ID sid;$/;"	m	class:GNET::Protocol::Manager::Session
+sid	protocol.h	/^		Manager::Session::ID sid;$/;"	m	class:GNET::Protocol::Task
+sid	statefulrpc.h	/^	Protocol::Manager::Session::ID sid;$/;"	m	class:GNET::RpcServerAdaptor
+sid	transport.h	/^	Protocol::Manager::Session::ID sid;$/;"	m	class:GNET::Transport
+size	binder.h	/^	size_t size() const { return total; }$/;"	f	class:GNET::AbstractBinder
+size	server.cpp	/^	size_t size;$/;"	m	struct:UserTracker	file:
+size_threshold	timermanager.h	/^		size_t	size_threshold;$/;"	m	class:GNET::TimerManager
+sock	timeactiveio.h	/^			int sock;$/;"	m	class:GNET::TimeActiveIO::Checker::Bundle
+srcsize	security.cpp	/^int64_t CompressARCFourSecurity::srcsize = 0;$/;"	m	class:GNET::CompressARCFourSecurity	file:
+srcsize	security.h	/^	static int64_t srcsize, dstsize;$/;"	m	class:GNET::CompressARCFourSecurity
+start_node	statefulrpc.h	/^	Thread::TaskGraph::Node *start_node;$/;"	m	class:GNET::RpcServerAdaptor
+state	protocol.h	/^			const State *state;$/;"	m	class:GNET::Protocol::Manager::Session
+state	security.h	/^	unsigned int state[4];$/;"	m	class:GNET::MD5Hash
+state	security.h	/^	unsigned int state[5];$/;"	m	class:GNET::SHA1Hash
+state	statefulrpc.h	/^	int state;$/;"	m	class:GNET::RpcClientTask
+stateless	ppp_mppe_mppc.c	/^    u8		stateless;	\/* do we use stateless mode? *\/$/;"	m	struct:ppp_mppe_state	file:
+stats	ppp_mppe_mppc.c	/^    struct compstat stats;$/;"	m	struct:ppp_mppe_state	file:
+status	netio.h	/^	int     status;$/;"	m	class:GNET::NetSession
+status	pollio.h	/^	int status;$/;"	m	class:GNET::PollIO
+time_stamp	login.h	/^	Octets time_stamp;$/;"	m	class:GNET::Challenge
+timeout	protocol.h	/^				int timeout;$/;"	m	class:GNET::Protocol::Manager::Session::State
+timeout	timeactiveio.h	/^			int timeout;$/;"	m	class:GNET::TimeActiveIO::Checker::Bundle
+timer	protocol.h	/^			Timer timer;$/;"	m	class:GNET::Protocol::Manager::Session
+timer	proxyrpc.h	/^	Timer timer;$/;"	m	class:GNET::ProxyRpc
+timer	rpc.h	/^	Timer timer;$/;"	m	class:GNET::Rpc
+timer	timeactiveio.h	/^			Timer timer;$/;"	m	class:GNET::TimeActiveIO::Checker::Bundle
+timer	timermanager.h	/^		TimerManager::Timer	timer;$/;"	m	class:GNET::TimerManager
+total	binder.h	/^	size_t total;$/;"	m	class:GNET::AbstractBinder
+transform	security.h	/^	void transform (const unsigned char block[64])$/;"	f	class:GNET::MD5Hash
+transform	security.h	/^	void transform (const unsigned char block[64])$/;"	f	class:GNET::SHA1Hash
+transport	transport.h	/^	Transport transport;$/;"	m	class:GNET::TransportContext
+type	activeio.h	/^	Type type;$/;"	m	class:GNET::ActiveIO
+type	passiveio.h	/^	Type type;$/;"	m	class:GNET::PassiveIO
+type	protocol.h	/^	Type type;$/;"	m	class:GNET::Protocol
+type	security.h	/^	Type type;$/;"	m	class:GNET::Security
+typeHigh	protocol.h	/^	static int typeHigh(Type type) { return type >> 16; }$/;"	f	class:GNET::Protocol
+typeLow	protocol.h	/^	static int typeLow(Type type)  { return type & 0x0000ffff; }$/;"	f	class:GNET::Protocol
+uint16_t	m.cpp	/^typedef unsigned short uint16_t;$/;"	t	file:
+uint32_t	m.cpp	/^typedef unsigned int uint32_t;$/;"	t	file:
+uint8_t	m.cpp	/^typedef unsigned char uint8_t;$/;"	t	file:
+umap	server.cpp	/^	UserMap umap;$/;"	m	class:ServerManager	file:
+uncompress	coordinate.h	/^	static inline int uncompress( const unsigned char * coordinate, int len, Octets & dest )$/;"	f	class:GNET::Coordinate
+uncompress	coordinate.h	/^	static int uncompress( int type, const Octets & src, Octets & dest )$/;"	f	class:GNET::Coordinate
+uncompress	mppc.h	/^	static int uncompress( unsigned char *dest, int *destLen, const unsigned char *source, int sourceLen)$/;"	f	class:GNET::mppc
+uncompress2	mppc.h	/^	static int uncompress2( unsigned char *dest, int *destLen, const unsigned char *source, int sourceLen)$/;"	f	class:GNET::mppc
+uncompressfloat	coordinate.h	/^	static inline float uncompressfloat( const unsigned char *&buf, int len, unsigned int& l )$/;"	f	class:GNET::Coordinate
+unit	ppp_mppe_mppc.c	/^    int		unit;$/;"	m	struct:ppp_mppe_state	file:
+unmarshal	binder.h	/^	const OctetsStream& unmarshal(const OctetsStream &os)$/;"	f	class:GNET::CompressBinder
+unmarshal	binder.h	/^	const OctetsStream& unmarshal(const OctetsStream &os)$/;"	f	class:GNET::ProtocolBinder
+unmarshal	login.h	/^	const OctetsStream& unmarshal(const OctetsStream &os) { return os >> identity >> response; }$/;"	f	class:GNET::Response
+unmarshal	login.h	/^	const OctetsStream& unmarshal(const OctetsStream &os) { return os >> time_stamp; }$/;"	f	class:GNET::Challenge
+unmarshal	proxyrpc.h	/^		const OctetsStream& unmarshal(const OctetsStream &os) { return os >> id; }$/;"	f	class:GNET::ProxyRpc::XID
+unmarshal	proxyrpc.h	/^	const OctetsStream& unmarshal(const OctetsStream &os)$/;"	f	class:GNET::ProxyRpc
+unmarshal	rpc.h	/^		const OctetsStream& unmarshal(const OctetsStream &os) { return os >> id; }$/;"	f	class:GNET::Rpc::XID
+unmarshal	rpc.h	/^		virtual const OctetsStream& unmarshal(const OctetsStream & os) { os >> data; return os; }$/;"	f	struct:GNET::Rpc::Argument
+unmarshal	rpc.h	/^		virtual const OctetsStream& unmarshal(const OctetsStream & os) { os >> retcode >> data; return os; }$/;"	f	struct:GNET::Rpc::Result
+unmarshal	rpc.h	/^		virtual const OctetsStream& unmarshal(const OctetsStream & os) { return os; }$/;"	f	struct:GNET::Rpc::NoneData
+unmarshal	rpc.h	/^	const OctetsStream& unmarshal(const OctetsStream &os)$/;"	f	class:GNET::Rpc
+update	pollio.h	/^	bool update;$/;"	m	class:GNET::PollIO
+update	security.h	/^	void update(const unsigned char *input, unsigned int inputlen)$/;"	f	class:GNET::MD5Hash
+update	security.h	/^	void update(const unsigned char *input, unsigned int inputlen)$/;"	f	class:GNET::SHA1Hash
+urgency_support	netio.h	/^	bool urgency_support;$/;"	m	class:GNET::NetSession
+verbose	protocol.h	/^			int verbose;$/;"	m	class:GNET::Protocol::Manager::Session
+wakeup_flag	pollio.cpp	/^bool PollIO::wakeup_flag  = false;$/;"	m	class:GNET::PollIO	file:
+wakeup_flag	pollio.h	/^	static bool wakeup_flag;$/;"	m	class:GNET::PollIO
+wfds	pollio.cpp	/^fd_set PollIO::wfds;$/;"	m	class:GNET::PollIO	file:
+wfds	pollio.h	/^	static fd_set rfds, wfds, all_rfds, all_wfds;$/;"	m	class:GNET::PollIO
+writer	pollio.cpp	/^int PollControl::writer;$/;"	m	class:GNET::PollControl	file:
+writer	pollio.h	/^	static int writer;$/;"	m	class:GNET::PollControl
+xid	proxyrpc.h	/^	ProxyRpc::XID xid;$/;"	m	class:GNET::ProxyRpc
+xid	rpc.h	/^	XID  xid;$/;"	m	class:GNET::Rpc
+xid_count	proxyrpc.cpp	/^unsigned int ProxyRpc::XID::xid_count = 0;$/;"	m	class:GNET::ProxyRpc::XID	file:
+xid_count	proxyrpc.h	/^		static unsigned int xid_count;$/;"	m	class:GNET::ProxyRpc::XID
+xid_count	rpc.cpp	/^unsigned int Rpc::XID::xid_count = 0;$/;"	m	class:GNET::Rpc::XID	file:
+xid_count	rpc.h	/^		static unsigned int xid_count;$/;"	m	class:GNET::Rpc::XID
+xmain	m.cpp	/^int xmain(int argc, char *argv[])$/;"	f
+ype	protocol.h	/^	typedef gnet_map<Type, const Protocol*> Map;$/;"	t	class:GNET::Protocol
+ype	security.h	/^	typedef gnet_map<Type, const Security *> Map;$/;"	t	class:GNET::Security
+~AbstractBinder	binder.h	/^	virtual ~AbstractBinder()$/;"	f	class:GNET::AbstractBinder
+~ActiveIO	activeio.h	/^	~ActiveIO()$/;"	f	class:GNET::ActiveIO
+~AutoPtr	protocol.h	/^		~AutoPtr()                              { if (p) p->Destroy(); }$/;"	f	class:GNET::Protocol::AutoPtr
+~Bundle	timeactiveio.h	/^			~Bundle() { close(sock); }$/;"	f	class:GNET::TimeActiveIO::Checker::Bundle
+~Data	rpc.h	/^		virtual ~Data() { }$/;"	f	struct:GNET::Rpc::Data
+~DgramClientIO	netio.h	/^	~DgramClientIO()$/;"	f	class:GNET::DgramClientIO
+~DgramServerIO	netio.h	/^	~DgramServerIO()$/;"	f	class:GNET::DgramServerIO
+~Manager	protocol.h	/^		virtual ~Manager() { }$/;"	f	class:GNET::Protocol::Manager
+~NetSession	netio.h	/^	virtual ~NetSession ()$/;"	f	class:GNET::NetSession
+~PassiveIO	passiveio.h	/^	virtual ~PassiveIO ()$/;"	f	class:GNET::PassiveIO
+~PollControl	pollio.h	/^	~PollControl()$/;"	f	class:GNET::PollControl
+~PollIO	pollio.h	/^	virtual ~PollIO()$/;"	f	class:GNET::PollIO
+~Protocol	protocol.h	/^	virtual ~Protocol() { Represent::Release(this); }$/;"	f	class:GNET::Protocol
+~ProxyRpc	proxyrpc.h	/^	~ProxyRpc ()$/;"	f	class:GNET::ProxyRpc
+~Rpc	rpc.h	/^	~Rpc ()$/;"	f	class:GNET::Rpc
+~RpcClientTask	statefulrpc.h	/^	~RpcClientTask() { arg->Destroy(); }$/;"	f	class:GNET::RpcClientTask
+~RpcClientTask	statefulrpc.h	/^	~RpcClientTask()$/;"	f	class:GNET::RpcClientTask
+~RpcServerAdaptor	statefulrpc.h	/^	~RpcServerAdaptor()$/;"	f	class:GNET::RpcServerAdaptor
+~RpcStateAdaptor	statefulrpc.h	/^	virtual ~RpcStateAdaptor() {}$/;"	f	class:GNET::RpcStateAdaptor
+~Security	security.h	/^	virtual ~Security() { }$/;"	f	class:GNET::Security
+~StreamIO	netio.h	/^	~StreamIO()$/;"	f	class:GNET::StreamIO
+~Task	protocol.h	/^		~Task () { protocol->Destroy(); }$/;"	f	class:GNET::Protocol::Task
+~TimeActiveIO	timeactiveio.h	/^	~TimeActiveIO()$/;"	f	class:GNET::TimeActiveIO
+~TimerManager	timermanager.h	/^		~TimerManager()$/;"	f	class:GNET::TimerManager

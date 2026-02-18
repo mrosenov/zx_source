@@ -1,0 +1,38 @@
+	public:
+		int gs_id;
+		char is_team;
+		std::vector<int> roles;
+		enum { PROTOCOL_TYPE = PROTOCOL_GOPENBANQUETJOIN };
+	public:
+		GOpenBanquetJoin() { type = PROTOCOL_GOPENBANQUETJOIN; }
+		GOpenBanquetJoin(void*) : Protocol(PROTOCOL_GOPENBANQUETJOIN) { }
+		GOpenBanquetJoin (int l_gs_id,char l_is_team,const std::vector<int>& l_roles = std::vector<int>())
+			 : gs_id(l_gs_id),is_team(l_is_team),roles(l_roles)
+		{
+			type = PROTOCOL_GOPENBANQUETJOIN;
+		}
+
+		GOpenBanquetJoin(const GOpenBanquetJoin &rhs)
+			: Protocol(rhs),gs_id(rhs.gs_id),is_team(rhs.is_team),roles(rhs.roles) { }
+
+		GNET::Protocol *Clone() const { return new GOpenBanquetJoin(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gs_id;
+			os << is_team;
+			os << roles;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gs_id;
+			os >> is_team;
+			os >> roles;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 100; }

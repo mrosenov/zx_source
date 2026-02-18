@@ -1,0 +1,69 @@
+#ifndef __GNET_DBCROSSCRSSVRTEAMSSEARCHARG_RPCDATA
+#define __GNET_DBCROSSCRSSVRTEAMSSEARCHARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCrossCrssvrTeamsSearchArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int zoneid;
+		Octets name;
+
+	public:
+		DBCrossCrssvrTeamsSearchArg (int l_roleid = 0,int l_zoneid = 0,const Octets& l_name = Octets(0))
+			: roleid(l_roleid),zoneid(l_zoneid),name(l_name)
+		{
+		}
+
+		DBCrossCrssvrTeamsSearchArg(const DBCrossCrssvrTeamsSearchArg &rhs)
+			: roleid(rhs.roleid),zoneid(rhs.zoneid),name(rhs.name) { }
+
+		Rpc::Data *Clone() const { return new DBCrossCrssvrTeamsSearchArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrossCrssvrTeamsSearchArg *r = dynamic_cast<const DBCrossCrssvrTeamsSearchArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				zoneid = r->zoneid;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		DBCrossCrssvrTeamsSearchArg& operator = (const DBCrossCrssvrTeamsSearchArg &rhs)
+		{
+			const DBCrossCrssvrTeamsSearchArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				zoneid = r->zoneid;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << zoneid;
+			os << name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> zoneid;
+			os >> name;
+			return os;
+		}
+
+	};
+};
+#endif

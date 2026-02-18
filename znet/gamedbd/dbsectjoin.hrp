@@ -1,0 +1,111 @@
+
+#ifndef __GNET_DBSECTJOIN_HPP
+#define __GNET_DBSECTJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "gsect"
+#include "gdisciple"
+
+#include "dbsectjoinarg"
+#include "dbsectjoinres"
+#include "localmacro.h"
+namespace GNET
+{
+
+class DBSectJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsectjoin"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSectJoinArg *arg = (DBSectJoinArg *)argument;
+		DBSectJoinRes *res = (DBSectJoinRes *)result;
+		try
+		{
+			StorageEnv::Storage * psect = StorageEnv::GetStorage("sect");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pstat = StorageEnv::GetStorage("status");
+
+			LOG_TRACE( "DBSectJoin, master=%d, disciple=%d, capacity=%d.\n", arg->master, arg->disciple, arg->capacity);
+
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, value, krole,kmaster;
+			try{
+				GSect sect;
+				GRoleBase base;
+				GRoleStatus status;
+
+				krole << arg->disciple;
+				Marshal::OctetsStream(pbase->find(krole, txn )) >> base;
+				if(base.sectid)
+				{
+					res->retcode = ERR_SECT_UNAVAILABLE;
+					return;
+				}
+
+				key << arg->master;
+				if(psect->find(key,value,txn))
+					value >> sect;
+
+				if((int)sect.disciples.size()>=arg->capacity)
+				{
+					res->retcode = ERR_SECT_FULL;
+					return;
+				}
+				GRoleBase data;
+				kmaster << arg->master;
+				Marshal::OctetsStream(pbase->find(kmaster, txn )) >> data;
+				if(data.sectid==0)
+				{
+					data.sectid = arg->master;
+					pbase->insert( kmaster, Marshal::OctetsStream()<<data, txn );
+					sect.name = data.name;
+				}
+
+				
+				base.sectid = arg->master;
+				Marshal::OctetsStream(pstat->find(krole, txn )) >> status;
+				base.initiallevel = status.level;
+				res->disciple.roleid = arg->disciple;
+				res->disciple.name = base.name;
+				res->disciple.level = status.level;
+				res->disciple.occupation = status.occupation;
+				sect.disciples.push_back(res->disciple);
+				sect.cooldown = Timer::GetTime();
+
+				Log::formatlog("sectjoin","master=%d:disciple=%d", arg->master, arg->disciple);
+				psect->insert( key, Marshal::OctetsStream()<<sect, txn );
+				pbase->insert( krole, Marshal::OctetsStream()<<base, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSectJoin, master=%d, disciple=%d what=%s.",arg->master,arg->disciple,e.what());
+			res->retcode = ERR_SECT_BUSY;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

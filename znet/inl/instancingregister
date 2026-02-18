@@ -1,0 +1,35 @@
+	public:
+		int gs_id;
+		std::vector<InstancingFieldInfo> fields;
+		enum { PROTOCOL_TYPE = PROTOCOL_INSTANCINGREGISTER };
+	public:
+		InstancingRegister() { type = PROTOCOL_INSTANCINGREGISTER; }
+		InstancingRegister(void*) : Protocol(PROTOCOL_INSTANCINGREGISTER) { }
+		InstancingRegister (int l_gs_id,std::vector<InstancingFieldInfo> l_fields = std::vector<InstancingFieldInfo>())
+			 : gs_id(l_gs_id),fields(l_fields)
+		{
+			type = PROTOCOL_INSTANCINGREGISTER;
+		}
+
+		InstancingRegister(const InstancingRegister &rhs)
+			: Protocol(rhs),gs_id(rhs.gs_id),fields(rhs.fields) { }
+
+		GNET::Protocol *Clone() const { return new InstancingRegister(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gs_id;
+			os << fields;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gs_id;
+			os >> fields;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 10240; }

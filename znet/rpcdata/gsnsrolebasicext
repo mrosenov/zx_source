@@ -1,0 +1,113 @@
+#ifndef __GNET_GSNSROLEBASICEXT_RPCDATA
+#define __GNET_GSNSROLEBASICEXT_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GSNSRoleBasicExt : public GNET::Rpc::Data
+	{
+	public:
+		int renxing1;
+		int renxing2;
+		int renxing3;
+		int renxing4;
+		int renxing5;
+		int jingtong1;
+		int jingtong2;
+		int jingtong3;
+		int jingtong4;
+		int jingtong5;
+
+	public:
+		GSNSRoleBasicExt (int l_renxing1 = 0,int l_renxing2 = 0,int l_renxing3 = 0
+			,int l_renxing4 = 0,int l_renxing5 = 0,int l_jingtong1 = 0
+			,int l_jingtong2 = 0,int l_jingtong3 = 0,int l_jingtong4 = 0
+			,int l_jingtong5 = 0)
+			: renxing1(l_renxing1),renxing2(l_renxing2),renxing3(l_renxing3)
+			,renxing4(l_renxing4),renxing5(l_renxing5),jingtong1(l_jingtong1)
+			,jingtong2(l_jingtong2),jingtong3(l_jingtong3),jingtong4(l_jingtong4)
+			,jingtong5(l_jingtong5)
+		{
+		}
+
+		GSNSRoleBasicExt(const GSNSRoleBasicExt &rhs)
+			: renxing1(rhs.renxing1),renxing2(rhs.renxing2),renxing3(rhs.renxing3),
+			renxing4(rhs.renxing4),renxing5(rhs.renxing5),jingtong1(rhs.jingtong1),
+			jingtong2(rhs.jingtong2),jingtong3(rhs.jingtong3),jingtong4(rhs.jingtong4),
+			jingtong5(rhs.jingtong5) { }
+
+		Rpc::Data *Clone() const { return new GSNSRoleBasicExt(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GSNSRoleBasicExt *r = dynamic_cast<const GSNSRoleBasicExt *>(&rhs);
+			if (r && r != this)
+			{
+				renxing1 = r->renxing1;
+				renxing2 = r->renxing2;
+				renxing3 = r->renxing3;
+				renxing4 = r->renxing4;
+				renxing5 = r->renxing5;
+				jingtong1 = r->jingtong1;
+				jingtong2 = r->jingtong2;
+				jingtong3 = r->jingtong3;
+				jingtong4 = r->jingtong4;
+				jingtong5 = r->jingtong5;
+			}
+			return *this;
+		}
+
+		GSNSRoleBasicExt& operator = (const GSNSRoleBasicExt &rhs)
+		{
+			const GSNSRoleBasicExt *r = &rhs;
+			if (r && r != this)
+			{
+				renxing1 = r->renxing1;
+				renxing2 = r->renxing2;
+				renxing3 = r->renxing3;
+				renxing4 = r->renxing4;
+				renxing5 = r->renxing5;
+				jingtong1 = r->jingtong1;
+				jingtong2 = r->jingtong2;
+				jingtong3 = r->jingtong3;
+				jingtong4 = r->jingtong4;
+				jingtong5 = r->jingtong5;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << renxing1;
+			os << renxing2;
+			os << renxing3;
+			os << renxing4;
+			os << renxing5;
+			os << jingtong1;
+			os << jingtong2;
+			os << jingtong3;
+			os << jingtong4;
+			os << jingtong5;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> renxing1;
+			os >> renxing2;
+			os >> renxing3;
+			os >> renxing4;
+			os >> renxing5;
+			os >> jingtong1;
+			os >> jingtong2;
+			os >> jingtong3;
+			os >> jingtong4;
+			os >> jingtong5;
+			return os;
+		}
+
+	};
+};
+#endif

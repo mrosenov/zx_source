@@ -1,0 +1,74 @@
+
+#ifndef __GNET_CERTCHALLENGE_HPP
+#define __GNET_CERTCHALLENGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "certverify.hpp"
+
+#include "certchallengearg"
+#include "certchallengeres"
+
+namespace GMSV
+{
+	void RecvCertChallengeResult(int result, const void *response, size_t size);
+}
+
+namespace GNET
+{
+
+class CertChallenge : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "certchallenge"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// CertChallengeArg *arg = (CertChallengeArg *)argument;
+		// CertChallengeRes *res = (CertChallengeRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		 CertChallengeArg *arg = (CertChallengeArg *)argument;
+		 CertChallengeRes *res = (CertChallengeRes *)result;
+		 Octets response;
+		 int ret = 0;
+
+		 CertVerify cert((unsigned char*)(res->authd_cert.begin()), res->authd_cert.size());
+		 //Verify the cert by AU and CN name 
+		 if (cert.VerifyCert() == 0){
+		 	ret = -1;
+		 }
+		
+		 //Verify the cert by the Root CA
+		 else if (cert.VerifyCertByCA() == 0){
+		 	ret = -2;
+		 }
+
+		 else{
+			//Compare the challenge and response
+			int size = res->response.size(); 
+			unsigned char* en_key = (unsigned char*)(res->response.begin()); 
+			unsigned char de_key[size];
+			int len =  cert.Decrypt(size, en_key, de_key);
+			response = Octets(de_key, len);
+	
+			if (arg->challenge != response){
+		 		ret = -3;
+			}
+		 }
+		 GMSV::RecvCertChallengeResult(ret, response.begin(), response.size());
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

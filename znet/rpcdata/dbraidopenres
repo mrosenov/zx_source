@@ -1,0 +1,65 @@
+#ifndef __GNET_DBRAIDOPENRES_RPCDATA
+#define __GNET_DBRAIDOPENRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBRaidOpenRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GMailSyncData syncdata;
+
+	public:
+		DBRaidOpenRes (const GMailSyncData& l_syncdata = GMailSyncData())
+			: syncdata(l_syncdata)
+		{
+		}
+
+		DBRaidOpenRes(const DBRaidOpenRes &rhs)
+			: retcode(rhs.retcode),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBRaidOpenRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBRaidOpenRes *r = dynamic_cast<const DBRaidOpenRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBRaidOpenRes& operator = (const DBRaidOpenRes &rhs)
+		{
+			const DBRaidOpenRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

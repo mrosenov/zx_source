@@ -1,0 +1,65 @@
+#ifndef __GNET_DBCONSIGNGETROLESIMPLEINFORES_RPCDATA
+#define __GNET_DBCONSIGNGETROLESIMPLEINFORES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "rolesimpleinfo"
+
+namespace GNET
+{
+	class DBConsignGetRoleSimpleInfoRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		std::vector<RoleSimpleInfo> roles;
+
+	public:
+		DBConsignGetRoleSimpleInfoRes (int l_retcode = 0,const std::vector<RoleSimpleInfo>& l_roles = std::vector<RoleSimpleInfo>())
+			: retcode(l_retcode),roles(l_roles)
+		{
+		}
+
+		DBConsignGetRoleSimpleInfoRes(const DBConsignGetRoleSimpleInfoRes &rhs)
+			: retcode(rhs.retcode),roles(rhs.roles) { }
+
+		Rpc::Data *Clone() const { return new DBConsignGetRoleSimpleInfoRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignGetRoleSimpleInfoRes *r = dynamic_cast<const DBConsignGetRoleSimpleInfoRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				roles = r->roles;
+			}
+			return *this;
+		}
+
+		DBConsignGetRoleSimpleInfoRes& operator = (const DBConsignGetRoleSimpleInfoRes &rhs)
+		{
+			const DBConsignGetRoleSimpleInfoRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				roles = r->roles;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << roles;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> roles;
+			return os;
+		}
+
+	};
+};
+#endif

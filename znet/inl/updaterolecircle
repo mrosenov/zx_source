@@ -1,0 +1,38 @@
+	public:
+		unsigned int roleid;
+		unsigned int circleid;
+		unsigned char titlemask;
+		enum { PROTOCOL_TYPE = PROTOCOL_UPDATEROLECIRCLE };
+	public:
+		UpdateRoleCircle() { type = PROTOCOL_UPDATEROLECIRCLE; }
+		UpdateRoleCircle(void*) : Protocol(PROTOCOL_UPDATEROLECIRCLE) { }
+		UpdateRoleCircle (unsigned int l_roleid,unsigned int l_circleid,unsigned char l_titlemask)
+			 : roleid(l_roleid),circleid(l_circleid),titlemask(l_titlemask)
+		{
+			type = PROTOCOL_UPDATEROLECIRCLE;
+		}
+
+		UpdateRoleCircle(const UpdateRoleCircle &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),circleid(rhs.circleid),titlemask(rhs.titlemask) { }
+
+		GNET::Protocol *Clone() const { return new UpdateRoleCircle(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << circleid;
+			os << titlemask;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> circleid;
+			os >> titlemask;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

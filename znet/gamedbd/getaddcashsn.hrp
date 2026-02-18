@@ -1,0 +1,100 @@
+
+#ifndef __GNET_GETADDCASHSN_HPP
+#define __GNET_GETADDCASHSN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "stocklog"
+#include "getaddcashsnarg"
+#include "getaddcashsnres"
+#include "gamedbmanager.h"
+#include "dbbuffer.h"
+
+#include "user"
+#include "localmacro.h"
+
+namespace GNET
+{
+
+class GetAddCashSN : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+#include "getaddcashsn"
+#undef	RPC_BASECLASS
+	//旧的充值协议 可能海外仍旧在使用 2012-3-13
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GetAddCashSNArg *arg = (GetAddCashSNArg *)argument;
+		GetAddCashSNRes *res = (GetAddCashSNRes *)result;
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, value;
+			try
+			{
+				res->zoneid = arg->zoneid;
+				res->userid = arg->userid;
+				User user;
+				key << (unsigned int)arg->userid;
+				if(puser->find(key,value,txn))
+				{
+					value >> user;
+					time_t left_time = 0;
+					if (GameDBManager::GetInstance()->CheckForbidUserLogin(user, left_time))
+					{
+						res->retcode = -19;
+						Log::log(LOG_ERR, "getaddcashsn, userid=%d, forbid login %u seconds\n", arg->userid, left_time);
+						return;
+					}
+				}
+				else 
+				{
+					user.logicuid = 0;
+					user.rolelist = ROLELIST_DEFAULT;
+					puser->insert( key, Marshal::OctetsStream() << user, txn );
+				}
+				//不应在充值时进行元宝冲减操作 (BalanceCash) 玩家可能在线 同时修改cash_used出错
+				int total = user.cash_add + user.cash_buy - user.cash_used - user.cash_sell;
+				if(user.cash_add>MAX_USER_CASH || total<0 || total>MAX_USER_CASH)
+				{       
+					//防止整数溢出
+					Log::log( LOG_ERR, "getaddcashsn,userid=%d,maxinum cash_add exceeded,cash_add=%d,cash_total=%d",
+							arg->userid, user.cash_add,total);
+					res->retcode = -19;
+				}
+				else
+				{       
+					Log::formatlog("getaddcashsn","userid=%d:cash_add=%d:serail=%d", arg->userid,user.cash_add, user.add_serial);
+					res->sn = user.add_serial+1;
+					res->retcode = ERR_SUCCESS;
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetAddCashSN, userid=%d, what=%s\n", arg->userid, e.what() );
+			res->retcode = CASH_GETSERIAL_FAILED;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+};
+#endif

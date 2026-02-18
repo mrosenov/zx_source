@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSTOCKTRADE_HPP
+#define __GNET_DBSTOCKTRADE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbstocktradearg"
+#include "dbstocktraderes"
+
+namespace GNET
+{
+
+class DBStockTrade : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbstocktrade"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBStockTradeArg *arg = (DBStockTradeArg *)argument;
+		// DBStockTradeRes *res = (DBStockTradeRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBStockTradeArg *arg = (DBStockTradeArg *)argument;
+		// DBStockTradeRes *res = (DBStockTradeRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

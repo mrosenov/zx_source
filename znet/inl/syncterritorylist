@@ -1,0 +1,32 @@
+	public:
+		TerritoryOwnerVector tlist;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYNCTERRITORYLIST };
+	public:
+		SyncTerritoryList() { type = PROTOCOL_SYNCTERRITORYLIST; }
+		SyncTerritoryList(void*) : Protocol(PROTOCOL_SYNCTERRITORYLIST) { }
+		SyncTerritoryList (const TerritoryOwnerVector& l_tlist)
+			 : tlist(l_tlist)
+		{
+			type = PROTOCOL_SYNCTERRITORYLIST;
+		}
+
+		SyncTerritoryList(const SyncTerritoryList &rhs)
+			: Protocol(rhs),tlist(rhs.tlist) { }
+
+		GNET::Protocol *Clone() const { return new SyncTerritoryList(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << tlist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> tlist;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

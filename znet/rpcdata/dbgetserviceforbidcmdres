@@ -1,0 +1,65 @@
+#ifndef __GNET_DBGETSERVICEFORBIDCMDRES_RPCDATA
+#define __GNET_DBGETSERVICEFORBIDCMDRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "serviceforbidcmd"
+
+namespace GNET
+{
+	class DBGetServiceForbidCmdRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		std::vector<ServiceForbidCmd> cmdlist;
+
+	public:
+		DBGetServiceForbidCmdRes (int l_retcode = 0,const std::vector<ServiceForbidCmd>& l_cmdlist = std::vector<ServiceForbidCmd>())
+			: retcode(l_retcode),cmdlist(l_cmdlist)
+		{
+		}
+
+		DBGetServiceForbidCmdRes(const DBGetServiceForbidCmdRes &rhs)
+			: retcode(rhs.retcode),cmdlist(rhs.cmdlist) { }
+
+		Rpc::Data *Clone() const { return new DBGetServiceForbidCmdRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGetServiceForbidCmdRes *r = dynamic_cast<const DBGetServiceForbidCmdRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				cmdlist = r->cmdlist;
+			}
+			return *this;
+		}
+
+		DBGetServiceForbidCmdRes& operator = (const DBGetServiceForbidCmdRes &rhs)
+		{
+			const DBGetServiceForbidCmdRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				cmdlist = r->cmdlist;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << cmdlist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> cmdlist;
+			return os;
+		}
+
+	};
+};
+#endif

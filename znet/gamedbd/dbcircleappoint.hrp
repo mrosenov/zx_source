@@ -1,0 +1,122 @@
+
+#ifndef __GNET_DBCIRCLEAPPOINT_HPP
+#define __GNET_DBCIRCLEAPPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include <vector>
+
+#include "dbcircleappointarg"
+#include "dbcircleappointres"
+#include "localmacro.h"
+namespace GNET
+{
+	
+class DBCircleAppoint : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcircleappoint"
+#undef	RPC_BASECLASS
+	unsigned char CalcCircleTitleMask(unsigned char oldmask, CircleTitle title)
+	{
+	//	unsigned char c = title;
+		return oldmask|title;
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCircleAppointArg *arg = (DBCircleAppointArg *)argument;
+		DBCircleAppointRes *res = (DBCircleAppointRes *)result;
+		
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kcircle;
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pcircle = StorageEnv::GetStorage("circle");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GRoleBase base;
+				GCircleDB zcircle;
+				//GCircleMemberDB cmember;
+
+				DEBUG_PRINT("circleappoint","circleid=%d:rid=%d,title=%d", arg->circleid, arg->roleid,arg->title);
+                               	
+				key << arg->roleid;
+				Marshal::OctetsStream(pbase->find(key, txn)) >> base;
+				Marshal::OctetsStream hisos = base.circletrack;
+				if(hisos.size()==0)
+				{
+					Log::log( LOG_ERR, "DBCircleAppoint, circleid=%d, roleid=%d ,no circle his",arg->circleid,\
+							arg->roleid);
+					res->retcode = ERR_DATAERROR;
+					return;
+				}
+				std::vector<GCircleHistoryDB> HisVec;
+				
+				hisos >> HisVec;
+				if(HisVec.size()==0)
+				{
+					Log::log( LOG_ERR, "DBCircleAppoint, circleid=%d, roleid=%d ,no circle his",arg->circleid,arg->roleid);
+
+					res->retcode = ERR_DATAERROR;
+					return;
+				}
+				kcircle << arg->circleid;
+				Marshal::OctetsStream(pcircle->find(kcircle, txn)) >> zcircle;
+				if(zcircle.master_rid==0)
+				{	zcircle.master_rid = arg->roleid;}
+				else
+				{
+					res->retcode = ERR_DUPLICATRECORD;
+			/*		DEBUG_PRINT("DBCircleAppoint duplicate request, retcode=%d, roleid=%d",\
+						res->retcode, arg->roleid);
+			*/
+					return;
+				}
+				pcircle->insert( kcircle, Marshal::OctetsStream()<<zcircle, txn );
+	
+				HisVec.back().titlemask= CalcCircleTitleMask(HisVec.back().titlemask, CircleTitle(arg->title));
+				hisos.clear();
+				hisos << HisVec;
+				base.circletrack	=hisos;
+				pbase->insert( key, Marshal::OctetsStream()<< base, txn );
+				
+				res->retcode = ERR_SUCCESS;
+				res->titlemask = HisVec.back().titlemask;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCircleAppoint,circleid=%d:rid=%d,title=%d, what=%s",\
+				       	arg->circleid, arg->roleid,arg->title,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCircleAppointArg *arg = (DBCircleAppointArg *)argument;
+		// DefCircleRes *res = (DefCircleRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCIRCLEJOIN_HPP
+#define __GNET_DBCIRCLEJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcirclejoinarg"
+#include "dbcirclejoinres"
+
+namespace GNET
+{
+
+class DBCircleJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcirclejoin"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCircleJoinArg *arg = (DBCircleJoinArg *)argument;
+		// DBCircleJoinRes *res = (DBCircleJoinRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCircleJoinArg *arg = (DBCircleJoinArg *)argument;
+		// DBCircleJoinRes *res = (DBCircleJoinRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,59 @@
+#ifndef __GNET_DBGETCOMMONDATAARG_RPCDATA
+#define __GNET_DBGETCOMMONDATAARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBGetCommonDataArg : public GNET::Rpc::Data
+	{
+	public:
+		Octets handle;
+
+	public:
+		DBGetCommonDataArg (const Octets& l_handle = Octets())
+			: handle(l_handle)
+		{
+		}
+
+		DBGetCommonDataArg(const DBGetCommonDataArg &rhs)
+			: handle(rhs.handle) { }
+
+		Rpc::Data *Clone() const { return new DBGetCommonDataArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGetCommonDataArg *r = dynamic_cast<const DBGetCommonDataArg *>(&rhs);
+			if (r && r != this)
+			{
+				handle = r->handle;
+			}
+			return *this;
+		}
+
+		DBGetCommonDataArg& operator = (const DBGetCommonDataArg &rhs)
+		{
+			const DBGetCommonDataArg *r = &rhs;
+			if (r && r != this)
+			{
+				handle = r->handle;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << handle;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> handle;
+			return os;
+		}
+
+	};
+};
+#endif

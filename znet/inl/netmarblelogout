@@ -1,0 +1,38 @@
+	public:
+		int userid;
+		int ipaddress;
+		int playTime;
+		enum { PROTOCOL_TYPE = PROTOCOL_NETMARBLELOGOUT };
+	public:
+		NetMarbleLogout() { type = PROTOCOL_NETMARBLELOGOUT; }
+		NetMarbleLogout(void*) : Protocol(PROTOCOL_NETMARBLELOGOUT) { }
+		NetMarbleLogout (int l_userid,int l_ipaddress,int l_playTime)
+			 : userid(l_userid),ipaddress(l_ipaddress),playTime(l_playTime)
+		{
+			type = PROTOCOL_NETMARBLELOGOUT;
+		}
+
+		NetMarbleLogout(const NetMarbleLogout &rhs)
+			: Protocol(rhs),userid(rhs.userid),ipaddress(rhs.ipaddress),playTime(rhs.playTime) { }
+
+		GNET::Protocol *Clone() const { return new NetMarbleLogout(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			os << ipaddress;
+			os << playTime;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			os >> ipaddress;
+			os >> playTime;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 104; }
+
+		bool SizePolicy(size_t size) const { return size <= 256; }

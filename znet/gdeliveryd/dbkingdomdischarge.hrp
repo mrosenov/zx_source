@@ -1,0 +1,50 @@
+
+#ifndef __GNET_DBKINGDOMDISCHARGE_HPP
+#define __GNET_DBKINGDOMDISCHARGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomdischargearg"
+#include "dbkingdomdischargeres"
+#include "kingdomdischarge_re.hpp"
+
+namespace GNET
+{
+
+class DBKingdomDischarge : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomdischarge"
+#undef	RPC_BASECLASS
+	int roleid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomDischargeArg *arg = (DBKingdomDischargeArg *)argument;
+		// DBKingdomDischargeRes *res = (DBKingdomDischargeRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingdomDischargeArg *arg = (DBKingdomDischargeArg *)argument;
+		DBKingdomDischargeRes *res = (DBKingdomDischargeRes *)result;
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(roleid);
+		if (pinfo)
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, KingdomDischarge_Re(res->retcode, roleid, arg->candidate_id, arg->title, pinfo->localsid));
+		if (res->retcode == ERR_SUCCESS)
+			KingdomManager::GetInstance()->OnDBDischarge(arg->candidate_id, arg->title);
+		else
+			Log::log(LOG_ERR, "dbkingdomdischarge err %d, roleid %d candi %d title %d", res->retcode, roleid, arg->candidate_id, arg->title);
+		LOG_TRACE("dbkingdomdischarge err %d, roleid %d candi %d title %d", res->retcode, roleid, arg->candidate_id, arg->title);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

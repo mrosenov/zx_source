@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		int64_t fac_coupon_add;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYNCPLAYERFACCOUPONADD };
+	public:
+		SyncPlayerFacCouponAdd() { type = PROTOCOL_SYNCPLAYERFACCOUPONADD; }
+		SyncPlayerFacCouponAdd(void*) : Protocol(PROTOCOL_SYNCPLAYERFACCOUPONADD) { }
+		SyncPlayerFacCouponAdd (int l_roleid,int64_t l_fac_coupon_add = 0)
+			 : roleid(l_roleid),fac_coupon_add(l_fac_coupon_add)
+		{
+			type = PROTOCOL_SYNCPLAYERFACCOUPONADD;
+		}
+
+		SyncPlayerFacCouponAdd(const SyncPlayerFacCouponAdd &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),fac_coupon_add(rhs.fac_coupon_add) { }
+
+		GNET::Protocol *Clone() const { return new SyncPlayerFacCouponAdd(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << fac_coupon_add;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> fac_coupon_add;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

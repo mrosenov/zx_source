@@ -1,0 +1,89 @@
+
+#ifndef __GNET_SYNCCRSSVRTEAMSSCORE_HPP
+#define __GNET_SYNCCRSSVRTEAMSSCORE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrssvrteamsscorearg"
+#include "synccrssvrteamsscoreres"
+
+namespace GNET
+{
+
+class SyncCrssvrTeamsScore : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrssvrteamsscore"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrssvrTeamsScoreArg *arg = (SyncCrssvrTeamsScoreArg *)argument;
+		SyncCrssvrTeamsScoreRes *res = (SyncCrssvrTeamsScoreRes *)result;
+
+		LOG_TRACE("SyncCrssvrTeamsScore, roleid=%d, ct_score=%d, ct_max_score=%d, ct_last_max_score=%d, ct_score_updatetime=%d,ct_last_battle_count=%d", 
+				arg->roleid, arg->ct_score, arg->data_score.ct_max_score, arg->data_score.ct_last_max_score, arg->data_score.ct_score_updatetime, arg->ct_last_battle_count);
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kteamid;
+
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << arg->roleid;
+				GRoleBase	base;
+				Marshal::OctetsStream(pbase->find( key, txn )) >> base;
+				if ( arg->roleid!=(int)base.id )
+				{
+					Log::log( LOG_ERR,"SyncCrssvrTeamsScore. fatal, roleid(%d)!=value.id(%d)\n",
+						arg->roleid,base.id);
+					res->retcode = ERR_FAILED;
+					return;
+				}
+			
+				base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE] = arg->ct_score;
+				base.datagroup[KEY_DATAGOURP_ROLE_CT_MAX_SCORE] = arg->data_score.ct_max_score;
+				base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_MAX_SCORE] = arg->data_score.ct_last_max_score;
+				base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE_UPDATETIME] = arg->data_score.ct_score_updatetime;
+				base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_BATTLE_COUNT] = arg->ct_last_battle_count;
+
+				//LOG_TRACE("SyncCrssvrTeamsScore, roleid=%d, ct_score=%d", arg->roleid, base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE]);
+				pbase->insert( key, Marshal::OctetsStream() << base, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "SyncCrssvrTeamsScore, roleid=%d, what=%s\n", arg->roleid, e.what() );
+			res->retcode = ERR_FAILED;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// SyncCrssvrTeamsScoreArg *arg = (SyncCrssvrTeamsScoreArg *)argument;
+		// SyncCrssvrTeamsScoreRes *res = (SyncCrssvrTeamsScoreRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,45 @@
+
+#ifndef __GNET_DBFACTIONADD_HPP
+#define __GNET_DBFACTIONADD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "familyid"
+#include "hostilefaction"
+#include "hostileinfo"
+#include "dbfactionaddarg"
+#include "dbfactionaddres"
+
+namespace GNET
+{
+
+class DBFactionAdd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionadd"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFactionAddArg *arg = (DBFactionAddArg *)argument;
+		// DBFactionAddRes *res = (DBFactionAddRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFactionAddArg *arg = (DBFactionAddArg *)argument;
+		// DBFactionAddRes *res = (DBFactionAddRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

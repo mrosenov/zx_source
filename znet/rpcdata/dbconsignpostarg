@@ -1,0 +1,95 @@
+#ifndef __GNET_DBCONSIGNPOSTARG_RPCDATA
+#define __GNET_DBCONSIGNPOSTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignPostArg : public GNET::Rpc::Data
+	{
+	public:
+		int64_t sn;
+		int roleid;
+		int shelf_period;
+		int show_period;
+		int post_period;
+		int commodity_id;
+		int post_reason;
+
+	public:
+		DBConsignPostArg (int64_t l_sn = 0,int l_roleid = 0,int l_shelf_period = 0
+			,int l_show_period = 0,int l_post_period = 0,int l_commodity_id = 0
+			,int l_post_reason = 0)
+			: sn(l_sn),roleid(l_roleid),shelf_period(l_shelf_period)
+			,show_period(l_show_period),post_period(l_post_period),commodity_id(l_commodity_id)
+			,post_reason(l_post_reason)
+		{
+		}
+
+		DBConsignPostArg(const DBConsignPostArg &rhs)
+			: sn(rhs.sn),roleid(rhs.roleid),shelf_period(rhs.shelf_period),
+			show_period(rhs.show_period),post_period(rhs.post_period),commodity_id(rhs.commodity_id),
+			post_reason(rhs.post_reason) { }
+
+		Rpc::Data *Clone() const { return new DBConsignPostArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignPostArg *r = dynamic_cast<const DBConsignPostArg *>(&rhs);
+			if (r && r != this)
+			{
+				sn = r->sn;
+				roleid = r->roleid;
+				shelf_period = r->shelf_period;
+				show_period = r->show_period;
+				post_period = r->post_period;
+				commodity_id = r->commodity_id;
+				post_reason = r->post_reason;
+			}
+			return *this;
+		}
+
+		DBConsignPostArg& operator = (const DBConsignPostArg &rhs)
+		{
+			const DBConsignPostArg *r = &rhs;
+			if (r && r != this)
+			{
+				sn = r->sn;
+				roleid = r->roleid;
+				shelf_period = r->shelf_period;
+				show_period = r->show_period;
+				post_period = r->post_period;
+				commodity_id = r->commodity_id;
+				post_reason = r->post_reason;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << sn;
+			os << roleid;
+			os << shelf_period;
+			os << show_period;
+			os << post_period;
+			os << commodity_id;
+			os << post_reason;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> sn;
+			os >> roleid;
+			os >> shelf_period;
+			os >> show_period;
+			os >> post_period;
+			os >> commodity_id;
+			os >> post_reason;
+			return os;
+		}
+
+	};
+};
+#endif

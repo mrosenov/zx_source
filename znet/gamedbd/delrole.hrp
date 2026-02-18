@@ -1,0 +1,115 @@
+
+#ifndef __GNET_DELROLE_HPP
+#define __GNET_DELROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "dbbuffer.h"
+#include "roleid"
+#include "grolebase"
+#include "waitdelkey"
+#include "timer.h"
+#include "gsect"
+
+namespace GNET
+{
+
+class DelRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "delrole"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		Marshal::OctetsStream key;
+
+		Log::log( LOG_INFO, "DelRole, roleid=%d.\n", arg->id );
+
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pwaitdel = StorageEnv::GetStorage("waitdel");
+			StorageEnv::Storage * psect = StorageEnv::GetStorage("sect");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << *arg;
+				GRoleBase base;
+				Marshal::OctetsStream( pbase->find( key, txn ) ) >> base;
+				Log::formatlog("gamedbd","DelRole:roleid=%d:familyid=%d:title=%d",arg->id,base.familyid,base.title);
+				//只要角色在家族中，就不让删号
+				if(base.title!=TITLE_FREEMAN && base.title && base.familyid)
+				{
+					res->retcode = ERR_PERMISSION_DENIED;
+					return;
+				}
+				if(base.spouse)
+				{
+					res->retcode = ERR_UNAVAILABLE;
+					return;
+				}
+				if (base.sectid)
+				{
+					if (base.sectid != (int)arg->id)
+					{	
+						Marshal::OctetsStream master_sect;
+						if (psect->find(Marshal::OctetsStream()<<base.sectid, master_sect, txn))
+						{	//仍旧有有效师傅
+							res->retcode = ERR_DELROLE_SECT;
+							return;
+						}
+					}
+					else
+					{
+						Marshal::OctetsStream sect_os;
+						GSect sect;
+						if (psect->find(key, sect_os, txn))
+							sect_os >> sect;
+						if (!sect.disciples.empty())
+						{	//仍旧有徒弟
+							res->retcode = ERR_DELROLE_SECT;
+							return;
+						}
+					}
+				}
+				base.delete_time = Timer::GetTime();
+				base.status = _ROLE_STATUS_READYDEL;
+				pbase->insert( key, Marshal::OctetsStream() << base, txn );
+				Marshal::OctetsStream delkey;
+				delkey << WaitDelKey(base.id, TYPE_ROLE);
+				pwaitdel->insert( delkey, Marshal::OctetsStream() << base.delete_time, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DelRole, roleid=%d, what=%s\n", arg->id, e.what() );
+			res->retcode = -1;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleId *arg = (RoleId *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

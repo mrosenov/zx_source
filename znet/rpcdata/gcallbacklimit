@@ -1,0 +1,77 @@
+#ifndef __GNET_GCALLBACKLIMIT_RPCDATA
+#define __GNET_GCALLBACKLIMIT_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GCallbackLimit : public GNET::Rpc::Data
+	{
+	public:
+		unsigned short mailnum;
+		int timestamp;
+		char is_subscribe;
+		std::map<int, int> cooldown_map;
+
+	public:
+		GCallbackLimit (unsigned short l_mailnum = 0,int l_timestamp = 0,char l_is_subscribe = 1
+			)
+			: mailnum(l_mailnum),timestamp(l_timestamp),is_subscribe(l_is_subscribe)
+			
+		{
+		}
+
+		GCallbackLimit(const GCallbackLimit &rhs)
+			: mailnum(rhs.mailnum),timestamp(rhs.timestamp),is_subscribe(rhs.is_subscribe),
+			cooldown_map(rhs.cooldown_map) { }
+
+		Rpc::Data *Clone() const { return new GCallbackLimit(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GCallbackLimit *r = dynamic_cast<const GCallbackLimit *>(&rhs);
+			if (r && r != this)
+			{
+				mailnum = r->mailnum;
+				timestamp = r->timestamp;
+				is_subscribe = r->is_subscribe;
+				cooldown_map = r->cooldown_map;
+			}
+			return *this;
+		}
+
+		GCallbackLimit& operator = (const GCallbackLimit &rhs)
+		{
+			const GCallbackLimit *r = &rhs;
+			if (r && r != this)
+			{
+				mailnum = r->mailnum;
+				timestamp = r->timestamp;
+				is_subscribe = r->is_subscribe;
+				cooldown_map = r->cooldown_map;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << mailnum;
+			os << timestamp;
+			os << is_subscribe;
+			os << cooldown_map;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> mailnum;
+			os >> timestamp;
+			os >> is_subscribe;
+			os >> cooldown_map;
+			return os;
+		}
+
+	};
+};
+#endif

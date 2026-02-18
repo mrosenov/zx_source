@@ -1,0 +1,87 @@
+#ifndef __GNET_POSTCHANGEFACTIONNAMEARG_RPCDATA
+#define __GNET_POSTCHANGEFACTIONNAMEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class PostChangeFactionnameArg : public GNET::Rpc::Data
+	{
+	public:
+		char success;
+		int zoneid;
+		int fid;
+		Octets newname;
+		Octets oldname;
+		char scale;
+
+	public:
+		PostChangeFactionnameArg (char l_success = 1,int l_zoneid = -1,int l_fid = 0
+			,const Octets& l_newname = Octets(0),const Octets& l_oldname = Octets(0),char l_scale = 0)
+			: success(l_success),zoneid(l_zoneid),fid(l_fid)
+			,newname(l_newname),oldname(l_oldname),scale(l_scale)
+		{
+		}
+
+		PostChangeFactionnameArg(const PostChangeFactionnameArg &rhs)
+			: success(rhs.success),zoneid(rhs.zoneid),fid(rhs.fid),
+			newname(rhs.newname),oldname(rhs.oldname),scale(rhs.scale) { }
+
+		Rpc::Data *Clone() const { return new PostChangeFactionnameArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PostChangeFactionnameArg *r = dynamic_cast<const PostChangeFactionnameArg *>(&rhs);
+			if (r && r != this)
+			{
+				success = r->success;
+				zoneid = r->zoneid;
+				fid = r->fid;
+				newname = r->newname;
+				oldname = r->oldname;
+				scale = r->scale;
+			}
+			return *this;
+		}
+
+		PostChangeFactionnameArg& operator = (const PostChangeFactionnameArg &rhs)
+		{
+			const PostChangeFactionnameArg *r = &rhs;
+			if (r && r != this)
+			{
+				success = r->success;
+				zoneid = r->zoneid;
+				fid = r->fid;
+				newname = r->newname;
+				oldname = r->oldname;
+				scale = r->scale;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << success;
+			os << zoneid;
+			os << fid;
+			os << newname;
+			os << oldname;
+			os << scale;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> success;
+			os >> zoneid;
+			os >> fid;
+			os >> newname;
+			os >> oldname;
+			os >> scale;
+			return os;
+		}
+
+	};
+};
+#endif

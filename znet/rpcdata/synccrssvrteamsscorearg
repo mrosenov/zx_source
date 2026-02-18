@@ -1,0 +1,78 @@
+#ifndef __GNET_SYNCCRSSVRTEAMSSCOREARG_RPCDATA
+#define __GNET_SYNCCRSSVRTEAMSSCOREARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcrssvrteamsscore"
+
+namespace GNET
+{
+	class SyncCrssvrTeamsScoreArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		GCrssvrTeamsScore data_score;
+		int ct_score;
+		int ct_last_battle_count;
+
+	public:
+		SyncCrssvrTeamsScoreArg (int l_roleid = 0,const GCrssvrTeamsScore& l_data_score = GCrssvrTeamsScore(),int l_ct_score = 0
+			,int l_ct_last_battle_count = 0)
+			: roleid(l_roleid),data_score(l_data_score),ct_score(l_ct_score)
+			,ct_last_battle_count(l_ct_last_battle_count)
+		{
+		}
+
+		SyncCrssvrTeamsScoreArg(const SyncCrssvrTeamsScoreArg &rhs)
+			: roleid(rhs.roleid),data_score(rhs.data_score),ct_score(rhs.ct_score),
+			ct_last_battle_count(rhs.ct_last_battle_count) { }
+
+		Rpc::Data *Clone() const { return new SyncCrssvrTeamsScoreArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SyncCrssvrTeamsScoreArg *r = dynamic_cast<const SyncCrssvrTeamsScoreArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				data_score = r->data_score;
+				ct_score = r->ct_score;
+				ct_last_battle_count = r->ct_last_battle_count;
+			}
+			return *this;
+		}
+
+		SyncCrssvrTeamsScoreArg& operator = (const SyncCrssvrTeamsScoreArg &rhs)
+		{
+			const SyncCrssvrTeamsScoreArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				data_score = r->data_score;
+				ct_score = r->ct_score;
+				ct_last_battle_count = r->ct_last_battle_count;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << data_score;
+			os << ct_score;
+			os << ct_last_battle_count;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> data_score;
+			os >> ct_score;
+			os >> ct_last_battle_count;
+			return os;
+		}
+
+	};
+};
+#endif

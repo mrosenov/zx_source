@@ -1,0 +1,99 @@
+
+#ifndef __GNET_DBSNSGETROLE_HPP
+#define __GNET_DBSNSGETROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsgetrolearg"
+#include "dbsnsgetroleres"
+
+namespace GNET
+{
+
+class DBSNSGetRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsgetrole"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSNSGetRoleArg *arg = (DBSNSGetRoleArg *)argument;
+		DBSNSGetRoleRes *res = (DBSNSGetRoleRes *)result;
+		try
+		{
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * pstorehouse = StorageEnv::GetStorage("storehouse");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				Marshal::OctetsStream krole;
+				krole<< arg->roleid;
+
+				GRolePocket bag;
+				Marshal::OctetsStream( pinventory->find( krole, txn ) ) >> bag;
+
+				GRoleStatus status;
+				Marshal::OctetsStream(pstatus->find(krole,txn)) >> status;
+
+				//get role data
+				GRoleStorehouse storehouse;
+				Marshal::OctetsStream(pstorehouse->find(krole,txn)) >> storehouse; 
+                              	GRoleInventoryVector mountwing;
+                               	short mountwingsize=0;
+				if(bag.mountwing.size())
+				{
+					Marshal::OctetsStream os_mountwing(bag.mountwing);//refer to gdbclient/db_if.cpp
+					try
+					{
+						os_mountwing >> mountwingsize;
+		                               	os_mountwing >> mountwing;
+					}
+					catch(...)
+					{
+						Log::log(LOG_ERR, "dbconsigngetrole, error unmarshal, roleid=%d\n", arg->roleid);
+					}
+				}
+				res->creditinfo = GCreditInfo(status.credit);
+				res->petinfo = GPetsInfo(bag.petbadge,bag.petequip);
+				//SNS 不需要包裹和仓库
+				GRoleStorehouse sns_store;
+				sns_store.fuwen = storehouse.fuwen; //sns 需要符文包裹
+				res->pocketinfo	= GPocketInfo(0, bag.equipment, 0, GRoleInventoryVector(), bag.pocket_capacity, bag.pocket_items, bag.fashion, mountwingsize,mountwing, sns_store);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSNSGetRole, roleid=%d, what=%s\n",arg->roleid, e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSNSGetRoleArg *arg = (DBSNSGetRoleArg *)argument;
+		// DBSNSGetRoleRes *res = (DBSNSGetRoleRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

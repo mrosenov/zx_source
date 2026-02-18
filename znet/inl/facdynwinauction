@@ -1,0 +1,44 @@
+	public:
+		int fid;
+		Octets rolename;
+		int itemid;
+		int cost;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACDYNWINAUCTION };
+	public:
+		FacDynWinAuction() { type = PROTOCOL_FACDYNWINAUCTION; }
+		FacDynWinAuction(void*) : Protocol(PROTOCOL_FACDYNWINAUCTION) { }
+		FacDynWinAuction (int l_fid,const Octets& l_rolename = Octets(),int l_itemid = 0,
+			int l_cost = 0)
+			 : fid(l_fid),rolename(l_rolename),itemid(l_itemid)
+			,cost(l_cost)
+		{
+			type = PROTOCOL_FACDYNWINAUCTION;
+		}
+
+		FacDynWinAuction(const FacDynWinAuction &rhs)
+			: Protocol(rhs),fid(rhs.fid),rolename(rhs.rolename),itemid(rhs.itemid)
+			,cost(rhs.cost) { }
+
+		GNET::Protocol *Clone() const { return new FacDynWinAuction(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << rolename;
+			os << itemid;
+			os << cost;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> rolename;
+			os >> itemid;
+			os >> cost;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

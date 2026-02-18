@@ -1,0 +1,252 @@
+#ifndef __GNET_GROLEDETAIL_RPCDATA
+#define __GNET_GROLEDETAIL_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "grolestatus"
+#include "grolepocket"
+#include "grolestorehouse"
+#include "groletask"
+#include "gshoplog"
+#include "groleachievement"
+#include "groleaward"
+#include "grolebase2"
+#include "weborder"
+
+namespace GNET
+{
+	class GRoleDetail : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int id;
+		unsigned int userid;
+		GRoleStatus status;
+		Octets name;
+		unsigned char faceid;
+		unsigned char hairid;
+		unsigned char gender;
+		int create_time;
+		unsigned int cash_add2;
+		int cash_total;
+		unsigned int cash_used;
+		int cash_serial;
+		int loginip;
+		unsigned int factionid;
+		unsigned int familyid;
+		unsigned char title;
+		int sectid;
+		short initiallevel;
+		unsigned int spouse;
+		int jointime;
+		GRolePocket inventory;
+		GRoleStorehouse storehouse;
+		GRoleTask task;
+		std::vector<GShopLog> logs;
+		int referrer;
+		GRoleAchievement achievement;
+		unsigned int circleid;
+		unsigned char circletitlemask;
+		GRoleAward award;
+		unsigned char fashionid;
+		GRoleBase2 base2;
+		WebOrderVector weborders;
+		std::vector<int64_t> processed_weborders;
+
+	public:
+		GRoleDetail (unsigned int l_id = 0,unsigned int l_userid = 0,const Octets& l_name = Octets(0)
+			,unsigned char l_faceid = 0,unsigned char l_hairid = 0,unsigned char l_gender = 0
+			,int l_create_time = 0,unsigned int l_cash_add2 = 0,int l_cash_total = 0
+			,unsigned int l_cash_used = 0,int l_cash_serial = 0,int l_loginip = 0
+			,unsigned int l_factionid = 0,unsigned int l_familyid = 0,unsigned char l_title = 0
+			,int l_sectid = 0,short l_initiallevel = 0,unsigned int l_spouse = 0
+			,int l_jointime = 0,int l_referrer = 0,unsigned int l_circleid = 0
+			,unsigned char l_circletitlemask = 0,unsigned char l_fashionid = 0)
+			: id(l_id),userid(l_userid),name(l_name)
+			,faceid(l_faceid),hairid(l_hairid),gender(l_gender)
+			,create_time(l_create_time),cash_add2(l_cash_add2),cash_total(l_cash_total)
+			,cash_used(l_cash_used),cash_serial(l_cash_serial),loginip(l_loginip)
+			,factionid(l_factionid),familyid(l_familyid),title(l_title)
+			,sectid(l_sectid),initiallevel(l_initiallevel),spouse(l_spouse)
+			,jointime(l_jointime),referrer(l_referrer),circleid(l_circleid)
+			,circletitlemask(l_circletitlemask),fashionid(l_fashionid)
+		{
+		}
+
+		GRoleDetail(const GRoleDetail &rhs)
+			: id(rhs.id),userid(rhs.userid),status(rhs.status),
+			name(rhs.name),faceid(rhs.faceid),hairid(rhs.hairid),
+			gender(rhs.gender),create_time(rhs.create_time),cash_add2(rhs.cash_add2),
+			cash_total(rhs.cash_total),cash_used(rhs.cash_used),cash_serial(rhs.cash_serial),
+			loginip(rhs.loginip),factionid(rhs.factionid),familyid(rhs.familyid),
+			title(rhs.title),sectid(rhs.sectid),initiallevel(rhs.initiallevel),
+			spouse(rhs.spouse),jointime(rhs.jointime),inventory(rhs.inventory),
+			storehouse(rhs.storehouse),task(rhs.task),logs(rhs.logs),
+			referrer(rhs.referrer),achievement(rhs.achievement),circleid(rhs.circleid),
+			circletitlemask(rhs.circletitlemask),award(rhs.award),fashionid(rhs.fashionid),
+			base2(rhs.base2),weborders(rhs.weborders),processed_weborders(rhs.processed_weborders) { }
+
+		Rpc::Data *Clone() const { return new GRoleDetail(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GRoleDetail *r = dynamic_cast<const GRoleDetail *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				userid = r->userid;
+				status = r->status;
+				name = r->name;
+				faceid = r->faceid;
+				hairid = r->hairid;
+				gender = r->gender;
+				create_time = r->create_time;
+				cash_add2 = r->cash_add2;
+				cash_total = r->cash_total;
+				cash_used = r->cash_used;
+				cash_serial = r->cash_serial;
+				loginip = r->loginip;
+				factionid = r->factionid;
+				familyid = r->familyid;
+				title = r->title;
+				sectid = r->sectid;
+				initiallevel = r->initiallevel;
+				spouse = r->spouse;
+				jointime = r->jointime;
+				inventory = r->inventory;
+				storehouse = r->storehouse;
+				task = r->task;
+				logs = r->logs;
+				referrer = r->referrer;
+				achievement = r->achievement;
+				circleid = r->circleid;
+				circletitlemask = r->circletitlemask;
+				award = r->award;
+				fashionid = r->fashionid;
+				base2 = r->base2;
+				weborders = r->weborders;
+				processed_weborders = r->processed_weborders;
+			}
+			return *this;
+		}
+
+		GRoleDetail& operator = (const GRoleDetail &rhs)
+		{
+			const GRoleDetail *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				userid = r->userid;
+				status = r->status;
+				name = r->name;
+				faceid = r->faceid;
+				hairid = r->hairid;
+				gender = r->gender;
+				create_time = r->create_time;
+				cash_add2 = r->cash_add2;
+				cash_total = r->cash_total;
+				cash_used = r->cash_used;
+				cash_serial = r->cash_serial;
+				loginip = r->loginip;
+				factionid = r->factionid;
+				familyid = r->familyid;
+				title = r->title;
+				sectid = r->sectid;
+				initiallevel = r->initiallevel;
+				spouse = r->spouse;
+				jointime = r->jointime;
+				inventory = r->inventory;
+				storehouse = r->storehouse;
+				task = r->task;
+				logs = r->logs;
+				referrer = r->referrer;
+				achievement = r->achievement;
+				circleid = r->circleid;
+				circletitlemask = r->circletitlemask;
+				award = r->award;
+				fashionid = r->fashionid;
+				base2 = r->base2;
+				weborders = r->weborders;
+				processed_weborders = r->processed_weborders;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << userid;
+			os << status;
+			os << name;
+			os << faceid;
+			os << hairid;
+			os << gender;
+			os << create_time;
+			os << cash_add2;
+			os << cash_total;
+			os << cash_used;
+			os << cash_serial;
+			os << loginip;
+			os << factionid;
+			os << familyid;
+			os << title;
+			os << sectid;
+			os << initiallevel;
+			os << spouse;
+			os << jointime;
+			os << inventory;
+			os << storehouse;
+			os << task;
+			os << logs;
+			os << referrer;
+			os << achievement;
+			os << circleid;
+			os << circletitlemask;
+			os << award;
+			os << fashionid;
+			os << base2;
+			os << weborders;
+			os << processed_weborders;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> userid;
+			os >> status;
+			os >> name;
+			os >> faceid;
+			os >> hairid;
+			os >> gender;
+			os >> create_time;
+			os >> cash_add2;
+			os >> cash_total;
+			os >> cash_used;
+			os >> cash_serial;
+			os >> loginip;
+			os >> factionid;
+			os >> familyid;
+			os >> title;
+			os >> sectid;
+			os >> initiallevel;
+			os >> spouse;
+			os >> jointime;
+			os >> inventory;
+			os >> storehouse;
+			os >> task;
+			os >> logs;
+			os >> referrer;
+			os >> achievement;
+			os >> circleid;
+			os >> circletitlemask;
+			os >> award;
+			os >> fashionid;
+			os >> base2;
+			os >> weborders;
+			os >> processed_weborders;
+			return os;
+		}
+
+	};
+};
+#endif

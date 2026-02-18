@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		GSNSGsRoleInfo gsroleinfo;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYNCGSROLEINFO2PLATFORM };
+	public:
+		SyncGsRoleInfo2Platform() { type = PROTOCOL_SYNCGSROLEINFO2PLATFORM; }
+		SyncGsRoleInfo2Platform(void*) : Protocol(PROTOCOL_SYNCGSROLEINFO2PLATFORM) { }
+		SyncGsRoleInfo2Platform (int l_roleid,const GSNSGsRoleInfo& l_gsroleinfo = GSNSGsRoleInfo())
+			 : roleid(l_roleid),gsroleinfo(l_gsroleinfo)
+		{
+			type = PROTOCOL_SYNCGSROLEINFO2PLATFORM;
+		}
+
+		SyncGsRoleInfo2Platform(const SyncGsRoleInfo2Platform &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),gsroleinfo(rhs.gsroleinfo) { }
+
+		GNET::Protocol *Clone() const { return new SyncGsRoleInfo2Platform(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << gsroleinfo;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> gsroleinfo;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 65536; }

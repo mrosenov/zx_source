@@ -1,0 +1,76 @@
+#ifndef __GNET_DBCONSIGNSHELFRES_RPCDATA
+#define __GNET_DBCONSIGNSHELFRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gconsignitem"
+
+namespace GNET
+{
+	class DBConsignShelfRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int buyer_userid;
+		GConsignItem item;
+		int statechange;
+
+	public:
+		DBConsignShelfRes (int l_retcode = 0,int l_buyer_userid = 0,int l_statechange = 0)
+			: retcode(l_retcode),buyer_userid(l_buyer_userid),statechange(l_statechange)
+		{
+		}
+
+		DBConsignShelfRes(const DBConsignShelfRes &rhs)
+			: retcode(rhs.retcode),buyer_userid(rhs.buyer_userid),item(rhs.item),
+			statechange(rhs.statechange) { }
+
+		Rpc::Data *Clone() const { return new DBConsignShelfRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignShelfRes *r = dynamic_cast<const DBConsignShelfRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				buyer_userid = r->buyer_userid;
+				item = r->item;
+				statechange = r->statechange;
+			}
+			return *this;
+		}
+
+		DBConsignShelfRes& operator = (const DBConsignShelfRes &rhs)
+		{
+			const DBConsignShelfRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				buyer_userid = r->buyer_userid;
+				item = r->item;
+				statechange = r->statechange;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << buyer_userid;
+			os << item;
+			os << statechange;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> buyer_userid;
+			os >> item;
+			os >> statechange;
+			return os;
+		}
+
+	};
+};
+#endif

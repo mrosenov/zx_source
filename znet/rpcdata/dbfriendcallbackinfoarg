@@ -1,0 +1,59 @@
+#ifndef __GNET_DBFRIENDCALLBACKINFOARG_RPCDATA
+#define __GNET_DBFRIENDCALLBACKINFOARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFriendCallbackInfoArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+
+	public:
+		DBFriendCallbackInfoArg (int l_roleid = 0)
+			: roleid(l_roleid)
+		{
+		}
+
+		DBFriendCallbackInfoArg(const DBFriendCallbackInfoArg &rhs)
+			: roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new DBFriendCallbackInfoArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFriendCallbackInfoArg *r = dynamic_cast<const DBFriendCallbackInfoArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		DBFriendCallbackInfoArg& operator = (const DBFriendCallbackInfoArg &rhs)
+		{
+			const DBFriendCallbackInfoArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

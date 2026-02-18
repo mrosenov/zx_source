@@ -1,0 +1,36 @@
+	public:
+		int roleid;
+		int netbar_level;
+		int award_type;
+		enum { PROTOCOL_TYPE = PROTOCOL_NETBARREWARD };
+	public:
+		NetBarReward() { type = PROTOCOL_NETBARREWARD; }
+		NetBarReward(void*) : Protocol(PROTOCOL_NETBARREWARD) { }
+		NetBarReward (int l_roleid,int l_netbar_level = 0,int l_award_type = 0)
+			 : roleid(l_roleid),netbar_level(l_netbar_level),award_type(l_award_type)
+		{
+			type = PROTOCOL_NETBARREWARD;
+		}
+
+		NetBarReward(const NetBarReward &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),netbar_level(rhs.netbar_level),award_type(rhs.award_type) { }
+
+		GNET::Protocol *Clone() const { return new NetBarReward(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << netbar_level;
+			os << award_type;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> netbar_level;
+			os >> award_type;
+			return os;
+		}
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

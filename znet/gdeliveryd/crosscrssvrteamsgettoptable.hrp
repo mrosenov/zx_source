@@ -1,0 +1,42 @@
+
+#ifndef __GNET_CROSSCRSSVRTEAMSGETTOPTABLE_HPP
+#define __GNET_CROSSCRSSVRTEAMSGETTOPTABLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "crosscrssvrteamsgettoptablearg"
+#include "crosscrssvrteamsgettoptableres"
+
+namespace GNET
+{
+
+class CrossCrssvrTeamsGetTopTable : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "crosscrssvrteamsgettoptable"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// CrossCrssvrTeamsGetTopTableArg *arg = (CrossCrssvrTeamsGetTopTableArg *)argument;
+		// CrossCrssvrTeamsGetTopTableRes *res = (CrossCrssvrTeamsGetTopTableRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// CrossCrssvrTeamsGetTopTableArg *arg = (CrossCrssvrTeamsGetTopTableArg *)argument;
+		// CrossCrssvrTeamsGetTopTableRes *res = (CrossCrssvrTeamsGetTopTableRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

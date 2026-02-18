@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		char oper;
+		char message_type;
+		int message_id;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDSNSVOTE };
+	public:
+		SendSNSVote() { type = PROTOCOL_SENDSNSVOTE; }
+		SendSNSVote(void*) : Protocol(PROTOCOL_SENDSNSVOTE) { }
+		SendSNSVote (int l_roleid,char l_oper = 0,char l_message_type = 0,
+			int l_message_id = 0)
+			 : roleid(l_roleid),oper(l_oper),message_type(l_message_type)
+			,message_id(l_message_id)
+		{
+			type = PROTOCOL_SENDSNSVOTE;
+		}
+
+		SendSNSVote(const SendSNSVote &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),oper(rhs.oper),message_type(rhs.message_type)
+			,message_id(rhs.message_id) { }
+
+		GNET::Protocol *Clone() const { return new SendSNSVote(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << oper;
+			os << message_type;
+			os << message_id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> oper;
+			os >> message_type;
+			os >> message_id;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 256; }

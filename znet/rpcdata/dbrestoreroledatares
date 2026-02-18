@@ -1,0 +1,64 @@
+#ifndef __GNET_DBRESTOREROLEDATARES_RPCDATA
+#define __GNET_DBRESTOREROLEDATARES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBRestoreRoleDataRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int restore_time;
+
+	public:
+		DBRestoreRoleDataRes (int l_retcode = 0,int l_restore_time = 0)
+			: retcode(l_retcode),restore_time(l_restore_time)
+		{
+		}
+
+		DBRestoreRoleDataRes(const DBRestoreRoleDataRes &rhs)
+			: retcode(rhs.retcode),restore_time(rhs.restore_time) { }
+
+		Rpc::Data *Clone() const { return new DBRestoreRoleDataRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBRestoreRoleDataRes *r = dynamic_cast<const DBRestoreRoleDataRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				restore_time = r->restore_time;
+			}
+			return *this;
+		}
+
+		DBRestoreRoleDataRes& operator = (const DBRestoreRoleDataRes &rhs)
+		{
+			const DBRestoreRoleDataRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				restore_time = r->restore_time;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << restore_time;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> restore_time;
+			return os;
+		}
+
+	};
+};
+#endif

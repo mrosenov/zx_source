@@ -1,0 +1,50 @@
+	public:
+		int roleid;
+		int flagid;
+		int duration;
+		int gsid;
+		int worldtag;
+		FactionIDBean factionid;
+		enum { PROTOCOL_TYPE = PROTOCOL_BATTLEFLAGSTART };
+	public:
+		BattleFlagStart() { type = PROTOCOL_BATTLEFLAGSTART; }
+		BattleFlagStart(void*) : Protocol(PROTOCOL_BATTLEFLAGSTART) { }
+		BattleFlagStart (int l_roleid,int l_flagid,int l_duration = 0,
+			int l_gsid = 0,int l_worldtag = 0,const FactionIDBean& l_factionid = FactionIDBean())
+			 : roleid(l_roleid),flagid(l_flagid),duration(l_duration)
+			,gsid(l_gsid),worldtag(l_worldtag),factionid(l_factionid)
+		{
+			type = PROTOCOL_BATTLEFLAGSTART;
+		}
+
+		BattleFlagStart(const BattleFlagStart &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),flagid(rhs.flagid),duration(rhs.duration)
+			,gsid(rhs.gsid),worldtag(rhs.worldtag),factionid(rhs.factionid) { }
+
+		GNET::Protocol *Clone() const { return new BattleFlagStart(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << flagid;
+			os << duration;
+			os << gsid;
+			os << worldtag;
+			os << factionid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> flagid;
+			os >> duration;
+			os >> gsid;
+			os >> worldtag;
+			os >> factionid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

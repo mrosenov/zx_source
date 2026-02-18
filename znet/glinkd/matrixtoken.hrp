@@ -1,0 +1,110 @@
+
+#ifndef __GNET_MATRIXTOKEN_HPP
+#define __GNET_MATRIXTOKEN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "matrixtokenarg"
+#include "matrixtokenres"
+
+namespace GNET
+{
+
+class MatrixToken : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "matrixtoken"
+#undef	RPC_BASECLASS
+
+	Manager::Session::ID save_sid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// MatrixTokenArg *arg = (MatrixTokenArg *)argument;
+		// MatrixTokenRes *res = (MatrixTokenRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		MatrixTokenRes *res = (MatrixTokenRes *)result;
+		GLinkServer *lsm = GLinkServer::GetInstance();
+		//DEBUG_PRINT("glinkd::receive matrixtoken. retcode=%d, algorithm=%x, matrix=%d", res->retcode, res->algorithm, res->matrix.size());
+		Log::trace("glinkd::receive matrixtoken, retcode=%d, algorithm=%x, matrix=%d", res->retcode, res->algorithm, res->matrix.size());
+		if(!lsm->ValidSid(save_sid))
+			return;
+		if(res->retcode)
+		{
+			if(ERR_INVALID_ACCOUNT == res->retcode)
+				res->retcode = ERR_INVALID_PASSWORD;
+			lsm->SessionError(save_sid, res->retcode, "Server error.");
+			return;
+		}
+		SessionInfo *sinfo = NULL;
+		{
+			Thread::RWLock::WRScoped l(lsm->locker_map);
+			sinfo = lsm->GetSessionInfo(save_sid);
+			if(!sinfo)
+				return;
+			sinfo->userid = res->userid;
+			sinfo->login_time = time(NULL);
+			sinfo->algorithm = res->algorithm;
+		}
+		
+		int algorithm = res->algorithm & ALGORITHM_MASK_HIGH;
+		switch(algorithm)
+		{
+		case ALGORITHM_CARD:
+		case ALGORITHM_HANDSET:
+			SendMatrixChallenge(lsm, algorithm, res, sinfo);
+			break;
+		default:
+			SendKeyExchange(lsm, res, sinfo);
+			break;
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+	void SendMatrixChallenge(GLinkServer *lsm, int algo, MatrixTokenRes *res, SessionInfo *sinfo)
+	{
+		Log::trace("glinkd::Send MatrixChallenge to Client, algo=%d", algo);
+		lsm->ChangeState(save_sid, &state_GVerifyMatrix);
+		Thread::RWLock::WRScoped l(lsm->locker_map);
+
+		MatrixChecker *checker = NULL;
+		if(ALGORITHM_CARD == algo)
+		{
+			checker = new CardChecker(res->userid, byteorder_32(sinfo->GetPeerAddr().s_addr), (unsigned char *)res->matrix.begin());
+		}
+		else if(ALGORITHM_HANDSET == algo)
+		{
+			checker = MobileCheckerFactory::Instance().Create(res->userid, byteorder_32(sinfo->GetPeerAddr().s_addr), res->algorithm, res->matrix);
+		}
+
+		MatrixChallenge mc(res->algorithm, checker->Challenge());
+		lsm->Send(save_sid, mc);
+		lsm->AddChecker(save_sid, checker);
+	}
+
+	void SendKeyExchange(GLinkServer *lsm, MatrixTokenRes *res, SessionInfo *sinfo)
+	{
+		Log::trace("glinkd::Send Key Exchange to Client");
+		lsm->ChangeState(save_sid, &state_GKeyExchgSend);
+		Thread::RWLock::RDScoped l(lsm->locker_map);
+		
+		KeyExchange keyexchange(PROTOCOL_KEYEXCHANGE);
+		keyexchange.Setup(sinfo->identity, sinfo->response, lsm, save_sid);
+		lsm->Send(save_sid, keyexchange);
+		
+		Octets &username = sinfo->identity;
+		Log::login(username, res->userid, save_sid, inet_ntoa(sinfo->GetPeerAddr()), sinfo->mid);
+		GLog::action("userlogin, acc=%.*s:uid=%d:ip=%s", username.size(), (char *)username.begin(), res->userid, inet_ntoa(sinfo->GetPeerAddr()));
+	}
+};
+
+};
+#endif

@@ -1,0 +1,167 @@
+
+#ifndef __GNET_PLAYERIDENTITYMATCH_HPP
+#define __GNET_PLAYERIDENTITYMATCH_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "playeridentitymatcharg"
+#include "playeridentitymatchres"
+#include "grolebase2"
+
+namespace GNET
+{
+
+class PlayerIdentityMatch : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "playeridentitymatch"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PlayerIdentityMatchArg *arg = (PlayerIdentityMatchArg *)argument;
+		PlayerIdentityMatchRes *res = (PlayerIdentityMatchRes *)result;
+		LOG_TRACE("PlayerIdentityMatch get data userid %d roleid %d flag %d", arg->userid, arg->roleid, arg->flag);
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, value_status, value_base2, value_items;
+			try
+			{
+				Marshal::OctetsStream(puser->find(Marshal::OctetsStream()<<arg->userid, txn)) >> res->user;
+				if (res->user.money < 0)
+				{
+					Log::formatlog("PlayerIdentityMatch", "userid=%d, money(%d) < 0, repair to 0", arg->userid, res->user.money);
+					res->user.money = 0;
+				}
+				int lastlogin_ip = res->user.lastlogin_ip;
+				res->user.lastlogin_ip = arg->ip;
+				puser->insert(Marshal::OctetsStream() << arg->userid, Marshal::OctetsStream() << res->user, txn);
+				res->user.lastlogin_ip = lastlogin_ip;
+
+				//与GetUser保持一致
+				key << arg->roleid;
+				GRoleBase	base; //不要无意识地破坏原有数据
+				Marshal::OctetsStream(pbase->find( key, txn )) >> base;
+
+				int userid = base.userid;
+				if (userid == 0) userid = LOGICUID(base.id);
+				if (userid != arg->userid)
+				{
+					Log::log(LOG_ERR, "PlayerIdentityMatch base(%d).userid(%d) does not belong to userid %d", base.id, userid, arg->userid);
+					res->retcode = ERR_DATANOTFIND;
+					return;
+				}
+				res->roleinfo.id = arg->roleid;
+				res->roleinfo.name = base.name;
+				res->roleinfo.faceid = base.faceid;
+				res->roleinfo.hairid = base.hairid;
+				res->roleinfo.gender = base.gender;
+				res->roleinfo.earid = base.earid;
+				res->roleinfo.tailid = base.tailid;
+				res->roleinfo.fashionid = base.fashionid;
+				res->roleinfo.ct_leave_cool = base.datagroup[KEY_DATAGOURP_ROLE_CT_COOLTIME];
+				res->roleinfo.ct_teamid = base.datagroup[KEY_DATAGOURP_ROLE_CT_TEAMID];			
+				res->roleinfo.ct_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE];
+				res->roleinfo.ct_last_max_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_MAX_SCORE];			
+				res->roleinfo.ct_last_punish_time = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME];
+				res->roleinfo.ct_last_battle_count = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_BATTLE_COUNT];
+
+				//LOG_TRACE("PlayerIdentityMatch get data userid %d roleid %d flag %d, ct_score=%d", arg->userid, arg->roleid, arg->flag, res->roleinfo.ct_score);
+				if (arg->flag == DS_TO_CENTRALDS || arg->flag == DS_TO_BATTLEMAP)
+				{
+					if (base.status != _ROLE_STATUS_FROZEN)
+						Log::log(LOG_ERR, "PlayerIdentityMatch userid %d roleid %d status %d", arg->userid, arg->roleid, base.status);
+					base.status = _ROLE_STATUS_NORMAL;
+				}
+				res->roleinfo.delete_flag = base.status;
+				res->roleinfo.create_time = base.create_time;
+				res->roleinfo.delete_time = base.delete_time;
+				res->roleinfo.lastlogin_time = base.lastlogin_time;
+				res->roleinfo.forbid = base.forbid;
+				res->roleinfo.sectid = base.sectid;
+				res->roleinfo.spouse = base.spouse;
+				res->roleinfo.familyid = base.familyid;
+				res->roleinfo.title = base.title;
+				res->roleinfo.config_data = base.config_data;
+				res->roleinfo.help_states = base.help_states;
+
+				if(GameDBManager::GetInstance()->MustDelete(base))
+					res->roleinfo.delete_flag =  _ROLE_STATUS_MUSTDEL; 
+				res->retcode = ERR_SUCCESS;
+
+				GRoleStatus	status;
+				if(pstatus->find( key, value_status, txn ))
+				{
+					value_status >> status;
+					res->roleinfo.occupation = status.occupation;
+					res->roleinfo.level = status.level;
+					res->roleinfo.posx = status.posx;
+					res->roleinfo.posy = status.posy;
+					res->roleinfo.posz = status.posz;
+					res->roleinfo.worldtag = status.worldtag;
+					res->roleinfo.custom_status = status.custom_status;
+					res->roleinfo.charactermode = status.charactermode;
+					res->roleinfo.reborndata = status.reborndata;
+					res->roleinfo.reborn_cnt = status.reborndata.size()/sizeof(int);
+					res->roleinfo.cultivation = status.cultivation;
+				}
+
+				GRolePocket items;
+				if( pinventory->find( key, value_items, txn ) )
+				{
+					value_items >> items;
+					res->roleinfo.equipment.swap(items.equipment);
+				}
+				GRoleBase2 base2;
+				if ( pbase2->find(key, value_base2, txn))
+				{
+					value_base2 >> base2;
+					res->roleinfo.data_timestamp = base2.data_timestamp;
+					res->roleinfo.src_zoneid = base2.src_zoneid;
+				}
+				//与GetRoleInfo保持一致
+				/*延迟到 TouchPlayerData 时再改 base.status
+				if (arg->flag == DS_TO_CENTRALDS)
+					pbase->insert(key, Marshal::OctetsStream() << base, txn);
+				*/
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PlayerIdentityMatch, userid=%d, roleid=%d, what=%s\n", arg->userid, arg->roleid, e.what() );
+			res->retcode = ERR_DATANOTFIND;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PlayerIdentityMatchArg *arg = (PlayerIdentityMatchArg *)argument;
+		// PlayerIdentityMatchRes *res = (PlayerIdentityMatchRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

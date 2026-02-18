@@ -1,0 +1,101 @@
+
+#ifndef __GNET_DBCROSSCRSSVRTEAMSSEARCH_HPP
+#define __GNET_DBCROSSCRSSVRTEAMSSEARCH_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrosscrssvrteamssearcharg"
+#include "dbcrosscrssvrteamssearchres"
+
+namespace GNET
+{
+
+class DBCrossCrssvrTeamsSearch : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrosscrssvrteamssearch"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrossCrssvrTeamsSearchArg *arg = (DBCrossCrssvrTeamsSearchArg *)argument;
+		DBCrossCrssvrTeamsSearchRes *res = (DBCrossCrssvrTeamsSearchRes *)result;
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream kteamid, kteamname;
+		try
+		{
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			StorageEnv::Storage * pnamecrssvrteams = StorageEnv::GetStorage("crssvrteamsname");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				int teamid = -1;
+				GCrssvrTeamsData crssvrteams;
+				LOG_TRACE("DBCrossCrssvrTeamsSearch, roleid=%d, teamname.size=%d, teamname=%.*s, zoneid=%d", arg->roleid, arg->name.size(), arg->name.size(), (char*)arg->name.begin(), arg->zoneid);
+
+				kteamname << arg->name;
+				if( pnamecrssvrteams->find(kteamname, value, txn) )
+				{
+					value >> teamid;
+				}
+				
+				if(teamid <= 0)
+				{
+					LOG_TRACE( "DBCrossCrssvrTeamsSearch, teamname.size=%d, not found in crssvrteamsname", arg->name.size());
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}
+
+				value.clear();
+				kteamid << teamid;
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> crssvrteams;
+				}
+				
+				if(crssvrteams.info.teamid <= 0)
+				{
+					Log::log( LOG_ERR, "DBCrossCrssvrTeamsSearch, teamid=%d, not found in crssvrteams", teamid);
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}
+
+				res->info = crssvrteams;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrossCrssvrTeamsSearch, teamname.size=%d, what=%s.",arg->name.size(),e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrossCrssvrTeamsSearchArg *arg = (DBCrossCrssvrTeamsSearchArg *)argument;
+		// DBCrossCrssvrTeamsSearchRes *res = (DBCrossCrssvrTeamsSearchRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCIRCLEAPPOINT_HPP
+#define __GNET_DBCIRCLEAPPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcircleappointarg"
+#include "dbcircleappointres"
+
+namespace GNET
+{
+
+class DBCircleAppoint : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcircleappoint"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCircleAppointArg *arg = (DBCircleAppointArg *)argument;
+		// DBCircleAppointRes *res = (DBCircleAppointRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCircleAppointArg *arg = (DBCircleAppointArg *)argument;
+		// DBCircleAppointRes *res = (DBCircleAppointRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

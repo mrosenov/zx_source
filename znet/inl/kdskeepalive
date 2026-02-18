@@ -1,0 +1,32 @@
+	public:
+		char code;
+		enum { PROTOCOL_TYPE = PROTOCOL_KDSKEEPALIVE };
+	public:
+		KDSKeepAlive() { type = PROTOCOL_KDSKEEPALIVE; }
+		KDSKeepAlive(void*) : Protocol(PROTOCOL_KDSKEEPALIVE) { }
+		KDSKeepAlive (char l_code)
+			 : code(l_code)
+		{
+			type = PROTOCOL_KDSKEEPALIVE;
+		}
+
+		KDSKeepAlive(const KDSKeepAlive &rhs)
+			: Protocol(rhs),code(rhs.code) { }
+
+		GNET::Protocol *Clone() const { return new KDSKeepAlive(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << code;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> code;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 65536; }

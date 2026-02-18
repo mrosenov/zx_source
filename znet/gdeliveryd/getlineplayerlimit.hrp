@@ -1,0 +1,49 @@
+
+#ifndef __GNET_GETLINEPLAYERLIMIT_HPP
+#define __GNET_GETLINEPLAYERLIMIT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "getlineplayerlimitarg"
+#include "lineplayerlimit"
+#include "gproviderserver.hpp"
+#include "lineplayernumberlimits"
+
+namespace GNET
+{
+
+class GetLinePlayerLimit : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getlineplayerlimit"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GetLinePlayerLimitArg *arg = (GetLinePlayerLimitArg *)argument;
+		LinePlayerNumberLimits *res = (LinePlayerNumberLimits *)result;
+		//LOG_TRACE("GetLinePlayerLimit set link_version %d", arg->version);
+		//此协议有可能是iweb发过来的 version无效
+		if (sid != GDeliveryServer::GetInstance()->iweb_sid)
+			GDeliveryServer::GetInstance()->SetVersion(arg->version);
+		res->limits = GProviderServer::GetInstance()->GetLimits();
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GetLinePlayerLimitArg *arg = (GetLinePlayerLimitArg *)argument;
+		// LinePlayerNumberLimits *res = (LinePlayerNumberLimits *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

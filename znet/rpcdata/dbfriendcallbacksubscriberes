@@ -1,0 +1,59 @@
+#ifndef __GNET_DBFRIENDCALLBACKSUBSCRIBERES_RPCDATA
+#define __GNET_DBFRIENDCALLBACKSUBSCRIBERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFriendCallbackSubscribeRes : public GNET::Rpc::Data
+	{
+	public:
+		unsigned char retcode;
+
+	public:
+		DBFriendCallbackSubscribeRes (unsigned char l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBFriendCallbackSubscribeRes(const DBFriendCallbackSubscribeRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBFriendCallbackSubscribeRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFriendCallbackSubscribeRes *r = dynamic_cast<const DBFriendCallbackSubscribeRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBFriendCallbackSubscribeRes& operator = (const DBFriendCallbackSubscribeRes &rhs)
+		{
+			const DBFriendCallbackSubscribeRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

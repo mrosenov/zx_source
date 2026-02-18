@@ -1,0 +1,88 @@
+
+#ifndef __GNET_DBCONSIGNPOST_HPP
+#define __GNET_DBCONSIGNPOST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignpostarg"
+#include "dbconsignpostres"
+#include "consignmanager.h"
+#include "mapuser.h"
+#include "consignstarterr.hpp"
+#include "gdeliveryserver.hpp"
+#include "gamedbclient.hpp"
+#include "consignplayer_re.hpp"
+namespace GNET
+{
+
+class DBConsignPost : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignpost"
+#undef	RPC_BASECLASS
+	int commodityid;
+	int consign_type;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignPostArg *arg = (DBConsignPostArg *)argument;
+		// DBConsignPostRes *res = (DBConsignPostRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignPostArg *arg = (DBConsignPostArg *)argument;
+		DBConsignPostRes *res = (DBConsignPostRes *)result;
+		DEBUG_PRINT("dbconsignpost: rpc return. retcode=%d,sn=%lld,roleid=%d", res->retcode, arg->sn, arg->roleid);
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRole( arg->roleid );
+		if ( NULL!=pinfo && consign_type!=CONSIGNTYPE_ROLE)
+		{
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid,ConsignStartErr(0,pinfo->localsid));
+		}
+		if(res->retcode == ERR_SUCCESS || res->retcode == ERR_WT_DB_DUPLICATE_RQST)
+		{
+			if(ConsignManager::GetInstance()->OnDBPost(arg->roleid, arg->sn, arg->post_reason,res->item,commodityid)!=ERR_SUCCESS)
+			{
+				Log::log(LOG_ERR,"dbconsignpost: OnDBPost failed. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+			//	ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			}
+			else if(arg->post_reason == POST_NORMAL)
+			{
+			//	PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid );
+				if ( NULL!=pinfo && consign_type!=CONSIGNTYPE_ROLE)
+				{
+					ConsignStartErr re;
+					re.retcode = ERR_SUCCESS;
+					re.localsid = pinfo->localsid;
+					GDeliveryServer::GetInstance()->Send( pinfo->linksid,re );
+				}
+			}
+			else
+			{
+				DEBUG_PRINT("dbconsignpost: consigncancelpost reject: roleid=%d,sn=%lld",arg->roleid,arg->sn);
+				if ( NULL!=pinfo && consign_type!=CONSIGNTYPE_ROLE)
+				GDeliveryServer::GetInstance()->Send(pinfo->linksid,ConsignCancelPost_Re(ERR_WTC_STATEERR,arg->sn,pinfo->localsid));
+			}
+		}
+		else
+		{
+			//nothing can do, if write db fail
+			ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			Log::log(LOG_ERR,"dbconsignpost: failed. sn=%lld,roleid=%d,reason=%d", arg->sn,arg->roleid,arg->post_reason);
+//			GameDBClient::GetInstance()->SendProtocol( Rpc::Call(RPC_DBCONSIGNPOST,arg) );
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		DBConsignPostArg *arg = (DBConsignPostArg *)argument;
+		Log::log(LOG_ERR,"dbconsignpost: timeout. sn=%lld,roleid=%d.sent again", arg->sn,arg->roleid);
+                GameDBClient::GetInstance()->SendProtocol( Rpc::Call(RPC_DBCONSIGNPOST,arg) );	
+	}
+
+};
+
+};
+#endif

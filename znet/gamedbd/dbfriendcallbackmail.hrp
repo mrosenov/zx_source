@@ -1,0 +1,236 @@
+
+#ifndef __GNET_DBFRIENDCALLBACKMAIL_HPP
+#define __GNET_DBFRIENDCALLBACKMAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfriendcallbackmailarg"
+#include "dbfriendcallbackmailres"
+#include "sysmailcontainer.h"
+#include "conv_charset.h"
+
+namespace GNET
+{
+//测试
+//#define CALLBACK_DEBUG
+class DBFriendCallbackMail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfriendcallbackmail"
+#undef	RPC_BASECLASS
+
+#define MAX_AWARDNUM 100  	// 玩家能够获得的最大奖励数
+#define MAX_SYSTEMMAILNUM 64  	// 游戏邮箱中能够接收的最大邮件数
+#define MIN_CALLBACKLEVEL 60 	// 进行召回的最低级别（低于此级别的不进行召回）
+#define MAX_CALLBACKMAILNUM 5  	// 邮箱中允许存在鸿雁传书邮件的上限（超过此上限系统就不会继续发送）
+
+#ifdef CALLBACK_DEBUG
+#define SECONDS_PERDAY 1800
+#define LONGTERMOFFLINE_TIME 3
+#else
+#define SECONDS_PERDAY 86400
+#define LONGTERMOFFLINE_TIME 30 	// 老玩家为30天未上线的玩家
+#endif
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFriendCallbackMailArg *arg = (DBFriendCallbackMailArg *)argument;
+		DBFriendCallbackMailRes *res = (DBFriendCallbackMailRes *)result;
+
+		Marshal::OctetsStream key, value;
+		int sender = arg->mail.header.sender;
+		int receiver = arg->mail.header.receiver;
+		try
+		{
+			StorageEnv::Storage *pmailbox = StorageEnv::GetStorage("mailbox");
+			StorageEnv::Storage *pcallback = StorageEnv::GetStorage("friendcallback");
+			StorageEnv::Storage *pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage *pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				LOG_TRACE("DBFriendCallbackMail, sender=%d, receiver=%d\n", sender, receiver);
+				// 获取接收者上次登录的时间
+				key << receiver;
+
+				// 1.判断接收者的级别，低于60级不发送鸿雁传书系统邮件
+				GRoleStatus status;
+				if(pstatus->find(key, value, txn))
+				{
+					value >> status;
+				}
+				else
+				{
+					res->retcode = ERR_CALLBACK_NOTHISFRIEND;  // 表明接收者已经删号
+					return;
+				}
+				if(status.level < MIN_CALLBACKLEVEL)
+				{
+					res->retcode = ERR_CALLBACK_SUCCESS;
+					return;
+				}
+				// 2.判断接收者是否退订了鸿雁传书系统邮件
+				value.clear();
+				GFriendCallback callback;
+				if(pcallback->find(key, value, txn))
+				{
+					value >> callback;
+				}
+				if(!callback.callback_info.is_subscribe)
+				{
+					res->retcode = ERR_CALLBACK_SUCCESS;
+					return;
+				}
+				// 3.判断玩家是否为30天未上线的老玩家来决定是给游戏内还是游戏外邮箱发送召回邮件
+				value.clear();
+				GRoleBase base;
+				if(pbase->find(key, value, txn))
+				{
+					value >> base;
+				}
+				else
+				{
+					res->retcode = ERR_CALLBACK_NOTHISFRIEND;
+					return;
+				}
+
+				if(IsLongTermOffline(base.lastlogin_time))
+				{
+					// 为30天未上线的老玩家设置回归奖励
+					// 查找发送者是否曾今对其进行过召回，如果有则将不再计入奖励
+					vector<int> &recaller_list = callback.callback_award.recaller_list;
+					vector<int>::iterator result = find(recaller_list.begin(), recaller_list.end(), sender);
+					if(recaller_list.end() == result)
+					{
+						recaller_list.push_back(sender);
+						if(callback.callback_award.returnaward_num < MAX_AWARDNUM)
+						{
+							callback.callback_award.returnaward_num++;
+						}
+					}
+					pcallback->insert(key, Marshal::OctetsStream() << callback, txn);
+
+					// 设置返回值为ACCOUNTFROZEN，通知Delivery需要往该玩家的外网邮箱发送召回邮件
+					res->receiver_name = base.name;
+					res->receiver_userid = (base.userid == 0 ? (LOGICUID(base.id)) : base.userid);
+					res->retcode = ERR_CALLBACK_ACCOUNTFROZEN;
+
+					Log::formatlog("regmailbox", "send_userid=%d:send_roleid=%d:receive_userid=%d:receive_roleid=%d:level=%d:offline_seconds=%d", arg->sender_userid, sender, res->receiver_userid, receiver, status.level, Timer::GetTime() - base.lastlogin_time);
+					LOG_TRACE("DBFriendCallbackMail, roleid=%d is long-term offline player, recaller_list.size=%d, returnaward_num=%d.\n", receiver, recaller_list.size(), callback.callback_award.returnaward_num);
+					return;
+				}
+
+				// 对于非30天未上线的玩家将把召回邮件放入其游戏邮箱中
+				// 如果邮箱已满或已经存在一定数量的召回邮件则不再放入，但仍然认为成功，通知Delivery发放奖励
+				GMailBox box;
+				value.clear();
+				if(pmailbox->find(key, value, txn))
+				{
+					value >> box;
+				}
+				else
+				{
+					box.timestamp = Timer::GetTime();
+					box.mails.clear();
+				}
+
+				if(!IsMailBoxFull(box) && !IsCallbackMailFull(box))
+				{
+					Log::formatlog("gamemailbox", "send_roleid=%d:receive_roleid=%d:level=%d:offline_time=%d", sender, receiver, status.level, Timer::GetTime() - base.lastlogin_time);
+					unsigned char id = NextMailId(box);
+					arg->mail.header.id = id;
+					arg->mail.header.receiver = arg->mail.header.send_time;
+					if(SysMailContainer::IsMailExist("CallbackMail"))
+					{
+						SysMailInfo &mailinfo = SysMailContainer::GetMailInfo("CallbackMail");
+						string title = mailinfo.GetInfo("title");
+						string context = mailinfo.GetInfo("context");
+						CharsetConverter::conv_charset_g2u(Octets(title.c_str(), title.length() + 1), arg->mail.header.title);
+						CharsetConverter::conv_charset_g2u(Octets(context.c_str(),context.length() + 1), arg->mail.context);
+					}
+					box.mails.push_back(arg->mail);
+					pmailbox->insert(key, Marshal::OctetsStream() << box, txn);
+					LOG_TRACE("insert callback mail in roleid=%d's mailbox, mailid=%d, mailbox.size=%d\n",
+						receiver, arg->mail.header.id, box.mails.size());
+				}
+				res->retcode = ERR_CALLBACK_SUCCESS;
+			}
+			catch(DbException e)
+			{
+				throw;
+			}
+			catch(...)
+			{
+				DbException e(DB_OLD_VERSION);
+				txn.abort(e);
+				throw e;
+			}
+		}
+		catch(DbException e)
+		{
+			Log::log(LOG_ERR, "DBFriendCallbackMail, sender=%d, receiver=%d, what=%s\n", sender, receiver, e.what());
+			res->retcode = ERR_CALLBACK_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFriendCallbackMailArg *arg = (DBFriendCallbackMailArg *)argument;
+		// DBFriendCallbackMailRes *res = (DBFriendCallbackMailRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+	unsigned char NextMailId(GMailBox &box)
+	{
+		unsigned char id = 0;
+		size_t size = box.mails.size();
+		if(size)
+		{
+			id = box.mails.size();
+		}
+		for(GMailVector::iterator it = box.mails.begin(); it != box.mails.end(); ++it)
+		{
+			if(it->header.id == id)
+			{
+				id++;
+				it = box.mails.begin();
+			}
+		}
+		return id;
+	}
+
+	bool IsLongTermOffline(int time)
+	{
+		int now = Timer::GetTime();
+		return ((time != 0) && (now - time > LONGTERMOFFLINE_TIME * SECONDS_PERDAY)) ? true : false;
+	}
+
+	bool IsMailBoxFull(GMailBox &box)
+	{
+		return box.mails.size() >= MAX_SYSTEMMAILNUM;
+	}
+
+	bool IsCallbackMailFull(GMailBox &box)
+	{
+		int callbackmail = 0;
+		GMailVector::const_iterator it = box.mails.begin(), ie = box.mails.end();
+		for(; it != ie; ++it)
+		{
+			if(_MST_CALLBACK == it->header.sndr_type)
+			{
+				callbackmail++;
+			}
+		}
+		return callbackmail >= MAX_CALLBACKMAILNUM;
+	}
+};
+
+};
+#endif

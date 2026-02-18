@@ -1,0 +1,77 @@
+#ifndef __GNET_ADDGLOBALCOUNTERARG_RPCDATA
+#define __GNET_ADDGLOBALCOUNTERARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class AddGlobalCounterArg : public GNET::Rpc::Data
+	{
+	public:
+		int template_id;
+		int start_time;
+		int duration;
+		int max_count;
+
+	public:
+		AddGlobalCounterArg (int l_template_id = -1,int l_start_time = -1,int l_duration = 0
+			,int l_max_count = 0)
+			: template_id(l_template_id),start_time(l_start_time),duration(l_duration)
+			,max_count(l_max_count)
+		{
+		}
+
+		AddGlobalCounterArg(const AddGlobalCounterArg &rhs)
+			: template_id(rhs.template_id),start_time(rhs.start_time),duration(rhs.duration),
+			max_count(rhs.max_count) { }
+
+		Rpc::Data *Clone() const { return new AddGlobalCounterArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const AddGlobalCounterArg *r = dynamic_cast<const AddGlobalCounterArg *>(&rhs);
+			if (r && r != this)
+			{
+				template_id = r->template_id;
+				start_time = r->start_time;
+				duration = r->duration;
+				max_count = r->max_count;
+			}
+			return *this;
+		}
+
+		AddGlobalCounterArg& operator = (const AddGlobalCounterArg &rhs)
+		{
+			const AddGlobalCounterArg *r = &rhs;
+			if (r && r != this)
+			{
+				template_id = r->template_id;
+				start_time = r->start_time;
+				duration = r->duration;
+				max_count = r->max_count;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << template_id;
+			os << start_time;
+			os << duration;
+			os << max_count;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> template_id;
+			os >> start_time;
+			os >> duration;
+			os >> max_count;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,87 @@
+#ifndef __GNET_DBFACTIONUPDATEARG_RPCDATA
+#define __GNET_DBFACTIONUPDATEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFactionUpdateArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int fid;
+		unsigned int rid;
+		char reason;
+		Octets announce;
+		char level;
+		unsigned int prosperity;
+
+	public:
+		DBFactionUpdateArg (unsigned int l_fid = 0,unsigned int l_rid = 0,char l_reason = 0
+			,char l_level = 0,unsigned int l_prosperity = 0)
+			: fid(l_fid),rid(l_rid),reason(l_reason)
+			,level(l_level),prosperity(l_prosperity)
+		{
+		}
+
+		DBFactionUpdateArg(const DBFactionUpdateArg &rhs)
+			: fid(rhs.fid),rid(rhs.rid),reason(rhs.reason),
+			announce(rhs.announce),level(rhs.level),prosperity(rhs.prosperity) { }
+
+		Rpc::Data *Clone() const { return new DBFactionUpdateArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFactionUpdateArg *r = dynamic_cast<const DBFactionUpdateArg *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				rid = r->rid;
+				reason = r->reason;
+				announce = r->announce;
+				level = r->level;
+				prosperity = r->prosperity;
+			}
+			return *this;
+		}
+
+		DBFactionUpdateArg& operator = (const DBFactionUpdateArg &rhs)
+		{
+			const DBFactionUpdateArg *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				rid = r->rid;
+				reason = r->reason;
+				announce = r->announce;
+				level = r->level;
+				prosperity = r->prosperity;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << rid;
+			os << reason;
+			os << announce;
+			os << level;
+			os << prosperity;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> rid;
+			os >> reason;
+			os >> announce;
+			os >> level;
+			os >> prosperity;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,32 @@
+	public:
+		std::map<int, std::set<int> > malls;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACMALLSYNC };
+	public:
+		FacMallSync() { type = PROTOCOL_FACMALLSYNC; }
+		FacMallSync(void*) : Protocol(PROTOCOL_FACMALLSYNC) { }
+		FacMallSync (std::map<int, std::set<int> > l_malls)
+			 : malls(l_malls)
+		{
+			type = PROTOCOL_FACMALLSYNC;
+		}
+
+		FacMallSync(const FacMallSync &rhs)
+			: Protocol(rhs),malls(rhs.malls) { }
+
+		GNET::Protocol *Clone() const { return new FacMallSync(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << malls;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> malls;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 65536; }

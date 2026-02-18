@@ -1,0 +1,64 @@
+#ifndef __GNET_DBDELETEFACTIONARG_RPCDATA
+#define __GNET_DBDELETEFACTIONARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBDeleteFactionArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int factionid;
+		char create_rollback;
+
+	public:
+		DBDeleteFactionArg (unsigned int l_factionid = 0,char l_create_rollback = 0)
+			: factionid(l_factionid),create_rollback(l_create_rollback)
+		{
+		}
+
+		DBDeleteFactionArg(const DBDeleteFactionArg &rhs)
+			: factionid(rhs.factionid),create_rollback(rhs.create_rollback) { }
+
+		Rpc::Data *Clone() const { return new DBDeleteFactionArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBDeleteFactionArg *r = dynamic_cast<const DBDeleteFactionArg *>(&rhs);
+			if (r && r != this)
+			{
+				factionid = r->factionid;
+				create_rollback = r->create_rollback;
+			}
+			return *this;
+		}
+
+		DBDeleteFactionArg& operator = (const DBDeleteFactionArg &rhs)
+		{
+			const DBDeleteFactionArg *r = &rhs;
+			if (r && r != this)
+			{
+				factionid = r->factionid;
+				create_rollback = r->create_rollback;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << factionid;
+			os << create_rollback;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> factionid;
+			os >> create_rollback;
+			return os;
+		}
+
+	};
+};
+#endif

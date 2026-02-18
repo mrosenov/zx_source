@@ -1,0 +1,65 @@
+#ifndef __GNET_DBCIRCLEGETRES_RPCDATA
+#define __GNET_DBCIRCLEGETRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcircledb"
+
+namespace GNET
+{
+	class DBCircleGetRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GCircleDB value;
+
+	public:
+		DBCircleGetRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBCircleGetRes(const DBCircleGetRes &rhs)
+			: retcode(rhs.retcode),value(rhs.value) { }
+
+		Rpc::Data *Clone() const { return new DBCircleGetRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCircleGetRes *r = dynamic_cast<const DBCircleGetRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		DBCircleGetRes& operator = (const DBCircleGetRes &rhs)
+		{
+			const DBCircleGetRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << value;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> value;
+			return os;
+		}
+
+	};
+};
+#endif

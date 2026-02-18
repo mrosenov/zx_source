@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="rpcalls.xsl"?>
+
+<application namespace="GNET">
+
+	<protocol debug="1" name="ControlProtocol" maxsize="102400" prior="0" type="12000">
+		<variable name="content" type="std::string"/>
+		<variable name="commond" type="size_t" default="0" />
+	</protocol>
+
+	<protocol name="StatInfoVital" maxsize="1024" prior="1" type="59">
+                <variable name="priority" type="int"/>
+                <variable name="msg" type="std::string" default="std::string()" attr="ref"/>
+                <variable name="hostname" type="std::string" default="std::string()" attr="ref"/>
+                <variable name="servicename" type="std::string" default="std::string()" attr="ref"/>
+        </protocol>
+
+        <protocol name="StatInfo" maxsize="1024" prior="2" type="60">
+                <variable name="priority" type="int"/>
+                <variable name="msg" type="std::string" default="std::string()" attr="ref"/>
+                <variable name="hostname" type="std::string" default="std::string()" attr="ref"/>
+                <variable name="servicename" type="std::string" default="std::string()" attr="ref"/>
+        </protocol>
+
+        <protocol name="RemoteLogVital" maxsize="1024" prior="1" type="61">
+                <variable name="priority" type="int"/>
+                <variable name="msg" type="std::string" default="std::string()" attr="ref"/>
+                <variable name="hostname" type="std::string" default="std::string()" attr="ref"/>
+                <variable name="servicename" type="std::string" default="std::string()" attr="ref"/>
+        </protocol>
+
+        <protocol name="RemoteLog" maxsize="1024" prior="2" type="62">
+                <variable name="priority" type="int"/>
+                <variable name="msg" type="std::string" default="std::string()" attr="ref"/>
+                <variable name="hostname" type="std::string" default="std::string()" attr="ref"/>
+                <variable name="servicename" type="std::string" default="std::string()" attr="ref"/>
+        </protocol>
+
+        <state name="LoggerNull" timeout="3600" attr="null">
+        </state>
+
+	<state name="LoggerNormal" timeout="3600">
+		<protocol ref="ControlProtocol"/>
+		<protocol ref="StatInfoVital"/>
+                <protocol ref="StatInfo"/>
+                <protocol ref="RemoteLogVital"/>
+                <protocol ref="RemoteLog"/>
+	</state>
+
+	<service name="logserver">
+		<manager name="LogUdp" type="server" initstate="LoggerNull" />
+                <manager name="LogTcp" type="server" initstate="LoggerNull"/>
+
+		<state ref="LoggerNull" />
+		<!-- for parser -->
+		<protocol ref="StatInfoVital" />
+                <protocol ref="StatInfo" />
+                <protocol ref="RemoteLogVital" />
+                <protocol ref="RemoteLog" />
+                <protocol ref="LogStockCommission" />
+                <protocol ref="LogStockBalance" />
+                <protocol ref="LogStockTransaction" />
+	</service>
+
+	<service name="log_client">
+                <manager name="Log2Udp" type="client" initstate="LoggerNull" reconnect="1"/>
+                <manager name="Log2Tcp" type="client" initstate="LoggerNull" reconnect="1"/>
+
+		<state ref="LoggerNull" />
+
+	</service>
+
+	<service name="trace">
+		<state ref="LoggerNormal"/>
+		<protocol ref="StatInfoVital"/>
+                <protocol ref="StatInfo"/>
+                <protocol ref="RemoteLogVital"/>
+                <protocol ref="RemoteLog"/>
+	</service>
+		
+</application>

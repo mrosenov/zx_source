@@ -1,0 +1,81 @@
+
+#ifndef __GNET_GETCASHTOTAL_HPP
+#define __GNET_GETCASHTOTAL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "getcashtotalres"
+
+namespace GNET
+{
+
+class GetCashTotal : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getcashtotal"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		GetCashTotalRes *res = (GetCashTotalRes *)result;
+		
+		Marshal::OctetsStream key, key_user;
+//		Marshal::OctetsStream value_inventory, value_task, value_storehouse;
+		LOG_TRACE( "GetCashTotal, roleid=%d\n",arg->id);
+		
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+
+			key << arg->id;
+			try{
+				GRoleBase base;
+				Marshal::OctetsStream( pbase->find( key, txn ) ) >> base;
+				int base_userid = (base.userid==0 ? LOGICUID(base.id) : base.userid);
+				key_user << base_userid;
+				User u;
+				Marshal::OctetsStream(puser->find(key_user,txn))>>u;
+				res->cash_add2 = u.data_group[USER_DATA_CASHADD2];
+				res->cash_total = u.cash_add+u.cash_buy-u.cash_sell-u.cash;
+				res->userid = base_userid;
+				res->retcode = ERR_SUCCESS;
+				Log::formatlog("GetCashTotal","userid=%d:roleid=%d:cash_total=%d:cash_add=%d:cash_buy=%d:cash_sell=%d:cash=%d:cash_used=%d", base_userid, arg->id, res->cash_total, u.cash_add, u.cash_buy, u.cash_sell, u.cash, u.cash_used);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetCashTotal, roleid=%d, what=%s\n", arg->id, e.what() );
+			res->retcode = ERR_DATANOTFIND;
+			return;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// RoleId *arg = (RoleId *)argument;
+		// GetCashTotalRes *res = (GetCashTotalRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

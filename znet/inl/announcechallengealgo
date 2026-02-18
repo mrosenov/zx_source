@@ -1,0 +1,35 @@
+	public:
+		char challenge_algo;
+		int auth_version;
+		enum { PROTOCOL_TYPE = PROTOCOL_ANNOUNCECHALLENGEALGO };
+	public:
+		AnnounceChallengeAlgo() { type = PROTOCOL_ANNOUNCECHALLENGEALGO; }
+		AnnounceChallengeAlgo(void*) : Protocol(PROTOCOL_ANNOUNCECHALLENGEALGO) { }
+		AnnounceChallengeAlgo (char l_challenge_algo,int l_auth_version = 0)
+			 : challenge_algo(l_challenge_algo),auth_version(l_auth_version)
+		{
+			type = PROTOCOL_ANNOUNCECHALLENGEALGO;
+		}
+
+		AnnounceChallengeAlgo(const AnnounceChallengeAlgo &rhs)
+			: Protocol(rhs),challenge_algo(rhs.challenge_algo),auth_version(rhs.auth_version) { }
+
+		GNET::Protocol *Clone() const { return new AnnounceChallengeAlgo(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << challenge_algo;
+			os << auth_version;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> challenge_algo;
+			os >> auth_version;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 16; }

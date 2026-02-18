@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int teamid;
+		char req_type;
+		unsigned int localsid;
+		enum { PROTOCOL_TYPE = PROTOCOL_CROSSCRSSVRTEAMSGETREQ };
+	public:
+		CrossCrssvrTeamsGetReq() { type = PROTOCOL_CROSSCRSSVRTEAMSGETREQ; }
+		CrossCrssvrTeamsGetReq(void*) : Protocol(PROTOCOL_CROSSCRSSVRTEAMSGETREQ) { }
+		CrossCrssvrTeamsGetReq (int l_roleid,int l_teamid,char l_req_type,
+			unsigned int l_localsid = 0)
+			 : roleid(l_roleid),teamid(l_teamid),req_type(l_req_type)
+			,localsid(l_localsid)
+		{
+			type = PROTOCOL_CROSSCRSSVRTEAMSGETREQ;
+		}
+
+		CrossCrssvrTeamsGetReq(const CrossCrssvrTeamsGetReq &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),teamid(rhs.teamid),req_type(rhs.req_type)
+			,localsid(rhs.localsid) { }
+
+		GNET::Protocol *Clone() const { return new CrossCrssvrTeamsGetReq(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << teamid;
+			os << req_type;
+			os << localsid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> teamid;
+			os >> req_type;
+			os >> localsid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

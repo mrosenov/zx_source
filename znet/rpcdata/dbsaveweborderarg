@@ -1,0 +1,101 @@
+#ifndef __GNET_DBSAVEWEBORDERARG_RPCDATA
+#define __GNET_DBSAVEWEBORDERARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "webmallfunction"
+
+namespace GNET
+{
+	class DBSaveWebOrderArg : public GNET::Rpc::Data
+	{
+	public:
+		int paytype;
+		int64_t orderid;
+		int userid;
+		int roleid;
+		Octets rolename;
+		WebMallFunctionVector functions;
+		int moneyneed;
+		char ongame;
+
+	public:
+		DBSaveWebOrderArg (int l_paytype = 0,int64_t l_orderid = 0,int l_userid = 0
+			,int l_roleid = 0,const Octets& l_rolename = Octets(),const WebMallFunctionVector& l_functions = WebMallFunctionVector()
+			,int l_moneyneed = 0,char l_ongame = 0)
+			: paytype(l_paytype),orderid(l_orderid),userid(l_userid)
+			,roleid(l_roleid),rolename(l_rolename),functions(l_functions)
+			,moneyneed(l_moneyneed),ongame(l_ongame)
+		{
+		}
+
+		DBSaveWebOrderArg(const DBSaveWebOrderArg &rhs)
+			: paytype(rhs.paytype),orderid(rhs.orderid),userid(rhs.userid),
+			roleid(rhs.roleid),rolename(rhs.rolename),functions(rhs.functions),
+			moneyneed(rhs.moneyneed),ongame(rhs.ongame) { }
+
+		Rpc::Data *Clone() const { return new DBSaveWebOrderArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSaveWebOrderArg *r = dynamic_cast<const DBSaveWebOrderArg *>(&rhs);
+			if (r && r != this)
+			{
+				paytype = r->paytype;
+				orderid = r->orderid;
+				userid = r->userid;
+				roleid = r->roleid;
+				rolename = r->rolename;
+				functions = r->functions;
+				moneyneed = r->moneyneed;
+				ongame = r->ongame;
+			}
+			return *this;
+		}
+
+		DBSaveWebOrderArg& operator = (const DBSaveWebOrderArg &rhs)
+		{
+			const DBSaveWebOrderArg *r = &rhs;
+			if (r && r != this)
+			{
+				paytype = r->paytype;
+				orderid = r->orderid;
+				userid = r->userid;
+				roleid = r->roleid;
+				rolename = r->rolename;
+				functions = r->functions;
+				moneyneed = r->moneyneed;
+				ongame = r->ongame;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << paytype;
+			os << orderid;
+			os << userid;
+			os << roleid;
+			os << rolename;
+			os << functions;
+			os << moneyneed;
+			os << ongame;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> paytype;
+			os >> orderid;
+			os >> userid;
+			os >> roleid;
+			os >> rolename;
+			os >> functions;
+			os >> moneyneed;
+			os >> ongame;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,65 @@
+#ifndef __GNET_FAMILYGETRES_RPCDATA
+#define __GNET_FAMILYGETRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfamily"
+
+namespace GNET
+{
+	class FamilyGetRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GFamily value;
+
+	public:
+		FamilyGetRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		FamilyGetRes(const FamilyGetRes &rhs)
+			: retcode(rhs.retcode),value(rhs.value) { }
+
+		Rpc::Data *Clone() const { return new FamilyGetRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FamilyGetRes *r = dynamic_cast<const FamilyGetRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		FamilyGetRes& operator = (const FamilyGetRes &rhs)
+		{
+			const FamilyGetRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << value;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> value;
+			return os;
+		}
+
+	};
+};
+#endif

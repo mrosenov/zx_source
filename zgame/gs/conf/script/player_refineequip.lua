@@ -1,0 +1,565 @@
+---//探寻系统部分结束-------------------------------------------------------------------------------- 
+---//宠物装备强化开始---------------------------------------------------------------------------------
+---//定义宠物装备强化配方-----------------------------------------------------------------------------
+---msg_id 4001 数据错误-------
+---msg_id 4002 强化道具与装备不匹配，请更换一个合适的强化道具-------
+---msg_id 4003 这件宠物装备不能进行强化（任务途径获得的、带星相需求的以及二星的宠物装备都不可以再次强化）-------
+---msg_id 4004 宠物装备强化成功-------
+---msg_id 4005 宠物装备强化失败-------
+function ZPetEquipRefineRecipe()
+	local PetEquipRefineRecipe={}
+   	PetEquipRefineRecipe[1]={item_id_in=16571,stone_id=25401,item_id_output=17078,output_possiblity=6}
+    PetEquipRefineRecipe[2]={item_id_in=16572,stone_id=25401,item_id_output=17079,output_possiblity=6}
+    PetEquipRefineRecipe[3]={item_id_in=16573,stone_id=25401,item_id_output=17080,output_possiblity=6}
+    PetEquipRefineRecipe[4]={item_id_in=16574,stone_id=25401,item_id_output=17081,output_possiblity=6}
+    PetEquipRefineRecipe[5]={item_id_in=16575,stone_id=25401,item_id_output=17082,output_possiblity=6}
+    PetEquipRefineRecipe[6]={item_id_in=16576,stone_id=25401,item_id_output=17083,output_possiblity=6}
+    PetEquipRefineRecipe[7]={item_id_in=16577,stone_id=25401,item_id_output=17084,output_possiblity=6}
+    PetEquipRefineRecipe[8]={item_id_in=16578,stone_id=25401,item_id_output=17085,output_possiblity=6}
+    PetEquipRefineRecipe[9]={item_id_in=16579,stone_id=25401,item_id_output=17086,output_possiblity=6}
+    PetEquipRefineRecipe[10]={item_id_in=16580,stone_id=25401,item_id_output=17087,output_possiblity=6}
+    PetEquipRefineRecipe[11]={item_id_in=16581,stone_id=25401,item_id_output=17088,output_possiblity=6}
+    PetEquipRefineRecipe[12]={item_id_in=16582,stone_id=25401,item_id_output=17089,output_possiblity=6}
+    PetEquipRefineRecipe[13]={item_id_in=16583,stone_id=25401,item_id_output=17090,output_possiblity=6}
+    PetEquipRefineRecipe[14]={item_id_in=16584,stone_id=25401,item_id_output=17091,output_possiblity=6}
+    PetEquipRefineRecipe[15]={item_id_in=16585,stone_id=25401,item_id_output=17092,output_possiblity=6}
+    PetEquipRefineRecipe[16]={item_id_in=16586,stone_id=25401,item_id_output=17093,output_possiblity=6}
+    PetEquipRefineRecipe[17]={item_id_in=16587,stone_id=25401,item_id_output=17094,output_possiblity=6}
+    PetEquipRefineRecipe[18]={item_id_in=16588,stone_id=25401,item_id_output=17095,output_possiblity=6}
+    PetEquipRefineRecipe[19]={item_id_in=16589,stone_id=25401,item_id_output=17096,output_possiblity=6}
+    PetEquipRefineRecipe[20]={item_id_in=16590,stone_id=25401,item_id_output=17097,output_possiblity=6}
+    PetEquipRefineRecipe[21]={item_id_in=16591,stone_id=25401,item_id_output=17098,output_possiblity=6}
+    PetEquipRefineRecipe[22]={item_id_in=16592,stone_id=25401,item_id_output=17099,output_possiblity=6}
+    PetEquipRefineRecipe[23]={item_id_in=16593,stone_id=25401,item_id_output=17100,output_possiblity=6}
+    PetEquipRefineRecipe[24]={item_id_in=16594,stone_id=25401,item_id_output=17101,output_possiblity=6}
+    PetEquipRefineRecipe[25]={item_id_in=16595,stone_id=25401,item_id_output=17102,output_possiblity=6}
+    PetEquipRefineRecipe[26]={item_id_in=16596,stone_id=25401,item_id_output=17103,output_possiblity=6}
+    PetEquipRefineRecipe[27]={item_id_in=16597,stone_id=25401,item_id_output=17104,output_possiblity=6}
+    PetEquipRefineRecipe[28]={item_id_in=16598,stone_id=25401,item_id_output=17105,output_possiblity=6}
+    PetEquipRefineRecipe[29]={item_id_in=16599,stone_id=25401,item_id_output=17106,output_possiblity=6}
+    PetEquipRefineRecipe[30]={item_id_in=16600,stone_id=25401,item_id_output=17107,output_possiblity=6}
+    PetEquipRefineRecipe[31]={item_id_in=16601,stone_id=25401,item_id_output=17108,output_possiblity=6}
+    PetEquipRefineRecipe[32]={item_id_in=16602,stone_id=25401,item_id_output=17109,output_possiblity=6}
+    PetEquipRefineRecipe[33]={item_id_in=16603,stone_id=25401,item_id_output=17110,output_possiblity=6}
+    PetEquipRefineRecipe[34]={item_id_in=16604,stone_id=25401,item_id_output=17111,output_possiblity=5}
+    PetEquipRefineRecipe[35]={item_id_in=16605,stone_id=25401,item_id_output=17112,output_possiblity=6}
+    PetEquipRefineRecipe[36]={item_id_in=16606,stone_id=25401,item_id_output=17113,output_possiblity=6}
+    PetEquipRefineRecipe[37]={item_id_in=16607,stone_id=25401,item_id_output=17114,output_possiblity=6}
+    PetEquipRefineRecipe[38]={item_id_in=16608,stone_id=25401,item_id_output=17115,output_possiblity=6}
+    PetEquipRefineRecipe[39]={item_id_in=16609,stone_id=25401,item_id_output=17116,output_possiblity=6}
+    PetEquipRefineRecipe[40]={item_id_in=16610,stone_id=25401,item_id_output=17117,output_possiblity=6}
+    PetEquipRefineRecipe[41]={item_id_in=16611,stone_id=25401,item_id_output=17118,output_possiblity=6}
+    PetEquipRefineRecipe[42]={item_id_in=16612,stone_id=25401,item_id_output=17119,output_possiblity=6}
+    PetEquipRefineRecipe[43]={item_id_in=16613,stone_id=25401,item_id_output=17120,output_possiblity=6}
+    PetEquipRefineRecipe[44]={item_id_in=16614,stone_id=25401,item_id_output=17121,output_possiblity=6}
+    PetEquipRefineRecipe[45]={item_id_in=16615,stone_id=25401,item_id_output=17122,output_possiblity=6}
+    PetEquipRefineRecipe[46]={item_id_in=16616,stone_id=25401,item_id_output=17123,output_possiblity=6}
+    PetEquipRefineRecipe[47]={item_id_in=16617,stone_id=25401,item_id_output=17124,output_possiblity=6}
+    PetEquipRefineRecipe[48]={item_id_in=16618,stone_id=25401,item_id_output=17125,output_possiblity=6}
+    PetEquipRefineRecipe[49]={item_id_in=16619,stone_id=25401,item_id_output=17126,output_possiblity=6}
+    PetEquipRefineRecipe[50]={item_id_in=16620,stone_id=25401,item_id_output=17127,output_possiblity=6}
+    PetEquipRefineRecipe[51]={item_id_in=16621,stone_id=25401,item_id_output=17128,output_possiblity=6}
+    PetEquipRefineRecipe[52]={item_id_in=16622,stone_id=25401,item_id_output=17129,output_possiblity=6}
+    PetEquipRefineRecipe[53]={item_id_in=16623,stone_id=25401,item_id_output=17130,output_possiblity=6}
+    PetEquipRefineRecipe[54]={item_id_in=16624,stone_id=25401,item_id_output=17131,output_possiblity=6}
+    PetEquipRefineRecipe[55]={item_id_in=16625,stone_id=25401,item_id_output=17132,output_possiblity=6}
+    PetEquipRefineRecipe[56]={item_id_in=16626,stone_id=25401,item_id_output=17133,output_possiblity=6}
+    PetEquipRefineRecipe[57]={item_id_in=16627,stone_id=25401,item_id_output=17134,output_possiblity=6}
+    PetEquipRefineRecipe[58]={item_id_in=16628,stone_id=25401,item_id_output=17135,output_possiblity=6}
+    PetEquipRefineRecipe[59]={item_id_in=16629,stone_id=25401,item_id_output=17136,output_possiblity=6}
+    PetEquipRefineRecipe[60]={item_id_in=16630,stone_id=25401,item_id_output=17137,output_possiblity=6}
+    PetEquipRefineRecipe[61]={item_id_in=16631,stone_id=25401,item_id_output=17138,output_possiblity=6}
+    PetEquipRefineRecipe[62]={item_id_in=16632,stone_id=25401,item_id_output=17139,output_possiblity=6}
+    PetEquipRefineRecipe[63]={item_id_in=16633,stone_id=25401,item_id_output=17140,output_possiblity=6}
+    PetEquipRefineRecipe[64]={item_id_in=16634,stone_id=25401,item_id_output=17141,output_possiblity=6}
+    PetEquipRefineRecipe[65]={item_id_in=16635,stone_id=25401,item_id_output=17142,output_possiblity=6}
+    PetEquipRefineRecipe[66]={item_id_in=16636,stone_id=25401,item_id_output=17143,output_possiblity=6}
+    PetEquipRefineRecipe[67]={item_id_in=16637,stone_id=25401,item_id_output=17144,output_possiblity=6}
+    PetEquipRefineRecipe[68]={item_id_in=16638,stone_id=25401,item_id_output=17145,output_possiblity=6}
+    PetEquipRefineRecipe[69]={item_id_in=16639,stone_id=25401,item_id_output=17146,output_possiblity=6}
+    PetEquipRefineRecipe[70]={item_id_in=16640,stone_id=25401,item_id_output=17147,output_possiblity=6}
+    PetEquipRefineRecipe[71]={item_id_in=16641,stone_id=25401,item_id_output=17148,output_possiblity=6}
+    PetEquipRefineRecipe[72]={item_id_in=16642,stone_id=25401,item_id_output=17149,output_possiblity=6}
+    PetEquipRefineRecipe[73]={item_id_in=16643,stone_id=25401,item_id_output=17150,output_possiblity=6}
+    PetEquipRefineRecipe[74]={item_id_in=16644,stone_id=25401,item_id_output=17151,output_possiblity=5}
+    PetEquipRefineRecipe[75]={item_id_in=16645,stone_id=25401,item_id_output=17152,output_possiblity=6}
+    PetEquipRefineRecipe[76]={item_id_in=16646,stone_id=25401,item_id_output=17153,output_possiblity=6}
+    PetEquipRefineRecipe[77]={item_id_in=16647,stone_id=25401,item_id_output=17154,output_possiblity=6}
+    PetEquipRefineRecipe[78]={item_id_in=16648,stone_id=25401,item_id_output=17155,output_possiblity=6}
+    PetEquipRefineRecipe[79]={item_id_in=16649,stone_id=25401,item_id_output=17156,output_possiblity=6}
+    PetEquipRefineRecipe[80]={item_id_in=16650,stone_id=25401,item_id_output=17157,output_possiblity=6}
+    PetEquipRefineRecipe[81]={item_id_in=16651,stone_id=25401,item_id_output=17158,output_possiblity=6}
+    PetEquipRefineRecipe[82]={item_id_in=16652,stone_id=25401,item_id_output=17159,output_possiblity=6}
+    PetEquipRefineRecipe[83]={item_id_in=16653,stone_id=25401,item_id_output=17160,output_possiblity=6}
+    PetEquipRefineRecipe[84]={item_id_in=16654,stone_id=25401,item_id_output=17161,output_possiblity=6}
+    PetEquipRefineRecipe[85]={item_id_in=16655,stone_id=25401,item_id_output=17162,output_possiblity=6}
+    PetEquipRefineRecipe[86]={item_id_in=16656,stone_id=25401,item_id_output=17163,output_possiblity=6}
+    PetEquipRefineRecipe[87]={item_id_in=16657,stone_id=25401,item_id_output=17164,output_possiblity=6}
+    PetEquipRefineRecipe[88]={item_id_in=16658,stone_id=25401,item_id_output=17165,output_possiblity=6}
+    PetEquipRefineRecipe[89]={item_id_in=16659,stone_id=25401,item_id_output=17166,output_possiblity=6}
+    PetEquipRefineRecipe[90]={item_id_in=16660,stone_id=25401,item_id_output=17167,output_possiblity=6}
+    PetEquipRefineRecipe[91]={item_id_in=16661,stone_id=25401,item_id_output=17168,output_possiblity=6}
+    PetEquipRefineRecipe[92]={item_id_in=16662,stone_id=25401,item_id_output=17169,output_possiblity=6}
+    PetEquipRefineRecipe[93]={item_id_in=16663,stone_id=25401,item_id_output=17170,output_possiblity=6}
+    PetEquipRefineRecipe[94]={item_id_in=16664,stone_id=25401,item_id_output=17171,output_possiblity=6}
+    PetEquipRefineRecipe[95]={item_id_in=16665,stone_id=25401,item_id_output=17172,output_possiblity=6}
+    PetEquipRefineRecipe[96]={item_id_in=16666,stone_id=25401,item_id_output=17173,output_possiblity=6}
+    PetEquipRefineRecipe[97]={item_id_in=16667,stone_id=25401,item_id_output=17174,output_possiblity=6}
+    PetEquipRefineRecipe[98]={item_id_in=16668,stone_id=25401,item_id_output=17175,output_possiblity=6}
+    PetEquipRefineRecipe[99]={item_id_in=16669,stone_id=25401,item_id_output=17176,output_possiblity=6}
+    PetEquipRefineRecipe[100]={item_id_in=16670,stone_id=25401,item_id_output=17177,output_possiblity=6}
+    PetEquipRefineRecipe[101]={item_id_in=16671,stone_id=25401,item_id_output=17178,output_possiblity=6}
+    PetEquipRefineRecipe[102]={item_id_in=16672,stone_id=25401,item_id_output=17179,output_possiblity=6}
+    PetEquipRefineRecipe[103]={item_id_in=16673,stone_id=25401,item_id_output=17180,output_possiblity=6}
+    PetEquipRefineRecipe[104]={item_id_in=16674,stone_id=25401,item_id_output=17181,output_possiblity=6}
+    PetEquipRefineRecipe[105]={item_id_in=16675,stone_id=25401,item_id_output=17182,output_possiblity=6}
+    PetEquipRefineRecipe[106]={item_id_in=16676,stone_id=25401,item_id_output=17183,output_possiblity=6}
+    PetEquipRefineRecipe[107]={item_id_in=16677,stone_id=25401,item_id_output=17184,output_possiblity=6}
+    PetEquipRefineRecipe[108]={item_id_in=16678,stone_id=25401,item_id_output=17185,output_possiblity=6}
+    PetEquipRefineRecipe[109]={item_id_in=16679,stone_id=25401,item_id_output=17186,output_possiblity=6}
+    PetEquipRefineRecipe[110]={item_id_in=16680,stone_id=25401,item_id_output=17187,output_possiblity=6}
+    PetEquipRefineRecipe[111]={item_id_in=16681,stone_id=25401,item_id_output=17188,output_possiblity=6}
+    PetEquipRefineRecipe[112]={item_id_in=16682,stone_id=25401,item_id_output=17189,output_possiblity=6}
+    PetEquipRefineRecipe[113]={item_id_in=16683,stone_id=25401,item_id_output=17190,output_possiblity=6}
+    PetEquipRefineRecipe[114]={item_id_in=16684,stone_id=25401,item_id_output=17191,output_possiblity=4}
+    PetEquipRefineRecipe[115]={item_id_in=16685,stone_id=25401,item_id_output=17192,output_possiblity=6}
+    PetEquipRefineRecipe[116]={item_id_in=16686,stone_id=25401,item_id_output=17193,output_possiblity=6}
+    PetEquipRefineRecipe[117]={item_id_in=16687,stone_id=25401,item_id_output=17194,output_possiblity=6}
+    PetEquipRefineRecipe[118]={item_id_in=16688,stone_id=25401,item_id_output=17195,output_possiblity=6}
+    PetEquipRefineRecipe[119]={item_id_in=16689,stone_id=25401,item_id_output=17196,output_possiblity=6}
+    PetEquipRefineRecipe[120]={item_id_in=16690,stone_id=25401,item_id_output=17197,output_possiblity=6}
+    PetEquipRefineRecipe[121]={item_id_in=16691,stone_id=25401,item_id_output=17198,output_possiblity=5}
+    PetEquipRefineRecipe[122]={item_id_in=16692,stone_id=25401,item_id_output=17199,output_possiblity=5}
+    PetEquipRefineRecipe[123]={item_id_in=16693,stone_id=25401,item_id_output=17200,output_possiblity=5}
+    PetEquipRefineRecipe[124]={item_id_in=16694,stone_id=25401,item_id_output=17201,output_possiblity=5}
+    PetEquipRefineRecipe[125]={item_id_in=16695,stone_id=25401,item_id_output=17202,output_possiblity=5}
+    PetEquipRefineRecipe[126]={item_id_in=16696,stone_id=25401,item_id_output=17203,output_possiblity=5}
+    PetEquipRefineRecipe[127]={item_id_in=16697,stone_id=25401,item_id_output=17204,output_possiblity=5}
+    PetEquipRefineRecipe[128]={item_id_in=16698,stone_id=25401,item_id_output=17205,output_possiblity=5}
+    PetEquipRefineRecipe[129]={item_id_in=16699,stone_id=25401,item_id_output=17206,output_possiblity=5}
+    PetEquipRefineRecipe[130]={item_id_in=16700,stone_id=25401,item_id_output=17207,output_possiblity=5}
+    PetEquipRefineRecipe[131]={item_id_in=16701,stone_id=25401,item_id_output=17208,output_possiblity=5}
+    PetEquipRefineRecipe[132]={item_id_in=16702,stone_id=25401,item_id_output=17209,output_possiblity=5}
+    PetEquipRefineRecipe[133]={item_id_in=16703,stone_id=25401,item_id_output=17210,output_possiblity=5}
+    PetEquipRefineRecipe[134]={item_id_in=16704,stone_id=25401,item_id_output=17211,output_possiblity=5}
+    PetEquipRefineRecipe[135]={item_id_in=16705,stone_id=25401,item_id_output=17212,output_possiblity=5}
+    PetEquipRefineRecipe[136]={item_id_in=16706,stone_id=25401,item_id_output=17213,output_possiblity=5}
+    PetEquipRefineRecipe[137]={item_id_in=16707,stone_id=25401,item_id_output=17214,output_possiblity=5}
+    PetEquipRefineRecipe[138]={item_id_in=16708,stone_id=25401,item_id_output=17215,output_possiblity=5}
+    PetEquipRefineRecipe[139]={item_id_in=16709,stone_id=25401,item_id_output=17216,output_possiblity=5}
+    PetEquipRefineRecipe[140]={item_id_in=16710,stone_id=25401,item_id_output=17217,output_possiblity=5}
+    PetEquipRefineRecipe[141]={item_id_in=16711,stone_id=25401,item_id_output=17218,output_possiblity=5}
+    PetEquipRefineRecipe[142]={item_id_in=16712,stone_id=25401,item_id_output=17219,output_possiblity=5}
+    PetEquipRefineRecipe[143]={item_id_in=16713,stone_id=25401,item_id_output=17220,output_possiblity=5}
+    PetEquipRefineRecipe[144]={item_id_in=16714,stone_id=25401,item_id_output=17221,output_possiblity=5}
+    PetEquipRefineRecipe[145]={item_id_in=16715,stone_id=25401,item_id_output=17222,output_possiblity=5}
+    PetEquipRefineRecipe[146]={item_id_in=16716,stone_id=25401,item_id_output=17223,output_possiblity=5}
+    PetEquipRefineRecipe[147]={item_id_in=16717,stone_id=25401,item_id_output=17224,output_possiblity=5}
+    PetEquipRefineRecipe[148]={item_id_in=16718,stone_id=25401,item_id_output=17225,output_possiblity=5}
+    PetEquipRefineRecipe[149]={item_id_in=16719,stone_id=25401,item_id_output=17226,output_possiblity=5}
+    PetEquipRefineRecipe[150]={item_id_in=16720,stone_id=25401,item_id_output=17227,output_possiblity=5}
+    PetEquipRefineRecipe[151]={item_id_in=16721,stone_id=25401,item_id_output=17228,output_possiblity=5}
+    PetEquipRefineRecipe[152]={item_id_in=16722,stone_id=25401,item_id_output=17229,output_possiblity=5}
+    PetEquipRefineRecipe[153]={item_id_in=16723,stone_id=25401,item_id_output=17230,output_possiblity=5}
+    PetEquipRefineRecipe[154]={item_id_in=16724,stone_id=25401,item_id_output=17231,output_possiblity=4}
+    PetEquipRefineRecipe[155]={item_id_in=16725,stone_id=25401,item_id_output=17232,output_possiblity=5}
+    PetEquipRefineRecipe[156]={item_id_in=16726,stone_id=25401,item_id_output=17233,output_possiblity=5}
+    PetEquipRefineRecipe[157]={item_id_in=16727,stone_id=25401,item_id_output=17234,output_possiblity=5}
+    PetEquipRefineRecipe[158]={item_id_in=16728,stone_id=25401,item_id_output=17235,output_possiblity=5}
+    PetEquipRefineRecipe[159]={item_id_in=16729,stone_id=25401,item_id_output=17236,output_possiblity=5}
+    PetEquipRefineRecipe[160]={item_id_in=16730,stone_id=25401,item_id_output=17237,output_possiblity=5}
+    PetEquipRefineRecipe[161]={item_id_in=16731,stone_id=25401,item_id_output=17238,output_possiblity=5}
+    PetEquipRefineRecipe[162]={item_id_in=16732,stone_id=25401,item_id_output=17239,output_possiblity=5}
+    PetEquipRefineRecipe[163]={item_id_in=16733,stone_id=25401,item_id_output=17240,output_possiblity=5}
+    PetEquipRefineRecipe[164]={item_id_in=16734,stone_id=25401,item_id_output=17241,output_possiblity=5}
+    PetEquipRefineRecipe[165]={item_id_in=16735,stone_id=25401,item_id_output=17242,output_possiblity=5}
+    PetEquipRefineRecipe[166]={item_id_in=16736,stone_id=25401,item_id_output=17243,output_possiblity=5}
+    PetEquipRefineRecipe[167]={item_id_in=16737,stone_id=25401,item_id_output=17244,output_possiblity=5}
+    PetEquipRefineRecipe[168]={item_id_in=16738,stone_id=25401,item_id_output=17245,output_possiblity=5}
+    PetEquipRefineRecipe[169]={item_id_in=16739,stone_id=25401,item_id_output=17246,output_possiblity=5}
+    PetEquipRefineRecipe[170]={item_id_in=16740,stone_id=25401,item_id_output=17247,output_possiblity=5}
+    PetEquipRefineRecipe[171]={item_id_in=16741,stone_id=25401,item_id_output=17248,output_possiblity=5}
+    PetEquipRefineRecipe[172]={item_id_in=16742,stone_id=25401,item_id_output=17249,output_possiblity=5}
+    PetEquipRefineRecipe[173]={item_id_in=16743,stone_id=25401,item_id_output=17250,output_possiblity=5}
+    PetEquipRefineRecipe[174]={item_id_in=16744,stone_id=25401,item_id_output=17251,output_possiblity=5}
+    PetEquipRefineRecipe[175]={item_id_in=16745,stone_id=25401,item_id_output=17252,output_possiblity=5}
+    PetEquipRefineRecipe[176]={item_id_in=16746,stone_id=25401,item_id_output=17253,output_possiblity=5}
+    PetEquipRefineRecipe[177]={item_id_in=16747,stone_id=25401,item_id_output=17254,output_possiblity=5}
+    PetEquipRefineRecipe[178]={item_id_in=16748,stone_id=25401,item_id_output=17255,output_possiblity=5}
+    PetEquipRefineRecipe[179]={item_id_in=16749,stone_id=25401,item_id_output=17256,output_possiblity=5}
+    PetEquipRefineRecipe[180]={item_id_in=16750,stone_id=25401,item_id_output=17257,output_possiblity=5}
+    PetEquipRefineRecipe[181]={item_id_in=16751,stone_id=25401,item_id_output=17258,output_possiblity=5}
+    PetEquipRefineRecipe[182]={item_id_in=16752,stone_id=25401,item_id_output=17259,output_possiblity=5}
+    PetEquipRefineRecipe[183]={item_id_in=16753,stone_id=25401,item_id_output=17260,output_possiblity=5}
+    PetEquipRefineRecipe[184]={item_id_in=16754,stone_id=25401,item_id_output=17261,output_possiblity=5}
+    PetEquipRefineRecipe[185]={item_id_in=16755,stone_id=25401,item_id_output=17262,output_possiblity=5}
+    PetEquipRefineRecipe[186]={item_id_in=16756,stone_id=25401,item_id_output=17263,output_possiblity=5}
+    PetEquipRefineRecipe[187]={item_id_in=16757,stone_id=25401,item_id_output=17264,output_possiblity=5}
+    PetEquipRefineRecipe[188]={item_id_in=16758,stone_id=25401,item_id_output=17265,output_possiblity=5}
+    PetEquipRefineRecipe[189]={item_id_in=16759,stone_id=25401,item_id_output=17266,output_possiblity=5}
+    PetEquipRefineRecipe[190]={item_id_in=16760,stone_id=25401,item_id_output=17267,output_possiblity=5}
+    PetEquipRefineRecipe[191]={item_id_in=16761,stone_id=25401,item_id_output=17268,output_possiblity=5}
+    PetEquipRefineRecipe[192]={item_id_in=16762,stone_id=25401,item_id_output=17269,output_possiblity=5}
+    PetEquipRefineRecipe[193]={item_id_in=16763,stone_id=25401,item_id_output=17270,output_possiblity=5}
+    PetEquipRefineRecipe[194]={item_id_in=16764,stone_id=25401,item_id_output=17271,output_possiblity=4}
+    PetEquipRefineRecipe[195]={item_id_in=16765,stone_id=25401,item_id_output=17272,output_possiblity=5}
+    PetEquipRefineRecipe[196]={item_id_in=16766,stone_id=25401,item_id_output=17273,output_possiblity=5}
+    PetEquipRefineRecipe[197]={item_id_in=16767,stone_id=25401,item_id_output=17274,output_possiblity=5}
+    PetEquipRefineRecipe[198]={item_id_in=16768,stone_id=25401,item_id_output=17275,output_possiblity=5}
+    PetEquipRefineRecipe[199]={item_id_in=16769,stone_id=25401,item_id_output=17276,output_possiblity=5}
+    PetEquipRefineRecipe[200]={item_id_in=16770,stone_id=25401,item_id_output=17277,output_possiblity=5}
+    PetEquipRefineRecipe[201]={item_id_in=16771,stone_id=25401,item_id_output=17278,output_possiblity=4}
+    PetEquipRefineRecipe[202]={item_id_in=16772,stone_id=25401,item_id_output=17279,output_possiblity=4}
+    PetEquipRefineRecipe[203]={item_id_in=16773,stone_id=25401,item_id_output=17280,output_possiblity=4}
+    PetEquipRefineRecipe[204]={item_id_in=16774,stone_id=25401,item_id_output=17281,output_possiblity=4}
+    PetEquipRefineRecipe[205]={item_id_in=16775,stone_id=25401,item_id_output=17282,output_possiblity=4}
+    PetEquipRefineRecipe[206]={item_id_in=16776,stone_id=25401,item_id_output=17283,output_possiblity=4}
+    PetEquipRefineRecipe[207]={item_id_in=16777,stone_id=25401,item_id_output=17284,output_possiblity=4}
+    PetEquipRefineRecipe[208]={item_id_in=16778,stone_id=25401,item_id_output=17285,output_possiblity=4}
+    PetEquipRefineRecipe[209]={item_id_in=16779,stone_id=25401,item_id_output=17286,output_possiblity=4}
+    PetEquipRefineRecipe[210]={item_id_in=16780,stone_id=25401,item_id_output=17287,output_possiblity=4}
+    PetEquipRefineRecipe[211]={item_id_in=16781,stone_id=25401,item_id_output=17288,output_possiblity=4}
+    PetEquipRefineRecipe[212]={item_id_in=16782,stone_id=25401,item_id_output=17289,output_possiblity=4}
+    PetEquipRefineRecipe[213]={item_id_in=16783,stone_id=25401,item_id_output=17290,output_possiblity=4}
+    PetEquipRefineRecipe[214]={item_id_in=16784,stone_id=25401,item_id_output=17291,output_possiblity=4}
+    PetEquipRefineRecipe[215]={item_id_in=16785,stone_id=25401,item_id_output=17292,output_possiblity=4}
+    PetEquipRefineRecipe[216]={item_id_in=16786,stone_id=25401,item_id_output=17293,output_possiblity=4}
+    PetEquipRefineRecipe[217]={item_id_in=16787,stone_id=25401,item_id_output=17294,output_possiblity=4}
+    PetEquipRefineRecipe[218]={item_id_in=16788,stone_id=25401,item_id_output=17295,output_possiblity=4}
+    PetEquipRefineRecipe[219]={item_id_in=16789,stone_id=25401,item_id_output=17296,output_possiblity=4}
+    PetEquipRefineRecipe[220]={item_id_in=16790,stone_id=25401,item_id_output=17297,output_possiblity=4}
+    PetEquipRefineRecipe[221]={item_id_in=16791,stone_id=25401,item_id_output=17298,output_possiblity=4}
+    PetEquipRefineRecipe[222]={item_id_in=16792,stone_id=25401,item_id_output=17299,output_possiblity=4}
+    PetEquipRefineRecipe[223]={item_id_in=16793,stone_id=25401,item_id_output=17300,output_possiblity=4}
+    PetEquipRefineRecipe[224]={item_id_in=16794,stone_id=25401,item_id_output=17301,output_possiblity=4}
+    PetEquipRefineRecipe[225]={item_id_in=16795,stone_id=25401,item_id_output=17302,output_possiblity=4}
+    PetEquipRefineRecipe[226]={item_id_in=16796,stone_id=25401,item_id_output=17303,output_possiblity=4}
+    PetEquipRefineRecipe[227]={item_id_in=16797,stone_id=25401,item_id_output=17304,output_possiblity=4}
+    PetEquipRefineRecipe[228]={item_id_in=16798,stone_id=25401,item_id_output=17305,output_possiblity=4}
+    PetEquipRefineRecipe[229]={item_id_in=16799,stone_id=25401,item_id_output=17306,output_possiblity=4}
+    PetEquipRefineRecipe[230]={item_id_in=16800,stone_id=25401,item_id_output=17307,output_possiblity=4}
+    PetEquipRefineRecipe[231]={item_id_in=16801,stone_id=25401,item_id_output=17308,output_possiblity=4}
+    PetEquipRefineRecipe[232]={item_id_in=16802,stone_id=25401,item_id_output=17309,output_possiblity=4}
+    PetEquipRefineRecipe[233]={item_id_in=16803,stone_id=25401,item_id_output=17310,output_possiblity=4}
+    PetEquipRefineRecipe[234]={item_id_in=16804,stone_id=25401,item_id_output=17311,output_possiblity=3}
+    PetEquipRefineRecipe[235]={item_id_in=16805,stone_id=25401,item_id_output=17312,output_possiblity=4}
+    PetEquipRefineRecipe[236]={item_id_in=16806,stone_id=25401,item_id_output=17313,output_possiblity=4}
+    PetEquipRefineRecipe[237]={item_id_in=16807,stone_id=25401,item_id_output=17314,output_possiblity=4}
+    PetEquipRefineRecipe[238]={item_id_in=16808,stone_id=25401,item_id_output=17315,output_possiblity=4}
+    PetEquipRefineRecipe[239]={item_id_in=16809,stone_id=25401,item_id_output=17316,output_possiblity=4}
+    PetEquipRefineRecipe[240]={item_id_in=16810,stone_id=25401,item_id_output=17317,output_possiblity=4}
+    PetEquipRefineRecipe[241]={item_id_in=17078,stone_id=25402,item_id_output=17318,output_possiblity=3}
+    PetEquipRefineRecipe[242]={item_id_in=17079,stone_id=25402,item_id_output=17319,output_possiblity=3}
+    PetEquipRefineRecipe[243]={item_id_in=17080,stone_id=25402,item_id_output=17320,output_possiblity=3}
+    PetEquipRefineRecipe[244]={item_id_in=17081,stone_id=25402,item_id_output=17321,output_possiblity=3}
+    PetEquipRefineRecipe[245]={item_id_in=17082,stone_id=25402,item_id_output=17322,output_possiblity=3}
+    PetEquipRefineRecipe[246]={item_id_in=17083,stone_id=25402,item_id_output=17323,output_possiblity=3}
+    PetEquipRefineRecipe[247]={item_id_in=17084,stone_id=25402,item_id_output=17324,output_possiblity=3}
+    PetEquipRefineRecipe[248]={item_id_in=17085,stone_id=25402,item_id_output=17325,output_possiblity=3}
+    PetEquipRefineRecipe[249]={item_id_in=17086,stone_id=25402,item_id_output=17326,output_possiblity=3}
+    PetEquipRefineRecipe[250]={item_id_in=17087,stone_id=25402,item_id_output=17327,output_possiblity=3}
+    PetEquipRefineRecipe[251]={item_id_in=17088,stone_id=25402,item_id_output=17328,output_possiblity=3}
+    PetEquipRefineRecipe[252]={item_id_in=17089,stone_id=25402,item_id_output=17329,output_possiblity=3}
+    PetEquipRefineRecipe[253]={item_id_in=17090,stone_id=25402,item_id_output=17330,output_possiblity=3}
+    PetEquipRefineRecipe[254]={item_id_in=17091,stone_id=25402,item_id_output=17331,output_possiblity=3}
+    PetEquipRefineRecipe[255]={item_id_in=17092,stone_id=25402,item_id_output=17332,output_possiblity=3}
+    PetEquipRefineRecipe[256]={item_id_in=17093,stone_id=25402,item_id_output=17333,output_possiblity=3}
+    PetEquipRefineRecipe[257]={item_id_in=17094,stone_id=25402,item_id_output=17334,output_possiblity=3}
+    PetEquipRefineRecipe[258]={item_id_in=17095,stone_id=25402,item_id_output=17335,output_possiblity=3}
+    PetEquipRefineRecipe[259]={item_id_in=17096,stone_id=25402,item_id_output=17336,output_possiblity=3}
+    PetEquipRefineRecipe[260]={item_id_in=17097,stone_id=25402,item_id_output=17337,output_possiblity=3}
+    PetEquipRefineRecipe[261]={item_id_in=17098,stone_id=25402,item_id_output=17338,output_possiblity=3}
+    PetEquipRefineRecipe[262]={item_id_in=17099,stone_id=25402,item_id_output=17339,output_possiblity=3}
+    PetEquipRefineRecipe[263]={item_id_in=17100,stone_id=25402,item_id_output=17340,output_possiblity=3}
+    PetEquipRefineRecipe[264]={item_id_in=17101,stone_id=25402,item_id_output=17341,output_possiblity=3}
+    PetEquipRefineRecipe[265]={item_id_in=17102,stone_id=25402,item_id_output=17342,output_possiblity=3}
+    PetEquipRefineRecipe[266]={item_id_in=17103,stone_id=25402,item_id_output=17343,output_possiblity=3}
+    PetEquipRefineRecipe[267]={item_id_in=17104,stone_id=25402,item_id_output=17344,output_possiblity=3}
+    PetEquipRefineRecipe[268]={item_id_in=17105,stone_id=25402,item_id_output=17345,output_possiblity=3}
+    PetEquipRefineRecipe[269]={item_id_in=17106,stone_id=25402,item_id_output=17346,output_possiblity=3}
+    PetEquipRefineRecipe[270]={item_id_in=17107,stone_id=25402,item_id_output=17347,output_possiblity=3}
+    PetEquipRefineRecipe[271]={item_id_in=17108,stone_id=25402,item_id_output=17348,output_possiblity=3}
+    PetEquipRefineRecipe[272]={item_id_in=17109,stone_id=25402,item_id_output=17349,output_possiblity=3}
+    PetEquipRefineRecipe[273]={item_id_in=17110,stone_id=25402,item_id_output=17350,output_possiblity=3}
+    PetEquipRefineRecipe[274]={item_id_in=17111,stone_id=25402,item_id_output=17351,output_possiblity=2}
+    PetEquipRefineRecipe[275]={item_id_in=17112,stone_id=25402,item_id_output=17352,output_possiblity=3}
+    PetEquipRefineRecipe[276]={item_id_in=17113,stone_id=25402,item_id_output=17353,output_possiblity=3}
+    PetEquipRefineRecipe[277]={item_id_in=17114,stone_id=25402,item_id_output=17354,output_possiblity=3}
+    PetEquipRefineRecipe[278]={item_id_in=17115,stone_id=25402,item_id_output=17355,output_possiblity=3}
+    PetEquipRefineRecipe[279]={item_id_in=17116,stone_id=25402,item_id_output=17356,output_possiblity=3}
+    PetEquipRefineRecipe[280]={item_id_in=17117,stone_id=25402,item_id_output=17357,output_possiblity=3}
+    PetEquipRefineRecipe[281]={item_id_in=17118,stone_id=25402,item_id_output=17358,output_possiblity=3}
+    PetEquipRefineRecipe[282]={item_id_in=17119,stone_id=25402,item_id_output=17359,output_possiblity=3}
+    PetEquipRefineRecipe[283]={item_id_in=17120,stone_id=25402,item_id_output=17360,output_possiblity=3}
+    PetEquipRefineRecipe[284]={item_id_in=17121,stone_id=25402,item_id_output=17361,output_possiblity=3}
+    PetEquipRefineRecipe[285]={item_id_in=17122,stone_id=25402,item_id_output=17362,output_possiblity=3}
+    PetEquipRefineRecipe[286]={item_id_in=17123,stone_id=25402,item_id_output=17363,output_possiblity=3}
+    PetEquipRefineRecipe[287]={item_id_in=17124,stone_id=25402,item_id_output=17364,output_possiblity=3}
+    PetEquipRefineRecipe[288]={item_id_in=17125,stone_id=25402,item_id_output=17365,output_possiblity=3}
+    PetEquipRefineRecipe[289]={item_id_in=17126,stone_id=25402,item_id_output=17366,output_possiblity=3}
+    PetEquipRefineRecipe[290]={item_id_in=17127,stone_id=25402,item_id_output=17367,output_possiblity=3}
+    PetEquipRefineRecipe[291]={item_id_in=17128,stone_id=25402,item_id_output=17368,output_possiblity=3}
+    PetEquipRefineRecipe[292]={item_id_in=17129,stone_id=25402,item_id_output=17369,output_possiblity=3}
+    PetEquipRefineRecipe[293]={item_id_in=17130,stone_id=25402,item_id_output=17370,output_possiblity=3}
+    PetEquipRefineRecipe[294]={item_id_in=17131,stone_id=25402,item_id_output=17371,output_possiblity=3}
+    PetEquipRefineRecipe[295]={item_id_in=17132,stone_id=25402,item_id_output=17372,output_possiblity=3}
+    PetEquipRefineRecipe[296]={item_id_in=17133,stone_id=25402,item_id_output=17373,output_possiblity=3}
+    PetEquipRefineRecipe[297]={item_id_in=17134,stone_id=25402,item_id_output=17374,output_possiblity=3}
+    PetEquipRefineRecipe[298]={item_id_in=17135,stone_id=25402,item_id_output=17375,output_possiblity=3}
+    PetEquipRefineRecipe[299]={item_id_in=17136,stone_id=25402,item_id_output=17376,output_possiblity=3}
+    PetEquipRefineRecipe[300]={item_id_in=17137,stone_id=25402,item_id_output=17377,output_possiblity=3}
+    PetEquipRefineRecipe[301]={item_id_in=17138,stone_id=25402,item_id_output=17378,output_possiblity=3}
+    PetEquipRefineRecipe[302]={item_id_in=17139,stone_id=25402,item_id_output=17379,output_possiblity=3}
+    PetEquipRefineRecipe[303]={item_id_in=17140,stone_id=25402,item_id_output=17380,output_possiblity=3}
+    PetEquipRefineRecipe[304]={item_id_in=17141,stone_id=25402,item_id_output=17381,output_possiblity=3}
+    PetEquipRefineRecipe[305]={item_id_in=17142,stone_id=25402,item_id_output=17382,output_possiblity=3}
+    PetEquipRefineRecipe[306]={item_id_in=17143,stone_id=25402,item_id_output=17383,output_possiblity=3}
+    PetEquipRefineRecipe[307]={item_id_in=17144,stone_id=25402,item_id_output=17384,output_possiblity=3}
+    PetEquipRefineRecipe[308]={item_id_in=17145,stone_id=25402,item_id_output=17385,output_possiblity=3}
+    PetEquipRefineRecipe[309]={item_id_in=17146,stone_id=25402,item_id_output=17386,output_possiblity=3}
+    PetEquipRefineRecipe[310]={item_id_in=17147,stone_id=25402,item_id_output=17387,output_possiblity=3}
+    PetEquipRefineRecipe[311]={item_id_in=17148,stone_id=25402,item_id_output=17388,output_possiblity=3}
+    PetEquipRefineRecipe[312]={item_id_in=17149,stone_id=25402,item_id_output=17389,output_possiblity=3}
+    PetEquipRefineRecipe[313]={item_id_in=17150,stone_id=25402,item_id_output=17390,output_possiblity=3}
+    PetEquipRefineRecipe[314]={item_id_in=17151,stone_id=25402,item_id_output=17391,output_possiblity=2}
+    PetEquipRefineRecipe[315]={item_id_in=17152,stone_id=25402,item_id_output=17392,output_possiblity=3}
+    PetEquipRefineRecipe[316]={item_id_in=17153,stone_id=25402,item_id_output=17393,output_possiblity=3}
+    PetEquipRefineRecipe[317]={item_id_in=17154,stone_id=25402,item_id_output=17394,output_possiblity=3}
+    PetEquipRefineRecipe[318]={item_id_in=17155,stone_id=25402,item_id_output=17395,output_possiblity=3}
+    PetEquipRefineRecipe[319]={item_id_in=17156,stone_id=25402,item_id_output=17396,output_possiblity=3}
+    PetEquipRefineRecipe[320]={item_id_in=17157,stone_id=25402,item_id_output=17397,output_possiblity=3}
+    PetEquipRefineRecipe[321]={item_id_in=17158,stone_id=25402,item_id_output=17398,output_possiblity=3}
+    PetEquipRefineRecipe[322]={item_id_in=17159,stone_id=25402,item_id_output=17399,output_possiblity=3}
+    PetEquipRefineRecipe[323]={item_id_in=17160,stone_id=25402,item_id_output=17400,output_possiblity=3}
+    PetEquipRefineRecipe[324]={item_id_in=17161,stone_id=25402,item_id_output=17401,output_possiblity=3}
+    PetEquipRefineRecipe[325]={item_id_in=17162,stone_id=25402,item_id_output=17402,output_possiblity=3}
+    PetEquipRefineRecipe[326]={item_id_in=17163,stone_id=25402,item_id_output=17403,output_possiblity=3}
+    PetEquipRefineRecipe[327]={item_id_in=17164,stone_id=25402,item_id_output=17404,output_possiblity=3}
+    PetEquipRefineRecipe[328]={item_id_in=17165,stone_id=25402,item_id_output=17405,output_possiblity=3}
+    PetEquipRefineRecipe[329]={item_id_in=17166,stone_id=25402,item_id_output=17406,output_possiblity=3}
+    PetEquipRefineRecipe[330]={item_id_in=17167,stone_id=25402,item_id_output=17407,output_possiblity=3}
+    PetEquipRefineRecipe[331]={item_id_in=17168,stone_id=25402,item_id_output=17408,output_possiblity=3}
+    PetEquipRefineRecipe[332]={item_id_in=17169,stone_id=25402,item_id_output=17409,output_possiblity=3}
+    PetEquipRefineRecipe[333]={item_id_in=17170,stone_id=25402,item_id_output=17410,output_possiblity=3}
+    PetEquipRefineRecipe[334]={item_id_in=17171,stone_id=25402,item_id_output=17411,output_possiblity=3}
+    PetEquipRefineRecipe[335]={item_id_in=17172,stone_id=25402,item_id_output=17412,output_possiblity=3}
+    PetEquipRefineRecipe[336]={item_id_in=17173,stone_id=25402,item_id_output=17413,output_possiblity=3}
+    PetEquipRefineRecipe[337]={item_id_in=17174,stone_id=25402,item_id_output=17414,output_possiblity=3}
+    PetEquipRefineRecipe[338]={item_id_in=17175,stone_id=25402,item_id_output=17415,output_possiblity=3}
+    PetEquipRefineRecipe[339]={item_id_in=17176,stone_id=25402,item_id_output=17416,output_possiblity=3}
+    PetEquipRefineRecipe[340]={item_id_in=17177,stone_id=25402,item_id_output=17417,output_possiblity=3}
+    PetEquipRefineRecipe[341]={item_id_in=17178,stone_id=25402,item_id_output=17418,output_possiblity=3}
+    PetEquipRefineRecipe[342]={item_id_in=17179,stone_id=25402,item_id_output=17419,output_possiblity=3}
+    PetEquipRefineRecipe[343]={item_id_in=17180,stone_id=25402,item_id_output=17420,output_possiblity=3}
+    PetEquipRefineRecipe[344]={item_id_in=17181,stone_id=25402,item_id_output=17421,output_possiblity=3}
+    PetEquipRefineRecipe[345]={item_id_in=17182,stone_id=25402,item_id_output=17422,output_possiblity=3}
+    PetEquipRefineRecipe[346]={item_id_in=17183,stone_id=25402,item_id_output=17423,output_possiblity=3}
+    PetEquipRefineRecipe[347]={item_id_in=17184,stone_id=25402,item_id_output=17424,output_possiblity=3}
+    PetEquipRefineRecipe[348]={item_id_in=17185,stone_id=25402,item_id_output=17425,output_possiblity=3}
+    PetEquipRefineRecipe[349]={item_id_in=17186,stone_id=25402,item_id_output=17426,output_possiblity=3}
+    PetEquipRefineRecipe[350]={item_id_in=17187,stone_id=25402,item_id_output=17427,output_possiblity=3}
+    PetEquipRefineRecipe[351]={item_id_in=17188,stone_id=25402,item_id_output=17428,output_possiblity=3}
+    PetEquipRefineRecipe[352]={item_id_in=17189,stone_id=25402,item_id_output=17429,output_possiblity=3}
+    PetEquipRefineRecipe[353]={item_id_in=17190,stone_id=25402,item_id_output=17430,output_possiblity=3}
+    PetEquipRefineRecipe[354]={item_id_in=17191,stone_id=25402,item_id_output=17431,output_possiblity=2}
+    PetEquipRefineRecipe[355]={item_id_in=17192,stone_id=25402,item_id_output=17432,output_possiblity=3}
+    PetEquipRefineRecipe[356]={item_id_in=17193,stone_id=25402,item_id_output=17433,output_possiblity=3}
+    PetEquipRefineRecipe[357]={item_id_in=17194,stone_id=25402,item_id_output=17434,output_possiblity=3}
+    PetEquipRefineRecipe[358]={item_id_in=17195,stone_id=25402,item_id_output=17435,output_possiblity=3}
+    PetEquipRefineRecipe[359]={item_id_in=17196,stone_id=25402,item_id_output=17436,output_possiblity=3}
+    PetEquipRefineRecipe[360]={item_id_in=17197,stone_id=25402,item_id_output=17437,output_possiblity=3}
+    PetEquipRefineRecipe[361]={item_id_in=17198,stone_id=25402,item_id_output=17438,output_possiblity=3}
+    PetEquipRefineRecipe[362]={item_id_in=17199,stone_id=25402,item_id_output=17439,output_possiblity=3}
+    PetEquipRefineRecipe[363]={item_id_in=17200,stone_id=25402,item_id_output=17440,output_possiblity=3}
+    PetEquipRefineRecipe[364]={item_id_in=17201,stone_id=25402,item_id_output=17441,output_possiblity=3}
+    PetEquipRefineRecipe[365]={item_id_in=17202,stone_id=25402,item_id_output=17442,output_possiblity=3}
+    PetEquipRefineRecipe[366]={item_id_in=17203,stone_id=25402,item_id_output=17443,output_possiblity=3}
+    PetEquipRefineRecipe[367]={item_id_in=17204,stone_id=25402,item_id_output=17444,output_possiblity=3}
+    PetEquipRefineRecipe[368]={item_id_in=17205,stone_id=25402,item_id_output=17445,output_possiblity=3}
+    PetEquipRefineRecipe[369]={item_id_in=17206,stone_id=25402,item_id_output=17446,output_possiblity=3}
+    PetEquipRefineRecipe[370]={item_id_in=17207,stone_id=25402,item_id_output=17447,output_possiblity=3}
+    PetEquipRefineRecipe[371]={item_id_in=17208,stone_id=25402,item_id_output=17448,output_possiblity=3}
+    PetEquipRefineRecipe[372]={item_id_in=17209,stone_id=25402,item_id_output=17449,output_possiblity=3}
+    PetEquipRefineRecipe[373]={item_id_in=17210,stone_id=25402,item_id_output=17450,output_possiblity=3}
+    PetEquipRefineRecipe[374]={item_id_in=17211,stone_id=25402,item_id_output=17451,output_possiblity=3}
+    PetEquipRefineRecipe[375]={item_id_in=17212,stone_id=25402,item_id_output=17452,output_possiblity=3}
+    PetEquipRefineRecipe[376]={item_id_in=17213,stone_id=25402,item_id_output=17453,output_possiblity=3}
+    PetEquipRefineRecipe[377]={item_id_in=17214,stone_id=25402,item_id_output=17454,output_possiblity=3}
+    PetEquipRefineRecipe[378]={item_id_in=17215,stone_id=25402,item_id_output=17455,output_possiblity=3}
+    PetEquipRefineRecipe[379]={item_id_in=17216,stone_id=25402,item_id_output=17456,output_possiblity=3}
+    PetEquipRefineRecipe[380]={item_id_in=17217,stone_id=25402,item_id_output=17457,output_possiblity=3}
+    PetEquipRefineRecipe[381]={item_id_in=17218,stone_id=25402,item_id_output=17458,output_possiblity=3}
+    PetEquipRefineRecipe[382]={item_id_in=17219,stone_id=25402,item_id_output=17459,output_possiblity=3}
+    PetEquipRefineRecipe[383]={item_id_in=17220,stone_id=25402,item_id_output=17460,output_possiblity=3}
+    PetEquipRefineRecipe[384]={item_id_in=17221,stone_id=25402,item_id_output=17461,output_possiblity=3}
+    PetEquipRefineRecipe[385]={item_id_in=17222,stone_id=25402,item_id_output=17462,output_possiblity=3}
+    PetEquipRefineRecipe[386]={item_id_in=17223,stone_id=25402,item_id_output=17463,output_possiblity=3}
+    PetEquipRefineRecipe[387]={item_id_in=17224,stone_id=25402,item_id_output=17464,output_possiblity=3}
+    PetEquipRefineRecipe[388]={item_id_in=17225,stone_id=25402,item_id_output=17465,output_possiblity=3}
+    PetEquipRefineRecipe[389]={item_id_in=17226,stone_id=25402,item_id_output=17466,output_possiblity=3}
+    PetEquipRefineRecipe[390]={item_id_in=17227,stone_id=25402,item_id_output=17467,output_possiblity=3}
+    PetEquipRefineRecipe[391]={item_id_in=17228,stone_id=25402,item_id_output=17468,output_possiblity=3}
+    PetEquipRefineRecipe[392]={item_id_in=17229,stone_id=25402,item_id_output=17469,output_possiblity=3}
+    PetEquipRefineRecipe[393]={item_id_in=17230,stone_id=25402,item_id_output=17470,output_possiblity=3}
+    PetEquipRefineRecipe[394]={item_id_in=17231,stone_id=25402,item_id_output=17471,output_possiblity=2}
+    PetEquipRefineRecipe[395]={item_id_in=17232,stone_id=25402,item_id_output=17472,output_possiblity=3}
+    PetEquipRefineRecipe[396]={item_id_in=17233,stone_id=25402,item_id_output=17473,output_possiblity=3}
+    PetEquipRefineRecipe[397]={item_id_in=17234,stone_id=25402,item_id_output=17474,output_possiblity=3}
+    PetEquipRefineRecipe[398]={item_id_in=17235,stone_id=25402,item_id_output=17475,output_possiblity=3}
+    PetEquipRefineRecipe[399]={item_id_in=17236,stone_id=25402,item_id_output=17476,output_possiblity=3}
+    PetEquipRefineRecipe[400]={item_id_in=17237,stone_id=25402,item_id_output=17477,output_possiblity=3}
+    PetEquipRefineRecipe[401]={item_id_in=17238,stone_id=25402,item_id_output=17478,output_possiblity=2}
+    PetEquipRefineRecipe[402]={item_id_in=17239,stone_id=25402,item_id_output=17479,output_possiblity=2}
+    PetEquipRefineRecipe[403]={item_id_in=17240,stone_id=25402,item_id_output=17480,output_possiblity=2}
+    PetEquipRefineRecipe[404]={item_id_in=17241,stone_id=25402,item_id_output=17481,output_possiblity=2}
+    PetEquipRefineRecipe[405]={item_id_in=17242,stone_id=25402,item_id_output=17482,output_possiblity=2}
+    PetEquipRefineRecipe[406]={item_id_in=17243,stone_id=25402,item_id_output=17483,output_possiblity=2}
+    PetEquipRefineRecipe[407]={item_id_in=17244,stone_id=25402,item_id_output=17484,output_possiblity=2}
+    PetEquipRefineRecipe[408]={item_id_in=17245,stone_id=25402,item_id_output=17485,output_possiblity=2}
+    PetEquipRefineRecipe[409]={item_id_in=17246,stone_id=25402,item_id_output=17486,output_possiblity=2}
+    PetEquipRefineRecipe[410]={item_id_in=17247,stone_id=25402,item_id_output=17487,output_possiblity=2}
+    PetEquipRefineRecipe[411]={item_id_in=17248,stone_id=25402,item_id_output=17488,output_possiblity=2}
+    PetEquipRefineRecipe[412]={item_id_in=17249,stone_id=25402,item_id_output=17489,output_possiblity=2}
+    PetEquipRefineRecipe[413]={item_id_in=17250,stone_id=25402,item_id_output=17490,output_possiblity=2}
+    PetEquipRefineRecipe[414]={item_id_in=17251,stone_id=25402,item_id_output=17491,output_possiblity=2}
+    PetEquipRefineRecipe[415]={item_id_in=17252,stone_id=25402,item_id_output=17492,output_possiblity=2}
+    PetEquipRefineRecipe[416]={item_id_in=17253,stone_id=25402,item_id_output=17493,output_possiblity=2}
+    PetEquipRefineRecipe[417]={item_id_in=17254,stone_id=25402,item_id_output=17494,output_possiblity=2}
+    PetEquipRefineRecipe[418]={item_id_in=17255,stone_id=25402,item_id_output=17495,output_possiblity=2}
+    PetEquipRefineRecipe[419]={item_id_in=17256,stone_id=25402,item_id_output=17496,output_possiblity=2}
+    PetEquipRefineRecipe[420]={item_id_in=17257,stone_id=25402,item_id_output=17497,output_possiblity=2}
+    PetEquipRefineRecipe[421]={item_id_in=17258,stone_id=25402,item_id_output=17498,output_possiblity=2}
+    PetEquipRefineRecipe[422]={item_id_in=17259,stone_id=25402,item_id_output=17499,output_possiblity=2}
+    PetEquipRefineRecipe[423]={item_id_in=17260,stone_id=25402,item_id_output=17500,output_possiblity=2}
+    PetEquipRefineRecipe[424]={item_id_in=17261,stone_id=25402,item_id_output=17501,output_possiblity=2}
+    PetEquipRefineRecipe[425]={item_id_in=17262,stone_id=25402,item_id_output=17502,output_possiblity=2}
+    PetEquipRefineRecipe[426]={item_id_in=17263,stone_id=25402,item_id_output=17503,output_possiblity=2}
+    PetEquipRefineRecipe[427]={item_id_in=17264,stone_id=25402,item_id_output=17504,output_possiblity=2}
+    PetEquipRefineRecipe[428]={item_id_in=17265,stone_id=25402,item_id_output=17505,output_possiblity=2}
+    PetEquipRefineRecipe[429]={item_id_in=17266,stone_id=25402,item_id_output=17506,output_possiblity=2}
+    PetEquipRefineRecipe[430]={item_id_in=17267,stone_id=25402,item_id_output=17507,output_possiblity=2}
+    PetEquipRefineRecipe[431]={item_id_in=17268,stone_id=25402,item_id_output=17508,output_possiblity=2}
+    PetEquipRefineRecipe[432]={item_id_in=17269,stone_id=25402,item_id_output=17509,output_possiblity=2}
+    PetEquipRefineRecipe[433]={item_id_in=17270,stone_id=25402,item_id_output=17510,output_possiblity=2}
+    PetEquipRefineRecipe[434]={item_id_in=17271,stone_id=25402,item_id_output=17511,output_possiblity=1.2}
+    PetEquipRefineRecipe[435]={item_id_in=17272,stone_id=25402,item_id_output=17512,output_possiblity=2}
+    PetEquipRefineRecipe[436]={item_id_in=17273,stone_id=25402,item_id_output=17513,output_possiblity=2}
+    PetEquipRefineRecipe[437]={item_id_in=17274,stone_id=25402,item_id_output=17514,output_possiblity=2}
+    PetEquipRefineRecipe[438]={item_id_in=17275,stone_id=25402,item_id_output=17515,output_possiblity=2}
+    PetEquipRefineRecipe[439]={item_id_in=17276,stone_id=25402,item_id_output=17516,output_possiblity=2}
+    PetEquipRefineRecipe[440]={item_id_in=17277,stone_id=25402,item_id_output=17517,output_possiblity=2}
+    PetEquipRefineRecipe[441]={item_id_in=17278,stone_id=25402,item_id_output=17518,output_possiblity=1.8}
+    PetEquipRefineRecipe[442]={item_id_in=17279,stone_id=25402,item_id_output=17519,output_possiblity=1.8}
+    PetEquipRefineRecipe[443]={item_id_in=17280,stone_id=25402,item_id_output=17520,output_possiblity=1.8}
+    PetEquipRefineRecipe[444]={item_id_in=17281,stone_id=25402,item_id_output=17521,output_possiblity=1.8}
+    PetEquipRefineRecipe[445]={item_id_in=17282,stone_id=25402,item_id_output=17522,output_possiblity=1.8}
+    PetEquipRefineRecipe[446]={item_id_in=17283,stone_id=25402,item_id_output=17523,output_possiblity=1.8}
+    PetEquipRefineRecipe[447]={item_id_in=17284,stone_id=25402,item_id_output=17524,output_possiblity=1.8}
+    PetEquipRefineRecipe[448]={item_id_in=17285,stone_id=25402,item_id_output=17525,output_possiblity=1.8}
+    PetEquipRefineRecipe[449]={item_id_in=17286,stone_id=25402,item_id_output=17526,output_possiblity=1.8}
+    PetEquipRefineRecipe[450]={item_id_in=17287,stone_id=25402,item_id_output=17527,output_possiblity=1.8}
+    PetEquipRefineRecipe[451]={item_id_in=17288,stone_id=25402,item_id_output=17528,output_possiblity=1.8}
+    PetEquipRefineRecipe[452]={item_id_in=17289,stone_id=25402,item_id_output=17529,output_possiblity=1.8}
+    PetEquipRefineRecipe[453]={item_id_in=17290,stone_id=25402,item_id_output=17530,output_possiblity=1.8}
+    PetEquipRefineRecipe[454]={item_id_in=17291,stone_id=25402,item_id_output=17531,output_possiblity=1.8}
+    PetEquipRefineRecipe[455]={item_id_in=17292,stone_id=25402,item_id_output=17532,output_possiblity=1.8}
+    PetEquipRefineRecipe[456]={item_id_in=17293,stone_id=25402,item_id_output=17533,output_possiblity=1.8}
+    PetEquipRefineRecipe[457]={item_id_in=17294,stone_id=25402,item_id_output=17534,output_possiblity=1.8}
+    PetEquipRefineRecipe[458]={item_id_in=17295,stone_id=25402,item_id_output=17535,output_possiblity=1.8}
+    PetEquipRefineRecipe[459]={item_id_in=17296,stone_id=25402,item_id_output=17536,output_possiblity=1.8}
+    PetEquipRefineRecipe[460]={item_id_in=17297,stone_id=25402,item_id_output=17537,output_possiblity=1.8}
+    PetEquipRefineRecipe[461]={item_id_in=17298,stone_id=25402,item_id_output=17538,output_possiblity=1.8}
+    PetEquipRefineRecipe[462]={item_id_in=17299,stone_id=25402,item_id_output=17539,output_possiblity=1.8}
+    PetEquipRefineRecipe[463]={item_id_in=17300,stone_id=25402,item_id_output=17540,output_possiblity=1.8}
+    PetEquipRefineRecipe[464]={item_id_in=17301,stone_id=25402,item_id_output=17541,output_possiblity=1.8}
+    PetEquipRefineRecipe[465]={item_id_in=17302,stone_id=25402,item_id_output=17542,output_possiblity=1.8}
+    PetEquipRefineRecipe[466]={item_id_in=17303,stone_id=25402,item_id_output=17543,output_possiblity=1.8}
+    PetEquipRefineRecipe[467]={item_id_in=17304,stone_id=25402,item_id_output=17544,output_possiblity=1.8}
+    PetEquipRefineRecipe[468]={item_id_in=17305,stone_id=25402,item_id_output=17545,output_possiblity=1.8}
+    PetEquipRefineRecipe[469]={item_id_in=17306,stone_id=25402,item_id_output=17546,output_possiblity=1.8}
+    PetEquipRefineRecipe[470]={item_id_in=17307,stone_id=25402,item_id_output=17547,output_possiblity=1.8}
+    PetEquipRefineRecipe[471]={item_id_in=17308,stone_id=25402,item_id_output=17548,output_possiblity=1.8}
+    PetEquipRefineRecipe[472]={item_id_in=17309,stone_id=25402,item_id_output=17549,output_possiblity=1.8}
+    PetEquipRefineRecipe[473]={item_id_in=17310,stone_id=25402,item_id_output=17550,output_possiblity=1.8}
+    PetEquipRefineRecipe[474]={item_id_in=17311,stone_id=25402,item_id_output=17551,output_possiblity=0.8}
+    PetEquipRefineRecipe[475]={item_id_in=17312,stone_id=25402,item_id_output=17552,output_possiblity=1.8}
+    PetEquipRefineRecipe[476]={item_id_in=17313,stone_id=25402,item_id_output=17553,output_possiblity=1.8}
+    PetEquipRefineRecipe[477]={item_id_in=17314,stone_id=25402,item_id_output=17554,output_possiblity=1.8}
+    PetEquipRefineRecipe[478]={item_id_in=17315,stone_id=25402,item_id_output=17555,output_possiblity=1.8}
+    PetEquipRefineRecipe[479]={item_id_in=17316,stone_id=25402,item_id_output=17556,output_possiblity=1.8}
+    PetEquipRefineRecipe[480]={item_id_in=17317,stone_id=25402,item_id_output=17557,output_possiblity=1.8}
+	return PetEquipRefineRecipe
+end
+
+---检查这件宠物装备是否允许强化--------------------------------------------------------------------
+function ZPetEquipExistInRecipe(tmplID)
+	if type(tmplID) ~= "number" then return 0 end
+	local PetEquipRefineRecipe=ZPetEquipRefineRecipe()
+	local petequip
+	for _,petequip in pairs(PetEquipRefineRecipe) do
+		if petequip.item_id_in == tmplID then return 1 end
+	end
+	return 0
+end
+---//宠物装备强化主函数------------------------------------------------------------------------------
+function PetEquipRefine(item_type, stone_type)
+	local output1=0
+	local output2=0
+	local output_id=0
+	local possiblity=0
+	local msg_id=4001
+	local PetEquipRefineRecipe=ZPetEquipRefineRecipe()
+	
+	---如果传入数据有问题，则返回
+	if type(item_type)~="number" or type(stone_type)~="number" then
+	 return output_id,msg_id
+	end 
+
+	for i,v in pairs(PetEquipRefineRecipe) do
+		if item_type==v.item_id_in and stone_type==v.stone_id then
+			output1=v.item_id_in
+			output2=v.item_id_output
+			possiblity=v.output_possiblity
+		elseif item_type==v.item_id_in and stone_type~=v.stone_id then
+			output_id=0
+			msg_id=4002
+		end
+	end
+	
+	---检查这件宠物装备是否允许被强化
+	local equip_type=ZPetEquipExistInRecipe(item_type)
+	if equip_type==0 then
+		output_id=0
+		msg_id=4003
+	end
+	
+	local result=ZPetRifineThrowDice(possiblity)
+	if output2~=0 then	
+		if result==1 then 
+			output_id=output2
+			msg_id=4004
+		else
+			output_id=output1
+			msg_id=4005
+		end
+	end
+	
+ return output_id,msg_id 
+end
+---//宠物装备强化结束---------------------------------------------------------------------------------
+---//共用函数部分开始---------------------------------------------------------------------------------
+---//成功率roll----------------------------------------------------------------------------------------
+function ZPetRifineThrowDice(chance)
+	if type(chance)~="number" or chance<=0 then 
+		chance=0
+	end 
+	if chance>100 then chance=100 end 
+	local zrollresult=0
+	local zrolldice= math.random()*100   
+	if zrolldice<chance and zrolldice~=0 then 
+		zrollresult=1
+	else 
+		zrollresult=0
+	end 
+	return zrollresult
+end 

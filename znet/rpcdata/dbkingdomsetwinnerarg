@@ -1,0 +1,69 @@
+#ifndef __GNET_DBKINGDOMSETWINNERARG_RPCDATA
+#define __GNET_DBKINGDOMSETWINNERARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBKingdomSetWinnerArg : public GNET::Rpc::Data
+	{
+	public:
+		char result;
+		int win_faction;
+		int task_points;
+
+	public:
+		DBKingdomSetWinnerArg (char l_result = 0,int l_win_faction = 0,int l_task_points = 0)
+			: result(l_result),win_faction(l_win_faction),task_points(l_task_points)
+		{
+		}
+
+		DBKingdomSetWinnerArg(const DBKingdomSetWinnerArg &rhs)
+			: result(rhs.result),win_faction(rhs.win_faction),task_points(rhs.task_points) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomSetWinnerArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomSetWinnerArg *r = dynamic_cast<const DBKingdomSetWinnerArg *>(&rhs);
+			if (r && r != this)
+			{
+				result = r->result;
+				win_faction = r->win_faction;
+				task_points = r->task_points;
+			}
+			return *this;
+		}
+
+		DBKingdomSetWinnerArg& operator = (const DBKingdomSetWinnerArg &rhs)
+		{
+			const DBKingdomSetWinnerArg *r = &rhs;
+			if (r && r != this)
+			{
+				result = r->result;
+				win_faction = r->win_faction;
+				task_points = r->task_points;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << result;
+			os << win_faction;
+			os << task_points;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> result;
+			os >> win_faction;
+			os >> task_points;
+			return os;
+		}
+
+	};
+};
+#endif

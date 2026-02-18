@@ -1,0 +1,47 @@
+	public:
+		int retcode;
+		int gs_id;
+		int map_id;
+		int raidroom_id;
+		int index;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDRAIDSTART_RE };
+	public:
+		SendRaidStart_Re() { type = PROTOCOL_SENDRAIDSTART_RE; }
+		SendRaidStart_Re(void*) : Protocol(PROTOCOL_SENDRAIDSTART_RE) { }
+		SendRaidStart_Re (int l_retcode,int l_gs_id = 0,int l_map_id = 0,
+			int l_raidroom_id = -1,int l_index = -1)
+			 : retcode(l_retcode),gs_id(l_gs_id),map_id(l_map_id)
+			,raidroom_id(l_raidroom_id),index(l_index)
+		{
+			type = PROTOCOL_SENDRAIDSTART_RE;
+		}
+
+		SendRaidStart_Re(const SendRaidStart_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),gs_id(rhs.gs_id),map_id(rhs.map_id)
+			,raidroom_id(rhs.raidroom_id),index(rhs.index) { }
+
+		GNET::Protocol *Clone() const { return new SendRaidStart_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << gs_id;
+			os << map_id;
+			os << raidroom_id;
+			os << index;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> gs_id;
+			os >> map_id;
+			os >> raidroom_id;
+			os >> index;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

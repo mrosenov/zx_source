@@ -1,0 +1,121 @@
+
+#ifndef __GNET_DBCONSIGNGETROLE_HPP
+#define __GNET_DBCONSIGNGETROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsigngetrolearg"
+#include "dbconsigngetroleres"
+
+namespace GNET
+{
+
+class DBConsignGetRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsigngetrole"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignGetRoleArg *arg = (DBConsignGetRoleArg *)argument;
+		DBConsignGetRoleRes *res = (DBConsignGetRoleRes *)result;
+		try
+		{
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage *pstatus,*pstorehouse;
+			pstatus = StorageEnv::GetStorage("status");
+			pstorehouse = StorageEnv::GetStorage("storehouse");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				if(arg->sn == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+				GConsignDB detail;
+				Marshal::OctetsStream(pconsign->find(Marshal::OctetsStream()<<arg->sn, txn)) >> detail;
+
+				if(detail.info.consign_type != CONSIGNTYPE_ROLE)  //¼ÄÊÛ½ÇÉ«
+				{
+				//	throw DbException(DB_VERIFY_BAD);
+					Log::log( LOG_ERR, "DBConsignGetRole,consign_type=%d",detail.info.consign_type);
+					res->retcode = ERR_WT_DB_FAILURE;
+					return;
+				}
+				
+				GRolePocket bag;
+				Marshal::OctetsStream krole;
+				krole<< arg->roleid;
+				Marshal::OctetsStream( pinventory->find( krole, txn ) ) >> bag;
+				GRoleInventoryVector::iterator ititem;
+
+				GRoleBase seller_base;
+				Marshal::OctetsStream(pbase->find(Marshal::OctetsStream()<<arg->roleid, txn)) >> seller_base;
+				GRoleStatus status;
+				Marshal::OctetsStream(pstatus->find(krole,txn)) >> status;
+
+				//get role data
+				GCreditInfo credit;
+				credit.credits = status.credit;
+				GPetsInfo pet(bag.petbadge,bag.petequip);
+				GRoleStorehouse storehouse;
+				Marshal::OctetsStream(pstorehouse->find(krole,txn)) >> storehouse; 
+                              	GRoleInventoryVector mountwing;
+                               	short mountwingsize=0;
+				if(bag.mountwing.size())
+				{
+					Marshal::OctetsStream os_mountwing(bag.mountwing);//refer to gdbclient/db_if.cpp
+					try
+					{
+						os_mountwing >> mountwingsize;
+		                               	os_mountwing >> mountwing;
+					}
+					catch(...)
+					{
+						Log::log(LOG_ERR, "dbconsigngetrole, error unmarshal, roleid=%d\n", arg->roleid);
+					}
+				}
+				GPocketInfo pocketinfo(bag.money, bag.equipment, bag.capacity, bag.items, bag.pocket_capacity, bag.pocket_items, bag.fashion, mountwingsize,mountwing, storehouse);
+				GConsignGsRoleInfo gsroleinfo;
+				Marshal::OctetsStream(detail.gs_roleinfo) >> gsroleinfo;
+				res->roledetail = GConsignRole(gsroleinfo,credit,pet,pocketinfo);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignGetRole, roleid=%d, what=%s\n",arg->roleid, e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+		
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignGetRoleArg *arg = (DBConsignGetRoleArg *)argument;
+		// DBConsignGetRoleRes *res = (DBConsignGetRoleRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

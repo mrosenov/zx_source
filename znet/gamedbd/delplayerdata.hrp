@@ -1,0 +1,75 @@
+
+#ifndef __GNET_DELPLAYERDATA_HPP
+#define __GNET_DELPLAYERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "delplayerdataarg"
+#include "delplayerdatares"
+
+namespace GNET
+{
+
+class DelPlayerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "delplayerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DelPlayerDataArg *arg = (DelPlayerDataArg *)argument;
+		DelPlayerDataRes *res = (DelPlayerDataRes *)result;
+		LOG_TRACE("DelPlayerData roleid %d userid %d", arg->roleid, arg->userid);
+		try
+		{
+			//如果是删除角色 还要处理user表的rolelist
+			//最好不要真正删除角色数据 考虑 gamedbd 可能延迟收到 DelPlayerData 导致把有效的数据给删除了 自动恢复原服数据 ?
+			//玩家可能在跨服游戏中 但数据已经被删除 直到重新登录并激活原服数据
+			//如果是真删数据 必须做好同步 deliveryd 收到 DelPlayerData 成功之后再向客户端发 PlayerChangeDS_Re
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream role_key;
+			GRoleBase base;
+			try
+			{
+				role_key << arg->roleid;
+				Marshal::OctetsStream(pbase->find(role_key, txn)) >> base;
+				Log::formatlog("DelPlayerData", "role %d old status %d", arg->roleid, base.status);
+				base.status = _ROLE_STATUS_FROZEN;
+				pbase->insert(role_key, Marshal::OctetsStream() << base, txn);
+			}
+			catch (DbException e) { throw; }
+			catch (...)
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException e)
+		{
+			Log::log(LOG_ERR, "DelPlayerData, roleid=%d what=%s", arg->roleid, e.what());
+			res->retcode = ERR_DATANOTFIND;
+			return;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DelPlayerDataArg *arg = (DelPlayerDataArg *)argument;
+		// DelPlayerDataRes *res = (DelPlayerDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

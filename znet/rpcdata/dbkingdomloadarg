@@ -1,0 +1,59 @@
+#ifndef __GNET_DBKINGDOMLOADARG_RPCDATA
+#define __GNET_DBKINGDOMLOADARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBKingdomLoadArg : public GNET::Rpc::Data
+	{
+	public:
+		int dummy;
+
+	public:
+		DBKingdomLoadArg (int l_dummy = 0)
+			: dummy(l_dummy)
+		{
+		}
+
+		DBKingdomLoadArg(const DBKingdomLoadArg &rhs)
+			: dummy(rhs.dummy) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomLoadArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomLoadArg *r = dynamic_cast<const DBKingdomLoadArg *>(&rhs);
+			if (r && r != this)
+			{
+				dummy = r->dummy;
+			}
+			return *this;
+		}
+
+		DBKingdomLoadArg& operator = (const DBKingdomLoadArg &rhs)
+		{
+			const DBKingdomLoadArg *r = &rhs;
+			if (r && r != this)
+			{
+				dummy = r->dummy;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << dummy;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> dummy;
+			return os;
+		}
+
+	};
+};
+#endif

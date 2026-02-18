@@ -1,0 +1,113 @@
+#ifndef __GNET_INSTANCINGSIDEINFO_RPCDATA
+#define __GNET_INSTANCINGSIDEINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class InstancingSideInfo : public GNET::Rpc::Data
+	{
+	public:
+		int max_player_limit;
+		int manual_start_player_num;
+		int auto_start_player_num;
+		int reborn_limit;
+		int min_level_limit;
+		int max_level_limit;
+		int max_prof_count_limit;
+		int faction_limit;
+		int required_item;
+		int required_money;
+
+	public:
+		InstancingSideInfo (int l_max_player_limit = 0,int l_manual_start_player_num = 0,int l_auto_start_player_num = 0
+			,int l_reborn_limit = 0,int l_min_level_limit = 0,int l_max_level_limit = 0
+			,int l_max_prof_count_limit = 0,int l_faction_limit = 0,int l_required_item = 0
+			,int l_required_money = 0)
+			: max_player_limit(l_max_player_limit),manual_start_player_num(l_manual_start_player_num),auto_start_player_num(l_auto_start_player_num)
+			,reborn_limit(l_reborn_limit),min_level_limit(l_min_level_limit),max_level_limit(l_max_level_limit)
+			,max_prof_count_limit(l_max_prof_count_limit),faction_limit(l_faction_limit),required_item(l_required_item)
+			,required_money(l_required_money)
+		{
+		}
+
+		InstancingSideInfo(const InstancingSideInfo &rhs)
+			: max_player_limit(rhs.max_player_limit),manual_start_player_num(rhs.manual_start_player_num),auto_start_player_num(rhs.auto_start_player_num),
+			reborn_limit(rhs.reborn_limit),min_level_limit(rhs.min_level_limit),max_level_limit(rhs.max_level_limit),
+			max_prof_count_limit(rhs.max_prof_count_limit),faction_limit(rhs.faction_limit),required_item(rhs.required_item),
+			required_money(rhs.required_money) { }
+
+		Rpc::Data *Clone() const { return new InstancingSideInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const InstancingSideInfo *r = dynamic_cast<const InstancingSideInfo *>(&rhs);
+			if (r && r != this)
+			{
+				max_player_limit = r->max_player_limit;
+				manual_start_player_num = r->manual_start_player_num;
+				auto_start_player_num = r->auto_start_player_num;
+				reborn_limit = r->reborn_limit;
+				min_level_limit = r->min_level_limit;
+				max_level_limit = r->max_level_limit;
+				max_prof_count_limit = r->max_prof_count_limit;
+				faction_limit = r->faction_limit;
+				required_item = r->required_item;
+				required_money = r->required_money;
+			}
+			return *this;
+		}
+
+		InstancingSideInfo& operator = (const InstancingSideInfo &rhs)
+		{
+			const InstancingSideInfo *r = &rhs;
+			if (r && r != this)
+			{
+				max_player_limit = r->max_player_limit;
+				manual_start_player_num = r->manual_start_player_num;
+				auto_start_player_num = r->auto_start_player_num;
+				reborn_limit = r->reborn_limit;
+				min_level_limit = r->min_level_limit;
+				max_level_limit = r->max_level_limit;
+				max_prof_count_limit = r->max_prof_count_limit;
+				faction_limit = r->faction_limit;
+				required_item = r->required_item;
+				required_money = r->required_money;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << max_player_limit;
+			os << manual_start_player_num;
+			os << auto_start_player_num;
+			os << reborn_limit;
+			os << min_level_limit;
+			os << max_level_limit;
+			os << max_prof_count_limit;
+			os << faction_limit;
+			os << required_item;
+			os << required_money;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> max_player_limit;
+			os >> manual_start_player_num;
+			os >> auto_start_player_num;
+			os >> reborn_limit;
+			os >> min_level_limit;
+			os >> max_level_limit;
+			os >> max_prof_count_limit;
+			os >> faction_limit;
+			os >> required_item;
+			os >> required_money;
+			return os;
+		}
+
+	};
+};
+#endif

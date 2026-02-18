@@ -1,0 +1,80 @@
+
+#ifndef __GNET_FACTIONINVITE_HPP
+#define __GNET_FACTIONINVITE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "factioninvitearg"
+#include "factioninviteres"
+#include "dbfactionjoin.hrp"
+#include "dbfamilyjoin.hrp"
+#include "factionrecruit_re.hpp"
+
+namespace GNET
+{
+
+class FactionInvite : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "factioninvite"
+#undef	RPC_BASECLASS
+	int localsid, linksid;
+	int familyid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FactionInviteArg *arg = (FactionInviteArg *)argument;
+		FactionInviteRes *res = (FactionInviteRes *)result;
+		DEBUG_PRINT("FactionInvite, retcode=%d scale=%d", res->retcode, arg->scale);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			switch (arg->scale)
+			{
+			case 1: //family
+				{
+				Thread::RWLock::WRScoped l(UserContainer::GetInstance().GetLocker());
+				PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->invitee);
+				if (NULL==pinfo) 
+					return;
+				if (pinfo->familyid)
+					return;
+				DBFamilyJoin* rpc = (DBFamilyJoin*) Rpc::Call( RPC_DBFAMILYJOIN,
+					DBFamilyJoinArg(arg->factionid, arg->invitee,pinfo->level,pinfo->occupation));
+				rpc->roleid = arg->roleid;
+				GameDBClient::GetInstance()->SendProtocol(rpc);
+				}
+				break;
+			default:
+				{
+				FamilyInfo * family = FamilyManager::Instance()->Find(familyid);
+				if (!family || family->info.factionid)
+					return;
+				DBFactionJoin* rpc = (DBFactionJoin*) Rpc::Call( RPC_DBFACTIONJOIN,
+						DBFactionJoinArg(arg->factionid, familyid));
+				rpc->roleid = arg->roleid;
+				GameDBClient::GetInstance()->SendProtocol(rpc);
+				}
+				break;
+			}
+		}
+		else
+		{
+			GDeliveryServer::GetInstance()->Send(linksid, FactionRecruit_Re(ERR_FC_JOIN_REFUSE,arg->factionid,
+				arg->invitee, arg->roleid, 0, 0, Octets(), arg->scale, localsid));
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

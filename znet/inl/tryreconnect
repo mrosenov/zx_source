@@ -1,0 +1,47 @@
+	public:
+		int roleid;
+		int userid;
+		Octets checksum;
+		int loginip;
+		int localsid;
+		enum { PROTOCOL_TYPE = PROTOCOL_TRYRECONNECT };
+	public:
+		TryReconnect() { type = PROTOCOL_TRYRECONNECT; }
+		TryReconnect(void*) : Protocol(PROTOCOL_TRYRECONNECT) { }
+		TryReconnect (int l_roleid,int l_userid,const Octets& l_checksum,
+			int l_loginip = 0,int l_localsid = 0)
+			 : roleid(l_roleid),userid(l_userid),checksum(l_checksum)
+			,loginip(l_loginip),localsid(l_localsid)
+		{
+			type = PROTOCOL_TRYRECONNECT;
+		}
+
+		TryReconnect(const TryReconnect &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),userid(rhs.userid),checksum(rhs.checksum)
+			,loginip(rhs.loginip),localsid(rhs.localsid) { }
+
+		GNET::Protocol *Clone() const { return new TryReconnect(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << userid;
+			os << checksum;
+			os << loginip;
+			os << localsid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> userid;
+			os >> checksum;
+			os >> loginip;
+			os >> localsid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

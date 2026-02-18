@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCHANGEFACTIONNAME_HPP
+#define __GNET_DBCHANGEFACTIONNAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbchangefactionnamearg"
+#include "dbchangefactionnameres"
+
+namespace GNET
+{
+
+class DBChangeFactionname : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbchangefactionname"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBChangeFactionnameArg *arg = (DBChangeFactionnameArg *)argument;
+		// DBChangeFactionnameRes *res = (DBChangeFactionnameRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBChangeFactionnameArg *arg = (DBChangeFactionnameArg *)argument;
+		// DBChangeFactionnameRes *res = (DBChangeFactionnameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

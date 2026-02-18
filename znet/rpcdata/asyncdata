@@ -1,0 +1,69 @@
+#ifndef __GNET_ASYNCDATA_RPCDATA
+#define __GNET_ASYNCDATA_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class AsyncData : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		Octets data;
+		int result;
+
+	public:
+		AsyncData (int l_roleid = 0,const Octets& l_data = Octets(),int l_result = 0)
+			: roleid(l_roleid),data(l_data),result(l_result)
+		{
+		}
+
+		AsyncData(const AsyncData &rhs)
+			: roleid(rhs.roleid),data(rhs.data),result(rhs.result) { }
+
+		Rpc::Data *Clone() const { return new AsyncData(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const AsyncData *r = dynamic_cast<const AsyncData *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				data = r->data;
+				result = r->result;
+			}
+			return *this;
+		}
+
+		AsyncData& operator = (const AsyncData &rhs)
+		{
+			const AsyncData *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				data = r->data;
+				result = r->result;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << data;
+			os << result;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> data;
+			os >> result;
+			return os;
+		}
+
+	};
+};
+#endif

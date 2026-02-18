@@ -1,0 +1,76 @@
+#ifndef __GNET_DBSNSGETMESSAGERES_RPCDATA
+#define __GNET_DBSNSGETMESSAGERES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gsnsmessage"
+
+namespace GNET
+{
+	class DBSNSGetMessageRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GSNSMessageVector messages;
+		char message_type;
+		int message_id;
+
+	public:
+		DBSNSGetMessageRes (const GSNSMessageVector& l_messages = GSNSMessageVector(),char l_message_type = 0,int l_message_id = 0)
+			: messages(l_messages),message_type(l_message_type),message_id(l_message_id)
+		{
+		}
+
+		DBSNSGetMessageRes(const DBSNSGetMessageRes &rhs)
+			: retcode(rhs.retcode),messages(rhs.messages),message_type(rhs.message_type),
+			message_id(rhs.message_id) { }
+
+		Rpc::Data *Clone() const { return new DBSNSGetMessageRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSNSGetMessageRes *r = dynamic_cast<const DBSNSGetMessageRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				messages = r->messages;
+				message_type = r->message_type;
+				message_id = r->message_id;
+			}
+			return *this;
+		}
+
+		DBSNSGetMessageRes& operator = (const DBSNSGetMessageRes &rhs)
+		{
+			const DBSNSGetMessageRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				messages = r->messages;
+				message_type = r->message_type;
+				message_id = r->message_id;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << messages;
+			os << message_type;
+			os << message_id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> messages;
+			os >> message_type;
+			os >> message_id;
+			return os;
+		}
+
+	};
+};
+#endif

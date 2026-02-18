@@ -1,0 +1,64 @@
+#ifndef __GNET_GUNIQUEGETITEMRES_RPCDATA
+#define __GNET_GUNIQUEGETITEMRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GUniqueGetItemRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int itemid;
+
+	public:
+		GUniqueGetItemRes (int l_retcode = 0,int l_itemid = 0)
+			: retcode(l_retcode),itemid(l_itemid)
+		{
+		}
+
+		GUniqueGetItemRes(const GUniqueGetItemRes &rhs)
+			: retcode(rhs.retcode),itemid(rhs.itemid) { }
+
+		Rpc::Data *Clone() const { return new GUniqueGetItemRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GUniqueGetItemRes *r = dynamic_cast<const GUniqueGetItemRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				itemid = r->itemid;
+			}
+			return *this;
+		}
+
+		GUniqueGetItemRes& operator = (const GUniqueGetItemRes &rhs)
+		{
+			const GUniqueGetItemRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				itemid = r->itemid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << itemid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> itemid;
+			return os;
+		}
+
+	};
+};
+#endif

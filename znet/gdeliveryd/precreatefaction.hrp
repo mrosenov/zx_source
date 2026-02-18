@@ -1,0 +1,79 @@
+
+#ifndef __GNET_PRECREATEFACTION_HPP
+#define __GNET_PRECREATEFACTION_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#ifdef USE_BDB
+#include "dbbuffer.h"
+#endif
+#include "precreatefactionarg"
+#include "precreatefactionres"
+#include "factioncreate_re.hpp"
+#include "localmacro.h"
+
+namespace GNET
+{
+
+class PreCreateFaction : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "precreatefaction"
+#undef	RPC_BASECLASS
+	int roleid, gamesid, linksid, localsid;
+	unsigned char level, occupation;
+	GMailSyncData syncdata;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void SendError(int errcode)
+	{
+		FactionCreate_Re res;
+		res.retcode = errcode;
+		res.localsid = localsid;
+		res.scale = 0;
+		GDeliveryServer::GetInstance()->Send(linksid, res);
+
+		GMailEndSync sync(0,errcode,roleid);
+		GProviderServer::GetInstance()->Send( gamesid, sync);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PreCreateFactionArg *arg = (PreCreateFactionArg *)argument;
+		PreCreateFactionRes *res = (PreCreateFactionRes *)result;
+		DEBUG_PRINT("PreCreateFaction, retcode=%d, factionid=%d", res->retcode, res->factionid);
+
+		if(res->retcode == ERR_SUCCESS)
+		{
+			DBFactionAddArg rpcarg(roleid, res->factionid, level, occupation, arg->factionname);
+			Utility::SwapSyncData(rpcarg.syncdata, syncdata);
+
+			DBFactionAdd* rpc = (DBFactionAdd*) Rpc::Call( RPC_DBFACTIONADD,rpcarg);
+			rpc->gamesid = gamesid;
+			rpc->linksid = linksid;
+			rpc->localsid = localsid;
+			GameDBClient::GetInstance()->SendProtocol(rpc);
+		}
+		else
+		{
+			if(res->retcode==ERR_DUPLICATRECORD)
+				SendError(ERR_FC_CREATE_DUP);
+			else
+				SendError(ERR_FC_OUTOFSERVICE);
+		}
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		Log::log( LOG_ERR,"precreatefaction: timeout. roleid=%d", roleid);
+		SendError(ERR_FC_OP_TIMEOUT);
+	}
+
+};
+
+};
+#endif

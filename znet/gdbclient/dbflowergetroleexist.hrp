@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFLOWERGETROLEEXIST_HPP
+#define __GNET_DBFLOWERGETROLEEXIST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbflowergetroleexistarg"
+#include "dbflowergetroleexistres"
+
+namespace GNET
+{
+
+class DBFlowerGetRoleExist : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbflowergetroleexist"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFlowerGetRoleExistArg *arg = (DBFlowerGetRoleExistArg *)argument;
+		// DBFlowerGetRoleExistRes *res = (DBFlowerGetRoleExistRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFlowerGetRoleExistArg *arg = (DBFlowerGetRoleExistArg *)argument;
+		// DBFlowerGetRoleExistRes *res = (DBFlowerGetRoleExistRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

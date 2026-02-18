@@ -1,0 +1,101 @@
+#ifndef __GNET_DBSIEGECHALLENGEARG_RPCDATA
+#define __GNET_DBSIEGECHALLENGEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBSiegeChallengeArg : public GNET::Rpc::Data
+	{
+	public:
+		int battle_id;
+		int roleid;
+		int attacker;
+		int master;
+		char day;
+		int begin_time;
+		int attach_obj_id;
+		GMailSyncData syncdata;
+
+	public:
+		DBSiegeChallengeArg (int l_battle_id = 0,int l_roleid = 0,int l_attacker = 0
+			,int l_master = 0,char l_day = 0,int l_begin_time = 0
+			,int l_attach_obj_id = 0,const GMailSyncData& l_syncdata = GMailSyncData())
+			: battle_id(l_battle_id),roleid(l_roleid),attacker(l_attacker)
+			,master(l_master),day(l_day),begin_time(l_begin_time)
+			,attach_obj_id(l_attach_obj_id),syncdata(l_syncdata)
+		{
+		}
+
+		DBSiegeChallengeArg(const DBSiegeChallengeArg &rhs)
+			: battle_id(rhs.battle_id),roleid(rhs.roleid),attacker(rhs.attacker),
+			master(rhs.master),day(rhs.day),begin_time(rhs.begin_time),
+			attach_obj_id(rhs.attach_obj_id),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBSiegeChallengeArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegeChallengeArg *r = dynamic_cast<const DBSiegeChallengeArg *>(&rhs);
+			if (r && r != this)
+			{
+				battle_id = r->battle_id;
+				roleid = r->roleid;
+				attacker = r->attacker;
+				master = r->master;
+				day = r->day;
+				begin_time = r->begin_time;
+				attach_obj_id = r->attach_obj_id;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBSiegeChallengeArg& operator = (const DBSiegeChallengeArg &rhs)
+		{
+			const DBSiegeChallengeArg *r = &rhs;
+			if (r && r != this)
+			{
+				battle_id = r->battle_id;
+				roleid = r->roleid;
+				attacker = r->attacker;
+				master = r->master;
+				day = r->day;
+				begin_time = r->begin_time;
+				attach_obj_id = r->attach_obj_id;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << battle_id;
+			os << roleid;
+			os << attacker;
+			os << master;
+			os << day;
+			os << begin_time;
+			os << attach_obj_id;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> battle_id;
+			os >> roleid;
+			os >> attacker;
+			os >> master;
+			os >> day;
+			os >> begin_time;
+			os >> attach_obj_id;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

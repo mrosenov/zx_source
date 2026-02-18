@@ -1,0 +1,181 @@
+#ifndef __GNET_GKINGDOMINFO_RPCDATA
+#define __GNET_GKINGDOMINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gkingdomfunctionary"
+#include "gkingdomfunctionary"
+#include "gkingdomperiodlimit"
+#include "gkingdomhistory"
+
+namespace GNET
+{
+	class GKingdomInfo : public GNET::Rpc::Data
+	{
+	public:
+		GKingdomFunctionary king;
+		char kinggender;
+		GKingdomFunctionary queen;
+		Octets kingdomname;
+		int kingfaction;
+		Octets kingfacname;
+		Octets announce;
+		int points;
+		int win_times;
+		int occupy_time;
+		char reserved;
+		std::vector<GKingdomFunctionary> functionaries;
+		std::vector<GKingdomPeriodLimit> limits;
+		std::vector<GKingdomHistory> history;
+		int taskstatus;
+		int tasktype;
+		int taskissuetime;
+		int taskpoints;
+		int reward_mask;
+		int reserved6;
+		int reserved7;
+
+	public:
+		GKingdomInfo (GKingdomFunctionary l_king = GKingdomFunctionary(),char l_kinggender = 0,GKingdomFunctionary l_queen = GKingdomFunctionary()
+			,Octets l_kingdomname = Octets(),int l_kingfaction = 0,Octets l_kingfacname = Octets()
+			,Octets l_announce = Octets(),int l_points = 0,int l_win_times = 0
+			,int l_occupy_time = 0,char l_reserved = 0,const std::vector<GKingdomFunctionary>& l_functionaries = std::vector<GKingdomFunctionary>()
+			,const std::vector<GKingdomPeriodLimit>& l_limits = std::vector<GKingdomPeriodLimit>(),const std::vector<GKingdomHistory>& l_history = std::vector<GKingdomHistory>(),int l_taskstatus = 0
+			,int l_tasktype = 0,int l_taskissuetime = 0,int l_taskpoints = 0
+			,int l_reward_mask = 0,int l_reserved6 = 0,int l_reserved7 = 0)
+			: king(l_king),kinggender(l_kinggender),queen(l_queen)
+			,kingdomname(l_kingdomname),kingfaction(l_kingfaction),kingfacname(l_kingfacname)
+			,announce(l_announce),points(l_points),win_times(l_win_times)
+			,occupy_time(l_occupy_time),reserved(l_reserved),functionaries(l_functionaries)
+			,limits(l_limits),history(l_history),taskstatus(l_taskstatus)
+			,tasktype(l_tasktype),taskissuetime(l_taskissuetime),taskpoints(l_taskpoints)
+			,reward_mask(l_reward_mask),reserved6(l_reserved6),reserved7(l_reserved7)
+		{
+		}
+
+		GKingdomInfo(const GKingdomInfo &rhs)
+			: king(rhs.king),kinggender(rhs.kinggender),queen(rhs.queen),
+			kingdomname(rhs.kingdomname),kingfaction(rhs.kingfaction),kingfacname(rhs.kingfacname),
+			announce(rhs.announce),points(rhs.points),win_times(rhs.win_times),
+			occupy_time(rhs.occupy_time),reserved(rhs.reserved),functionaries(rhs.functionaries),
+			limits(rhs.limits),history(rhs.history),taskstatus(rhs.taskstatus),
+			tasktype(rhs.tasktype),taskissuetime(rhs.taskissuetime),taskpoints(rhs.taskpoints),
+			reward_mask(rhs.reward_mask),reserved6(rhs.reserved6),reserved7(rhs.reserved7) { }
+
+		Rpc::Data *Clone() const { return new GKingdomInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GKingdomInfo *r = dynamic_cast<const GKingdomInfo *>(&rhs);
+			if (r && r != this)
+			{
+				king = r->king;
+				kinggender = r->kinggender;
+				queen = r->queen;
+				kingdomname = r->kingdomname;
+				kingfaction = r->kingfaction;
+				kingfacname = r->kingfacname;
+				announce = r->announce;
+				points = r->points;
+				win_times = r->win_times;
+				occupy_time = r->occupy_time;
+				reserved = r->reserved;
+				functionaries = r->functionaries;
+				limits = r->limits;
+				history = r->history;
+				taskstatus = r->taskstatus;
+				tasktype = r->tasktype;
+				taskissuetime = r->taskissuetime;
+				taskpoints = r->taskpoints;
+				reward_mask = r->reward_mask;
+				reserved6 = r->reserved6;
+				reserved7 = r->reserved7;
+			}
+			return *this;
+		}
+
+		GKingdomInfo& operator = (const GKingdomInfo &rhs)
+		{
+			const GKingdomInfo *r = &rhs;
+			if (r && r != this)
+			{
+				king = r->king;
+				kinggender = r->kinggender;
+				queen = r->queen;
+				kingdomname = r->kingdomname;
+				kingfaction = r->kingfaction;
+				kingfacname = r->kingfacname;
+				announce = r->announce;
+				points = r->points;
+				win_times = r->win_times;
+				occupy_time = r->occupy_time;
+				reserved = r->reserved;
+				functionaries = r->functionaries;
+				limits = r->limits;
+				history = r->history;
+				taskstatus = r->taskstatus;
+				tasktype = r->tasktype;
+				taskissuetime = r->taskissuetime;
+				taskpoints = r->taskpoints;
+				reward_mask = r->reward_mask;
+				reserved6 = r->reserved6;
+				reserved7 = r->reserved7;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << king;
+			os << kinggender;
+			os << queen;
+			os << kingdomname;
+			os << kingfaction;
+			os << kingfacname;
+			os << announce;
+			os << points;
+			os << win_times;
+			os << occupy_time;
+			os << reserved;
+			os << functionaries;
+			os << limits;
+			os << history;
+			os << taskstatus;
+			os << tasktype;
+			os << taskissuetime;
+			os << taskpoints;
+			os << reward_mask;
+			os << reserved6;
+			os << reserved7;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> king;
+			os >> kinggender;
+			os >> queen;
+			os >> kingdomname;
+			os >> kingfaction;
+			os >> kingfacname;
+			os >> announce;
+			os >> points;
+			os >> win_times;
+			os >> occupy_time;
+			os >> reserved;
+			os >> functionaries;
+			os >> limits;
+			os >> history;
+			os >> taskstatus;
+			os >> tasktype;
+			os >> taskissuetime;
+			os >> taskpoints;
+			os >> reward_mask;
+			os >> reserved6;
+			os >> reserved7;
+			return os;
+		}
+
+	};
+};
+#endif

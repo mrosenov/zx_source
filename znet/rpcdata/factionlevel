@@ -1,0 +1,64 @@
+#ifndef __GNET_FACTIONLEVEL_RPCDATA
+#define __GNET_FACTIONLEVEL_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class FactionLevel : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int fid;
+		char level;
+
+	public:
+		FactionLevel (unsigned int l_fid = 0,char l_level = 0)
+			: fid(l_fid),level(l_level)
+		{
+		}
+
+		FactionLevel(const FactionLevel &rhs)
+			: fid(rhs.fid),level(rhs.level) { }
+
+		Rpc::Data *Clone() const { return new FactionLevel(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FactionLevel *r = dynamic_cast<const FactionLevel *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				level = r->level;
+			}
+			return *this;
+		}
+
+		FactionLevel& operator = (const FactionLevel &rhs)
+		{
+			const FactionLevel *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				level = r->level;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << level;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> level;
+			return os;
+		}
+
+	};
+};
+#endif

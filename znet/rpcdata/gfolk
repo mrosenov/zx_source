@@ -1,0 +1,106 @@
+#ifndef __GNET_GFOLK_RPCDATA
+#define __GNET_GFOLK_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GFolk : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int rid;
+		Octets name;
+		Octets nickname;
+		unsigned char level;
+		unsigned char title;
+		unsigned char occupation;
+		int contribution;
+		int jointime;
+		int devotion;
+
+	public:
+		GFolk (unsigned int l_rid = 0,const Octets& l_name = Octets(0),const Octets& l_nickname = Octets(0)
+			,unsigned char l_level = 0,unsigned char l_title = 0,unsigned char l_occupation = 0
+			,int l_contribution = 0,int l_jointime = 0,int l_devotion = 0)
+			: rid(l_rid),name(l_name),nickname(l_nickname)
+			,level(l_level),title(l_title),occupation(l_occupation)
+			,contribution(l_contribution),jointime(l_jointime),devotion(l_devotion)
+		{
+		}
+
+		GFolk(const GFolk &rhs)
+			: rid(rhs.rid),name(rhs.name),nickname(rhs.nickname),
+			level(rhs.level),title(rhs.title),occupation(rhs.occupation),
+			contribution(rhs.contribution),jointime(rhs.jointime),devotion(rhs.devotion) { }
+
+		Rpc::Data *Clone() const { return new GFolk(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFolk *r = dynamic_cast<const GFolk *>(&rhs);
+			if (r && r != this)
+			{
+				rid = r->rid;
+				name = r->name;
+				nickname = r->nickname;
+				level = r->level;
+				title = r->title;
+				occupation = r->occupation;
+				contribution = r->contribution;
+				jointime = r->jointime;
+				devotion = r->devotion;
+			}
+			return *this;
+		}
+
+		GFolk& operator = (const GFolk &rhs)
+		{
+			const GFolk *r = &rhs;
+			if (r && r != this)
+			{
+				rid = r->rid;
+				name = r->name;
+				nickname = r->nickname;
+				level = r->level;
+				title = r->title;
+				occupation = r->occupation;
+				contribution = r->contribution;
+				jointime = r->jointime;
+				devotion = r->devotion;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << rid;
+			os << name;
+			os << nickname;
+			os << level;
+			os << title;
+			os << occupation;
+			os << contribution;
+			os << jointime;
+			os << devotion;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> rid;
+			os >> name;
+			os >> nickname;
+			os >> level;
+			os >> title;
+			os >> occupation;
+			os >> contribution;
+			os >> jointime;
+			os >> devotion;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<GFolk>	GFolkVector;
+};
+#endif

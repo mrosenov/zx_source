@@ -1,0 +1,64 @@
+#ifndef __GNET_DBFUNGAMEGETSCORERES_RPCDATA
+#define __GNET_DBFUNGAMEGETSCORERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFunGameGetScoreRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		Octets game_score;
+
+	public:
+		DBFunGameGetScoreRes (const Octets& l_game_score = Octets())
+			: game_score(l_game_score)
+		{
+		}
+
+		DBFunGameGetScoreRes(const DBFunGameGetScoreRes &rhs)
+			: retcode(rhs.retcode),game_score(rhs.game_score) { }
+
+		Rpc::Data *Clone() const { return new DBFunGameGetScoreRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFunGameGetScoreRes *r = dynamic_cast<const DBFunGameGetScoreRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				game_score = r->game_score;
+			}
+			return *this;
+		}
+
+		DBFunGameGetScoreRes& operator = (const DBFunGameGetScoreRes &rhs)
+		{
+			const DBFunGameGetScoreRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				game_score = r->game_score;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << game_score;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> game_score;
+			return os;
+		}
+
+	};
+};
+#endif

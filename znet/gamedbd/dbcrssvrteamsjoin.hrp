@@ -1,0 +1,179 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSJOIN_HPP
+#define __GNET_DBCRSSVRTEAMSJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsjoinarg"
+#include "dbcrssvrteamsjoinres"
+
+#include "gcrssvrteamsrole"
+#include "gcrssvrteamsdata"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsjoin"
+#undef	RPC_BASECLASS
+
+	bool IsLimitOccup(GCrssvrTeamsData& crssvrteams, unsigned char occup)
+	{
+		typedef std::map<unsigned char/*occup*/, int/*count*/> OccupCount;
+		OccupCount occup_count;
+
+		std::vector<GCrssvrTeamsRole>::iterator ck_it_roles = crssvrteams.roles.begin(), ck_ie_roles=crssvrteams.roles.end();
+		for(;ck_it_roles!=ck_ie_roles;++ck_it_roles)
+		{
+			unsigned char occup = (*ck_it_roles).occupation;
+			occup_count[occup]++;
+			LOG_TRACE("DBCrssvrTeamsJoin, tmp occup=%d, occup_count=%d", occup, occup_count[occup]);
+		}
+
+		LOG_TRACE("DBCrssvrTeamsJoin, occup=%d, occup_count=%d", occup, occup_count[occup]);
+		if(occup_count[occup] + 1 > OCCUPATION_PLAYER_LIMIT)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsJoinArg *arg = (DBCrssvrTeamsJoinArg *)argument;
+		DBCrssvrTeamsJoinRes *res = (DBCrssvrTeamsJoinRes *)result;
+
+		LOG_TRACE("DBCrssvrTeamsJoin, teamid=%d, invitee=%d", arg->teamid, arg->roleid);
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kteamid;
+		try
+		{
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				if(arg->teamid == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+
+				GCrssvrTeamsData crssvrteams;
+				GRoleBase base;
+
+				krole << arg->roleid;
+				kteamid << arg->teamid;
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> crssvrteams;
+				}
+
+				LOG_TRACE("DBCrssvrTeamsJoin, crssvrteams.info.teamid=%d", crssvrteams.info.teamid);
+				if(crssvrteams.info.teamid <= 0)
+				{
+					LOG_TRACE("DBCrssvrTeamsJoin teamid=%d:roleid=%d NOT EXSIT", arg->teamid, arg->roleid);
+					res->retcode = ERR_CRSSVRTEAMS_NOTEXIST;
+					return;
+				}
+
+				if(IsLimitOccup(crssvrteams, arg->info.occupation))
+				{
+					LOG_TRACE("DBCrssvrTeamsJoin teamid=%d:roleid=%d occup=%d is limit", arg->teamid, arg->roleid, arg->info.occupation);
+					res->retcode = ERR_CRSSVRTEAMS_JOIN_OCCUP_CONT;
+					return;
+				}
+
+				std::vector<GCrssvrTeamsRole>::iterator ck_it_roles = crssvrteams.roles.begin(), ck_ie_roles=crssvrteams.roles.end();
+				for(;ck_it_roles!=ck_ie_roles;++ck_it_roles)
+				{
+					if (arg->roleid == ck_it_roles->roleid)
+					{
+						LOG_TRACE("DBCrssvrTeamsJoin find roleid=%d, teamid=%d", arg->roleid, arg->teamid);
+						res->retcode = ERR_CRSSVRTEAMS_JOIN_INVITEE_IN;
+						return;
+					}
+				}
+
+				if(crssvrteams.roles.size() >= CRSSVRTEAMS_MAX_ROLES)
+				{
+					LOG_TRACE("DBCrssvrTeamsJoin teamid=%d:roleid=%d role.size=%d is full", arg->teamid, arg->roleid, crssvrteams.roles.size());
+					res->retcode = ERR_CRSSVRTEAMS_FULL;
+					return;
+				}
+
+				Marshal::OctetsStream(pbase->find(krole, txn )) >> base;
+				base.datagroup[KEY_DATAGOURP_ROLE_CT_TEAMID] = arg->teamid;
+				std::map<int, int>::iterator it_group = base.datagroup.find(KEY_DATAGOURP_ROLE_CT_SCORE);
+				if(it_group == base.datagroup.end())
+				{
+					// 新战队玩家
+					base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE] = CRSSVRTEAMS_INIT_ROLE_SCORE;
+					base.datagroup[KEY_DATAGOURP_ROLE_CT_MAX_SCORE] = CRSSVRTEAMS_INIT_ROLE_SCORE;
+					base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE_UPDATETIME] = Timer::GetTime();
+					base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME] = Timer::GetTime();
+					// 新创建队伍的玩家，只需初始化这两个，余下默认为0就行了
+				}
+
+				// 新加入队伍的玩家，只需修改队伍积分，别的都集成之前的
+				arg->info.score = base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE];
+				arg->info.data_score.ct_max_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_MAX_SCORE];
+				arg->info.data_score.ct_score_updatetime = base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE_UPDATETIME];
+				arg->info.data_score.ct_last_max_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_MAX_SCORE];
+				arg->info.ct_last_punish_time = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME];
+
+				LOG_TRACE("DBCrssvrTeamsJoin, roleid=%d, teamid=%d, info.score=%d, datagroup.score=%d", arg->roleid, crssvrteams.info.teamid, arg->info.score, base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE]);
+
+				std::vector<GCrssvrTeamsRole>::iterator it_roles = crssvrteams.roles.begin(), ie_roles=crssvrteams.roles.end();
+				for(;it_roles!=ie_roles;++it_roles)
+				{
+					if (arg->roleid == it_roles->roleid)
+						break;
+				}
+				if(it_roles==ie_roles)
+					crssvrteams.roles.push_back(arg->info);	
+
+				Log::formatlog("DBCrssvrTeamsJoin","teamid=%d:roleid=%d", arg->teamid, arg->roleid);
+
+				pcrssvrteams->insert( kteamid, Marshal::OctetsStream()<<crssvrteams, txn );
+				pbase->insert( krole, Marshal::OctetsStream()<< base, txn );
+				res->retcode = ERR_SUCCESS;
+				res->info = arg->info;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrssvrTeamsJoin, teamid=%d, roleid=%d what=%s.",arg->teamid,arg->roleid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsJoinArg *arg = (DBCrssvrTeamsJoinArg *)argument;
+		// DBCrssvrTeamsJoinRes *res = (DBCrssvrTeamsJoinRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

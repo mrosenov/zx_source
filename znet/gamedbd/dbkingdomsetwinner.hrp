@@ -1,0 +1,208 @@
+
+#ifndef __GNET_DBKINGDOMSETWINNER_HPP
+#define __GNET_DBKINGDOMSETWINNER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomsetwinnerarg"
+#include "dbkingdomsetwinnerres"
+
+namespace GNET
+{
+
+class DBKingdomSetWinner : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomsetwinner"
+#undef	RPC_BASECLASS
+
+#define KINGDOM_POINTS_INIT 2000
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingdomSetWinnerArg *arg = (DBKingdomSetWinnerArg *)argument;
+		DBKingdomSetWinnerRes *res = (DBKingdomSetWinnerRes *)result;
+		GKingdomInfo data;
+		GFactionInfo faction;
+		GRoleBase king;
+		try
+		{
+			StorageEnv::Storage * pkingdom = StorageEnv::GetStorage("kingdom");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+			StorageEnv::Storage * pmail = StorageEnv::GetStorage("mailbox");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream key, value;
+			try{
+				key << 0;
+				Marshal::OctetsStream(pkingdom->find(key, txn)) >> data;
+				int old_kingfac = data.kingfaction;
+				int old_king = data.king.roleid;
+				int old_points = data.points;
+				if (arg->result == KINGDOM_DEFENDER_WIN)
+				{
+					if (data.kingfaction != 0)
+						data.win_times++;
+				}
+				else if (arg->result == KINGDOM_ATTACKER_WIN)
+				{
+					if (data.kingfaction != 0 && arg->win_faction == 0) //表示老国王退位
+					{
+						//std::vector<GKingdomPeriodLimit> limits = data.limits; //limits 信息也保留了; limits 信息清空 20130513
+						std::vector<GKingdomHistory> history = data.history;
+						//将目前任务已经赢得的国家积分结算给老国王
+						history.push_back(GKingdomHistory(data.kingfaction, data.points+arg->task_points, data.win_times));
+						int taskstatus = data.taskstatus;
+						int tasktype = data.tasktype; //发布的任务信息继续生效
+						int taskissuetime = data.taskissuetime;
+						data = GKingdomInfo();
+						data.history = history;//清空国家信息, 还原历史信息
+						//data.limits = limits;
+						data.taskstatus = taskstatus;
+						data.tasktype = tasktype;
+						data.taskissuetime = taskissuetime;
+					}
+					if (arg->win_faction != 0) //表示新国王上位 二者有大概一小时的时间差
+					{
+						if (arg->win_faction == data.kingfaction)
+						{
+							Log::log(LOG_ERR, "kingdom set new king %d repeat??", arg->win_faction);
+							res->retcode = -1;
+							return;
+						}
+						if (data.kingfaction != 0)//老国王还没退位 怎么新国王就上任了?
+							Log::log(LOG_ERR, "new kingfaction(%d) is about to be set, but old kingfaction(%d) is still on, oldpoints %d",
+									arg->win_faction, data.kingfaction, data.points);
+						Marshal::OctetsStream(pfaction->find(Marshal::OctetsStream()<<arg->win_faction, txn)) >> faction;
+						Marshal::OctetsStream(pbase->find(Marshal::OctetsStream()<<faction.master, txn)) >> king;
+						data.king = GKingdomFunctionary(king.id, KINGDOM_TITLE_KING, king.name, KING_PRIVILEGE_INIT);
+						Marshal::OctetsStream king_mail_os;
+						GMailBox kingbox;
+						if (pmail->find(Marshal::OctetsStream()<<faction.master, king_mail_os, txn))
+						{
+							try {king_mail_os >> kingbox;}
+							catch(...) { Log::log(LOG_ERR, "king %d mailbox unmarshal error", faction.master); }
+						}
+						if (MailSender::DBSendObj(kingbox, 55930, 19, 1, 1, _MST_KINGDOM_AWARD))
+							pmail->insert(Marshal::OctetsStream()<<faction.master, Marshal::OctetsStream()<<kingbox, txn);
+						else
+							Log::log(LOG_ERR, "send king %d award fail", faction.master);
+
+						data.queen = GKingdomFunctionary();
+						if (king.spouse)
+						{
+							Marshal::OctetsStream queen_os;
+							if (pbase->find(Marshal::OctetsStream()<<king.spouse, queen_os, txn))
+							{
+								GRoleBase queen;
+								queen_os >> queen;
+								data.queen = GKingdomFunctionary(queen.id, KINGDOM_TITLE_QUEEN, queen.name, QUEEN_PRIVILEGE_INIT);
+								Marshal::OctetsStream queen_mail_os;
+								GMailBox queenbox;
+								if (pmail->find(Marshal::OctetsStream()<<queen.id, queen_mail_os, txn))
+								{
+									try {queen_mail_os >> queenbox;}
+									catch(...) { Log::log(LOG_ERR, "queen %d mailbox unmarshal error", queen.id); }
+								}
+								if (MailSender::DBSendObj(queenbox, 55931, 19, 1, 1, _MST_KINGDOM_AWARD))
+									pmail->insert(Marshal::OctetsStream()<<queen.id, Marshal::OctetsStream()<<queenbox, txn);
+								else
+									Log::log(LOG_ERR, "send queen %d award fail", queen.id);
+							}
+						}
+						data.kinggender = king.gender;
+						data.kingdomname.clear();
+						data.kingfaction = arg->win_faction;
+						data.kingfacname = faction.name;
+						data.announce.clear();
+						data.points = KINGDOM_POINTS_INIT;
+						const std::vector<GKingdomHistory> & history = data.history;
+						std::vector<GKingdomHistory>::const_iterator it, ite = history.end();
+						for (it = history.begin(); it != ite; ++it)
+						{
+							if (it->faction == arg->win_faction)
+								data.points = it->points; //取最后一次剩余的积分
+						}
+						if (data.points < KINGDOM_POINTS_INIT)
+							data.points = KINGDOM_POINTS_INIT;
+						data.win_times = 1;
+						data.occupy_time = Timer::GetTime();
+						data.reward_mask = 0;
+						data.functionaries.clear();
+//						data.limits.clear();
+
+
+						{
+							int send_count = 0;
+							std::vector<FamilyId>::iterator fit = faction.member.begin(), fite=faction.member.end();
+							for(;fit!=fite;++fit)
+							{
+								Marshal::OctetsStream family_os;
+								if (pfamily->find(Marshal::OctetsStream()<<fit->fid, family_os, txn))
+								{
+									GFamily family;
+									try {family_os >> family;}
+									catch(...) { Log::log(LOG_ERR, "kingdom family %d unmarshal error", fit->fid); }
+									for (GFolkVector::iterator mit = family.member.begin(); mit != family.member.end(); ++mit)
+									{
+										Marshal::OctetsStream member_mail_os;
+										GMailBox memberbox;
+										if (pmail->find(Marshal::OctetsStream()<<mit->rid, member_mail_os, txn))
+										{
+											try {member_mail_os >> memberbox;}
+											catch(...) { Log::log(LOG_ERR, "kingdom member %d mailbox unmarshal error", mit->rid); }
+										}
+										if (MailSender::DBSendObj(memberbox, 55934, 19, 1, 1, _MST_KINGDOM_AWARD))
+										{
+											pmail->insert(Marshal::OctetsStream()<<mit->rid, Marshal::OctetsStream()<<memberbox, txn);
+											send_count++;
+										}
+										else
+											Log::log(LOG_ERR, "send kingdom member %d award fail", mit->rid);
+									}
+								}
+								else
+									Log::log(LOG_ERR, "can not find kingdom family %d", fit->fid);
+							}
+							Log::formatlog("kingdom", "send %d member award", send_count);
+						}
+					}
+				}
+				res->newinfo = data;
+				pkingdom->insert(key, Marshal::OctetsStream()<<data, txn);
+				Log::formatlog("kingdom", "battle res %d, set new kingfaction %d king %d points %d win_times %d, old kingfaction %d king %d points %d task_points %d",
+						arg->result, data.kingfaction, data.king.roleid, data.points, data.win_times, old_kingfac, old_king, old_points, arg->task_points);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBKingdomSetWinner, what=%s old_king_fac %d new_king_fac %d new_king %d\n", e.what(), data.kingfaction, faction.fid, king.id);
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBKingdomSetWinnerArg *arg = (DBKingdomSetWinnerArg *)argument;
+		//DBKingdomSetWinnerRes *res = (DBKingdomSetWinnerRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

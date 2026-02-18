@@ -1,0 +1,261 @@
+
+#ifndef __GNET_GETROLEINFO_HPP
+#define __GNET_GETROLEINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "roleinfores"
+
+#include "groleinventory"
+#include "rolelist_re.hpp"
+#include "accountdelrole.hrp"
+#include "gdeliveryserver.hpp"
+#include "groledbclient.hpp"
+#include "gproviderserver.hpp"
+#include "../common/conv_charset.h"
+
+#include "forbid.hxx"
+#include "gmshutuprole.hpp"
+#include "mapforbid.h"
+#include "maplinkserver.h"
+#include "mapuser.h"
+#include "repairrolelist.hpp"
+#include "centraldeliveryclient.hpp"
+#include "centraldeliveryserver.hpp"
+#include "getremoteroleinfo.hpp"
+#include "getremoteroleinfo_re.hpp"
+
+namespace GNET
+{
+
+class GetRoleInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getroleinfo"
+#undef	RPC_BASECLASS
+	enum 
+	{
+		SOURCE_LOCAL = 0,
+		SOURCE_REMOTE = 1,
+	};
+	int source;
+	int userid;
+	int save_zoneid;
+
+	void HandleForbid(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleInfoRes *res = (RoleInfoRes *)result;
+		if (res->retcode != ERR_SUCCESS) 
+			return;
+		GRoleForbidVector& forbid=res->value.forbid;
+		int time_left=0;
+		for (size_t i=0;i<forbid.size();i++)
+		{
+			//与PlayerIdentityMatch保持一致
+			time_left=forbid[i].createtime+forbid[i].time-time(NULL);
+			if (time_left<=0) continue;
+			switch (forbid[i].type)
+			{
+				case Forbid::FBD_FORBID_TALK:
+					LinkServer::GetInstance().BroadcastProtocol(GMShutupRole(_ROLE_INVALID,_SID_INVALID,
+								res->value.id,time_left,forbid[i].reason));
+					break;
+				case Forbid::FBD_FORBID_TRADE:
+					{
+						forbid[i].time=time_left;
+						ForbidTrade::GetInstance().SetForbidTrade( res->value.id, forbid[i] );
+					break;
+					}
+				case Forbid::FBD_FORBID_SELL:
+					//send to game? or game get this by itself
+					break;
+				case Forbid::FBD_FORBID_LOGIN:
+					//add to forbid map
+					{
+						forbid[i].time=time_left;
+						ForbidRoleLogin::GetInstance().SetForbidRoleLogin(res->value.id, forbid[i]);
+					}
+					break;	
+				case Forbid::FBD_FORBID_CONSIGN:
+					{
+						forbid[i].time=time_left;
+						ForbidConsign::GetInstance().SetForbidConsign(res->value.id, forbid[i]);
+					}
+					break;
+			}
+		}
+	}
+
+	void HandleRoleList(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		RoleInfoRes *res = (RoleInfoRes *)result;
+		
+		GDeliveryServer* dsm=GDeliveryServer::GetInstance();
+		Thread::RWLock::WRScoped l(UserContainer::GetInstance().GetLocker());
+		UserInfo* user= UserContainer::GetInstance().FindUser(userid);
+		if (NULL==user) 
+			return;
+
+		if (res->retcode != ERR_SUCCESS)
+		{
+			Log::log(LOG_ERR,"gdelivery::getrole:: get role %d failed. retcode=%d\n",arg->id,res->retcode);
+			dsm->Send(user->linksid,RoleList_Re(ERR_ROLELIST,_HANDLE_END,userid,user->localsid,RoleInfoVector()));
+			return;
+		}
+		
+		GRoleInfo& role = res->value;
+		RoleList_Re list;
+		list.result = ERR_SUCCESS;
+		list.userid = userid;
+		list.localsid = user->localsid;
+
+		if (userid != res->userid)
+		{
+			Log::log(LOG_ERR,"gdelivery::getrole::  role %d doesn't belong user %d\n",arg->id,userid);
+			GameDBClient::GetInstance()->SendProtocol(RepairRoleList(userid, arg->id));
+
+			int next_role=user->rolelist.GetNextRole();
+			if (next_role==_HANDLE_END)
+			{
+				list.handle = _HANDLE_END;
+				dsm->Send(user->linksid,list);
+			}
+			else
+			{
+				GetRoleInfo* rpc=(GetRoleInfo*) Rpc::Call(RPC_GETROLEINFO, RoleId(LOGICUID(role.id)+next_role));
+				rpc->userid = userid;
+				rpc->source = SOURCE_LOCAL;
+				GameDBClient::GetInstance()->SendProtocol(rpc);
+			}
+			return;
+		}
+		
+		if (user->rolelist.GetRoleCount() == 0)
+			list.referrer = user->real_referrer>0?user->real_referrer:user->au_suggest_referrer;
+		else
+			list.referrer = user->real_referrer;
+
+		switch (role.delete_flag)
+		{
+		case _ROLE_STATUS_NORMAL:
+		case _ROLE_STATUS_READYDEL:
+		{
+			//LOG_TRACE("******role cache insert roleid=%d, teamid=%d", role.id, role.crssvrteams_teamid);
+			RoleInfoCache::Instance().Insert(role.id, role);
+			GRoleInfo roleinfo_chop = RoleInfoCache::ChopRoleInfo(role);
+			list.handle = (role.id%MAX_ROLE_COUNT);
+			RoleInfo info;
+			list.rolelist.add( RoleInfoCache::ConvertRoleInfo(roleinfo_chop, info));
+			dsm->Send(user->linksid,list);
+			break;
+		}
+		case _ROLE_STATUS_SELLING:
+		{
+		//	LOG_TRACE("_ROLE_STATUS_SELLING role cache insert roleid=%d", role.id);
+			RoleInfoCache::Instance().Insert(role.id, role);
+			GRoleInfo roleinfo_chop = RoleInfoCache::ChopRoleInfo(role);
+			list.handle = (role.id%MAX_ROLE_COUNT);
+			RoleInfo info;
+			list.rolelist.add( RoleInfoCache::ConvertRoleInfo(roleinfo_chop, info));
+			dsm->Send(user->linksid,list);
+			break;
+		}
+		case _ROLE_STATUS_FROZEN:
+		{
+			RoleInfoCache::Instance().Insert(role.id, role);
+			if (GDeliveryServer::GetInstance()->IsCentralDS() || !CentralDeliveryClient::GetInstance()->IsConnect())
+			{
+				GRoleInfo roleinfo_chop = RoleInfoCache::ChopRoleInfo(role);
+				list.handle = (role.id%MAX_ROLE_COUNT);
+				RoleInfo info;
+				list.rolelist.add(RoleInfoCache::ConvertRoleInfo(roleinfo_chop, info));
+				dsm->Send(user->linksid, list);
+			}
+			else
+			{
+				LOG_TRACE("Try to get roleinfo(%d) from centralDS", role.id);
+				GetRemoteRoleInfo pro(role.id, userid, GDeliveryServer::GetInstance()->zoneid);
+				CentralDeliveryClient::GetInstance()->SendProtocol(pro);
+				DelayRolelistTask::PushID(role.id);
+				Thread::HouseKeeper::AddTimerTask(new DelayRolelistTask(userid, role.id), 10);
+			}
+			break;
+		}
+		case _ROLE_STATUS_MUSTDEL:
+			{
+				DBDeleteRole* rpc=(DBDeleteRole*) Rpc::Call(RPC_DBDELETEROLE,DBDeleteRoleArg(role.id,false));
+				rpc->isbatch = false;
+				GameDBClient::GetInstance()->SendProtocol(rpc);
+			}
+			//send getnextrole to DB
+			int next_role=user->rolelist.GetNextRole();
+			if (next_role==_HANDLE_END)
+			{
+				list.handle = _HANDLE_END;
+				dsm->Send(user->linksid,list);
+			}
+			else
+			{
+				GetRoleInfo* rpc=(GetRoleInfo*) Rpc::Call(RPC_GETROLEINFO, RoleId(LOGICUID(role.id)+next_role));
+				rpc->userid = userid;
+				rpc->source = SOURCE_LOCAL;
+				GameDBClient::GetInstance()->SendProtocol(rpc);
+			}
+			break;
+		}
+
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		RoleInfoRes *res = (RoleInfoRes *)result;
+		if (source == SOURCE_LOCAL)
+		{
+			HandleForbid(argument,result,manager,sid);
+			HandleRoleList(argument,result,manager,sid);
+		}
+		else if (source == SOURCE_REMOTE)
+		{
+			if (res->userid != userid)
+			{
+				Log::log(LOG_ERR, "GetRoleInfo res->userid %d save_userid %d not equal", res->userid, userid);
+				res->retcode = -5;
+			}
+			else if (res->value.src_zoneid != save_zoneid)
+			{
+				Log::log(LOG_ERR, "GetRoleInfo res->zoneid %d save_zoneid %d not equal", res->value.src_zoneid, save_zoneid);
+				res->retcode = -6;
+			}
+			LOG_TRACE("Send GRoleInfo %d back to zoneid %d create_time %d", arg->id, save_zoneid, res->value.create_time);
+			CentralDeliveryServer::GetInstance()->DispatchProtocol(save_zoneid, GetRemoteRoleInfo_Re(res->retcode, arg->id, userid, res->value));
+		}
+		else
+			Log::log(LOG_ERR, "GetRoleInfo roleid %d unknow source %d", arg->id, source);
+	}
+
+	void OnTimeout()
+	{
+		if (source == SOURCE_LOCAL)
+		{
+			RoleId *arg = (RoleId *)argument;
+			GDeliveryServer* dsm=GDeliveryServer::GetInstance();
+			UserInfo* user=UserContainer::GetInstance().FindUser(userid);
+			if (NULL==user) 
+				return;
+			dsm->Send(user->linksid,RoleList_Re(ERR_ROLELIST,(arg->id % MAX_ROLE_COUNT),userid,user->localsid,RoleInfoVector()));
+		}
+	}
+
+};
+
+};
+#endif

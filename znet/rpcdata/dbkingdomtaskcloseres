@@ -1,0 +1,59 @@
+#ifndef __GNET_DBKINGDOMTASKCLOSERES_RPCDATA
+#define __GNET_DBKINGDOMTASKCLOSERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBKingdomTaskCloseRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DBKingdomTaskCloseRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBKingdomTaskCloseRes(const DBKingdomTaskCloseRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomTaskCloseRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomTaskCloseRes *r = dynamic_cast<const DBKingdomTaskCloseRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBKingdomTaskCloseRes& operator = (const DBKingdomTaskCloseRes &rhs)
+		{
+			const DBKingdomTaskCloseRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

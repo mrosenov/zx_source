@@ -1,0 +1,52 @@
+
+#ifndef __GNET_DBHOSTILEADD_HPP
+#define __GNET_DBHOSTILEADD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhostileaddarg"
+#include "dbhostileaddres"
+#include "hostileadd_re.hpp"
+
+namespace GNET
+{
+
+class DBHostileAdd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhostileadd"
+#undef	RPC_BASECLASS
+
+	int linksid;
+	int localsid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHostileAddArg *arg = (DBHostileAddArg *)argument;
+		DBHostileAddRes *res = (DBHostileAddRes *)result;
+		GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		DEBUG_PRINT("DBHostileAdd, retcode=%d, factionid=%d, hostile=%d", res->retcode, arg->factionid, arg->hostile);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			FactionManager::Instance()->OnAddHostile(arg->factionid, arg->hostile, res->name);
+		}
+		dsm->Send(linksid, HostileAdd_Re(res->retcode, arg->factionid, arg->hostile, localsid));
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBHostileAddArg *arg = (DBHostileAddArg *)argument;
+		DEBUG_PRINT("DBHostileAdd, timeout! factionid=%d, hostile=%d", arg->factionid, arg->hostile);
+		GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		dsm->Send(linksid, HostileAdd_Re(ERR_DATABASE_TIMEOUT, arg->factionid, arg->hostile, localsid));
+	}
+
+};
+
+};
+#endif

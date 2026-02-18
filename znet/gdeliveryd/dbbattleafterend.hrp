@@ -1,0 +1,56 @@
+
+#ifndef __GNET_DBBATTLEAFTEREND_HPP
+#define __GNET_DBBATTLEAFTEREND_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbbattleafterendarg"
+#include "dbbattleafterendres"
+
+namespace GNET
+{
+
+class DBBattleAfterEnd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbbattleafterend"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBBattleAfterEndArg * arg = (DBBattleAfterEndArg*)argument;
+		DBBattleAfterEndRes * res = (DBBattleAfterEndRes*)result;
+
+		Log::formatlog("DBBattleAfterEnd","client attacker=%d,defender=%d,attacker_pros=%d,attacker_pros_change=%d,defender_pros=%d,defender_pros_change=%d.",arg->attacker,arg->defender,arg->attacker_pros,
+                                arg->attacker_pros_change,arg->defender_pros,arg->defender_pros_change);
+		if (res->retcode != ERR_SUCCESS)
+		{
+			DBBattleAfterEnd* rpc = (DBBattleAfterEnd*)Rpc::Call( RPC_DBBATTLEAFTEREND, arg);
+			GameDBClient::GetInstance()->SendProtocol(rpc);
+			return;
+		}
+
+		//FactionManager::Instance()->OnProsperityChange(arg->attacker, arg->attacker_pros_change); 	
+		//FactionManager::Instance()->OnProsperityChange(arg->defender, arg->defender_pros_change); 	
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBBattleAfterEndArg *arg = (DBBattleAfterEndArg *)argument;
+                Log::formatlog("DBBattleAfterEnd","timeout attacker=%d,defender=%d,attacker_pros=%d,attacker_pros_change=%d,defender_pros=%d,defender_pros_change=%d.",arg->attacker,arg->defender,arg->attacker_pros,
+                                arg->attacker_pros_change,arg->defender_pros,arg->defender_pros_change); 
+		
+		DBBattleAfterEnd* rpc = (DBBattleAfterEnd*)Rpc::Call( RPC_DBBATTLEAFTEREND, arg);
+                GameDBClient::GetInstance()->SendProtocol(rpc);
+	}
+
+};
+
+};
+#endif

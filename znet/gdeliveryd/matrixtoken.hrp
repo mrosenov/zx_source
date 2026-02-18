@@ -1,0 +1,103 @@
+
+#ifndef __GNET_MATRIXTOKEN_HPP
+#define __GNET_MATRIXTOKEN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "matrixtokenarg"
+#include "matrixtokenres"
+#include "gauthclient.hpp"
+#include "conf.h"
+
+namespace GNET
+{
+
+class MatrixToken : public ProxyRpc
+{
+	GNET::Protocol *Clone() const {  return new MatrixToken(*this); }
+public:
+	enum { PROTOCOL_TYPE = RPC_MATRIXTOKEN };
+	MatrixToken(Type type, Rpc::Data *argument, Rpc::Data *result)
+		: ProxyRpc(type, argument, result ) { }
+	MatrixToken(const MatrixToken &rhs) : ProxyRpc(rhs) { }
+	int PriorPolicy( ) const { return 101; }
+	bool SizePolicy(size_t size) const { return size <= 512; }
+	bool TimePolicy(int timeout) const { return timeout <= 20; }
+
+	void SendErrResponse(int retcode)
+	{
+		MatrixTokenRes res;
+		res.retcode = retcode;
+		SetResult(res);
+		SendToSponsor();
+	}
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		if(!GDeliveryServer::GetInstance()->IsSupportTokenLogin())
+		{
+			DEBUG_PRINT("gdeliveryd does not support web login.");
+			SendErrResponse(-2); 	// server version isn't match
+			return false;
+		}
+
+		MatrixTokenArg arg;
+		osArg >> arg;
+		if(GDeliveryServer::GetInstance()->IsCentralDS())
+		{
+			Log::log(LOG_ERR, "User(%.*s) Try to Login Central Delivery Server directly, Refuse him!", arg.account.size(), (char *)arg.account.begin());
+			SendErrResponse(-1);
+			return false;
+		}
+		
+		if(UserContainer::GetInstance().Size() >= UserContainer::GetInstance().GetPlayerLimit())
+		{
+			SendErrResponse(ERR_SERVEROVERLOAD);
+			return false;
+		}
+		
+		LOG_TRACE("gdelivery::matrixtoken query, user=%.*s, token=%.*s, challenge=%.*s", arg.account.size(), (char *)arg.account.begin(), arg.token.size(), (char *)arg.token.begin(), arg.challenge.size(), (char *)arg.challenge.begin());
+		
+		if(GAuthClient::GetInstance()->SendProtocol(*this))
+		{
+			return true;
+		}
+		else
+		{
+			SendErrResponse(ERR_COMMUNICATION);
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		MatrixTokenRes res;
+		osRes >> res;
+		if(!GDeliveryServer::GetInstance()->IsSupportTokenLogin())
+		{
+			res.retcode = -2;
+			SetResult(&res);
+			return;
+		}
+		if (res.retcode == ERR_SUCCESS)
+		{
+			Passwd::GetInstance().CacheAlgo(res.userid, res.algorithm);
+			if (res.algorithm & ALGORITHM_OPT_STUDIO_USER)
+				ForbidStudioUser::GetInstance()->RecordUser(res.userid);
+		}
+		//	SetResult(&res);
+	}
+
+	void OnTimeout(const OctetsStream &osArg)
+	{
+		MatrixTokenArg arg;
+		osArg >> arg;
+		LOG_TRACE("gdelivery::matrixtoken timeout. user=%.*s", arg.account.size(), (char *)arg.account.begin());
+		STAT_MIN5("MatrixTokenTimeout", 1);
+		SendErrResponse(ERR_COMMUNICATION);
+	}
+};
+
+};
+#endif

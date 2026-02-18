@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFRIENDCALLBACKMAIL_HPP
+#define __GNET_DBFRIENDCALLBACKMAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfriendcallbackmailarg"
+#include "dbfriendcallbackmailres"
+
+namespace GNET
+{
+
+class DBFriendCallbackMail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfriendcallbackmail"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFriendCallbackMailArg *arg = (DBFriendCallbackMailArg *)argument;
+		// DBFriendCallbackMailRes *res = (DBFriendCallbackMailRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFriendCallbackMailArg *arg = (DBFriendCallbackMailArg *)argument;
+		// DBFriendCallbackMailRes *res = (DBFriendCallbackMailRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,50 @@
+
+#ifndef __GNET_DBHOSTILEUPDATE_HPP
+#define __GNET_DBHOSTILEUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhostileupdatearg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBHostileUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhostileupdate"
+#undef	RPC_BASECLASS
+
+	int localsid;
+	int linksid;
+	int gs_id;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHostileUpdateArg *arg = (DBHostileUpdateArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+		DEBUG_PRINT("DBHostileUpdate, retcode=%d, factionid=%d, datamask=%d, actionpoint=%d"
+				, res->retcode, arg->factionid, arg->datamask, arg->actionpoint);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			FactionManager::Instance()->OnHostileUpdate(*arg);
+		}
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBHostileUpdateArg *arg = (DBHostileUpdateArg *)argument;
+		DEBUG_PRINT("DBHostileUpdate, timeout! factionid=%d, datamask=%d, actionpoint=%d"
+			, arg->factionid, arg->datamask, arg->actionpoint);
+	}
+
+};
+
+};
+#endif

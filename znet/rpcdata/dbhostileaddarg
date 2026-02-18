@@ -1,0 +1,69 @@
+#ifndef __GNET_DBHOSTILEADDARG_RPCDATA
+#define __GNET_DBHOSTILEADDARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBHostileAddArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		unsigned int factionid;
+		unsigned int hostile;
+
+	public:
+		DBHostileAddArg (unsigned int l_factionid = 0,unsigned int l_hostile = 0)
+			: factionid(l_factionid),hostile(l_hostile)
+		{
+		}
+
+		DBHostileAddArg(const DBHostileAddArg &rhs)
+			: roleid(rhs.roleid),factionid(rhs.factionid),hostile(rhs.hostile) { }
+
+		Rpc::Data *Clone() const { return new DBHostileAddArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBHostileAddArg *r = dynamic_cast<const DBHostileAddArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				factionid = r->factionid;
+				hostile = r->hostile;
+			}
+			return *this;
+		}
+
+		DBHostileAddArg& operator = (const DBHostileAddArg &rhs)
+		{
+			const DBHostileAddArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				factionid = r->factionid;
+				hostile = r->hostile;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << factionid;
+			os << hostile;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> factionid;
+			os >> hostile;
+			return os;
+		}
+
+	};
+};
+#endif

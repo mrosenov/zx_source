@@ -1,0 +1,64 @@
+#ifndef __GNET_DBKINGDOMAPPOINTRES_RPCDATA
+#define __GNET_DBKINGDOMAPPOINTRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBKingdomAppointRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int candidate_id;
+
+	public:
+		DBKingdomAppointRes (int l_retcode = 0,int l_candidate_id = 0)
+			: retcode(l_retcode),candidate_id(l_candidate_id)
+		{
+		}
+
+		DBKingdomAppointRes(const DBKingdomAppointRes &rhs)
+			: retcode(rhs.retcode),candidate_id(rhs.candidate_id) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomAppointRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomAppointRes *r = dynamic_cast<const DBKingdomAppointRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				candidate_id = r->candidate_id;
+			}
+			return *this;
+		}
+
+		DBKingdomAppointRes& operator = (const DBKingdomAppointRes &rhs)
+		{
+			const DBKingdomAppointRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				candidate_id = r->candidate_id;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << candidate_id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> candidate_id;
+			return os;
+		}
+
+	};
+};
+#endif

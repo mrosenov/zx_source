@@ -1,0 +1,107 @@
+#ifndef __GNET_BATTLEFIELDINFO_RPCDATA
+#define __GNET_BATTLEFIELDINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class BattleFieldInfo : public GNET::Rpc::Data
+	{
+	public:
+		int map_id;
+		int tag;
+		int level_min;
+		int level_max;
+		char battle_type;
+		int reborn_count_need;
+		int fighting_time;
+		int entermax_perday;
+		int cooldown_time;
+		int maxplayer_perround;
+
+	public:
+		BattleFieldInfo (int l_map_id = 0,int l_tag = 0)
+			: map_id(l_map_id),tag(l_tag)
+		{
+		}
+
+		BattleFieldInfo(const BattleFieldInfo &rhs)
+			: map_id(rhs.map_id),tag(rhs.tag),level_min(rhs.level_min),
+			level_max(rhs.level_max),battle_type(rhs.battle_type),reborn_count_need(rhs.reborn_count_need),
+			fighting_time(rhs.fighting_time),entermax_perday(rhs.entermax_perday),cooldown_time(rhs.cooldown_time),
+			maxplayer_perround(rhs.maxplayer_perround) { }
+
+		Rpc::Data *Clone() const { return new BattleFieldInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const BattleFieldInfo *r = dynamic_cast<const BattleFieldInfo *>(&rhs);
+			if (r && r != this)
+			{
+				map_id = r->map_id;
+				tag = r->tag;
+				level_min = r->level_min;
+				level_max = r->level_max;
+				battle_type = r->battle_type;
+				reborn_count_need = r->reborn_count_need;
+				fighting_time = r->fighting_time;
+				entermax_perday = r->entermax_perday;
+				cooldown_time = r->cooldown_time;
+				maxplayer_perround = r->maxplayer_perround;
+			}
+			return *this;
+		}
+
+		BattleFieldInfo& operator = (const BattleFieldInfo &rhs)
+		{
+			const BattleFieldInfo *r = &rhs;
+			if (r && r != this)
+			{
+				map_id = r->map_id;
+				tag = r->tag;
+				level_min = r->level_min;
+				level_max = r->level_max;
+				battle_type = r->battle_type;
+				reborn_count_need = r->reborn_count_need;
+				fighting_time = r->fighting_time;
+				entermax_perday = r->entermax_perday;
+				cooldown_time = r->cooldown_time;
+				maxplayer_perround = r->maxplayer_perround;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << map_id;
+			os << tag;
+			os << level_min;
+			os << level_max;
+			os << battle_type;
+			os << reborn_count_need;
+			os << fighting_time;
+			os << entermax_perday;
+			os << cooldown_time;
+			os << maxplayer_perround;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> map_id;
+			os >> tag;
+			os >> level_min;
+			os >> level_max;
+			os >> battle_type;
+			os >> reborn_count_need;
+			os >> fighting_time;
+			os >> entermax_perday;
+			os >> cooldown_time;
+			os >> maxplayer_perround;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,59 @@
+#ifndef __GNET_DBCRSSVRTEAMSGETSEASONTOPARG_RPCDATA
+#define __GNET_DBCRSSVRTEAMSGETSEASONTOPARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCrssvrTeamsGetSeasonTopArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+
+	public:
+		DBCrssvrTeamsGetSeasonTopArg (int l_roleid = 0)
+			: roleid(l_roleid)
+		{
+		}
+
+		DBCrssvrTeamsGetSeasonTopArg(const DBCrssvrTeamsGetSeasonTopArg &rhs)
+			: roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsGetSeasonTopArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsGetSeasonTopArg *r = dynamic_cast<const DBCrssvrTeamsGetSeasonTopArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsGetSeasonTopArg& operator = (const DBCrssvrTeamsGetSeasonTopArg &rhs)
+		{
+			const DBCrssvrTeamsGetSeasonTopArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,123 @@
+#ifndef __GNET_DBFACTIONSYNCARG_RPCDATA
+#define __GNET_DBFACTIONSYNCARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFactionSyncArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int fid;
+		int population;
+		int prosperity;
+		int contribution;
+		int nimbus;
+		int charm;
+		int syncmask;
+		std::vector<Octets> dynamic;
+		int activity;
+		int act_uptime;
+		int multi_exp;
+		int multi_exp_endtime;
+
+	public:
+		DBFactionSyncArg (unsigned int l_fid = 0,int l_population = 0,int l_prosperity = 0
+			,int l_contribution = 0,int l_nimbus = 0,int l_charm = 0
+			,int l_syncmask = 0,const std::vector<Octets>& l_dynamic = std::vector<Octets>(),int l_activity = 0
+			,int l_act_uptime = 0,int l_multi_exp = 0,int l_multi_exp_endtime = 0)
+			: fid(l_fid),population(l_population),prosperity(l_prosperity)
+			,contribution(l_contribution),nimbus(l_nimbus),charm(l_charm)
+			,syncmask(l_syncmask),dynamic(l_dynamic),activity(l_activity)
+			,act_uptime(l_act_uptime),multi_exp(l_multi_exp),multi_exp_endtime(l_multi_exp_endtime)
+		{
+		}
+
+		DBFactionSyncArg(const DBFactionSyncArg &rhs)
+			: fid(rhs.fid),population(rhs.population),prosperity(rhs.prosperity),
+			contribution(rhs.contribution),nimbus(rhs.nimbus),charm(rhs.charm),
+			syncmask(rhs.syncmask),dynamic(rhs.dynamic),activity(rhs.activity),
+			act_uptime(rhs.act_uptime),multi_exp(rhs.multi_exp),multi_exp_endtime(rhs.multi_exp_endtime) { }
+
+		Rpc::Data *Clone() const { return new DBFactionSyncArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFactionSyncArg *r = dynamic_cast<const DBFactionSyncArg *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				population = r->population;
+				prosperity = r->prosperity;
+				contribution = r->contribution;
+				nimbus = r->nimbus;
+				charm = r->charm;
+				syncmask = r->syncmask;
+				dynamic = r->dynamic;
+				activity = r->activity;
+				act_uptime = r->act_uptime;
+				multi_exp = r->multi_exp;
+				multi_exp_endtime = r->multi_exp_endtime;
+			}
+			return *this;
+		}
+
+		DBFactionSyncArg& operator = (const DBFactionSyncArg &rhs)
+		{
+			const DBFactionSyncArg *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				population = r->population;
+				prosperity = r->prosperity;
+				contribution = r->contribution;
+				nimbus = r->nimbus;
+				charm = r->charm;
+				syncmask = r->syncmask;
+				dynamic = r->dynamic;
+				activity = r->activity;
+				act_uptime = r->act_uptime;
+				multi_exp = r->multi_exp;
+				multi_exp_endtime = r->multi_exp_endtime;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << population;
+			os << prosperity;
+			os << contribution;
+			os << nimbus;
+			os << charm;
+			os << syncmask;
+			os << dynamic;
+			os << activity;
+			os << act_uptime;
+			os << multi_exp;
+			os << multi_exp_endtime;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> population;
+			os >> prosperity;
+			os >> contribution;
+			os >> nimbus;
+			os >> charm;
+			os >> syncmask;
+			os >> dynamic;
+			os >> activity;
+			os >> act_uptime;
+			os >> multi_exp;
+			os >> multi_exp_endtime;
+			return os;
+		}
+
+	};
+};
+#endif

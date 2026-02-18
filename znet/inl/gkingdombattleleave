@@ -1,0 +1,56 @@
+	public:
+		int roleid;
+		char fieldtype;
+		int tagid;
+		int map_tag;
+		float scalex;
+		float scaley;
+		float scalez;
+		enum { PROTOCOL_TYPE = PROTOCOL_GKINGDOMBATTLELEAVE };
+	public:
+		GKingdomBattleLeave() { type = PROTOCOL_GKINGDOMBATTLELEAVE; }
+		GKingdomBattleLeave(void*) : Protocol(PROTOCOL_GKINGDOMBATTLELEAVE) { }
+		GKingdomBattleLeave (int l_roleid,char l_fieldtype = 0,int l_tagid = 0,
+			int l_map_tag = -1,float l_scalex = 0.0f,float l_scaley = 0.0f,
+			float l_scalez = 0.0f)
+			 : roleid(l_roleid),fieldtype(l_fieldtype),tagid(l_tagid)
+			,map_tag(l_map_tag),scalex(l_scalex),scaley(l_scaley)
+			,scalez(l_scalez)
+		{
+			type = PROTOCOL_GKINGDOMBATTLELEAVE;
+		}
+
+		GKingdomBattleLeave(const GKingdomBattleLeave &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),fieldtype(rhs.fieldtype),tagid(rhs.tagid)
+			,map_tag(rhs.map_tag),scalex(rhs.scalex),scaley(rhs.scaley)
+			,scalez(rhs.scalez) { }
+
+		GNET::Protocol *Clone() const { return new GKingdomBattleLeave(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << fieldtype;
+			os << tagid;
+			os << map_tag;
+			os << scalex;
+			os << scaley;
+			os << scalez;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> fieldtype;
+			os >> tagid;
+			os >> map_tag;
+			os >> scalex;
+			os >> scaley;
+			os >> scalez;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

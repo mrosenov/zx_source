@@ -1,0 +1,65 @@
+#ifndef __GNET_DBFRIENDCALLBACKINFORES_RPCDATA
+#define __GNET_DBFRIENDCALLBACKINFORES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcallbackinfo"
+
+namespace GNET
+{
+	class DBFriendCallbackInfoRes : public GNET::Rpc::Data
+	{
+	public:
+		unsigned char retcode;
+		GCallbackInfo callback_info;
+
+	public:
+		DBFriendCallbackInfoRes (unsigned char l_retcode = 0,const GCallbackInfo& l_callback_info = GCallbackInfo())
+			: retcode(l_retcode),callback_info(l_callback_info)
+		{
+		}
+
+		DBFriendCallbackInfoRes(const DBFriendCallbackInfoRes &rhs)
+			: retcode(rhs.retcode),callback_info(rhs.callback_info) { }
+
+		Rpc::Data *Clone() const { return new DBFriendCallbackInfoRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFriendCallbackInfoRes *r = dynamic_cast<const DBFriendCallbackInfoRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				callback_info = r->callback_info;
+			}
+			return *this;
+		}
+
+		DBFriendCallbackInfoRes& operator = (const DBFriendCallbackInfoRes &rhs)
+		{
+			const DBFriendCallbackInfoRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				callback_info = r->callback_info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << callback_info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> callback_info;
+			return os;
+		}
+
+	};
+};
+#endif

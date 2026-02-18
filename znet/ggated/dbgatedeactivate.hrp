@@ -1,0 +1,55 @@
+
+#ifndef __GNET_DBGATEDEACTIVATE_HPP
+#define __GNET_DBGATEDEACTIVATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "roleactivation.hpp"
+#include "removerole.hpp"
+#include "gtplatformclient.hpp"
+
+#include "dbgateactivatearg"
+#include "dbgateactivateres"
+
+namespace GNET
+{
+
+class DBGateDeactivate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgatedeactivate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBGateActivateArg *arg = (DBGateActivateArg *)argument;
+		// DBGateActivateRes *res = (DBGateActivateRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBGateActivateArg *arg = (DBGateActivateArg *)argument;
+		DBGateActivateRes *res = (DBGateActivateRes *)result;
+		if(res->retcode == ERR_SUCCESS || res->retcode == ERR_HASNOT_ACTIVATED)
+		{
+			RoleActivation msg(arg->id,OP_DEACTIVATE);
+			GTPlatformClient::GetInstance()->SendProtocol(msg);
+		}	
+		else if(res->retcode == ERR_ROLEREMOVED)
+		{
+			GTPlatformClient::GetInstance()->SendProtocol(RemoveRole(0,arg->id));
+		}
+		else
+			DEBUG_PRINT("DBGateDeactivate error:retcode =%d",res->retcode);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

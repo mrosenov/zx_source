@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBHOSTILEPROTECT_HPP
+#define __GNET_DBHOSTILEPROTECT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhostileprotectarg"
+#include "dbhostileprotectres"
+
+namespace GNET
+{
+
+class DBHostileProtect : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhostileprotect"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBHostileProtectArg *arg = (DBHostileProtectArg *)argument;
+		// DBHostileProtectRes *res = (DBHostileProtectRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBHostileProtectArg *arg = (DBHostileProtectArg *)argument;
+		// DBHostileProtectRes *res = (DBHostileProtectRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

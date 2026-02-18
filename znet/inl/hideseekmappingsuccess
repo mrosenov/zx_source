@@ -1,0 +1,44 @@
+	public:
+		int raidroom_id;
+		unsigned int localsid;
+		char iscross;
+		int roleid;
+		enum { PROTOCOL_TYPE = PROTOCOL_HIDESEEKMAPPINGSUCCESS };
+	public:
+		HideSeekMappingSuccess() { type = PROTOCOL_HIDESEEKMAPPINGSUCCESS; }
+		HideSeekMappingSuccess(void*) : Protocol(PROTOCOL_HIDESEEKMAPPINGSUCCESS) { }
+		HideSeekMappingSuccess (int l_raidroom_id,unsigned int l_localsid = 0,char l_iscross = 0,
+			int l_roleid = 0)
+			 : raidroom_id(l_raidroom_id),localsid(l_localsid),iscross(l_iscross)
+			,roleid(l_roleid)
+		{
+			type = PROTOCOL_HIDESEEKMAPPINGSUCCESS;
+		}
+
+		HideSeekMappingSuccess(const HideSeekMappingSuccess &rhs)
+			: Protocol(rhs),raidroom_id(rhs.raidroom_id),localsid(rhs.localsid),iscross(rhs.iscross)
+			,roleid(rhs.roleid) { }
+
+		GNET::Protocol *Clone() const { return new HideSeekMappingSuccess(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << raidroom_id;
+			os << localsid;
+			os << iscross;
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> raidroom_id;
+			os >> localsid;
+			os >> iscross;
+			os >> roleid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

@@ -1,0 +1,38 @@
+	public:
+		short retcode;
+		int gs_id;
+		int map_id;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDINSTANCINGSTART_RE };
+	public:
+		SendInstancingStart_Re() { type = PROTOCOL_SENDINSTANCINGSTART_RE; }
+		SendInstancingStart_Re(void*) : Protocol(PROTOCOL_SENDINSTANCINGSTART_RE) { }
+		SendInstancingStart_Re (short l_retcode,int l_gs_id = 0,int l_map_id = 0)
+			 : retcode(l_retcode),gs_id(l_gs_id),map_id(l_map_id)
+		{
+			type = PROTOCOL_SENDINSTANCINGSTART_RE;
+		}
+
+		SendInstancingStart_Re(const SendInstancingStart_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),gs_id(rhs.gs_id),map_id(rhs.map_id) { }
+
+		GNET::Protocol *Clone() const { return new SendInstancingStart_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << gs_id;
+			os << map_id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> gs_id;
+			os >> map_id;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

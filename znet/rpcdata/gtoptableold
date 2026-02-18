@@ -1,0 +1,88 @@
+#ifndef __GNET_GTOPTABLEOLD_RPCDATA
+#define __GNET_GTOPTABLEOLD_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gtopitem"
+
+namespace GNET
+{
+	class GTopTableOld : public GNET::Rpc::Data
+	{
+	public:
+		int id;
+		int maxsize;
+		int time;
+		std::vector<GTopItem> items;
+		int weekly;
+		int reserved;
+
+	public:
+		GTopTableOld (int l_id = 0,int l_maxsize = 0,int l_time = 0
+			,int l_weekly = 0,int l_reserved = 0)
+			: id(l_id),maxsize(l_maxsize),time(l_time)
+			,weekly(l_weekly),reserved(l_reserved)
+		{
+		}
+
+		GTopTableOld(const GTopTableOld &rhs)
+			: id(rhs.id),maxsize(rhs.maxsize),time(rhs.time),
+			items(rhs.items),weekly(rhs.weekly),reserved(rhs.reserved) { }
+
+		Rpc::Data *Clone() const { return new GTopTableOld(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GTopTableOld *r = dynamic_cast<const GTopTableOld *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				maxsize = r->maxsize;
+				time = r->time;
+				items = r->items;
+				weekly = r->weekly;
+				reserved = r->reserved;
+			}
+			return *this;
+		}
+
+		GTopTableOld& operator = (const GTopTableOld &rhs)
+		{
+			const GTopTableOld *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				maxsize = r->maxsize;
+				time = r->time;
+				items = r->items;
+				weekly = r->weekly;
+				reserved = r->reserved;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << maxsize;
+			os << time;
+			os << items;
+			os << weekly;
+			os << reserved;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> maxsize;
+			os >> time;
+			os >> items;
+			os >> weekly;
+			os >> reserved;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,44 @@
+	public:
+		int sectid;
+		int roleid;
+		unsigned int reputation;
+		std::vector<GSectSkill> skills;
+		enum { PROTOCOL_TYPE = PROTOCOL_SECTUPDATE };
+	public:
+		SectUpdate() { type = PROTOCOL_SECTUPDATE; }
+		SectUpdate(void*) : Protocol(PROTOCOL_SECTUPDATE) { }
+		SectUpdate (int l_sectid,int l_roleid = 0,unsigned int l_reputation = 0,
+			const std::vector<GSectSkill>& l_skills = std::vector<GSectSkill>())
+			 : sectid(l_sectid),roleid(l_roleid),reputation(l_reputation)
+			,skills(l_skills)
+		{
+			type = PROTOCOL_SECTUPDATE;
+		}
+
+		SectUpdate(const SectUpdate &rhs)
+			: Protocol(rhs),sectid(rhs.sectid),roleid(rhs.roleid),reputation(rhs.reputation)
+			,skills(rhs.skills) { }
+
+		GNET::Protocol *Clone() const { return new SectUpdate(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << sectid;
+			os << roleid;
+			os << reputation;
+			os << skills;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> sectid;
+			os >> roleid;
+			os >> reputation;
+			os >> skills;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 16384; }

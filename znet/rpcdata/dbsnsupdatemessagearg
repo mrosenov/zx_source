@@ -1,0 +1,65 @@
+#ifndef __GNET_DBSNSUPDATEMESSAGEARG_RPCDATA
+#define __GNET_DBSNSUPDATEMESSAGEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gsnsmessage"
+
+namespace GNET
+{
+	class DBSNSUpdateMessageArg : public GNET::Rpc::Data
+	{
+	public:
+		char oper;
+		GSNSMessage message;
+
+	public:
+		DBSNSUpdateMessageArg (char l_oper = 0,const GSNSMessage& l_message = GSNSMessage())
+			: oper(l_oper),message(l_message)
+		{
+		}
+
+		DBSNSUpdateMessageArg(const DBSNSUpdateMessageArg &rhs)
+			: oper(rhs.oper),message(rhs.message) { }
+
+		Rpc::Data *Clone() const { return new DBSNSUpdateMessageArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSNSUpdateMessageArg *r = dynamic_cast<const DBSNSUpdateMessageArg *>(&rhs);
+			if (r && r != this)
+			{
+				oper = r->oper;
+				message = r->message;
+			}
+			return *this;
+		}
+
+		DBSNSUpdateMessageArg& operator = (const DBSNSUpdateMessageArg &rhs)
+		{
+			const DBSNSUpdateMessageArg *r = &rhs;
+			if (r && r != this)
+			{
+				oper = r->oper;
+				message = r->message;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << oper;
+			os << message;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> oper;
+			os >> message;
+			return os;
+		}
+
+	};
+};
+#endif

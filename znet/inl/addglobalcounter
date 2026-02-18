@@ -1,0 +1,9 @@
+		GNET::Protocol *Clone() const {  return new AddGlobalCounter(*this); }
+	public:
+		enum { PROTOCOL_TYPE = RPC_ADDGLOBALCOUNTER };
+		AddGlobalCounter(Type type, Rpc::Data *argument, Rpc::Data *result)
+			: RPC_BASECLASS(type, argument, result ) { }
+		AddGlobalCounter(const AddGlobalCounter &rhs) : RPC_BASECLASS(rhs) { }
+		int  PriorPolicy( ) const { return 1; }
+		bool SizePolicy(size_t size) const { return size <= 256; }
+		bool TimePolicy(int timeout) const { return timeout <= 30; }

@@ -1,0 +1,77 @@
+#ifndef __GNET_CUSTOMKEY_RPCDATA
+#define __GNET_CUSTOMKEY_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class CustomKey : public GNET::Rpc::Data
+	{
+	public:
+		Octets encoded;
+		Octets algorithm;
+		Octets format;
+		int64_t timeout;
+
+	public:
+		CustomKey (Octets l_encoded = Octets(),Octets l_algorithm = Octets(),Octets l_format = Octets()
+			)
+			: encoded(l_encoded),algorithm(l_algorithm),format(l_format)
+			
+		{
+		}
+
+		CustomKey(const CustomKey &rhs)
+			: encoded(rhs.encoded),algorithm(rhs.algorithm),format(rhs.format),
+			timeout(rhs.timeout) { }
+
+		Rpc::Data *Clone() const { return new CustomKey(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const CustomKey *r = dynamic_cast<const CustomKey *>(&rhs);
+			if (r && r != this)
+			{
+				encoded = r->encoded;
+				algorithm = r->algorithm;
+				format = r->format;
+				timeout = r->timeout;
+			}
+			return *this;
+		}
+
+		CustomKey& operator = (const CustomKey &rhs)
+		{
+			const CustomKey *r = &rhs;
+			if (r && r != this)
+			{
+				encoded = r->encoded;
+				algorithm = r->algorithm;
+				format = r->format;
+				timeout = r->timeout;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << encoded;
+			os << algorithm;
+			os << format;
+			os << timeout;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> encoded;
+			os >> algorithm;
+			os >> format;
+			os >> timeout;
+			return os;
+		}
+
+	};
+};
+#endif

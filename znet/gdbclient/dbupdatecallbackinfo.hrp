@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBUPDATECALLBACKINFO_HPP
+#define __GNET_DBUPDATECALLBACKINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbupdatecallbackinfoarg"
+#include "dbupdatecallbackinfores"
+
+namespace GNET
+{
+
+class DBUpdateCallbackInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbupdatecallbackinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBUpdateCallbackInfoArg *arg = (DBUpdateCallbackInfoArg *)argument;
+		// DBUpdateCallbackInfoRes *res = (DBUpdateCallbackInfoRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBUpdateCallbackInfoArg *arg = (DBUpdateCallbackInfoArg *)argument;
+		// DBUpdateCallbackInfoRes *res = (DBUpdateCallbackInfoRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

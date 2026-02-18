@@ -1,0 +1,60 @@
+
+#ifndef __GNET_GETMESSAGE_HPP
+#define __GNET_GETMESSAGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "message"
+#include "getmessageres"
+#include "getsavedmsg_re.hpp"
+
+namespace GNET
+{
+
+class GetMessage : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getmessage"
+#undef	RPC_BASECLASS
+	unsigned int linksid;
+	unsigned int localsid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleId *arg = (RoleId *)argument;
+		// GetMessageRes *res = (GetMessageRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		GetMessageRes *res = (GetMessageRes *)result;
+
+		GetSavedMsg_Re re;
+		re.retcode = res->retcode;
+		re.roleid = arg->id;
+		re.localsid = localsid;
+		re.messages.swap(res->messages);
+		MessageVector::iterator it, ite = re.messages.end();
+		for (it = re.messages.begin(); it != ite; ++it)
+		{
+			if (it->channel == CHANNEL_FRIEND)
+			{
+				NameManager::GetInstance()->FindName(it->srcroleid, it->src_name);
+				NameManager::GetInstance()->FindName(it->dstroleid, it->dst_name);
+			}
+		}
+		GDeliveryServer::GetInstance()->Send(linksid, re);
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

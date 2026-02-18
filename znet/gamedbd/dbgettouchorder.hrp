@@ -1,0 +1,69 @@
+
+#ifndef __GNET_DBGETTOUCHORDER_HPP
+#define __GNET_DBGETTOUCHORDER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbgettouchorderarg"
+#include "dbgettouchorderres"
+
+namespace GNET
+{
+
+class DBGetTouchOrder : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgettouchorder"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBGetTouchOrderArg *arg = (DBGetTouchOrderArg *)argument;
+		DBGetTouchOrderRes *res = (DBGetTouchOrderRes *)result;
+		try
+		{
+			StorageEnv::Storage * pconfig = StorageEnv::GetStorage("config");
+			StorageEnv::AtomTransaction txn;
+			try{
+				int64_t orderid = 0;
+				Marshal::OctetsStream key, value;
+				key << CONFIG_KEY_TOUCH_ORDER;
+				if (pconfig->find(key, value, txn))
+					value >> orderid;
+				res->order = ++orderid;
+				pconfig->insert(key, Marshal::OctetsStream()<<orderid, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBGetTouchOrder, what=%s\n", e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBGetTouchOrderArg *arg = (DBGetTouchOrderArg *)argument;
+		// DBGetTouchOrderRes *res = (DBGetTouchOrderRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

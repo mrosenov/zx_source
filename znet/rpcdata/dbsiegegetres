@@ -1,0 +1,65 @@
+#ifndef __GNET_DBSIEGEGETRES_RPCDATA
+#define __GNET_DBSIEGEGETRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcity"
+
+namespace GNET
+{
+	class DBSiegeGetRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GCity city_info;
+
+	public:
+		DBSiegeGetRes (int l_retcode = 0,const GCity& l_city_info = GCity())
+			: retcode(l_retcode),city_info(l_city_info)
+		{
+		}
+
+		DBSiegeGetRes(const DBSiegeGetRes &rhs)
+			: retcode(rhs.retcode),city_info(rhs.city_info) { }
+
+		Rpc::Data *Clone() const { return new DBSiegeGetRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegeGetRes *r = dynamic_cast<const DBSiegeGetRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				city_info = r->city_info;
+			}
+			return *this;
+		}
+
+		DBSiegeGetRes& operator = (const DBSiegeGetRes &rhs)
+		{
+			const DBSiegeGetRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				city_info = r->city_info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << city_info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> city_info;
+			return os;
+		}
+
+	};
+};
+#endif

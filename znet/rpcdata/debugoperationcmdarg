@@ -1,0 +1,65 @@
+#ifndef __GNET_DEBUGOPERATIONCMDARG_RPCDATA
+#define __GNET_DEBUGOPERATIONCMDARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "serviceforbidcmd"
+
+namespace GNET
+{
+	class DebugOperationCmdArg : public GNET::Rpc::Data
+	{
+	public:
+		int clear;
+		std::vector<ServiceForbidCmd> cmdlist;
+
+	public:
+		DebugOperationCmdArg (int l_clear = 0,const std::vector<ServiceForbidCmd>& l_cmdlist = std::vector<ServiceForbidCmd>())
+			: clear(l_clear),cmdlist(l_cmdlist)
+		{
+		}
+
+		DebugOperationCmdArg(const DebugOperationCmdArg &rhs)
+			: clear(rhs.clear),cmdlist(rhs.cmdlist) { }
+
+		Rpc::Data *Clone() const { return new DebugOperationCmdArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DebugOperationCmdArg *r = dynamic_cast<const DebugOperationCmdArg *>(&rhs);
+			if (r && r != this)
+			{
+				clear = r->clear;
+				cmdlist = r->cmdlist;
+			}
+			return *this;
+		}
+
+		DebugOperationCmdArg& operator = (const DebugOperationCmdArg &rhs)
+		{
+			const DebugOperationCmdArg *r = &rhs;
+			if (r && r != this)
+			{
+				clear = r->clear;
+				cmdlist = r->cmdlist;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << clear;
+			os << cmdlist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> clear;
+			os >> cmdlist;
+			return os;
+		}
+
+	};
+};
+#endif

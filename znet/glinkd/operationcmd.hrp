@@ -1,0 +1,42 @@
+
+#ifndef __GNET_OPERATIONCMD_HPP
+#define __GNET_OPERATIONCMD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "operationcmdarg"
+#include "operationcmdres"
+
+namespace GNET
+{
+
+class OperationCmd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "operationcmd"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// OperationCmdArg *arg = (OperationCmdArg *)argument;
+		// OperationCmdRes *res = (OperationCmdRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// OperationCmdArg *arg = (OperationCmdArg *)argument;
+		// OperationCmdRes *res = (OperationCmdRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

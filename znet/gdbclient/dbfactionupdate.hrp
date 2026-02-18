@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFACTIONUPDATE_HPP
+#define __GNET_DBFACTIONUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionupdatearg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBFactionUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionupdate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFactionUpdateArg *arg = (DBFactionUpdateArg *)argument;
+		// DefFactionRes *res = (DefFactionRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFactionUpdateArg *arg = (DBFactionUpdateArg *)argument;
+		// DefFactionRes *res = (DefFactionRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

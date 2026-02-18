@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBHOMETOWNEXCHGMONEY_HPP
+#define __GNET_DBHOMETOWNEXCHGMONEY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhometownexchgmoneyarg"
+#include "dbhometownexchgmoneyres"
+
+namespace GNET
+{
+
+class DBHometownExchgMoney : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhometownexchgmoney"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBHometownExchgMoneyArg *arg = (DBHometownExchgMoneyArg *)argument;
+		// DBHometownExchgMoneyRes *res = (DBHometownExchgMoneyRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBHometownExchgMoneyArg *arg = (DBHometownExchgMoneyArg *)argument;
+		// DBHometownExchgMoneyRes *res = (DBHometownExchgMoneyRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

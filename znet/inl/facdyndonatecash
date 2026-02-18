@@ -1,0 +1,38 @@
+	public:
+		int fid;
+		Octets rolename;
+		int cash;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACDYNDONATECASH };
+	public:
+		FacDynDonateCash() { type = PROTOCOL_FACDYNDONATECASH; }
+		FacDynDonateCash(void*) : Protocol(PROTOCOL_FACDYNDONATECASH) { }
+		FacDynDonateCash (int l_fid,const Octets& l_rolename = Octets(),int l_cash = 0)
+			 : fid(l_fid),rolename(l_rolename),cash(l_cash)
+		{
+			type = PROTOCOL_FACDYNDONATECASH;
+		}
+
+		FacDynDonateCash(const FacDynDonateCash &rhs)
+			: Protocol(rhs),fid(rhs.fid),rolename(rhs.rolename),cash(rhs.cash) { }
+
+		GNET::Protocol *Clone() const { return new FacDynDonateCash(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << rolename;
+			os << cash;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> rolename;
+			os >> cash;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

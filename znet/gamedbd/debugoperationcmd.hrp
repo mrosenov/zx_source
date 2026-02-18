@@ -1,0 +1,72 @@
+
+#ifndef __GNET_DEBUGOPERATIONCMD_HPP
+#define __GNET_DEBUGOPERATIONCMD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "debugoperationcmdarg"
+#include "debugoperationcmdres"
+
+namespace GNET
+{
+
+class DebugOperationCmd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "debugoperationcmd"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DebugOperationCmdArg *arg = (DebugOperationCmdArg *)argument;
+		DebugOperationCmdRes *res = (DebugOperationCmdRes *)result;
+		try
+		{
+			StorageEnv::Storage * pcmd = StorageEnv::GetStorage("operationcmd");
+			StorageEnv::AtomTransaction txn;
+			try{
+				Marshal::OctetsStream key;
+				key << 0;
+				GServiceForbidCmdList store;
+				Marshal::OctetsStream(pcmd->find(key, txn)) >> store;
+				if (arg->clear)
+					store.cmdlist.clear();
+				else
+					store.cmdlist.insert(store.cmdlist.end(), arg->cmdlist.begin(), arg->cmdlist.end());
+				pcmd->insert(key, Marshal::OctetsStream()<<store, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "debugoperationcmd, what=%s\n", e.what());
+			res->retcode = ERR_IWEBCMD_DB;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DebugOperationCmdArg *arg = (DebugOperationCmdArg *)argument;
+		// DebugOperationCmdRes *res = (DebugOperationCmdRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

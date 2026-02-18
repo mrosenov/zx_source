@@ -1,0 +1,57 @@
+
+#ifndef __GNET_PUTFACBASE_HPP
+#define __GNET_PUTFACBASE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "putfacbasearg"
+#include "putfacbaseres"
+
+namespace GNET
+{
+
+class PutFacBase : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "putfacbase"
+#undef	RPC_BASECLASS
+
+	GDB::FBaseResult *_callback;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// PutFacBaseArg *arg = (PutFacBaseArg *)argument;
+		// PutFacBaseRes *res = (PutFacBaseRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PutFacBaseArg *arg = (PutFacBaseArg *)argument;
+		PutFacBaseRes *res = (PutFacBaseRes *)result;
+		if (!_callback)
+		{
+			Log::log(LOG_ERR, "putfacbase callback NULL, fid %d", arg->fid);
+			return;
+		}
+		if (res->retcode)
+		{
+			Log::log(LOG_ERR, "putfacbase error %d fid=%d", res->retcode, arg->fid);
+			_callback->OnFailed();
+			return;
+		}
+		_callback->OnPutData();
+	}
+
+	void OnTimeout()
+	{
+		PutFacBaseArg *arg = (PutFacBaseArg *)argument;
+		Log::log(LOG_ERR, "PutFBase, timeout fid=%d", arg->fid);
+		_callback->OnFailed();
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,43 @@
+
+#ifndef __GNET_DBFUNGAMEPUTINFO_HPP
+#define __GNET_DBFUNGAMEPUTINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfungameputinfoarg"
+#include "fungamemanager.h"
+
+namespace GNET
+{
+
+class DBFunGamePutInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfungameputinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFunGamePutInfoArg *arg = (DBFunGamePutInfoArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFunGamePutInfoArg *arg = (DBFunGamePutInfoArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		FunGameManager::GetInstance().OnSyncFunGame(res->retcode, arg->roleid);
+	}
+
+	void OnTimeout()
+	{
+		DBFunGamePutInfoArg *arg = (DBFunGamePutInfoArg *)argument;
+		FunGameManager::GetInstance().OnSyncFunGame(ERR_TIMEOUT, arg->roleid);
+	}
+
+};
+
+};
+#endif

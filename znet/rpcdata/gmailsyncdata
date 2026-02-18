@@ -1,0 +1,103 @@
+#ifndef __GNET_GMAILSYNCDATA_RPCDATA
+#define __GNET_GMAILSYNCDATA_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "grolepocket"
+#include "grolestorehouse"
+#include "gshoplog"
+
+namespace GNET
+{
+	class GMailSyncData : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int userid;
+		int data_mask;
+		int cash_total;
+		unsigned int cash_used;
+		int cash_serial;
+		GRolePocket inventory;
+		GRoleStorehouse storehouse;
+		std::vector<GShopLog> logs;
+
+	public:
+		GMailSyncData (unsigned int l_userid = 0,int l_data_mask = 0,int l_cash_total = 0
+			,unsigned int l_cash_used = 0,int l_cash_serial = 0,const GRolePocket& l_inventory = GRolePocket()
+			,const GRoleStorehouse& l_storehouse = GRoleStorehouse())
+			: userid(l_userid),data_mask(l_data_mask),cash_total(l_cash_total)
+			,cash_used(l_cash_used),cash_serial(l_cash_serial),inventory(l_inventory)
+			,storehouse(l_storehouse)
+		{
+		}
+
+		GMailSyncData(const GMailSyncData &rhs)
+			: userid(rhs.userid),data_mask(rhs.data_mask),cash_total(rhs.cash_total),
+			cash_used(rhs.cash_used),cash_serial(rhs.cash_serial),inventory(rhs.inventory),
+			storehouse(rhs.storehouse),logs(rhs.logs) { }
+
+		Rpc::Data *Clone() const { return new GMailSyncData(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GMailSyncData *r = dynamic_cast<const GMailSyncData *>(&rhs);
+			if (r && r != this)
+			{
+				userid = r->userid;
+				data_mask = r->data_mask;
+				cash_total = r->cash_total;
+				cash_used = r->cash_used;
+				cash_serial = r->cash_serial;
+				inventory = r->inventory;
+				storehouse = r->storehouse;
+				logs = r->logs;
+			}
+			return *this;
+		}
+
+		GMailSyncData& operator = (const GMailSyncData &rhs)
+		{
+			const GMailSyncData *r = &rhs;
+			if (r && r != this)
+			{
+				userid = r->userid;
+				data_mask = r->data_mask;
+				cash_total = r->cash_total;
+				cash_used = r->cash_used;
+				cash_serial = r->cash_serial;
+				inventory = r->inventory;
+				storehouse = r->storehouse;
+				logs = r->logs;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			os << data_mask;
+			os << cash_total;
+			os << cash_used;
+			os << cash_serial;
+			os << inventory;
+			os << storehouse;
+			os << logs;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			os >> data_mask;
+			os >> cash_total;
+			os >> cash_used;
+			os >> cash_serial;
+			os >> inventory;
+			os >> storehouse;
+			os >> logs;
+			return os;
+		}
+
+	};
+};
+#endif

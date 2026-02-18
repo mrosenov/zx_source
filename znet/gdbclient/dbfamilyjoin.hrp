@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFAMILYJOIN_HPP
+#define __GNET_DBFAMILYJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfamilyjoinarg"
+#include "dbfamilyjoinres"
+
+namespace GNET
+{
+
+class DBFamilyJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyjoin"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFamilyJoinArg *arg = (DBFamilyJoinArg *)argument;
+		// DBFamilyJoinRes *res = (DBFamilyJoinRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFamilyJoinArg *arg = (DBFamilyJoinArg *)argument;
+		// DBFamilyJoinRes *res = (DBFamilyJoinRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

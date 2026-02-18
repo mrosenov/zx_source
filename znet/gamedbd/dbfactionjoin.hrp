@@ -1,0 +1,113 @@
+
+#ifndef __GNET_DBFACTIONJOIN_HPP
+#define __GNET_DBFACTIONJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionjoinarg"
+#include "dbfactionjoinres"
+#include "integer"
+#include "familyid"
+#include "utilfunction.h"
+
+namespace GNET
+{
+
+class DBFactionJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionjoin"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionJoinArg *arg = (DBFactionJoinArg *)argument;
+		DBFactionJoinRes *res = (DBFactionJoinRes *)result;
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kfamily;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GFactionInfo faction;
+				GFamily family;
+
+
+				kfamily << arg->familyid;
+				Marshal::OctetsStream(pfamily->find(kfamily, txn)) >> family;
+				if(family.factionid)
+				{
+					res->retcode = ERR_FC_INFACTION;
+					return;
+				}
+
+				key << arg->fid;
+				Marshal::OctetsStream(pfaction->find(key, txn )) >> faction;
+				if (FactionHelper::GetMemberCapacity(faction.level) <= faction.member.size())
+				{
+					res->retcode = ERR_FC_FULL;
+					return;
+				}
+				std::vector<FamilyId>::iterator it = faction.member.begin(), ie=faction.member.end();
+				for(;it!=ie;++it)
+				{
+					if (arg->familyid == it->fid)
+						break;
+				}
+				if(it==ie)
+					faction.member.push_back(FamilyId(family.id));	
+
+				family.factionid = arg->fid;
+                                family.jointime = Timer::GetTime();
+
+				for (GFolkVector::iterator it = family.member.begin(); it != family.member.end(); ++ it)
+				{
+					if (it->nickname.size())
+						it->nickname.clear();
+					if (it->title!=TITLE_MEMBER)
+						it->title = TITLE_HEADER;
+				}
+				Log::formatlog("factionjoin","familyid=%d:factionid=%d", arg->familyid, arg->fid);
+
+				pfamily->insert( kfamily, Marshal::OctetsStream()<<family, txn );
+				pfaction->insert( key, Marshal::OctetsStream()<< faction, txn );
+				FamilyCache::InsertFaction(arg->familyid, arg->fid);
+				res->name = family.name;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionJoin, familyid=%d, factionid=%d what=%s.",arg->familyid,arg->fid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFactionJoinArg *arg = (DBFactionJoinArg *)argument;
+		// DBFactionJoinRes *res = (DBFactionJoinRes *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

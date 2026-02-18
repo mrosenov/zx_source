@@ -1,0 +1,46 @@
+
+#ifndef __GNET_DBBATTLEJOIN_HPP
+#define __GNET_DBBATTLEJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbbattlejoinarg"
+#include "dbbattlejoinres"
+#include "battlemanager.h"
+#include "gmailendsync.hpp"
+namespace GNET
+{
+
+class DBBattleJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbbattlejoin"
+#undef	RPC_BASECLASS
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBBattleJoinArg *arg = (DBBattleJoinArg *)argument;
+		// DBBattleJoinRes *res = (DBBattleJoinRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBBattleJoinArg *arg = (DBBattleJoinArg *)argument;
+		DBBattleJoinRes *res = (DBBattleJoinRes *)result;
+		BattleManager::GetInstance()->OnDBBattleJoin(res->retcode, arg->roleid, arg->gs_id, arg->map_id);
+//		GDeliveryServer::GetInstance()->Send(link_sid, SiegeChallenge_Re(res->retcode,arg->battle_id, arg->begin_time, localsid));
+		GProviderServer::GetInstance()->DispatchProtocol(arg->gs_id, GMailEndSync(0, res->retcode, arg->roleid, res->syncdata));
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBBattleJoinArg *arg = (DBBattleJoinArg *)argument;
+		Log::log(LOG_ERR, "DBBattleJoin timeout roleid %d map_id %d", arg->roleid, arg->map_id);
+		BattleManager::GetInstance()->OnDBBattleJoin(ERR_TIMEOUT, arg->roleid, arg->gs_id, arg->map_id);
+	}
+
+};
+
+};
+#endif

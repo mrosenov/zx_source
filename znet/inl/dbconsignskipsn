@@ -1,0 +1,32 @@
+	public:
+		int skip_amount;
+		enum { PROTOCOL_TYPE = PROTOCOL_DBCONSIGNSKIPSN };
+	public:
+		DBConsignSkipSN() { type = PROTOCOL_DBCONSIGNSKIPSN; }
+		DBConsignSkipSN(void*) : Protocol(PROTOCOL_DBCONSIGNSKIPSN) { }
+		DBConsignSkipSN (int l_skip_amount)
+			 : skip_amount(l_skip_amount)
+		{
+			type = PROTOCOL_DBCONSIGNSKIPSN;
+		}
+
+		DBConsignSkipSN(const DBConsignSkipSN &rhs)
+			: Protocol(rhs),skip_amount(rhs.skip_amount) { }
+
+		GNET::Protocol *Clone() const { return new DBConsignSkipSN(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << skip_amount;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> skip_amount;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 16; }

@@ -1,0 +1,32 @@
+	public:
+		int dummy;
+		enum { PROTOCOL_TYPE = PROTOCOL_QUEENOPENBATH };
+	public:
+		QueenOpenBath() { type = PROTOCOL_QUEENOPENBATH; }
+		QueenOpenBath(void*) : Protocol(PROTOCOL_QUEENOPENBATH) { }
+		QueenOpenBath (int l_dummy)
+			 : dummy(l_dummy)
+		{
+			type = PROTOCOL_QUEENOPENBATH;
+		}
+
+		QueenOpenBath(const QueenOpenBath &rhs)
+			: Protocol(rhs),dummy(rhs.dummy) { }
+
+		GNET::Protocol *Clone() const { return new QueenOpenBath(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << dummy;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> dummy;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

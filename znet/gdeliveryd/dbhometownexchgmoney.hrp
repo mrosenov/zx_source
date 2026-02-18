@@ -1,0 +1,46 @@
+
+#ifndef __GNET_DBHOMETOWNEXCHGMONEY_HPP
+#define __GNET_DBHOMETOWNEXCHGMONEY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhometownexchgmoneyarg"
+#include "dbhometownexchgmoneyres"
+#include "hometownmanager.h"
+
+namespace GNET
+{
+
+class DBHometownExchgMoney : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhometownexchgmoney"
+#undef	RPC_BASECLASS
+
+	int gs_sid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBHometownExchgMoneyArg *arg = (DBHometownExchgMoneyArg *)argument;
+		// DBHometownExchgMoneyRes *res = (DBHometownExchgMoneyRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHometownExchgMoneyArg *arg = (DBHometownExchgMoneyArg *)argument;
+		DBHometownExchgMoneyRes *res = (DBHometownExchgMoneyRes *)result;
+		HometownManager::GetInstance()->OnExchgMoney(res->retcode, arg->roleid, gs_sid, arg->amount, res->syncdata);
+	}
+
+	void OnTimeout()
+	{
+		DBHometownExchgMoneyArg *arg = (DBHometownExchgMoneyArg *)argument;
+		HometownManager::GetInstance()->OnExchgMoney(ERR_TIMEOUT, arg->roleid, gs_sid, arg->amount, arg->syncdata);
+	}
+
+};
+
+};
+#endif

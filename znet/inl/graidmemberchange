@@ -1,0 +1,47 @@
+	public:
+		int roleid;
+		int gs_id;
+		int map_id;
+		int index;
+		unsigned char operation;
+		enum { PROTOCOL_TYPE = PROTOCOL_GRAIDMEMBERCHANGE };
+	public:
+		GRaidMemberChange() { type = PROTOCOL_GRAIDMEMBERCHANGE; }
+		GRaidMemberChange(void*) : Protocol(PROTOCOL_GRAIDMEMBERCHANGE) { }
+		GRaidMemberChange (int l_roleid,int l_gs_id = 0,int l_map_id = 0,
+			int l_index = 0,unsigned char l_operation = 0)
+			 : roleid(l_roleid),gs_id(l_gs_id),map_id(l_map_id)
+			,index(l_index),operation(l_operation)
+		{
+			type = PROTOCOL_GRAIDMEMBERCHANGE;
+		}
+
+		GRaidMemberChange(const GRaidMemberChange &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),gs_id(rhs.gs_id),map_id(rhs.map_id)
+			,index(rhs.index),operation(rhs.operation) { }
+
+		GNET::Protocol *Clone() const { return new GRaidMemberChange(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << gs_id;
+			os << map_id;
+			os << index;
+			os << operation;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> gs_id;
+			os >> map_id;
+			os >> index;
+			os >> operation;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

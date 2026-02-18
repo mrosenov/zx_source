@@ -1,0 +1,286 @@
+
+#ifndef __GNET_PUTROLE_HPP
+#define __GNET_PUTROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "dbbuffer.h"
+#include "rolepair"
+#include "glog.h"
+
+#include "gamedbmanager.h"
+
+namespace GNET
+{
+
+class PutRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "putrole"
+#undef	RPC_BASECLASS
+
+	bool SaveData(RolePair *arg, RpcRetcode *res)
+	{
+		Marshal::OctetsStream key, key_user;
+		Marshal::OctetsStream value_status, value_inventory, value_task, value_role_base, value_storehouse;
+		try
+		{
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * pstorehouse = StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage * ptask = StorageEnv::GetStorage("task");
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::Storage * pachievement = StorageEnv::GetStorage("achievement");
+			StorageEnv::Storage * paward = StorageEnv::GetStorage("award"); 
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pweborder = StorageEnv::GetStorage("weborder");
+			int money_delta=0,cash_delta=0;
+
+			if ( arg->key.id != arg->value.id )
+			{
+				Log::log(LOG_ERR,"PutRole, fatal, key.id(%d)!=value.id(%d)\n",arg->key.id,arg->value.id);
+				res->retcode = ERR_VERIFYFAILED;
+				return true;
+			}
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << arg->key;
+				GRoleBase role_base;
+				if(pbase->find(key,value_role_base,txn))
+				{
+					value_role_base >> role_base;
+					if(role_base.status == _ROLE_STATUS_SELLING)
+					{
+						res->retcode = ERR_DATAERROR;
+						Log::log(LOG_ERR,"PutRole, fatal, roleid(%d) is consigning\n",arg->key.id);
+						return true;
+					}
+				}
+				GRoleStorehouse store_house;
+				bool store_house_modify = false;
+				if (pstorehouse->find(key, value_storehouse, txn))
+					value_storehouse >> store_house;
+				if( arg->data_mask & QPUT_INVENTORY )
+				{
+					if(pinventory->find(key, value_inventory, txn))
+					{
+						GRolePocket	items;
+						value_inventory >> items;
+						if(arg->value.inventory.timestamp-items.timestamp<=0)
+						{
+							Log::log(LOG_ERR,"PutRole, fatal, roleid=%d, save counter mismatch."
+								"%d<%d", arg->key.id, arg->value.inventory.timestamp, 
+								items.timestamp);
+							res->retcode = ERR_VERIFYFAILED;
+							return true;
+						}
+						money_delta = arg->value.inventory.money - items.money;
+					}
+					pinventory->insert( key, Marshal::OctetsStream() << arg->value.inventory, txn );
+					store_house.fuwen = arg->value.storehouse.fuwen;
+					store_house_modify = true;
+				}
+
+				User user;
+				key_user << arg->value.userid;
+				if(user.logicuid && (int)user.logicuid!=LOGICUID(arg->key.id))
+				{
+					txn.abort();
+					throw DbException(DB_VERIFY_BAD);
+				}
+				Marshal::OctetsStream(puser->find(key_user,txn))>>user;
+				bool user_dirty = false;
+				if(arg->data_mask & QPUT_CASH)
+				{
+					user_dirty = true;
+					Log::formatlog("updatecash","roleid=%d:used=%d:serail=%d:cash_used=%d:pre_serial=%d",
+						arg->key.id, arg->value.cash_used, arg->value.cash_serial, user.cash_used,
+						user.use_serial);
+					cash_delta = arg->value.cash_used - user.cash_used;
+					user.use_serial = arg->value.cash_serial;
+					user.cash_used = arg->value.cash_used;
+//					puser->insert( key_user, Marshal::OctetsStream()<<user, txn );
+				}
+				if(GameDBServer::GetInstance()->IsActivateKill())
+				{
+					user_dirty = true;
+					Log::formatlog("updatecash","roleid=%d:used=%d:serail=%d:cash_used=%d:pre_serial=%d",
+							arg->key.id, arg->value.cash_used, arg->value.cash_serial, user.cash_used,
+							user.use_serial);
+					cash_delta = arg->value.cash_used - user.cash_used;
+					user.use_serial = arg->value.cash_serial;
+					user.cash_used = arg->value.cash_used;
+					user.flag |= USER_TABLE_CRUSHED;
+//					puser->insert( key_user, Marshal::OctetsStream()<<user, txn );
+				}
+				if (!arg->value.processed_weborders.empty())
+				{
+					user_dirty = true;
+					std::vector<int64_t>::const_iterator it, ite = arg->value.processed_weborders.end();
+					for (it = arg->value.processed_weborders.begin(); it != ite; ++it)
+					{
+						std::vector<int64_t> & tmp = user.unprocessed_orders;
+						tmp.erase(std::remove(tmp.begin(), tmp.end(), *it), tmp.end());//删除 tmp 中所有值等于 *it 的元素
+						Marshal::OctetsStream key_order, os_order;
+						key_order << *it;
+						if (!pweborder->find(key_order, os_order, txn))
+						{
+							Log::log(LOG_ERR, "PutRole, can not find weborder %lld for user %d", *it, arg->value.userid);
+							continue;
+						}
+						WebOrder order;
+						os_order >> order;
+						//此处的验证逻辑 应与 GetCashAvail 保持一致
+						if (order.userid != (int)arg->value.userid)
+						{
+							Log::log(LOG_ERR, "PutRole, userid %d order %lld -> userid %d", arg->value.userid, *it, order.userid);
+						}
+						/* gs 会反复存
+						if (order.status != WEB_ORDER_UNPROCESSED)
+						{
+							Log::log(LOG_ERR, "PutRole, userid %d order %lld status %d invalid", arg->value.userid, *it, order.status);
+						}
+						*/
+						order.status = WEB_ORDER_PROCESSED;
+						pweborder->insert(key_order, Marshal::OctetsStream()<<order, txn);
+					}
+				}
+				if (user_dirty)
+					puser->insert( key_user, Marshal::OctetsStream()<<user, txn );
+
+				arg->value.status.updatetime = Timer::GetTime();
+				if(GameDBServer::GetInstance()->IsActivateKill())
+					arg->value.status.version |= STATUS_TABLE_CRUSHED;
+				pstatus->insert( key, Marshal::OctetsStream() << arg->value.status, txn );
+				if( arg->data_mask & QPUT_STOREHOUSE )
+				{
+					money_delta += arg->value.storehouse.money - store_house.money;
+					store_house.capacity = arg->value.storehouse.capacity;
+					store_house.money = arg->value.storehouse.money;
+					store_house.items = arg->value.storehouse.items;
+					store_house.capacity2 = arg->value.storehouse.capacity2;
+					store_house.items2 = arg->value.storehouse.items2;
+					store_house_modify = true;
+					/*
+					Marshal::OctetsStream value;
+					if(pstorehouse->find(key, value, txn))
+					{
+						GRoleStorehouse store;
+						value >> store;
+						money_delta += arg->value.storehouse.money - store.money;
+					}
+					pstorehouse->insert( key, Marshal::OctetsStream() << arg->value.storehouse, txn );
+					*/
+				}
+				if (store_house_modify)
+					pstorehouse->insert(key, Marshal::OctetsStream()<<store_house, txn);
+
+				if( arg->data_mask & QPUT_TASK )
+					ptask->insert( key, Marshal::OctetsStream()<<arg->value.task,txn );
+
+				GRoleBase2 base2;
+				Marshal::OctetsStream oct_base2;
+				if (pbase2->find(key, oct_base2, txn))
+					Marshal::OctetsStream(oct_base2) >> base2;
+				arg->value.base2.bonus_withdraw = base2.bonus_withdraw;
+				arg->value.base2.exp_withdraw_today = base2.exp_withdraw_today;
+				arg->value.base2.exp_withdraw_time = base2.exp_withdraw_time;
+				arg->value.base2.data_timestamp = base2.data_timestamp;
+				arg->value.base2.src_zoneid = base2.src_zoneid;
+				//确保以上数据不被gs覆盖
+
+				/*
+				base2.id = arg->key.id;
+				base2.bonus_reward = arg->value.bonus_reward;
+				base2.bonus_used = arg->value.bonus_used;
+				base2.composkills = arg->value.composkills;
+				base2.littlepet = arg->value.littlepet;
+				base2.flag_mask = arg->value.flag_mask;
+				LOG_TRACE("PutRole %d composkill.size %d littlepet.size %d flag_mask 0x%x", arg->key.id, base2.composkills.size(), base2.littlepet.size(), base2.flag_mask);
+				base2.deity_level = arg->value.deity_level;
+				base2.deity_exp = arg->value.deity_exp;
+				base2.dp = arg->value.dp;
+				base2.tower_raid = arg->value.tower_raid;
+				base2.runescore = arg->value.runescore;
+				base2.comsumption = arg->value.comsumption;
+				*/
+				pbase2->insert(key, Marshal::OctetsStream()<<arg->value.base2, txn);
+
+				paward->insert(key, Marshal::OctetsStream() << arg->value.award, txn);
+
+				if( arg->data_mask & QPUT_ACHIEVEMENT )
+					pachievement->insert( key, Marshal::OctetsStream()<<arg->value.achievement,txn );
+
+				res->retcode = ERR_SUCCESS;
+				if(money_delta)
+					GameDBManager::GetInstance()->UpdateMoney(arg->key.id, money_delta);
+				if(cash_delta)
+					GameDBManager::GetInstance()->UpdateCash(cash_delta);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			res->retcode = -1;
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				return false;
+			else
+				Log::log( LOG_ERR, "PutRole, roleid=%d, what=%s\n", arg->key.id, e.what() );
+		}
+		return true;
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RolePair *arg = (RolePair *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+
+		LOG_TRACE( "PutRole, roleid=%d mask=%d line=%d timestamp=%d priority=%d.\n", arg->key.id, arg->data_mask, 
+				arg->line_id, arg->value.inventory.timestamp, arg->priority);
+
+		int extend = 100000;
+		int retry = arg->priority;
+		if(retry > 2)
+			retry = 2;
+		do
+		{
+			if(SaveData(arg,res) || retry<=0)
+				break;
+			usleep(extend);
+			extend += 900000;
+			retry--;
+		}while(true);
+		unsigned int money = arg->value.inventory.money + arg->value.storehouse.money;
+		if(arg->priority>1 || (arg->value.inventory.timestamp%6)==0)
+		{
+			GLog::action("status,userid=%d:roleid=%d:offline=%d:timestamp=%d:level=%d:exp=%lld:money=%u:cashused=%d:worldtag=%d:x=%.2f:y=%.2f:z=%.2f:hp=%d:mp=%d:ip=%s",
+				arg->value.userid,arg->key.id,arg->priority>=2?1:0,arg->value.inventory.timestamp,arg->value.status.level,arg->value.status.exp,money,
+				arg->value.cash_used,arg->value.status.worldtag,arg->value.status.posx,arg->value.status.posy,arg->value.status.posz,arg->value.status.hp,
+				arg->value.status.mp, inet_ntoa(*(struct in_addr*)(&arg->value.loginip)));
+		}
+
+		if(res->retcode != ERR_SUCCESS)
+			Log::log( LOG_ERR, "PutRole, roleid=%d, priority=%d, retry failed\n", arg->key.id, arg->priority);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

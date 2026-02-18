@@ -1,0 +1,35 @@
+	public:
+		Octets data;
+		PlayerVector playerlist;
+		enum { PROTOCOL_TYPE = PROTOCOL_S2CMULTICAST2 };
+	public:
+		S2CMulticast2() { type = PROTOCOL_S2CMULTICAST2; }
+		S2CMulticast2(void*) : Protocol(PROTOCOL_S2CMULTICAST2) { }
+		S2CMulticast2 (const Octets& l_data,PlayerVector l_playerlist)
+			 : data(l_data),playerlist(l_playerlist)
+		{
+			type = PROTOCOL_S2CMULTICAST2;
+		}
+
+		S2CMulticast2(const S2CMulticast2 &rhs)
+			: Protocol(rhs),data(rhs.data),playerlist(rhs.playerlist) { }
+
+		GNET::Protocol *Clone() const { return new S2CMulticast2(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << data;
+			os << playerlist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> data;
+			os >> playerlist;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 100; }
+
+		bool SizePolicy(size_t size) const { return size <= 102400; }

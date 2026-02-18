@@ -1,0 +1,25 @@
+
+#ifndef __GNET_COMBATTOP_RE_HPP
+#define __GNET_COMBATTOP_RE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "combatrecord"
+
+namespace GNET
+{
+
+class CombatTop_Re : public GNET::Protocol
+{
+	#include "combattop_re"
+
+	void Process(Manager *manager, Manager::Session::ID sid)
+	{
+		GLinkServer::GetInstance()->Send(localsid,this);
+	}
+};
+
+};
+
+#endif

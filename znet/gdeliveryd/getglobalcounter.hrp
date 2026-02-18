@@ -1,0 +1,50 @@
+
+#ifndef __GNET_GETGLOBALCOUNTER_HPP
+#define __GNET_GETGLOBALCOUNTER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "maplinkserver.h"
+#include "globaldropremainbroadcast.hpp"
+#include "getglobalcounterarg"
+#include "getglobalcounterres"
+
+namespace GNET
+{
+
+class GetGlobalCounter : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getglobalcounter"
+#undef	RPC_BASECLASS
+	int max_count;
+	int itemid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GetGlobalCounterArg *arg = (GetGlobalCounterArg *)argument;
+		// GetGlobalCounterRes *res = (GetGlobalCounterRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GetGlobalCounterArg *arg = (GetGlobalCounterArg *)argument;
+		GetGlobalCounterRes *res = (GetGlobalCounterRes *)result;
+		LOG_TRACE("GetGlobalCounter itemid=%d max_count=%d cur_count=%d retcode=%d",itemid,max_count,res->cur_count,res->retcode);
+		if(res->retcode==ERR_SUCCESS)
+		{
+			GlobalDropRemainBroadCast msg(itemid,((max_count >= res->cur_count)?(max_count - res->cur_count):0));
+			LinkServer::GetInstance().BroadcastProtocol(&msg);
+		}
+	}
+
+	void OnTimeout()
+	{
+		GetGlobalCounterArg *arg = (GetGlobalCounterArg *)argument;
+		Log::log( LOG_ERR,"GetGlobalCounter: timeout. template_id=%d start_time=%d\n", arg->template_id,arg->start_time);
+	}
+
+};
+
+};
+#endif

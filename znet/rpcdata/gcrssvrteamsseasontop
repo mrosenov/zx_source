@@ -1,0 +1,70 @@
+#ifndef __GNET_GCRSSVRTEAMSSEASONTOP_RPCDATA
+#define __GNET_GCRSSVRTEAMSSEASONTOP_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gtoptable"
+
+namespace GNET
+{
+	class GCrssvrTeamsSeasonTop : public GNET::Rpc::Data
+	{
+	public:
+		std::map<int, int> pos_map;
+		GTopTable table;
+		int updatetime;
+
+	public:
+		GCrssvrTeamsSeasonTop (int l_updatetime = 0)
+			: updatetime(l_updatetime)
+		{
+		}
+
+		GCrssvrTeamsSeasonTop(const GCrssvrTeamsSeasonTop &rhs)
+			: pos_map(rhs.pos_map),table(rhs.table),updatetime(rhs.updatetime) { }
+
+		Rpc::Data *Clone() const { return new GCrssvrTeamsSeasonTop(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GCrssvrTeamsSeasonTop *r = dynamic_cast<const GCrssvrTeamsSeasonTop *>(&rhs);
+			if (r && r != this)
+			{
+				pos_map = r->pos_map;
+				table = r->table;
+				updatetime = r->updatetime;
+			}
+			return *this;
+		}
+
+		GCrssvrTeamsSeasonTop& operator = (const GCrssvrTeamsSeasonTop &rhs)
+		{
+			const GCrssvrTeamsSeasonTop *r = &rhs;
+			if (r && r != this)
+			{
+				pos_map = r->pos_map;
+				table = r->table;
+				updatetime = r->updatetime;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << pos_map;
+			os << table;
+			os << updatetime;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> pos_map;
+			os >> table;
+			os >> updatetime;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,51 @@
+
+TOP_SRCDIR = ..
+
+SINGLE_THREAD = false
+DEBUG_VERSION = true
+
+include ../mk/gcc.defs.mk
+
+LOG2_DIR = $(TOP_SRCDIR)/log_client
+INCLUDES += -I$(TOP_SRCDIR)/storage -I/usr/include/db4 -I$(TOP_SRCDIR)/include -I$(LOG2_DIR)
+CFLAGS += -g -ggdb #-O0 -O2 #-static
+LDFLAGS += -ldb_cxx-4.2 -lz
+DEFINES += -DUSE_DB -DUSE_BDB -DUSE_LOGCLIENT -DMPPC_4WAY -DUSE_TRANSACTION -D_FILE_OFFSET_BITS=64 
+
+LOG2SRC = $(LOG2_DIR)/logger.cpp $(LOG2_DIR)/log2tcpclient.cpp $(LOG2_DIR)/log2udpclient.cpp
+LOG2STUBSRC = $(LOG2_DIR)/state.cxx $(LOG2_DIR)/stubs.cxx 
+OBJS = ../storage/storage.o ../storage/storagetool.o gamedbserver.o state.o stubs.o gamedbd.o gamedbmanager.o accessdb.o mergedb.o utilfunction.o importdb.o gamedbclient.o familycache.o domaincmd.o
+
+ifeq ($(SINGLE_THREAD),true)
+	LOG2OBJ := $(LOG2SRC:%.cpp=%.o)
+	LOG2STUB := $(LOG2STUBSRC:%.cxx=%.o)
+else
+	LOG2OBJ := $(LOG2SRC:%.cpp=%_m.o)
+	LOG2STUB := $(LOG2STUBSRC:%.cxx=%_m.o)
+endif
+
+all : gamedbd.bdb
+
+gamedbd.bdb : $(OBJS) $(SHAREOBJ) $(SHARE_SOBJ) $(LOGOBJ) $(LOGSTUB) $(LOG2OBJ) $(LOG2STUB)
+	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(SHAREOBJ) $(SHARE_SOBJ) $(LOGOBJ) $(LOGSTUB) $(LOG2OBJ) $(LOG2STUB) -lcrypto -ldl
+
+toplist : $(SHAREOBJ) $(SHARE_SOBJ) ../storage/storage.o toplist.cpp
+	$(LD) $(LDFLAGS) -D_REENTRANT -g -ggdb -o $@ toplist.cpp $(SHAREOBJ) $(SHARE_SOBJ) ../storage/storage.o -I$(INCLUDES) -DUSE_WDB
+
+cashstat: $(SHAREOBJ) $(SHARE_SOBJ) ../storage/storage.o statistic.cpp
+	$(LD) $(LDFLAGS) -D_REENTRANT -O2 -o $@ statistic.cpp $(SHAREOBJ) $(SHARE_SOBJ) ../storage/storage.o -I$(INCLUDES) -DUSE_WDB
+
+ifeq ($(SINGLE_THREAD),true)
+$(LOG2OBJ): %.o: %.cpp
+	$(CC) -c $(DEFINES) $(INCLUDES) $(CFLAGS) $< -o $@
+$(LOG2STUB): %.o: %.cxx
+	$(CC) -c $(DEFINES) $(INCLUDES) $(CFLAGS) $< -o $@
+else
+$(LOG2OBJ): %_m.o: %.cpp
+	$(CC) -c $(DEFINES) $(INCLUDES) $(CFLAGS) $< -o $@
+$(LOG2STUB): %_m.o: %.cxx
+	$(CC) -c $(DEFINES) $(INCLUDES) $(CFLAGS) $< -o $@
+endif
+
+include ../mk/gcc.rules.mk
+

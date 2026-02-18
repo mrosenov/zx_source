@@ -1,0 +1,115 @@
+#ifndef __GNET_WEBORDER_RPCDATA
+#define __GNET_WEBORDER_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "webmallfunction"
+
+namespace GNET
+{
+	class WebOrder : public GNET::Rpc::Data
+	{
+	public:
+		int64_t orderid;
+		int userid;
+		int roleid;
+		int paytype;
+		WebMallFunctionVector functions;
+		int status;
+		int timestamp;
+		int reserved1;
+		int reserved2;
+		int reserved3;
+
+	public:
+		WebOrder (int64_t l_orderid = 0,int l_userid = 0,int l_roleid = 0
+			,int l_paytype = 0,WebMallFunctionVector l_functions = WebMallFunctionVector(),int l_status = 0
+			,int l_timestamp = 0,int l_reserved1 = 0,int l_reserved2 = 0
+			,int l_reserved3 = 0)
+			: orderid(l_orderid),userid(l_userid),roleid(l_roleid)
+			,paytype(l_paytype),functions(l_functions),status(l_status)
+			,timestamp(l_timestamp),reserved1(l_reserved1),reserved2(l_reserved2)
+			,reserved3(l_reserved3)
+		{
+		}
+
+		WebOrder(const WebOrder &rhs)
+			: orderid(rhs.orderid),userid(rhs.userid),roleid(rhs.roleid),
+			paytype(rhs.paytype),functions(rhs.functions),status(rhs.status),
+			timestamp(rhs.timestamp),reserved1(rhs.reserved1),reserved2(rhs.reserved2),
+			reserved3(rhs.reserved3) { }
+
+		Rpc::Data *Clone() const { return new WebOrder(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const WebOrder *r = dynamic_cast<const WebOrder *>(&rhs);
+			if (r && r != this)
+			{
+				orderid = r->orderid;
+				userid = r->userid;
+				roleid = r->roleid;
+				paytype = r->paytype;
+				functions = r->functions;
+				status = r->status;
+				timestamp = r->timestamp;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+			}
+			return *this;
+		}
+
+		WebOrder& operator = (const WebOrder &rhs)
+		{
+			const WebOrder *r = &rhs;
+			if (r && r != this)
+			{
+				orderid = r->orderid;
+				userid = r->userid;
+				roleid = r->roleid;
+				paytype = r->paytype;
+				functions = r->functions;
+				status = r->status;
+				timestamp = r->timestamp;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << orderid;
+			os << userid;
+			os << roleid;
+			os << paytype;
+			os << functions;
+			os << status;
+			os << timestamp;
+			os << reserved1;
+			os << reserved2;
+			os << reserved3;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> orderid;
+			os >> userid;
+			os >> roleid;
+			os >> paytype;
+			os >> functions;
+			os >> status;
+			os >> timestamp;
+			os >> reserved1;
+			os >> reserved2;
+			os >> reserved3;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<WebOrder>	WebOrderVector;
+};
+#endif

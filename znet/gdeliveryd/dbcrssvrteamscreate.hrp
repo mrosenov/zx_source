@@ -1,0 +1,84 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSCREATE_HPP
+#define __GNET_DBCRSSVRTEAMSCREATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamscreatearg"
+#include "dbcrssvrteamscreateres"
+#include "synccrosscrssvrteams.hrp"
+#include "gmember"
+#include "gfactioninfo"
+#include "crssvrteamsmanager.h"
+#include "crssvrteamsnotify_re.hpp"
+#include "postcrssvrteamscreate.hrp"
+
+
+namespace GNET
+{
+
+class DBCrssvrTeamsCreate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamscreate"
+#undef	RPC_BASECLASS
+
+	int gamesid;
+	int linksid;
+	int localsid;
+
+	void NotifyUnamed(char result,int zoneid,int teamid,const Octets& name)
+	{
+		PostCrssvrTeamsCreate* rpc = (PostCrssvrTeamsCreate*) Rpc::Call(RPC_POSTCRSSVRTEAMSCREATE,
+			PostCrssvrTeamsCreateArg((char)result,zoneid,teamid,name));
+		UniqueNameClient::GetInstance()->SendProtocol(rpc);
+	}
+
+	void NotifyCentral(int zoneid, int teamid, GCrssvrTeamsData& info)
+	{
+		//if(!CrssvrTeamsManager::Instance()->IsRoleCrossOnline(teamid))
+		//	return;
+		// 新创建的战队，要及时同步到跨服，因为涉及到第一次存入跨服数据库得问题
+		SyncCrossCrssvrTeams* rpc = (SyncCrossCrssvrTeams*) Rpc::Call(RPC_SYNCCROSSCRSSVRTEAMS,	SyncCrossCrssvrTeamsArg(zoneid, teamid, info));
+		CentralDeliveryClient::GetInstance()->SendProtocol(rpc);
+	}
+	
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsCreateArg *arg = (DBCrssvrTeamsCreateArg *)argument;
+		// DBCrssvrTeamsCreateRes *res = (DBCrssvrTeamsCreateRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsCreateArg *arg = (DBCrssvrTeamsCreateArg *)argument;
+		DBCrssvrTeamsCreateRes *res = (DBCrssvrTeamsCreateRes *)result;
+		
+		GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		LOG_TRACE("DBCrssvrTeamsCreate, retcode=%d, roleid=%d, teamid=%d, zoneid=%d, gamesid=%d", res->retcode, arg->roleid, arg->teamid, arg->zoneid, gamesid);
+		if(res->retcode==ERR_SUCCESS)
+		{
+			CrssvrTeamsManager::Instance()->OnCreate(arg->roleid, res->info);
+			NotifyCentral(arg->zoneid, arg->teamid, res->info);
+		}
+		else
+			dsm->Send(linksid, CrssvrTeamsNotify_Re(ERR_CRSSVRTEAMS_DBFAILURE,arg->roleid, arg->teamid, localsid));
+		NotifyUnamed(res->retcode==ERR_SUCCESS, dsm->zoneid, arg->teamid, arg->name);
+		GProviderServer::GetInstance()->Send(gamesid, GMailEndSync(0,res->retcode,arg->roleid,res->syncdata));
+
+
+	}
+
+	void OnTimeout()
+	{
+		DBCrssvrTeamsCreateArg *arg = (DBCrssvrTeamsCreateArg *)argument;
+		Log::log( LOG_ERR,"DBCrssvrTeamsCreate: timeout. roleid=%d,teamid=%d", arg->roleid,arg->teamid);
+		GDeliveryServer::GetInstance()->Send(linksid,CrssvrTeamsNotify_Re(ERR_CRSSVRTEAMS_DB_TIMEOUT,arg->roleid,arg->teamid,localsid));
+	}
+
+};
+
+};
+#endif

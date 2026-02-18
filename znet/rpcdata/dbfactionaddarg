@@ -1,0 +1,88 @@
+#ifndef __GNET_DBFACTIONADDARG_RPCDATA
+#define __GNET_DBFACTIONADDARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBFactionAddArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int rid;
+		unsigned int fid;
+		unsigned char level;
+		unsigned char occupation;
+		Octets name;
+		GMailSyncData syncdata;
+
+	public:
+		DBFactionAddArg (unsigned int l_rid = 0,unsigned int l_fid = 0,unsigned char l_level = 0
+			,unsigned char l_occupation = 0,const Octets& l_name = Octets(0),const GMailSyncData& l_syncdata = GMailSyncData())
+			: rid(l_rid),fid(l_fid),level(l_level)
+			,occupation(l_occupation),name(l_name),syncdata(l_syncdata)
+		{
+		}
+
+		DBFactionAddArg(const DBFactionAddArg &rhs)
+			: rid(rhs.rid),fid(rhs.fid),level(rhs.level),
+			occupation(rhs.occupation),name(rhs.name),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBFactionAddArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFactionAddArg *r = dynamic_cast<const DBFactionAddArg *>(&rhs);
+			if (r && r != this)
+			{
+				rid = r->rid;
+				fid = r->fid;
+				level = r->level;
+				occupation = r->occupation;
+				name = r->name;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBFactionAddArg& operator = (const DBFactionAddArg &rhs)
+		{
+			const DBFactionAddArg *r = &rhs;
+			if (r && r != this)
+			{
+				rid = r->rid;
+				fid = r->fid;
+				level = r->level;
+				occupation = r->occupation;
+				name = r->name;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << rid;
+			os << fid;
+			os << level;
+			os << occupation;
+			os << name;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> rid;
+			os >> fid;
+			os >> level;
+			os >> occupation;
+			os >> name;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,50 @@
+
+#ifndef __GNET_DBFUNGAMEGETINFO_HPP
+#define __GNET_DBFUNGAMEGETINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfungamegetinfoarg"
+#include "dbfungamegetinfores"
+#include "fungamemanager.h"
+
+namespace GNET
+{
+
+class DBFunGameGetInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfungamegetinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFunGameGetInfoArg *arg = (DBFunGameGetInfoArg *)argument;
+		// DBFunGameGetInfoRes *res = (DBFunGameGetInfoRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFunGameGetInfoArg *arg = (DBFunGameGetInfoArg *)argument;
+		DBFunGameGetInfoRes *res = (DBFunGameGetInfoRes *)result;
+		FunGameManager fm = FunGameManager::GetInstance();
+		if (res->retcode == ERR_SUCCESS)
+			fm.OnLoad(arg->roleid, res->fungame_info);
+		else
+			Log::log( LOG_ERR, "DBFunGameGetInfo, roleid=%d.retcode=%d",
+                                                        arg->roleid,res->retcode );
+	}
+
+	void OnTimeout()
+	{
+		DBFunGameGetInfoArg *arg = (DBFunGameGetInfoArg *)argument;
+		Log::log( LOG_ERR, "DBFunGameGetInfo, timeout roleid=%d.",
+                                                        arg->roleid);
+	}
+
+};
+
+};
+#endif

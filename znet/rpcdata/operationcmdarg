@@ -1,0 +1,64 @@
+#ifndef __GNET_OPERATIONCMDARG_RPCDATA
+#define __GNET_OPERATIONCMDARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class OperationCmdArg : public GNET::Rpc::Data
+	{
+	public:
+		int operationtype;
+		Octets code;
+
+	public:
+		OperationCmdArg (int l_operationtype = 0,const Octets& l_code = Octets(0))
+			: operationtype(l_operationtype),code(l_code)
+		{
+		}
+
+		OperationCmdArg(const OperationCmdArg &rhs)
+			: operationtype(rhs.operationtype),code(rhs.code) { }
+
+		Rpc::Data *Clone() const { return new OperationCmdArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const OperationCmdArg *r = dynamic_cast<const OperationCmdArg *>(&rhs);
+			if (r && r != this)
+			{
+				operationtype = r->operationtype;
+				code = r->code;
+			}
+			return *this;
+		}
+
+		OperationCmdArg& operator = (const OperationCmdArg &rhs)
+		{
+			const OperationCmdArg *r = &rhs;
+			if (r && r != this)
+			{
+				operationtype = r->operationtype;
+				code = r->code;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << operationtype;
+			os << code;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> operationtype;
+			os >> code;
+			return os;
+		}
+
+	};
+};
+#endif

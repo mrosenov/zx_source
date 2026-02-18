@@ -1,0 +1,38 @@
+	public:
+		int gmroleid;
+		unsigned int localsid;
+		int gs_id;
+		enum { PROTOCOL_TYPE = PROTOCOL_GMSHUTDOWNLINE };
+	public:
+		GMShutdownLine() { type = PROTOCOL_GMSHUTDOWNLINE; }
+		GMShutdownLine(void*) : Protocol(PROTOCOL_GMSHUTDOWNLINE) { }
+		GMShutdownLine (int l_gmroleid,unsigned int l_localsid,int l_gs_id)
+			 : gmroleid(l_gmroleid),localsid(l_localsid),gs_id(l_gs_id)
+		{
+			type = PROTOCOL_GMSHUTDOWNLINE;
+		}
+
+		GMShutdownLine(const GMShutdownLine &rhs)
+			: Protocol(rhs),gmroleid(rhs.gmroleid),localsid(rhs.localsid),gs_id(rhs.gs_id) { }
+
+		GNET::Protocol *Clone() const { return new GMShutdownLine(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gmroleid;
+			os << localsid;
+			os << gs_id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gmroleid;
+			os >> localsid;
+			os >> gs_id;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

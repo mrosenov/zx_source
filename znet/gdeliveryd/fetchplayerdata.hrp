@@ -1,0 +1,73 @@
+
+#ifndef __GNET_FETCHPLAYERDATA_HPP
+#define __GNET_FETCHPLAYERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "fetchplayerdataarg"
+#include "fetchplayerdatares"
+#include "disconnectplayer.hpp"
+#include "senddataandidentity.hpp"
+
+namespace GNET
+{
+
+class FetchPlayerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "fetchplayerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// FetchPlayerDataArg *arg = (FetchPlayerDataArg *)argument;
+		// FetchPlayerDataRes *res = (FetchPlayerDataRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FetchPlayerDataArg *arg = (FetchPlayerDataArg *)argument;
+		FetchPlayerDataRes *res = (FetchPlayerDataRes *)result;
+		UserInfo * pinfo = UserContainer::GetInstance().FindUser(arg->userid);
+		if (pinfo == NULL || (pinfo->status != _STATUS_REMOTE_HALFLOGIN && pinfo->status != _STATUS_REMOTE_CACHERANDOM))
+		{
+			Log::log (LOG_ERR, "FetchPlayerData userid %d roleid %d, user status %d invalid",
+					arg->userid, arg->roleid, pinfo==NULL?0:pinfo->status);
+			return;
+		}
+		if (res->retcode != ERR_SUCCESS)
+		{
+			Log::log(LOG_ERR, "FetchPlayerData roleid %d userid %d, errno %d", arg->roleid, arg->userid, res->retcode);
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, DisconnectPlayer(arg->roleid, -1, pinfo->localsid, -1));
+			UserContainer::GetInstance().UserLogout(pinfo);
+			return;
+		}
+		int src_zoneid = GDeliveryServer::GetInstance()->zoneid;
+		SendDataAndIdentity pro(arg->roleid, arg->userid, src_zoneid, pinfo->ip, pinfo->iseckey, pinfo->oseckey, pinfo->account, pinfo->rand_key, arg->flag, res->data, 0, pinfo->logintime, (char)(pinfo->gmstatus&GMSTATE_ACTIVE!=0), pinfo->rewardtype, pinfo->rewarddata, pinfo->privileges);
+		ForbidUserTalk::GetInstance().GetForbidUserTalk(arg->userid, pro.forbid_talk);
+		if (IsTransToCentralDS(arg->flag))
+		{
+			LOG_TRACE("SendDataAndIdentity to Central DS, roleid %d userid %d ip %d isec.size %d osec.size %d account.size %d random_key.size %d logintime %d forbid_time %d flag=%d",
+					arg->roleid, arg->userid, pinfo->ip, pinfo->iseckey.size(), pinfo->oseckey.size(), pinfo->account.size(), pinfo->rand_key.size(), pinfo->logintime, pro.forbid_talk.time, arg->flag);
+			CentralDeliveryClient::GetInstance()->SendProtocol(pro);
+		}
+		else if (IsTransToNormalDS(arg->flag))
+		{
+			int zoneid = res->data.base2.src_zoneid;
+			LOG_TRACE("SendDataAndIdentity to DS(zoneid=%d), roleid %d userid %d ip %d isec.size %d osec.size %d account.size %d random_key.size %d",
+				zoneid,	arg->roleid, arg->userid, pinfo->ip, pinfo->iseckey.size(), pinfo->oseckey.size(), pinfo->account.size(), pinfo->rand_key.size());
+			CentralDeliveryServer::GetInstance()->DispatchProtocol(zoneid, pro);
+		}
+	}
+
+	void OnTimeout()
+	{
+		//RemoLoggingUsers::CheckTimeoutUser ¥¶¿Ì≥¨ ±
+	}
+
+};
+
+};
+#endif

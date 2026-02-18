@@ -1,0 +1,48 @@
+
+#ifndef __GNET_DBSIEGECHALLENGE_HPP
+#define __GNET_DBSIEGECHALLENGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegechallengearg"
+#include "dbsiegechallengeres"
+#include "siegechallenge_re.hpp"
+
+namespace GNET
+{
+
+class DBSiegeChallenge : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegechallenge"
+#undef	RPC_BASECLASS
+	int localsid, link_sid, roleid, gamesid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSiegeChallengeArg *arg = (DBSiegeChallengeArg *)argument;
+		// DBSiegeChallengeRes *res = (DBSiegeChallengeRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSiegeChallengeArg *arg = (DBSiegeChallengeArg *)argument;
+		DBSiegeChallengeRes *res = (DBSiegeChallengeRes *)result;
+		if (res->retcode == ERR_SUCCESS)
+		{
+			SiegeManager::GetInstance()->OnChallenge(arg->battle_id, res->challenger);
+		}
+		GDeliveryServer::GetInstance()->Send(link_sid, SiegeChallenge_Re(res->retcode,arg->battle_id, arg->begin_time, localsid));
+		GProviderServer::GetInstance()->Send(gamesid, GMailEndSync(0, res->retcode, roleid, res->syncdata));
+	}
+
+	void OnTimeout()
+	{
+		//GProviderServer::GetInstance()->Send(gamesid, GMailEndSync(0, ERR_DATABASE_TIMEOUT, roleid));
+	}
+
+};
+
+};
+#endif

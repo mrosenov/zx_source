@@ -1,0 +1,38 @@
+	public:
+		int result;
+		int roleid;
+		GConsignGsRoleInfo gsroleinfo;
+		enum { PROTOCOL_TYPE = PROTOCOL_PLAYERCONSIGNOFFLINE_RE };
+	public:
+		PlayerConsignOffline_Re() { type = PROTOCOL_PLAYERCONSIGNOFFLINE_RE; }
+		PlayerConsignOffline_Re(void*) : Protocol(PROTOCOL_PLAYERCONSIGNOFFLINE_RE) { }
+		PlayerConsignOffline_Re (int l_result,int l_roleid,const GConsignGsRoleInfo& l_gsroleinfo = GConsignGsRoleInfo())
+			 : result(l_result),roleid(l_roleid),gsroleinfo(l_gsroleinfo)
+		{
+			type = PROTOCOL_PLAYERCONSIGNOFFLINE_RE;
+		}
+
+		PlayerConsignOffline_Re(const PlayerConsignOffline_Re &rhs)
+			: Protocol(rhs),result(rhs.result),roleid(rhs.roleid),gsroleinfo(rhs.gsroleinfo) { }
+
+		GNET::Protocol *Clone() const { return new PlayerConsignOffline_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << result;
+			os << roleid;
+			os << gsroleinfo;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> result;
+			os >> roleid;
+			os >> gsroleinfo;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 65536; }

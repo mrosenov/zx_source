@@ -1,0 +1,86 @@
+
+#ifndef __GNET_ROLEID2UID_HPP
+#define __GNET_ROLEID2UID_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid2uidarg"
+#include "roleid2uidres"
+#include "gmkickoutuser.hpp"
+#include "ackickoutuser.hpp"
+#include "acforbiduser.hpp"
+
+namespace GNET
+{
+class Roleid2Uid : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "roleid2uid"
+#undef	RPC_BASECLASS
+	Manager* _manager;
+	Manager::Session::ID _sid;
+	Protocol* _cmd;
+	Protocol::Type _pro_type;
+	
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// Roleid2UidArg *arg = (Roleid2UidArg *)argument;
+		// Roleid2UidRes *res = (Roleid2UidRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		Roleid2UidArg *arg = (Roleid2UidArg *)argument;
+		Roleid2UidRes *res = (Roleid2UidRes *)result;
+	
+		if (res->retcode != ERR_SUCCESS)
+		{
+			if (_cmd)
+				_cmd->Destroy();
+			return;
+		}
+		UserContainer::GetInstance().InsertLogicuid(res->userid, LOGICUID(arg->roleid));
+		if (_cmd)
+		{
+			switch (_pro_type)
+			{
+				case PROTOCOL_GMKICKOUTUSER:
+					((GMKickoutUser *)_cmd)->Kickout(_manager, _sid, res->userid, res->src_zoneid);
+					break;
+				case PROTOCOL_ACKICKOUTUSER:
+					((ACKickoutUser *)_cmd)->Kickout(_manager, _sid, res->userid, res->src_zoneid);
+					break;
+				case PROTOCOL_ACFORBIDUSER:
+					((ACForbidUser *)_cmd)->Kickout(_manager, _sid, res->userid, res->src_zoneid);
+					break;
+				default:
+					Log::log(LOG_ERR, "Roleid2Uid, unknown caller pro_type %d, roleid %d", _pro_type, arg->roleid);
+			}
+			_cmd->Destroy();
+		}
+			
+/*
+		if(_cmd)
+		{
+			if(res->retcode==ERR_SUCCESS)
+			{
+				UserContainer::GetInstance().InsertLogicuid(res->userid, LOGICUID(arg->roleid));
+				_cmd->Process(_manager, _sid);
+			}
+			_cmd->Destroy();
+		}
+*/
+	}
+
+	void OnTimeout()
+	{
+		if(_cmd)
+			_cmd->Destroy();
+	}
+
+};
+
+};
+#endif

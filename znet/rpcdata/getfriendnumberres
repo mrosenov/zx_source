@@ -1,0 +1,64 @@
+#ifndef __GNET_GETFRIENDNUMBERRES_RPCDATA
+#define __GNET_GETFRIENDNUMBERRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GetFriendNumberRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int number;
+
+	public:
+		GetFriendNumberRes (int l_retcode = 0,int l_number = 0)
+			: retcode(l_retcode),number(l_number)
+		{
+		}
+
+		GetFriendNumberRes(const GetFriendNumberRes &rhs)
+			: retcode(rhs.retcode),number(rhs.number) { }
+
+		Rpc::Data *Clone() const { return new GetFriendNumberRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GetFriendNumberRes *r = dynamic_cast<const GetFriendNumberRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				number = r->number;
+			}
+			return *this;
+		}
+
+		GetFriendNumberRes& operator = (const GetFriendNumberRes &rhs)
+		{
+			const GetFriendNumberRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				number = r->number;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << number;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> number;
+			return os;
+		}
+
+	};
+};
+#endif

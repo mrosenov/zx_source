@@ -1,0 +1,81 @@
+#ifndef __GNET_DBHOMETOWNGETINFORES_RPCDATA
+#define __GNET_DBHOMETOWNGETINFORES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "ghometowninfo"
+
+namespace GNET
+{
+	class DBHometownGetInfoRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GHometownInfo hometown_info;
+		std::set<int> friend_list;
+		std::map<int, Octets> compo_info;
+		Octets name;
+
+	public:
+		DBHometownGetInfoRes (const Octets& l_name = Octets(0))
+			: name(l_name)
+		{
+		}
+
+		DBHometownGetInfoRes(const DBHometownGetInfoRes &rhs)
+			: retcode(rhs.retcode),hometown_info(rhs.hometown_info),friend_list(rhs.friend_list),
+			compo_info(rhs.compo_info),name(rhs.name) { }
+
+		Rpc::Data *Clone() const { return new DBHometownGetInfoRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBHometownGetInfoRes *r = dynamic_cast<const DBHometownGetInfoRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				hometown_info = r->hometown_info;
+				friend_list = r->friend_list;
+				compo_info = r->compo_info;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		DBHometownGetInfoRes& operator = (const DBHometownGetInfoRes &rhs)
+		{
+			const DBHometownGetInfoRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				hometown_info = r->hometown_info;
+				friend_list = r->friend_list;
+				compo_info = r->compo_info;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << hometown_info;
+			os << friend_list;
+			os << compo_info;
+			os << name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> hometown_info;
+			os >> friend_list;
+			os >> compo_info;
+			os >> name;
+			return os;
+		}
+
+	};
+};
+#endif

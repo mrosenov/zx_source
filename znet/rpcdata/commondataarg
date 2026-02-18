@@ -1,0 +1,74 @@
+#ifndef __GNET_COMMONDATAARG_RPCDATA
+#define __GNET_COMMONDATAARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class CommonDataArg : public GNET::Rpc::Data
+	{
+	public:
+		int session_key;
+		int data_type;
+		Octets data;
+		int user_data;
+
+	public:
+		CommonDataArg ()
+		{
+		}
+
+		CommonDataArg(const CommonDataArg &rhs)
+			: session_key(rhs.session_key),data_type(rhs.data_type),data(rhs.data),
+			user_data(rhs.user_data) { }
+
+		Rpc::Data *Clone() const { return new CommonDataArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const CommonDataArg *r = dynamic_cast<const CommonDataArg *>(&rhs);
+			if (r && r != this)
+			{
+				session_key = r->session_key;
+				data_type = r->data_type;
+				data = r->data;
+				user_data = r->user_data;
+			}
+			return *this;
+		}
+
+		CommonDataArg& operator = (const CommonDataArg &rhs)
+		{
+			const CommonDataArg *r = &rhs;
+			if (r && r != this)
+			{
+				session_key = r->session_key;
+				data_type = r->data_type;
+				data = r->data;
+				user_data = r->user_data;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << session_key;
+			os << data_type;
+			os << data;
+			os << user_data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> session_key;
+			os >> data_type;
+			os >> data;
+			os >> user_data;
+			return os;
+		}
+
+	};
+};
+#endif

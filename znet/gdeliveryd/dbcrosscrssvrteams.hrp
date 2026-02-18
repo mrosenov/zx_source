@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCROSSCRSSVRTEAMS_HPP
+#define __GNET_DBCROSSCRSSVRTEAMS_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrosscrssvrteamsarg"
+#include "dbcrosscrssvrteamsres"
+
+namespace GNET
+{
+
+class DBCrossCrssvrTeams : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrosscrssvrteams"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrossCrssvrTeamsArg *arg = (DBCrossCrssvrTeamsArg *)argument;
+		// DBCrossCrssvrTeamsRes *res = (DBCrossCrssvrTeamsRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrossCrssvrTeamsArg *arg = (DBCrossCrssvrTeamsArg *)argument;
+		// DBCrossCrssvrTeamsRes *res = (DBCrossCrssvrTeamsRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

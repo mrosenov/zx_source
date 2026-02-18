@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCONSIGNQUERYBACKUPARG_RPCDATA
+#define __GNET_DBCONSIGNQUERYBACKUPARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignQueryBackupArg : public GNET::Rpc::Data
+	{
+	public:
+		int64_t sn;
+		int roleid;
+
+	public:
+		DBConsignQueryBackupArg (int64_t l_sn = 0,int l_roleid = 0)
+			: sn(l_sn),roleid(l_roleid)
+		{
+		}
+
+		DBConsignQueryBackupArg(const DBConsignQueryBackupArg &rhs)
+			: sn(rhs.sn),roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new DBConsignQueryBackupArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignQueryBackupArg *r = dynamic_cast<const DBConsignQueryBackupArg *>(&rhs);
+			if (r && r != this)
+			{
+				sn = r->sn;
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		DBConsignQueryBackupArg& operator = (const DBConsignQueryBackupArg &rhs)
+		{
+			const DBConsignQueryBackupArg *r = &rhs;
+			if (r && r != this)
+			{
+				sn = r->sn;
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << sn;
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> sn;
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

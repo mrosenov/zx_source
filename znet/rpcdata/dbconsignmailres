@@ -1,0 +1,78 @@
+#ifndef __GNET_DBCONSIGNMAILRES_RPCDATA
+#define __GNET_DBCONSIGNMAILRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailheader"
+
+namespace GNET
+{
+	class DBConsignMailRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GMailHeader seller_header;
+		GMailHeader buyer_header;
+		char mail_status;
+
+	public:
+		DBConsignMailRes (int l_retcode = 0,const GMailHeader& l_seller_header = GMailHeader(),const GMailHeader& l_buyer_header = GMailHeader()
+			,char l_mail_status = 0)
+			: retcode(l_retcode),seller_header(l_seller_header),buyer_header(l_buyer_header)
+			,mail_status(l_mail_status)
+		{
+		}
+
+		DBConsignMailRes(const DBConsignMailRes &rhs)
+			: retcode(rhs.retcode),seller_header(rhs.seller_header),buyer_header(rhs.buyer_header),
+			mail_status(rhs.mail_status) { }
+
+		Rpc::Data *Clone() const { return new DBConsignMailRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignMailRes *r = dynamic_cast<const DBConsignMailRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				seller_header = r->seller_header;
+				buyer_header = r->buyer_header;
+				mail_status = r->mail_status;
+			}
+			return *this;
+		}
+
+		DBConsignMailRes& operator = (const DBConsignMailRes &rhs)
+		{
+			const DBConsignMailRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				seller_header = r->seller_header;
+				buyer_header = r->buyer_header;
+				mail_status = r->mail_status;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << seller_header;
+			os << buyer_header;
+			os << mail_status;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> seller_header;
+			os >> buyer_header;
+			os >> mail_status;
+			return os;
+		}
+
+	};
+};
+#endif

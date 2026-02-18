@@ -1,0 +1,59 @@
+#ifndef __GNET_GGTACTIVATE_RPCDATA
+#define __GNET_GGTACTIVATE_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GGTActivate : public GNET::Rpc::Data
+	{
+	public:
+		int activatemask;
+
+	public:
+		GGTActivate (int l_activatemask = 0)
+			: activatemask(l_activatemask)
+		{
+		}
+
+		GGTActivate(const GGTActivate &rhs)
+			: activatemask(rhs.activatemask) { }
+
+		Rpc::Data *Clone() const { return new GGTActivate(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GGTActivate *r = dynamic_cast<const GGTActivate *>(&rhs);
+			if (r && r != this)
+			{
+				activatemask = r->activatemask;
+			}
+			return *this;
+		}
+
+		GGTActivate& operator = (const GGTActivate &rhs)
+		{
+			const GGTActivate *r = &rhs;
+			if (r && r != this)
+			{
+				activatemask = r->activatemask;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << activatemask;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> activatemask;
+			return os;
+		}
+
+	};
+};
+#endif

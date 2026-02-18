@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		char message_type;
+		Octets message;
+		GApplyCondition condition;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDSNSPRESSMESSAGE };
+	public:
+		SendSNSPressMessage() { type = PROTOCOL_SENDSNSPRESSMESSAGE; }
+		SendSNSPressMessage(void*) : Protocol(PROTOCOL_SENDSNSPRESSMESSAGE) { }
+		SendSNSPressMessage (int l_roleid,char l_message_type = 0,const Octets& l_message = Octets(),
+			const GApplyCondition& l_condition = GApplyCondition())
+			 : roleid(l_roleid),message_type(l_message_type),message(l_message)
+			,condition(l_condition)
+		{
+			type = PROTOCOL_SENDSNSPRESSMESSAGE;
+		}
+
+		SendSNSPressMessage(const SendSNSPressMessage &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),message_type(rhs.message_type),message(rhs.message)
+			,condition(rhs.condition) { }
+
+		GNET::Protocol *Clone() const { return new SendSNSPressMessage(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << message_type;
+			os << message;
+			os << condition;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> message_type;
+			os >> message;
+			os >> condition;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

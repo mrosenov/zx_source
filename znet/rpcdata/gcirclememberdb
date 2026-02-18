@@ -1,0 +1,123 @@
+#ifndef __GNET_GCIRCLEMEMBERDB_RPCDATA
+#define __GNET_GCIRCLEMEMBERDB_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GCircleMemberDB : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int roleid;
+		Octets name;
+		unsigned char level;
+		unsigned char reborn_cnt;
+		unsigned char occupation;
+		unsigned char gender;
+		int jointime;
+		int graduate_time;
+		unsigned char grad_bonus_count;
+		int reserved1;
+		int reserved2;
+		int reserved3;
+
+	public:
+		GCircleMemberDB (unsigned int l_roleid = 0,const Octets& l_name = Octets(0),unsigned char l_level = 0
+			,unsigned char l_reborn_cnt = 0,unsigned char l_occupation = 0,unsigned char l_gender = 0
+			,int l_jointime = 0,int l_graduate_time = 0,unsigned char l_grad_bonus_count = 0
+			,int l_reserved1 = 0,int l_reserved2 = 0,int l_reserved3 = 0)
+			: roleid(l_roleid),name(l_name),level(l_level)
+			,reborn_cnt(l_reborn_cnt),occupation(l_occupation),gender(l_gender)
+			,jointime(l_jointime),graduate_time(l_graduate_time),grad_bonus_count(l_grad_bonus_count)
+			,reserved1(l_reserved1),reserved2(l_reserved2),reserved3(l_reserved3)
+		{
+		}
+
+		GCircleMemberDB(const GCircleMemberDB &rhs)
+			: roleid(rhs.roleid),name(rhs.name),level(rhs.level),
+			reborn_cnt(rhs.reborn_cnt),occupation(rhs.occupation),gender(rhs.gender),
+			jointime(rhs.jointime),graduate_time(rhs.graduate_time),grad_bonus_count(rhs.grad_bonus_count),
+			reserved1(rhs.reserved1),reserved2(rhs.reserved2),reserved3(rhs.reserved3) { }
+
+		Rpc::Data *Clone() const { return new GCircleMemberDB(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GCircleMemberDB *r = dynamic_cast<const GCircleMemberDB *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				name = r->name;
+				level = r->level;
+				reborn_cnt = r->reborn_cnt;
+				occupation = r->occupation;
+				gender = r->gender;
+				jointime = r->jointime;
+				graduate_time = r->graduate_time;
+				grad_bonus_count = r->grad_bonus_count;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+			}
+			return *this;
+		}
+
+		GCircleMemberDB& operator = (const GCircleMemberDB &rhs)
+		{
+			const GCircleMemberDB *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				name = r->name;
+				level = r->level;
+				reborn_cnt = r->reborn_cnt;
+				occupation = r->occupation;
+				gender = r->gender;
+				jointime = r->jointime;
+				graduate_time = r->graduate_time;
+				grad_bonus_count = r->grad_bonus_count;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << name;
+			os << level;
+			os << reborn_cnt;
+			os << occupation;
+			os << gender;
+			os << jointime;
+			os << graduate_time;
+			os << grad_bonus_count;
+			os << reserved1;
+			os << reserved2;
+			os << reserved3;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> name;
+			os >> level;
+			os >> reborn_cnt;
+			os >> occupation;
+			os >> gender;
+			os >> jointime;
+			os >> graduate_time;
+			os >> grad_bonus_count;
+			os >> reserved1;
+			os >> reserved2;
+			os >> reserved3;
+			return os;
+		}
+
+	};
+};
+#endif

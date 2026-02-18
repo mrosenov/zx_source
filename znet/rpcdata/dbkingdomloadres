@@ -1,0 +1,65 @@
+#ifndef __GNET_DBKINGDOMLOADRES_RPCDATA
+#define __GNET_DBKINGDOMLOADRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gkingdominfo"
+
+namespace GNET
+{
+	class DBKingdomLoadRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GKingdomInfo info;
+
+	public:
+		DBKingdomLoadRes (const GKingdomInfo& l_info = GKingdomInfo())
+			: info(l_info)
+		{
+		}
+
+		DBKingdomLoadRes(const DBKingdomLoadRes &rhs)
+			: retcode(rhs.retcode),info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomLoadRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomLoadRes *r = dynamic_cast<const DBKingdomLoadRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBKingdomLoadRes& operator = (const DBKingdomLoadRes &rhs)
+		{
+			const DBKingdomLoadRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

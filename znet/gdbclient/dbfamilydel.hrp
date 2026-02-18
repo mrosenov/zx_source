@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFAMILYDEL_HPP
+#define __GNET_DBFAMILYDEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "familyid"
+#include "delfactionres"
+
+namespace GNET
+{
+
+class DBFamilyDel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilydel"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// FamilyId *arg = (FamilyId *)argument;
+		// DelFactionRes *res = (DelFactionRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// FamilyId *arg = (FamilyId *)argument;
+		// DelFactionRes *res = (DelFactionRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

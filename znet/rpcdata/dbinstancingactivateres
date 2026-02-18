@@ -1,0 +1,65 @@
+#ifndef __GNET_DBINSTANCINGACTIVATERES_RPCDATA
+#define __GNET_DBINSTANCINGACTIVATERES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBInstancingActivateRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GMailSyncData syncdata;
+
+	public:
+		DBInstancingActivateRes (int l_retcode = 0,const GMailSyncData& l_syncdata = GMailSyncData())
+			: retcode(l_retcode),syncdata(l_syncdata)
+		{
+		}
+
+		DBInstancingActivateRes(const DBInstancingActivateRes &rhs)
+			: retcode(rhs.retcode),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBInstancingActivateRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBInstancingActivateRes *r = dynamic_cast<const DBInstancingActivateRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBInstancingActivateRes& operator = (const DBInstancingActivateRes &rhs)
+		{
+			const DBInstancingActivateRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

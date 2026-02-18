@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBKINGDOMTASKEND_HPP
+#define __GNET_DBKINGDOMTASKEND_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomtaskendarg"
+#include "dbkingdomtaskendres"
+
+namespace GNET
+{
+
+class DBKingdomTaskEnd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomtaskend"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomTaskEndArg *arg = (DBKingdomTaskEndArg *)argument;
+		// DBKingdomTaskEndRes *res = (DBKingdomTaskEndRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomTaskEndArg *arg = (DBKingdomTaskEndArg *)argument;
+		// DBKingdomTaskEndRes *res = (DBKingdomTaskEndRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,72 @@
+
+#ifndef __GNET_DBFAMILYUPDATE_HPP
+#define __GNET_DBFAMILYUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfamilyupdatearg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBFamilyUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyupdate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilyUpdateArg *arg = (DBFamilyUpdateArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+
+		Marshal::OctetsStream key, value;
+		try
+		{
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+
+			LOG_TRACE("familyupdate:familyid=%d:announce=%d", arg->familyid, arg->announce.size());
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GFamily family;
+
+				key << arg->familyid;
+
+				Marshal::OctetsStream(pfamily->find(key, txn )) >> family;
+				family.announce = arg->announce;
+				pfamily->insert( key, Marshal::OctetsStream()<<family, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFamilyUpdate, familyid=%d what=%s.",arg->familyid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+
+	}
+
+	void OnTimeout()
+	{
+
+	}
+
+};
+
+};
+#endif

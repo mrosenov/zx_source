@@ -1,0 +1,98 @@
+
+#ifndef __GNET_DBGETCOMMONDATA_HPP
+#define __GNET_DBGETCOMMONDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "gcommondata"
+
+#include "dbgetcommondataarg"
+#include "dbgetcommondatares"
+
+namespace GNET
+{
+
+class ListCommonDataQuery : public StorageEnv::IQuery
+{
+	std::vector<GCommonData>* plist;
+	int total;
+	Octets last;
+public:
+	ListCommonDataQuery(std::vector<GCommonData>* p) : plist(p),  total(0)
+	{ 
+	}
+
+	bool Update( StorageEnv::Transaction& txn, Octets& key, Octets& value)
+	{
+		try
+		{
+			if(total>1024)
+			{
+				last = key;
+				return false;
+			}
+			int64_t n;
+			Marshal::OctetsStream(key) >> n;
+			plist->push_back(GCommonData((int)(n>>32), (int)n, value));
+			total++;
+		} catch ( Marshal::Exception & ) {
+			Log::log( LOG_ERR, "ListCommonDataQuery, error unmarshal.");
+		}
+		return true;
+	}
+	const Octets& GetHandle() { return last; }
+};
+class DBGetCommonData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgetcommondata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBGetCommonDataArg *arg = (DBGetCommonDataArg *)argument;
+		DBGetCommonDataRes *res = (DBGetCommonDataRes *)result;
+
+		Marshal::OctetsStream key, value;
+		ListCommonDataQuery q(&(res->data));
+		try
+		{
+			StorageEnv::Storage * ptable = StorageEnv::GetStorage("commondata");
+			StorageEnv::AtomTransaction txn;
+			try{
+				StorageEnv::Storage::Cursor cursor = ptable->cursor( txn );
+				cursor.walk(arg->handle, q );
+				res->handle = q.GetHandle();
+				res->retcode = ERR_SUCCESS;
+				LOG_TRACE("DBGetCommonData, size=%d, handle=%d\n", res->data.size(), res->handle.size());
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBGetCommonData, what=%s.\n", e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBGetCommonDataArg *arg = (DBGetCommonDataArg *)argument;
+		// DBGetCommonDataRes *res = (DBGetCommonDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,79 @@
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSADDARG_RPCDATA
+#define __GNET_SYNCCROSSCRSSVRTEAMSADDARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcrssvrteamsrole"
+#include "gcrssvrteamsscore"
+
+namespace GNET
+{
+	class SyncCrossCrssvrTeamsAddArg : public GNET::Rpc::Data
+	{
+	public:
+		int zoneid;
+		int teamid;
+		GCrssvrTeamsRole info;
+		GCrssvrTeamsScore data_score;
+
+	public:
+		SyncCrossCrssvrTeamsAddArg (int l_zoneid = -1,int l_teamid = -1,const GCrssvrTeamsRole& l_info = GCrssvrTeamsRole()
+			,const GCrssvrTeamsScore& l_data_score = GCrssvrTeamsScore())
+			: zoneid(l_zoneid),teamid(l_teamid),info(l_info)
+			,data_score(l_data_score)
+		{
+		}
+
+		SyncCrossCrssvrTeamsAddArg(const SyncCrossCrssvrTeamsAddArg &rhs)
+			: zoneid(rhs.zoneid),teamid(rhs.teamid),info(rhs.info),
+			data_score(rhs.data_score) { }
+
+		Rpc::Data *Clone() const { return new SyncCrossCrssvrTeamsAddArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SyncCrossCrssvrTeamsAddArg *r = dynamic_cast<const SyncCrossCrssvrTeamsAddArg *>(&rhs);
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				teamid = r->teamid;
+				info = r->info;
+				data_score = r->data_score;
+			}
+			return *this;
+		}
+
+		SyncCrossCrssvrTeamsAddArg& operator = (const SyncCrossCrssvrTeamsAddArg &rhs)
+		{
+			const SyncCrossCrssvrTeamsAddArg *r = &rhs;
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				teamid = r->teamid;
+				info = r->info;
+				data_score = r->data_score;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << zoneid;
+			os << teamid;
+			os << info;
+			os << data_score;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> zoneid;
+			os >> teamid;
+			os >> info;
+			os >> data_score;
+			return os;
+		}
+
+	};
+};
+#endif

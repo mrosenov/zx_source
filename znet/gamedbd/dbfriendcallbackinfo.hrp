@@ -1,0 +1,84 @@
+
+#ifndef __GNET_DBFRIENDCALLBACKINFO_HPP
+#define __GNET_DBFRIENDCALLBACKINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gfriendcallback"
+#include "dbfriendcallbackinfoarg"
+#include "dbfriendcallbackinfores"
+
+namespace GNET
+{
+
+class DBFriendCallbackInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfriendcallbackinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFriendCallbackInfoArg *arg = (DBFriendCallbackInfoArg *)argument;
+		DBFriendCallbackInfoRes *res = (DBFriendCallbackInfoRes *)result;
+
+		Marshal::OctetsStream key, value;
+
+		LOG_TRACE("DBFriendCallbackInfo, roleid=%d.", arg->roleid);
+		try
+		{
+			StorageEnv::Storage *friendcallback = StorageEnv::GetStorage("friendcallback");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				GFriendCallback callback;
+				key << arg->roleid;
+				if(friendcallback->find(key, value, txn))
+				{
+					value >> callback;
+					res->callback_info = callback.callback_info;
+				}
+				else
+				{
+					res->callback_info.mailnum = 0;
+					res->callback_info.timestamp = 0;
+					res->callback_info.cooldown_list.clear();
+				}
+				res->retcode = ERR_CALLBACK_SUCCESS;
+			}
+			catch(DbException e)
+			{
+				throw;
+			}
+			catch(...)
+			{
+				DbException e(DB_OLD_VERSION);
+				txn.abort(e);
+				throw e;
+			}
+		}
+		catch(DbException e)
+		{
+			Log::log(LOG_ERR, "DBFriendCallbackInfo, roleid=%d, what=%s\n", arg->roleid, e.what());
+			res->retcode = ERR_CALLBACK_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFriendCallbackInfoArg *arg = (DBFriendCallbackInfoArg *)argument;
+		// DBFriendCallbackInfoRes *res = (DBFriendCallbackInfoRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

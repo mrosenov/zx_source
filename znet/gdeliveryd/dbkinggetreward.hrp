@@ -1,0 +1,53 @@
+
+#ifndef __GNET_DBKINGGETREWARD_HPP
+#define __GNET_DBKINGGETREWARD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkinggetrewardarg"
+#include "dbkinggetrewardres"
+#include "kinggetreward_re.hpp"
+#include "gkinggetreward_re.hpp"
+
+namespace GNET
+{
+
+class DBKingGetReward : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkinggetreward"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingGetRewardArg *arg = (DBKingGetRewardArg *)argument;
+		// DBKingGetRewardRes *res = (DBKingGetRewardRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingGetRewardArg *arg = (DBKingGetRewardArg *)argument;
+		DBKingGetRewardRes *res = (DBKingGetRewardRes *)result;
+		LOG_TRACE("dbkinggetreward ret %d roleid %d mask %d", res->retcode, arg->roleid, res->reward_mask);
+		if (res->retcode == ERR_SUCCESS)
+			KingdomManager::GetInstance()->OnGetReward(res->reward_mask);
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if (pinfo)
+		{
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, KingGetReward_Re(res->retcode, arg->roleid, pinfo->localsid));
+			GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, GKingGetReward_Re(res->retcode, arg->roleid));
+		}
+	}
+
+	void OnTimeout()
+	{
+		//TODO Client Only
+		Log::log(LOG_ERR, "dbkinggetreward timeout");
+	}
+
+};
+
+};
+#endif

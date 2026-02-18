@@ -1,0 +1,45 @@
+
+#ifndef __GNET_DBFACTIONJOIN_HPP
+#define __GNET_DBFACTIONJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionjoinarg"
+#include "dbfactionjoinres"
+#include "factionmanager.h"
+
+namespace GNET
+{
+
+class DBFactionJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionjoin"
+#undef	RPC_BASECLASS
+	int roleid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionJoinArg *arg = (DBFactionJoinArg *)argument;
+		DBFactionJoinRes *res = (DBFactionJoinRes *)result;
+		DEBUG_PRINT("DBFactionJoin, retcode=%d, familyid=%d, factionid=%d", res->retcode, arg->familyid, arg->fid);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			FactionManager::Instance()->OnJoin(roleid,arg->fid,arg->familyid,res->name);
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

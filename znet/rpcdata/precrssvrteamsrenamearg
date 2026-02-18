@@ -1,0 +1,69 @@
+#ifndef __GNET_PRECRSSVRTEAMSRENAMEARG_RPCDATA
+#define __GNET_PRECRSSVRTEAMSRENAMEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class PreCrssvrTeamsRenameArg : public GNET::Rpc::Data
+	{
+	public:
+		int zoneid;
+		int teamid;
+		Octets new_teamsname;
+
+	public:
+		PreCrssvrTeamsRenameArg (int l_zoneid = -1,int l_teamid = -1,const Octets& l_new_teamsname = Octets(0))
+			: zoneid(l_zoneid),teamid(l_teamid),new_teamsname(l_new_teamsname)
+		{
+		}
+
+		PreCrssvrTeamsRenameArg(const PreCrssvrTeamsRenameArg &rhs)
+			: zoneid(rhs.zoneid),teamid(rhs.teamid),new_teamsname(rhs.new_teamsname) { }
+
+		Rpc::Data *Clone() const { return new PreCrssvrTeamsRenameArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PreCrssvrTeamsRenameArg *r = dynamic_cast<const PreCrssvrTeamsRenameArg *>(&rhs);
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				teamid = r->teamid;
+				new_teamsname = r->new_teamsname;
+			}
+			return *this;
+		}
+
+		PreCrssvrTeamsRenameArg& operator = (const PreCrssvrTeamsRenameArg &rhs)
+		{
+			const PreCrssvrTeamsRenameArg *r = &rhs;
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				teamid = r->teamid;
+				new_teamsname = r->new_teamsname;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << zoneid;
+			os << teamid;
+			os << new_teamsname;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> zoneid;
+			os >> teamid;
+			os >> new_teamsname;
+			return os;
+		}
+
+	};
+};
+#endif

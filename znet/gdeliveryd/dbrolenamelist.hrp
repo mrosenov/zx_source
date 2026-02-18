@@ -1,0 +1,59 @@
+
+#ifndef __GNET_DBROLENAMELIST_HPP
+#define __GNET_DBROLENAMELIST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbrolenamelistarg"
+#include "dbrolenamelistres"
+
+#include "namemanager.h"
+#include "gamedbclient.hpp"
+
+namespace GNET
+{
+
+class DBRoleNameList : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbrolenamelist"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBRoleNameListArg *arg = (DBRoleNameListArg *)argument;
+		// DBRoleNameListRes *res = (DBRoleNameListRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBRoleNameListArg *arg = (DBRoleNameListArg *)argument;
+		DBRoleNameListRes *res = (DBRoleNameListRes *)result;
+		LOG_TRACE("dbrolenamelist: received. res->items.size()=%d,res->page=%d retcode=%d\n",
+				res->items.size(),res->page, res->retcode);
+//		if ( res->retcode==ERR_SUCCESS )
+		{
+			NameManager::GetInstance()->Init(
+					res->items,
+					res->items.size()==0 || res->page<=0 
+					);
+		}
+		if (/*res->retcode==ERR_AGAIN ||*/ res->page > 0 )
+		{
+			GameDBClient::GetInstance()->SendProtocol(Rpc::Call(RPC_DBROLENAMELIST, DBRoleNameListArg(res->page)));
+		}
+	}
+
+	void OnTimeout()
+	{
+		DBRoleNameListArg *arg = (DBRoleNameListArg *)argument;
+		Log::log(LOG_ERR, "dbrolenamelist: rpc timeout. Resend request.\n");
+		GameDBClient::GetInstance()->SendProtocol(Rpc::Call(RPC_DBROLENAMELIST, arg));
+	}
+
+};
+
+};
+#endif

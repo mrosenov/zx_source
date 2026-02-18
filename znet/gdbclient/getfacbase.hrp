@@ -1,0 +1,67 @@
+
+#ifndef __GNET_GETFACBASE_HPP
+#define __GNET_GETFACBASE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "getfacbasearg"
+#include "getfacbaseres"
+#include "gfactionbase"
+#include "db_if.h"
+
+namespace GDB
+{
+bool GetFBase(int fid, GNET::GFactionBase * db, fac_base_info & info);
+}
+
+namespace GNET
+{
+
+class GetFacBase : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getfacbase"
+#undef	RPC_BASECLASS
+
+	GDB::FBaseResult * _callback;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GetFacBaseArg *arg = (GetFacBaseArg *)argument;
+		// GetFacBaseRes *res = (GetFacBaseRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GetFacBaseArg *arg = (GetFacBaseArg *)argument;
+		GetFacBaseRes *res = (GetFacBaseRes *)result;
+		if (!_callback)
+			return;
+		if (res->retcode)
+		{
+			Log::log(LOG_ERR, "GetFacBase, error %d fid=%d", res->retcode, arg->fid);
+			_callback->OnFailed();
+			return;
+		}
+		GDB::fac_base_info info;
+		if (GDB::GetFBase(arg->fid, &(res->value), info))
+			_callback->OnGetData(arg->fid, &info);
+		else
+		{
+			Log::log(LOG_ERR, "GetFBase, error fid=%d", arg->fid);
+			_callback->OnFailed();
+		}
+	}
+
+	void OnTimeout()
+	{
+		GetFacBaseArg *arg = (GetFacBaseArg *)argument;
+		Log::log(LOG_ERR, "GetFBase, timeout fid=%d", arg->fid);
+		_callback->OnFailed();
+	}
+
+};
+
+};
+#endif

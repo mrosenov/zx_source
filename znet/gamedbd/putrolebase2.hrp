@@ -1,0 +1,95 @@
+
+#ifndef __GNET_PUTROLEBASE2_HPP
+#define __GNET_PUTROLEBASE2_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "rolebase2pair"
+
+
+namespace GNET
+{
+
+class PutRoleBase2 : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "putrolebase2"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleBase2Pair *arg = (RoleBase2Pair *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		Marshal::OctetsStream key;
+
+		Log::formatlog("reference", "put rolebase2 %d\n bonus_withdraw %d", arg->key.id, arg->value.bonus_withdraw);
+
+		try
+		{
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << arg->key;
+				arg->value.id = arg->key.id;
+				pbase2->insert( key, Marshal::OctetsStream() << arg->value, txn );
+				res->retcode = ERR_SUCCESS;
+/*
+				key << arg->key;
+				GRoleBase2	base2;
+				Marshal::OctetsStream(pbase->find( key, txn )) >> base;
+				if ( arg->key.id!=base.id )
+				{
+					Log::log( LOG_ERR,"PutRoleBase. fatal, key.id(%d)!=value.id(%d)\n",
+						arg->key.id,base.id);
+					res->retcode=ERR_FAILED;
+					return;
+				}
+				base.config_data = arg->value.config_data;
+				base.help_states = arg->value.help_states;
+				for(GRoleForbidVector::iterator it=base.forbid.begin();it!=base.forbid.end();)
+				{
+					int timeout = it->createtime+it->time-Timer::GetTime();
+					if(timeout<=0)
+						it = base.forbid.erase(it);
+					else
+						++it;
+				}
+
+				pbase->insert( key, Marshal::OctetsStream() << base, txn );
+				res->retcode = ERR_SUCCESS;
+*/
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PutRoleBase2, roleid=%d, what=%s\n", arg->key.id, e.what() );
+			res->retcode = -1;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// RoleBase2Pair *arg = (RoleBase2Pair *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

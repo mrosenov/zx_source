@@ -1,0 +1,30 @@
+	public:
+		KingdomInformation info;
+		enum { PROTOCOL_TYPE = PROTOCOL_KINGDOMINFOSYNC };
+	public:
+		KingdomInfoSync() { type = PROTOCOL_KINGDOMINFOSYNC; }
+		KingdomInfoSync(void*) : Protocol(PROTOCOL_KINGDOMINFOSYNC) { }
+		KingdomInfoSync (const KingdomInformation& l_info)
+			 : info(l_info)
+		{
+			type = PROTOCOL_KINGDOMINFOSYNC;
+		}
+
+		KingdomInfoSync(const KingdomInfoSync &rhs)
+			: Protocol(rhs),info(rhs.info) { }
+
+		GNET::Protocol *Clone() const { return new KingdomInfoSync(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> info;
+			return os;
+		}
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

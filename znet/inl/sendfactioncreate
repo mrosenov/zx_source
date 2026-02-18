@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		Octets factionname;
+		GMailSyncData syncdata;
+		char scale;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDFACTIONCREATE };
+	public:
+		SendFactionCreate() { type = PROTOCOL_SENDFACTIONCREATE; }
+		SendFactionCreate(void*) : Protocol(PROTOCOL_SENDFACTIONCREATE) { }
+		SendFactionCreate (int l_roleid,const Octets& l_factionname,const GMailSyncData& l_syncdata = GMailSyncData(),
+			char l_scale = 0)
+			 : roleid(l_roleid),factionname(l_factionname),syncdata(l_syncdata)
+			,scale(l_scale)
+		{
+			type = PROTOCOL_SENDFACTIONCREATE;
+		}
+
+		SendFactionCreate(const SendFactionCreate &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),factionname(rhs.factionname),syncdata(rhs.syncdata)
+			,scale(rhs.scale) { }
+
+		GNET::Protocol *Clone() const { return new SendFactionCreate(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << factionname;
+			os << syncdata;
+			os << scale;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> factionname;
+			os >> syncdata;
+			os >> scale;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2097152; }

@@ -1,0 +1,93 @@
+#ifndef __GNET_DBCIRCLEJOINRES_RPCDATA
+#define __GNET_DBCIRCLEJOINRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCircleJoinRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		Octets name;
+		unsigned char titlemask;
+		unsigned char gender;
+		unsigned int cur_circleid;
+		int jointime;
+		unsigned int circlename;
+
+	public:
+		DBCircleJoinRes (int l_retcode = -1,unsigned char l_titlemask = 0,unsigned char l_gender = 0
+			,unsigned int l_cur_circleid = 0,int l_jointime = 0,unsigned int l_circlename = 0)
+			: retcode(l_retcode),titlemask(l_titlemask),gender(l_gender)
+			,cur_circleid(l_cur_circleid),jointime(l_jointime),circlename(l_circlename)
+		{
+		}
+
+		DBCircleJoinRes(const DBCircleJoinRes &rhs)
+			: retcode(rhs.retcode),name(rhs.name),titlemask(rhs.titlemask),
+			gender(rhs.gender),cur_circleid(rhs.cur_circleid),jointime(rhs.jointime),
+			circlename(rhs.circlename) { }
+
+		Rpc::Data *Clone() const { return new DBCircleJoinRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCircleJoinRes *r = dynamic_cast<const DBCircleJoinRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				name = r->name;
+				titlemask = r->titlemask;
+				gender = r->gender;
+				cur_circleid = r->cur_circleid;
+				jointime = r->jointime;
+				circlename = r->circlename;
+			}
+			return *this;
+		}
+
+		DBCircleJoinRes& operator = (const DBCircleJoinRes &rhs)
+		{
+			const DBCircleJoinRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				name = r->name;
+				titlemask = r->titlemask;
+				gender = r->gender;
+				cur_circleid = r->cur_circleid;
+				jointime = r->jointime;
+				circlename = r->circlename;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << name;
+			os << titlemask;
+			os << gender;
+			os << cur_circleid;
+			os << jointime;
+			os << circlename;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> name;
+			os >> titlemask;
+			os >> gender;
+			os >> cur_circleid;
+			os >> jointime;
+			os >> circlename;
+			return os;
+		}
+
+	};
+};
+#endif

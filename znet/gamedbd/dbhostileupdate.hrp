@@ -1,0 +1,83 @@
+
+#ifndef __GNET_DBHOSTILEUPDATE_HPP
+#define __GNET_DBHOSTILEUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhostileupdatearg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBHostileUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhostileupdate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHostileUpdateArg *arg = (DBHostileUpdateArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+		Marshal::OctetsStream key, khost, value;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+
+			key << arg->factionid;
+			Log::formatlog("hostileupdate","factionid=%d:datamask=%d:actionpoint=%d"
+				, arg->factionid, arg->datamask, arg->actionpoint);
+
+			StorageEnv::CommonTransaction txn;
+			try{
+
+				GFactionInfo faction, hostile;
+				Marshal::OctetsStream(pfaction->find(key, txn )) >> faction;
+
+				// unset protect
+				if (arg->datamask & OP_PROTECT)
+				{
+					GetHostileInfo(faction).status &= ~HOSTILE_PROTECTED;
+					pfaction->insert( key, Marshal::OctetsStream()<<faction, txn );
+					res->retcode = ERR_SUCCESS; 
+				}	
+				// update actionpoint
+				if (arg->datamask & OP_ACTIONPOINT)
+				{
+					GetHostileInfo(faction).actionpoint = arg->actionpoint;
+					GetHostileInfo(faction).updatetime = Timer::GetTime();
+				}
+				pfaction->insert( key, Marshal::OctetsStream()<<faction, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBHostileUpdate, factionid=%d:datamask=%d:actionpoint=%d what=%s."
+			       , arg->factionid, arg->datamask, arg->actionpoint, e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

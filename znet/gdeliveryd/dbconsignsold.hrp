@@ -1,0 +1,94 @@
+
+#ifndef __GNET_DBCONSIGNSOLD_HPP
+#define __GNET_DBCONSIGNSOLD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignsoldarg"
+#include "dbconsignsoldres"
+#include "sold_re.hpp"
+namespace GNET
+{
+
+class DBConsignSold : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignsold"
+#undef	RPC_BASECLASS
+	int zoneid;
+//	int64_t orderid;
+	int64_t timestamp;
+	int userid;
+	bool userid_mismatch;
+	bool roleid_mismatch;
+
+	void SendResult(int retcode,int roleid, int64_t sn, int buyer_roleid, int buyer_userid)
+	{
+		DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		GWebTradeClient::GetInstance()->SendProtocol(Sold_Re(zoneid,userid,roleid,buyer_userid,buyer_roleid,sn,retcode,arg->orderid));
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		// DBConsignSoldRes *res = (DBConsignSoldRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		DBConsignSoldRes *res = (DBConsignSoldRes *)result;
+		DEBUG_PRINT("DBConsignSold: receive.sn=%lld,res=%d",arg->sn,res->retcode);
+		if(res->retcode == ERR_SUCCESS || res->retcode == ERR_WT_DB_DUPLICATE_RQST)
+		{
+			if(ConsignManager::GetInstance()->OnDBSold(arg->roleid, arg->sn,timestamp)!=ERR_SUCCESS)
+			{
+		//		ConsignManager::GetInstance()->ClearBusy(arg->sn);
+				Log::log(LOG_ERR,"dbconsignsold: OnDBSold failed. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+			}
+			if(res->retcode == ERR_WT_DB_DUPLICATE_RQST)//timestamp equal, and orderid equal
+				SendResult(2,arg->roleid,arg->sn,res->buyer_roleid,arg->buyer_userid);
+			else if(arg->buyer_roleid != res->buyer_roleid)
+				SendResult(10,arg->roleid,arg->sn,res->buyer_roleid,arg->buyer_userid);	
+			else if(userid_mismatch)
+				SendResult(8,arg->roleid,arg->sn,res->buyer_roleid,arg->buyer_userid);
+			else if(roleid_mismatch)
+				SendResult(9,arg->roleid,arg->sn,res->buyer_roleid,arg->buyer_userid);
+			else
+				SendResult(0,arg->roleid,arg->sn,res->buyer_roleid,arg->buyer_userid);
+		}
+		else
+		{
+			int ret;
+			switch(res->retcode)
+			{
+				case ERR_WT_BUYER_NOT_EXIST:
+					ret = 4;//通知web买家不存在
+					break;
+				case ERR_WT_DB_STATEERR:
+					ret = 3;//web 重发
+					break;
+				default:
+					ret = -1;//web 重发
+					break;
+			}
+			ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			Log::log(LOG_ERR,"dbconsignsold: failed. sn=%lld,roleid=%d,retcode=%d", arg->sn,arg->roleid,res->retcode);
+			SendResult(ret,arg->roleid,arg->sn,arg->buyer_roleid,arg->buyer_userid);	
+		}
+	}
+
+	void OnTimeout()
+	{
+		DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		Log::log(LOG_ERR,"dbconsignsold: timeout. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+		ConsignManager::GetInstance()->ClearBusy(arg->sn);
+		SendResult(-1,arg->roleid,arg->sn,arg->buyer_roleid,arg->buyer_userid);	//重发
+	}
+
+};
+
+};
+#endif

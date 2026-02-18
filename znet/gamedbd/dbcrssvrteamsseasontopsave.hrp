@@ -1,0 +1,75 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSSEASONTOPSAVE_HPP
+#define __GNET_DBCRSSVRTEAMSSEASONTOPSAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsseasontopsavearg"
+#include "dbcrssvrteamsseasontopsaveres"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsSeasonTopSave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsseasontopsave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsSeasonTopSaveArg *arg = (DBCrssvrTeamsSeasonTopSaveArg *)argument;
+		DBCrssvrTeamsSeasonTopSaveRes *res = (DBCrssvrTeamsSeasonTopSaveRes *)result;
+
+		LOG_TRACE("recv DBCrssvrTeamsSeasonTopSave, updatetime=%d, pos_map.size=%d, toptable.id=%d, toptable.size=%d", 
+				arg->seasontop.updatetime, arg->seasontop.pos_map.size(), arg->seasontop.table.id, arg->seasontop.table.maxsize);
+		
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kteamid;
+		try
+		{
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			
+			StorageEnv::CommonTransaction txn;
+			try{
+				kteamid << 0;
+				
+				value << arg->seasontop; 
+
+				pcrssvrteams->insert( kteamid, value, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrssvrTeamsSeasonTopSave, updatetime=%d, what=%s.",arg->seasontop.updatetime, e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsSeasonTopSaveArg *arg = (DBCrssvrTeamsSeasonTopSaveArg *)argument;
+		// DBCrssvrTeamsSeasonTopSaveRes *res = (DBCrssvrTeamsSeasonTopSaveRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

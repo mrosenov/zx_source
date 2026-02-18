@@ -1,0 +1,135 @@
+
+#ifndef __GNET_MATRIXPASSWD_HPP
+#define __GNET_MATRIXPASSWD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "matrixpasswdarg"
+#include "matrixpasswdres"
+#include "matrixchallenge.hpp"
+#include "localmacro.h"
+#include "cardchecker.h"
+#include "mobilechecker.h"
+#include "glog.h"
+
+namespace GNET
+{
+
+class MatrixPasswd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "matrixpasswd"
+#undef	RPC_BASECLASS
+
+	Manager::Session::ID save_sid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// MatrixPasswdArg *arg = (MatrixPasswdArg *)argument;
+		// MatrixPasswdRes *res = (MatrixPasswdRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		MatrixPasswdRes *res = (MatrixPasswdRes *)result;
+		GLinkServer *lsm=GLinkServer::GetInstance();
+		DEBUG_PRINT ("glinkd::receive matrixpasswd. retcode=%d,algorithm=%x,matrix=%d\n", 
+				res->retcode, res->algorithm, res->matrix.size());
+		
+		if (!lsm->ValidSid(save_sid)) return;
+		if(res->retcode)
+		{
+                        if(res->retcode==ERR_INVALID_ACCOUNT)
+                                res->retcode = ERR_INVALID_PASSWORD;
+			lsm->SessionError(save_sid, res->retcode, "Server error.");
+			return;
+		}
+		SessionInfo * sinfo = NULL;
+		{	
+			Thread::RWLock::WRScoped l(lsm->locker_map);
+			sinfo = lsm->GetSessionInfo(save_sid);
+			if (!sinfo) return;
+			char algo = lsm->challenge_algo;
+			switch (algo)
+			{
+			case ALGO_MD5:
+				if (res->response != sinfo->response)
+				{
+					lsm->SessionError(save_sid, ERR_INVALID_PASSWORD, "Invalid Login.");
+					return;
+				}
+				break;
+			case ALGO_PLAINTEXT:
+				if (res->retcode != ERR_SUCCESS)
+				{       
+					lsm->SessionError(save_sid, res->retcode, "Login Error.");
+					return; 
+				}   
+				break;
+			}
+			sinfo->userid = res->userid;
+			sinfo->login_time = time(NULL);
+		}
+
+		sinfo->algorithm = res->algorithm;
+		switch(res->algorithm & ALGORITHM_MASK_HIGH)
+		{
+			case ALGORITHM_CARD:
+			{
+				lsm->ChangeState(save_sid,&state_GVerifyMatrix);
+				Thread::RWLock::WRScoped l(lsm->locker_map);
+				MatrixChecker * checker = new CardChecker(
+						res->userid, 
+						byteorder_32(sinfo->GetPeerAddr().s_addr),
+						(unsigned char*)res->matrix.begin()
+						);
+
+				MatrixChallenge mc(res->algorithm, checker->Challenge());
+				lsm->Send(save_sid, mc);
+				lsm->AddChecker(save_sid, checker);
+				break;
+			}
+			case ALGORITHM_HANDSET:
+			{
+				lsm->ChangeState(save_sid,&state_GVerifyMatrix);
+				Thread::RWLock::WRScoped l(lsm->locker_map);
+				MatrixChecker * checker = MobileCheckerFactory::Instance().Create(
+						res->userid, 
+						byteorder_32(sinfo->GetPeerAddr().s_addr),
+						res->algorithm, res->matrix
+						);
+
+				MatrixChallenge mc(res->algorithm, checker->Challenge());
+				lsm->Send(save_sid, mc);
+				lsm->AddChecker(save_sid, checker);
+				break;
+			} 
+			default:
+			{
+				//change state to keyexchgsend
+				lsm->ChangeState(save_sid,&state_GKeyExchgSend);
+				Thread::RWLock::RDScoped l(lsm->locker_map);
+				//send keyexchange protocol
+				KeyExchange keyexchange(PROTOCOL_KEYEXCHANGE);
+				keyexchange.Setup(sinfo->identity, sinfo->response, lsm, save_sid);
+				lsm->Send(save_sid, keyexchange);
+				//log user's login information
+				Octets& username = sinfo->identity;
+				Log::login(username, res->userid, save_sid, inet_ntoa(sinfo->GetPeerAddr()), sinfo->mid);
+				GLog::action("userlogin, acc=%.*s:uid=%d:ip=%s", username.size(), (char*)username.begin(), 
+					res->userid, inet_ntoa(sinfo->GetPeerAddr()));
+				break;
+			}
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

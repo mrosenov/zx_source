@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCONSIGNQUERYBACKUPRES_RPCDATA
+#define __GNET_DBCONSIGNQUERYBACKUPRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignQueryBackupRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		Octets detail_os;
+
+	public:
+		DBConsignQueryBackupRes (int l_retcode = 0,const Octets& l_detail_os = Octets())
+			: retcode(l_retcode),detail_os(l_detail_os)
+		{
+		}
+
+		DBConsignQueryBackupRes(const DBConsignQueryBackupRes &rhs)
+			: retcode(rhs.retcode),detail_os(rhs.detail_os) { }
+
+		Rpc::Data *Clone() const { return new DBConsignQueryBackupRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignQueryBackupRes *r = dynamic_cast<const DBConsignQueryBackupRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				detail_os = r->detail_os;
+			}
+			return *this;
+		}
+
+		DBConsignQueryBackupRes& operator = (const DBConsignQueryBackupRes &rhs)
+		{
+			const DBConsignQueryBackupRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				detail_os = r->detail_os;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << detail_os;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> detail_os;
+			return os;
+		}
+
+	};
+};
+#endif

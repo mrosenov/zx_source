@@ -1,0 +1,108 @@
+#ifndef __GNET_GUNIQUEAUCTION_RPCDATA
+#define __GNET_GUNIQUEAUCTION_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "guniquepriceinfo"
+#include "guniquewinitem"
+#include "guniquewinner"
+
+namespace GNET
+{
+	class GUniqueAuction : public GNET::Rpc::Data
+	{
+	public:
+		GUniquePriceInfoVector pricelist;
+		GUniqueWinItem itemtobid;
+		GUniqueWinnerVector winners;
+		int winner;
+		int win_item;
+		int reserve1;
+		int reserve2;
+		int reserve3;
+		int reserve4;
+
+	public:
+		GUniqueAuction (const GUniquePriceInfoVector& l_pricelist = GUniquePriceInfoVector(),const GUniqueWinItem& l_itemtobid = GUniqueWinItem(),const GUniqueWinnerVector& l_winners = GUniqueWinnerVector()
+			,int l_winner = 0,int l_win_item = 0,int l_reserve1 = 0
+			,int l_reserve2 = 0,int l_reserve3 = 0,int l_reserve4 = 0)
+			: pricelist(l_pricelist),itemtobid(l_itemtobid),winners(l_winners)
+			,winner(l_winner),win_item(l_win_item),reserve1(l_reserve1)
+			,reserve2(l_reserve2),reserve3(l_reserve3),reserve4(l_reserve4)
+		{
+		}
+
+		GUniqueAuction(const GUniqueAuction &rhs)
+			: pricelist(rhs.pricelist),itemtobid(rhs.itemtobid),winners(rhs.winners),
+			winner(rhs.winner),win_item(rhs.win_item),reserve1(rhs.reserve1),
+			reserve2(rhs.reserve2),reserve3(rhs.reserve3),reserve4(rhs.reserve4) { }
+
+		Rpc::Data *Clone() const { return new GUniqueAuction(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GUniqueAuction *r = dynamic_cast<const GUniqueAuction *>(&rhs);
+			if (r && r != this)
+			{
+				pricelist = r->pricelist;
+				itemtobid = r->itemtobid;
+				winners = r->winners;
+				winner = r->winner;
+				win_item = r->win_item;
+				reserve1 = r->reserve1;
+				reserve2 = r->reserve2;
+				reserve3 = r->reserve3;
+				reserve4 = r->reserve4;
+			}
+			return *this;
+		}
+
+		GUniqueAuction& operator = (const GUniqueAuction &rhs)
+		{
+			const GUniqueAuction *r = &rhs;
+			if (r && r != this)
+			{
+				pricelist = r->pricelist;
+				itemtobid = r->itemtobid;
+				winners = r->winners;
+				winner = r->winner;
+				win_item = r->win_item;
+				reserve1 = r->reserve1;
+				reserve2 = r->reserve2;
+				reserve3 = r->reserve3;
+				reserve4 = r->reserve4;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << pricelist;
+			os << itemtobid;
+			os << winners;
+			os << winner;
+			os << win_item;
+			os << reserve1;
+			os << reserve2;
+			os << reserve3;
+			os << reserve4;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> pricelist;
+			os >> itemtobid;
+			os >> winners;
+			os >> winner;
+			os >> win_item;
+			os >> reserve1;
+			os >> reserve2;
+			os >> reserve3;
+			os >> reserve4;
+			return os;
+		}
+
+	};
+};
+#endif

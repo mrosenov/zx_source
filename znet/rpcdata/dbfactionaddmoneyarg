@@ -1,0 +1,64 @@
+#ifndef __GNET_DBFACTIONADDMONEYARG_RPCDATA
+#define __GNET_DBFACTIONADDMONEYARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFactionAddMoneyArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int factionid;
+		unsigned int delta_money;
+
+	public:
+		DBFactionAddMoneyArg (unsigned int l_factionid = 0,unsigned int l_delta_money = 0)
+			: factionid(l_factionid),delta_money(l_delta_money)
+		{
+		}
+
+		DBFactionAddMoneyArg(const DBFactionAddMoneyArg &rhs)
+			: factionid(rhs.factionid),delta_money(rhs.delta_money) { }
+
+		Rpc::Data *Clone() const { return new DBFactionAddMoneyArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFactionAddMoneyArg *r = dynamic_cast<const DBFactionAddMoneyArg *>(&rhs);
+			if (r && r != this)
+			{
+				factionid = r->factionid;
+				delta_money = r->delta_money;
+			}
+			return *this;
+		}
+
+		DBFactionAddMoneyArg& operator = (const DBFactionAddMoneyArg &rhs)
+		{
+			const DBFactionAddMoneyArg *r = &rhs;
+			if (r && r != this)
+			{
+				factionid = r->factionid;
+				delta_money = r->delta_money;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << factionid;
+			os << delta_money;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> factionid;
+			os >> delta_money;
+			return os;
+		}
+
+	};
+};
+#endif

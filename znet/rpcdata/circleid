@@ -1,0 +1,59 @@
+#ifndef __GNET_CIRCLEID_RPCDATA
+#define __GNET_CIRCLEID_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class CircleID : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int circleid;
+
+	public:
+		CircleID (unsigned int l_circleid = 0)
+			: circleid(l_circleid)
+		{
+		}
+
+		CircleID(const CircleID &rhs)
+			: circleid(rhs.circleid) { }
+
+		Rpc::Data *Clone() const { return new CircleID(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const CircleID *r = dynamic_cast<const CircleID *>(&rhs);
+			if (r && r != this)
+			{
+				circleid = r->circleid;
+			}
+			return *this;
+		}
+
+		CircleID& operator = (const CircleID &rhs)
+		{
+			const CircleID *r = &rhs;
+			if (r && r != this)
+			{
+				circleid = r->circleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << circleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> circleid;
+			return os;
+		}
+
+	};
+};
+#endif

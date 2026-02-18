@@ -1,0 +1,61 @@
+
+#ifndef __GNET_GUNIQUEBID_HPP
+#define __GNET_GUNIQUEBID_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "guniquebidarg"
+#include "guniquebidres"
+#include "uniqueauctionmanager.h"
+#include "uniquebid_re.hpp"
+
+namespace GNET
+{
+
+class GUniqueBid : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "guniquebid"
+#undef	RPC_BASECLASS
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GUniqueBidArg *arg = (GUniqueBidArg *)argument;
+		GUniqueBidRes *res = (GUniqueBidRes *)result;
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if (pinfo == NULL)
+		{
+			res->retcode = -1;
+			return;
+		}
+
+		UniqueAuctionManager *uni_manager = UniqueAuctionManager::GetInstance();
+		res->retcode = uni_manager->Bid(arg->roleid, pinfo->name, arg->lower_bound_money, arg->upper_bound_money);
+		if (res->retcode != ERR_SUCCESS)
+		{
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, UniqueBid_Re(res->retcode, pinfo->localsid));
+		}
+		else
+			UniqueAuctionManager::GetInstance()->SendBidHistory(arg->roleid, pinfo->linksid, pinfo->localsid);
+		
+		time_t now = uni_manager->GetTime();
+		LOG_TRACE("GUniqueBid %s roleid=%d lower_bound_money=%d upper_bound_money=%d bid_times=%d retcode %d", ctime(&now), arg->roleid, arg->lower_bound_money, arg->upper_bound_money, uni_manager->GetBidTimes(), res->retcode);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GUniqueBidArg *arg = (GUniqueBidArg *)argument;
+		// GUniqueBidRes *res = (GUniqueBidRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

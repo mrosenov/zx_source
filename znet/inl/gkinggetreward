@@ -1,0 +1,32 @@
+	public:
+		int roleid;
+		enum { PROTOCOL_TYPE = PROTOCOL_GKINGGETREWARD };
+	public:
+		GKingGetReward() { type = PROTOCOL_GKINGGETREWARD; }
+		GKingGetReward(void*) : Protocol(PROTOCOL_GKINGGETREWARD) { }
+		GKingGetReward (int l_roleid)
+			 : roleid(l_roleid)
+		{
+			type = PROTOCOL_GKINGGETREWARD;
+		}
+
+		GKingGetReward(const GKingGetReward &rhs)
+			: Protocol(rhs),roleid(rhs.roleid) { }
+
+		GNET::Protocol *Clone() const { return new GKingGetReward(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

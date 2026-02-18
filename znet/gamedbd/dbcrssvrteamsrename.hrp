@@ -1,0 +1,121 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSRENAME_HPP
+#define __GNET_DBCRSSVRTEAMSRENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsrenamearg"
+#include "dbcrssvrteamsrenameres"
+
+#include "gcrssvrteamsrole"
+#include "gcrssvrteamsdata"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsRename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsrename"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsRenameArg *arg = (DBCrssvrTeamsRenameArg *)argument;
+		DBCrssvrTeamsRenameRes *res = (DBCrssvrTeamsRenameRes *)result;
+
+		LOG_TRACE("DBCrssvrTeamsRename, newname.size=%d, roleid=%d, teamid=%d", arg->newname.size(), arg->roleid, arg->teamid);
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kteamid, koldname, knewname;
+		try
+		{
+			StorageEnv::Storage * pnamecrssvrteams = StorageEnv::GetStorage("crssvrteamsname");
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				if(arg->teamid == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+
+				GCrssvrTeamsData crssvrteams;
+
+				krole << arg->roleid;
+				kteamid << arg->teamid;
+				knewname << arg->newname;
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> crssvrteams;
+				}
+
+				//Marshal::OctetsStream(pcrssvrteams->find(kteamid, txn)) >> crssvrteams;
+				if(crssvrteams.info.teamid <= 0)
+				{
+					Log::log( LOG_ERR, "CrssvrTeamsRename, teamid=%d not found", arg->teamid);
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}
+			
+				koldname << crssvrteams.info.name;
+				crssvrteams.info.changenametime = Timer::GetTime();
+				crssvrteams.info.name = arg->newname;
+
+				Log::formatlog("CrssvrTeamsRename","teamid=%d:roleid=%d", arg->teamid, arg->roleid);
+
+				int teamid = -1;
+				value.clear();
+				if( pnamecrssvrteams->find(koldname, value, txn) )
+				{
+					value >> teamid;
+				}
+				if(teamid <= 0 || teamid != arg->teamid)
+				{
+					Log::log( LOG_ERR, "DBCrssvrTeamsRename, teamid=%d not equal arg->teamid=%d in crssvrteamsname", teamid, arg->teamid);
+					//res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					//return;
+				}
+				LOG_TRACE("DBCrssvrTeamsRename, oldname.size=%d", crssvrteams.info.name.size());
+				pnamecrssvrteams->del( koldname, txn );
+				pnamecrssvrteams->insert( knewname, kteamid, txn );
+				pcrssvrteams->insert( kteamid, Marshal::OctetsStream()<<crssvrteams, txn );
+				res->changetime = crssvrteams.info.changenametime;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrssvrTeamsRename, teamid=%d, roleid=%d what=%s.",arg->teamid,arg->roleid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsRenameArg *arg = (DBCrssvrTeamsRenameArg *)argument;
+		// DBCrssvrTeamsRenameRes *res = (DBCrssvrTeamsRenameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

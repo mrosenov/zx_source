@@ -1,0 +1,59 @@
+#ifndef __GNET_DBKINGDOMTASKCLOSEARG_RPCDATA
+#define __GNET_DBKINGDOMTASKCLOSEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBKingdomTaskCloseArg : public GNET::Rpc::Data
+	{
+	public:
+		int dummy;
+
+	public:
+		DBKingdomTaskCloseArg (int l_dummy = 0)
+			: dummy(l_dummy)
+		{
+		}
+
+		DBKingdomTaskCloseArg(const DBKingdomTaskCloseArg &rhs)
+			: dummy(rhs.dummy) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomTaskCloseArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomTaskCloseArg *r = dynamic_cast<const DBKingdomTaskCloseArg *>(&rhs);
+			if (r && r != this)
+			{
+				dummy = r->dummy;
+			}
+			return *this;
+		}
+
+		DBKingdomTaskCloseArg& operator = (const DBKingdomTaskCloseArg &rhs)
+		{
+			const DBKingdomTaskCloseArg *r = &rhs;
+			if (r && r != this)
+			{
+				dummy = r->dummy;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << dummy;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> dummy;
+			return os;
+		}
+
+	};
+};
+#endif

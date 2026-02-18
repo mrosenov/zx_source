@@ -1,0 +1,56 @@
+	public:
+		int ftype;
+		int64_t roleid;
+		int64_t accountid;
+		int forbid_time;
+		int score;
+		Octets reason;
+		Octets logreason;
+		enum { PROTOCOL_TYPE = PROTOCOL_ACFORBIDUSER };
+	public:
+		ACForbidUser() { type = PROTOCOL_ACFORBIDUSER; }
+		ACForbidUser(void*) : Protocol(PROTOCOL_ACFORBIDUSER) { }
+		ACForbidUser (int l_ftype,int64_t l_roleid,int64_t l_accountid,
+			int l_forbid_time,int l_score,const Octets& l_reason,
+			const Octets& l_logreason)
+			 : ftype(l_ftype),roleid(l_roleid),accountid(l_accountid)
+			,forbid_time(l_forbid_time),score(l_score),reason(l_reason)
+			,logreason(l_logreason)
+		{
+			type = PROTOCOL_ACFORBIDUSER;
+		}
+
+		ACForbidUser(const ACForbidUser &rhs)
+			: Protocol(rhs),ftype(rhs.ftype),roleid(rhs.roleid),accountid(rhs.accountid)
+			,forbid_time(rhs.forbid_time),score(rhs.score),reason(rhs.reason)
+			,logreason(rhs.logreason) { }
+
+		GNET::Protocol *Clone() const { return new ACForbidUser(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << ftype;
+			os << roleid;
+			os << accountid;
+			os << forbid_time;
+			os << score;
+			os << reason;
+			os << logreason;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> ftype;
+			os >> roleid;
+			os >> accountid;
+			os >> forbid_time;
+			os >> score;
+			os >> reason;
+			os >> logreason;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2048; }

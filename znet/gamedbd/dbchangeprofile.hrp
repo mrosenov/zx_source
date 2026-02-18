@@ -1,0 +1,80 @@
+
+#ifndef __GNET_DBCHANGEPROFILE_HPP
+#define __GNET_DBCHANGEPROFILE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbchangeprofilearg"
+
+
+namespace GNET
+{
+
+class DBChangeProfile : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbchangeprofile"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBChangeProfileArg *arg = (DBChangeProfileArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+
+		try
+		{
+			StorageEnv::Storage *pstorage = StorageEnv::GetStorage("base");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream oct_key, oct_value;
+			GRoleBase base;
+
+			try
+			{
+				oct_key << arg->roleid;
+				if (pstorage->find(oct_key, oct_value, txn))
+				{
+					oct_value >> base;
+					base.faceid = arg->faceid;
+					base.hairid = arg->hairid;
+					base.earid = arg->earid;
+					base.tailid = arg->tailid;
+					base.fashionid = arg->fashionid;
+					pstorage->insert(oct_key, Marshal::OctetsStream()<<base, txn);
+					res->retcode = ERR_SUCCESS;
+				}
+				else
+					res->retcode = ERR_NOTFOUND;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+			res->retcode = ERR_FAILED;
+			Log::log(LOG_ERR, "gamedbd:DBChangeProfile, error, what=%s\n", e.what());
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBChangeProfileArg *arg = (DBChangeProfileArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

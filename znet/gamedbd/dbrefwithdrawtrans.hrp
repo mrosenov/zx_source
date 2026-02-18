@@ -1,0 +1,85 @@
+
+#ifndef __GNET_DBREFWITHDRAWTRANS_HPP
+#define __GNET_DBREFWITHDRAWTRANS_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbrefwithdrawtransarg"
+
+
+namespace GNET
+{
+
+class DBRefWithdrawTrans : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbrefwithdrawtrans"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBRefWithdrawTransArg *arg = (DBRefWithdrawTransArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+
+		try
+		{
+			StorageEnv::Storage *pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::Storage *pref = StorageEnv::GetStorage("referral");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream oct_value;
+
+			try
+			{
+				GRoleBase2 base2;
+				if (pbase2->find(Marshal::OctetsStream()<<arg->referrer.roleid, oct_value, txn))
+					Marshal::OctetsStream(oct_value)>>base2;
+
+				base2.id = arg->referrer.roleid;
+				base2.bonus_withdraw = arg->referrer.bonus_withdraw;
+				base2.exp_withdraw_today = arg->referrer.exp_withdraw_today;
+				base2.exp_withdraw_time = arg->referrer.exp_withdraw_time;
+				pbase2->insert(Marshal::OctetsStream()<<base2.id, Marshal::OctetsStream()<<base2, txn);
+
+				std::vector<GReferral>::iterator it, ie = arg->referrals.end();
+				LOG_TRACE("DBRefWithdrawTrans: referrer=%d, referrals count=%d\n", arg->referrer.roleid, arg->referrals.size());
+				for (it = arg->referrals.begin(); it != ie; ++it)
+				{
+					pref->insert(Marshal::OctetsStream()<<it->roleid, Marshal::OctetsStream()<<*it, txn);
+					LOG_TRACE("DBRefWithdrawTrans: referral=%d, exp_total1=%lld, exp_total2=%lld, exp_withdraw=%lld\n", it->roleid, it->exp_total1, it->exp_total2, it->exp_withdraw);
+				}
+
+				res->retcode = ERR_SUCCESS;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+			Log::log(LOG_ERR, "gamedbd: DBRefWithdrawTrans failed, what=%s\n", e.what());
+			res->retcode = ERR_FAILED;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBRefWithdrawTransArg *arg = (DBRefWithdrawTransArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

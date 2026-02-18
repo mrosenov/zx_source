@@ -1,0 +1,47 @@
+
+#ifndef __GNET_DBTERRITORYLISTSAVE_HPP
+#define __GNET_DBTERRITORYLISTSAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbterritorylistsavearg"
+#include "dbterritorylistsaveres"
+
+namespace GNET
+{
+
+class DBTerritoryListSave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbterritorylistsave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBTerritoryListSaveArg *arg = (DBTerritoryListSaveArg *)argument;
+		// DBTerritoryListSaveRes *res = (DBTerritoryListSaveRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBTerritoryListSaveArg *arg = (DBTerritoryListSaveArg *)argument;
+		DBTerritoryListSaveRes *res = (DBTerritoryListSaveRes *)result;
+		if (res->retcode == ERR_AGAIN)
+			GameDBClient::GetInstance()->SendProtocol(Rpc::Call(RPC_DBTERRITORYLISTSAVE,arg));
+		else if (res->retcode != ERR_SUCCESS)
+			Log::log(LOG_ERR, "DBTerritoryListSave errno %d save reason %d", res->retcode, arg->reason);
+
+	}
+
+	void OnTimeout(Rpc::Data * argument)
+	{
+		DBTerritoryListSaveArg *arg = (DBTerritoryListSaveArg *)argument;
+		Log::log(LOG_ERR, "DBTerritoryListSave timeout save reason %d", arg->reason);
+	}
+
+};
+
+};
+#endif

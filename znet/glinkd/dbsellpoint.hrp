@@ -1,0 +1,63 @@
+
+#ifndef __GNET_DBSELLPOINT_HPP
+#define __GNET_DBSELLPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "sellpointarg"
+#include "sellpointres"
+#include "sellpoint_re.hpp"
+#include "glinkserver.hpp"
+namespace GNET
+{
+
+class DBSellPoint : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsellpoint"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// SellPointArg *arg = (SellPointArg *)argument;
+		// SellPointRes *res = (SellPointRes *)result;
+	}
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		//delivery will send result to client
+#if 0
+		SellPointArg *arg = (SellPointArg *)argument;
+		SellPointRes *res = (SellPointRes *)result;
+		SellPoint_Re sp_re(res->retcode);
+		if ( res->retcode==ERR_SUCCESS )
+		{
+			sp_re.info.sellid=res->sellid;
+			sp_re.info.roleid=arg->roleid;
+			sp_re.info.point =arg->point;
+			sp_re.info.price =arg->price;
+			sp_re.info.ctime =res->ctime;
+			sp_re.info.etime =res->etime;
+			sp_re.info.status=_PST_NOTSELL;
+		}
+		GLinkServer::GetInstance()->Send(arg->localsid,sp_re);
+#endif
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		// TODO Client Only
+		//delivery will send result to client
+#if 0
+		SellPointArg *arg = (SellPointArg *)argument;
+		SellPoint_Re sp_re(ERR_TIMEOUT);
+		GLinkServer::GetInstance()->Send(arg->localsid,sp_re);
+#endif
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,32 @@
+	public:
+		int remain_time;
+		enum { PROTOCOL_TYPE = PROTOCOL_CONTESTINVITEBROADCAST };
+	public:
+		ContestInviteBroadcast() { type = PROTOCOL_CONTESTINVITEBROADCAST; }
+		ContestInviteBroadcast(void*) : Protocol(PROTOCOL_CONTESTINVITEBROADCAST) { }
+		ContestInviteBroadcast (int l_remain_time)
+			 : remain_time(l_remain_time)
+		{
+			type = PROTOCOL_CONTESTINVITEBROADCAST;
+		}
+
+		ContestInviteBroadcast(const ContestInviteBroadcast &rhs)
+			: Protocol(rhs),remain_time(rhs.remain_time) { }
+
+		GNET::Protocol *Clone() const { return new ContestInviteBroadcast(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << remain_time;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> remain_time;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 16; }

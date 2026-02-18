@@ -1,0 +1,49 @@
+
+#ifndef __GNET_DEBUGOPERATIONCMD_HPP
+#define __GNET_DEBUGOPERATIONCMD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "debugoperationcmdarg"
+#include "debugoperationcmdres"
+
+namespace GNET
+{
+
+class DebugOperationCmd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "debugoperationcmd"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DebugOperationCmdArg *arg = (DebugOperationCmdArg *)argument;
+		// DebugOperationCmdRes *res = (DebugOperationCmdRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DebugOperationCmdArg *arg = (DebugOperationCmdArg *)argument;
+		DebugOperationCmdRes *res = (DebugOperationCmdRes *)result;
+		LOG_TRACE("debugoperationcmd, arg->cmdlist size %d clear %d, ret %d", arg->cmdlist.size(), arg->clear, res->retcode);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			if (arg->clear)
+				IwebCmd::GetInstance()->DebugClearCmdList();
+			else
+				IwebCmd::GetInstance()->HandleCmd(arg->cmdlist);
+		}
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

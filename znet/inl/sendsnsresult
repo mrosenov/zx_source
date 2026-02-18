@@ -1,0 +1,47 @@
+	public:
+		int retcode;
+		int roleid;
+		char message_type;
+		char op_type;
+		int charm;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDSNSRESULT };
+	public:
+		SendSNSResult() { type = PROTOCOL_SENDSNSRESULT; }
+		SendSNSResult(void*) : Protocol(PROTOCOL_SENDSNSRESULT) { }
+		SendSNSResult (int l_retcode,int l_roleid,char l_message_type = 0,
+			char l_op_type = 0,int l_charm = 0)
+			 : retcode(l_retcode),roleid(l_roleid),message_type(l_message_type)
+			,op_type(l_op_type),charm(l_charm)
+		{
+			type = PROTOCOL_SENDSNSRESULT;
+		}
+
+		SendSNSResult(const SendSNSResult &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),roleid(rhs.roleid),message_type(rhs.message_type)
+			,op_type(rhs.op_type),charm(rhs.charm) { }
+
+		GNET::Protocol *Clone() const { return new SendSNSResult(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << roleid;
+			os << message_type;
+			os << op_type;
+			os << charm;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> roleid;
+			os >> message_type;
+			os >> op_type;
+			os >> charm;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

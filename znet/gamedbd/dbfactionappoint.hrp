@@ -1,0 +1,129 @@
+
+#ifndef __GNET_DBFACTIONAPPOINT_HPP
+#define __GNET_DBFACTIONAPPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionappointarg"
+#include "dbfactionappointres"
+#include "utilfunction.h"
+#include "gfamily"
+
+namespace GNET
+{
+
+class DBFactionAppoint : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionappoint"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionAppointArg *arg = (DBFactionAppointArg *)argument;
+		DBFactionAppointRes *res = (DBFactionAppointRes *)result;
+		Marshal::OctetsStream key, krole;
+		Marshal::OctetsStream kfamily;
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+
+			Log::formatlog("factionappoint","factionid=%d:roleid=%d:title=%d",arg->fid,arg->roleid,arg->title);
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GRoleBase base;
+				GFactionInfo faction;
+				GFamily family;
+
+				key << arg->fid;
+				krole << arg->roleid;
+
+				Marshal::OctetsStream(pbase->find(krole, txn )) >> base;
+				kfamily << base.familyid;
+				Marshal::OctetsStream(pfamily->find(kfamily, txn )) >> family;
+
+				if (family.factionid != arg->fid)
+					throw DbException(DB_VERIFY_BAD);
+
+				for (GFolkVector::iterator it = family.member.begin(); it != family.member.end(); ++it)
+				{
+					if (it->rid == arg->roleid)
+					{
+						it->title = arg->title;
+						break;
+					}
+				}
+				pfamily->insert(kfamily, Marshal::OctetsStream() << family, txn);
+
+				res->oldtitle = base.title;
+				base.title = arg->title;
+				pbase->insert( krole, Marshal::OctetsStream()<<base, txn );
+
+				Marshal::OctetsStream(pfaction->find(key, txn )) >> faction;
+				if(arg->title==TITLE_MASTER)
+				{
+					Marshal::OctetsStream mkey,value;
+					mkey << faction.master;
+					if(faction.master!=arg->roleid && pbase->find(mkey, value, txn))
+					{
+						value >> base;
+						if(base.title==TITLE_MASTER)
+						{
+							base.title = TITLE_HEADER;
+							pbase->insert( mkey, Marshal::OctetsStream()<<base, txn );
+						}
+
+					}
+					Marshal::OctetsStream mfamily;
+					mfamily << base.familyid;
+					Marshal::OctetsStream(pfamily->find(mfamily, txn)) >> family;
+					for (GFolkVector::iterator it = family.member.begin(); it != family.member.end(); ++it)
+					{
+						if (it->rid == faction.master)
+						{
+							it->title = TITLE_HEADER;
+							break;
+						}
+					}
+					pfamily->insert(mfamily, Marshal::OctetsStream() << family, txn);
+					faction.master = arg->roleid;
+				}
+				pfaction->insert( key, Marshal::OctetsStream()<<faction, txn );
+
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionAppoint, roleid=%d, factionid=%d what=%s.",
+				arg->roleid,arg->fid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFactionAppointArg *arg = (DBFactionAppointArg *)argument;
+		// DefFactionRes *res = (DefFactionRes *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

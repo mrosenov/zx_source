@@ -1,0 +1,64 @@
+#ifndef __GNET_DBFACTIONAPPOINTRES_RPCDATA
+#define __GNET_DBFACTIONAPPOINTRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFactionAppointRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		unsigned char oldtitle;
+
+	public:
+		DBFactionAppointRes (int l_retcode = -1,unsigned char l_oldtitle = 0)
+			: retcode(l_retcode),oldtitle(l_oldtitle)
+		{
+		}
+
+		DBFactionAppointRes(const DBFactionAppointRes &rhs)
+			: retcode(rhs.retcode),oldtitle(rhs.oldtitle) { }
+
+		Rpc::Data *Clone() const { return new DBFactionAppointRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFactionAppointRes *r = dynamic_cast<const DBFactionAppointRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				oldtitle = r->oldtitle;
+			}
+			return *this;
+		}
+
+		DBFactionAppointRes& operator = (const DBFactionAppointRes &rhs)
+		{
+			const DBFactionAppointRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				oldtitle = r->oldtitle;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << oldtitle;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> oldtitle;
+			return os;
+		}
+
+	};
+};
+#endif

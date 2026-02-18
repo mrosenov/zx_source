@@ -1,0 +1,64 @@
+#ifndef __GNET_SYNCCRSSVRTEAMSARG_RPCDATA
+#define __GNET_SYNCCRSSVRTEAMSARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcrssvrteamsinfo"
+
+namespace GNET
+{
+	class SyncCrssvrTeamsArg : public GNET::Rpc::Data
+	{
+	public:
+		int teamid;
+		GCrssvrTeamsInfo info;
+
+	public:
+		SyncCrssvrTeamsArg ()
+		{
+		}
+
+		SyncCrssvrTeamsArg(const SyncCrssvrTeamsArg &rhs)
+			: teamid(rhs.teamid),info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new SyncCrssvrTeamsArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SyncCrssvrTeamsArg *r = dynamic_cast<const SyncCrssvrTeamsArg *>(&rhs);
+			if (r && r != this)
+			{
+				teamid = r->teamid;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		SyncCrssvrTeamsArg& operator = (const SyncCrssvrTeamsArg &rhs)
+		{
+			const SyncCrssvrTeamsArg *r = &rhs;
+			if (r && r != this)
+			{
+				teamid = r->teamid;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << teamid;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> teamid;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

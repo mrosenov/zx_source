@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSNSGETPLAYERINFOCACHE_HPP
+#define __GNET_DBSNSGETPLAYERINFOCACHE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsgetplayerinfocachearg"
+#include "dbsnsgetplayerinfocacheres"
+
+namespace GNET
+{
+
+class DBSNSGetPlayerInfoCache : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsgetplayerinfocache"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSNSGetPlayerInfoCacheArg *arg = (DBSNSGetPlayerInfoCacheArg *)argument;
+		// DBSNSGetPlayerInfoCacheRes *res = (DBSNSGetPlayerInfoCacheRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSNSGetPlayerInfoCacheArg *arg = (DBSNSGetPlayerInfoCacheArg *)argument;
+		// DBSNSGetPlayerInfoCacheRes *res = (DBSNSGetPlayerInfoCacheRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,70 @@
+#ifndef __GNET_DBCONSIGNTABLELOADRES_RPCDATA
+#define __GNET_DBCONSIGNTABLELOADRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gconsigndb"
+
+namespace GNET
+{
+	class DBConsignTableLoadRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		std::vector<GConsignDB> items;
+		Octets nextbeginkey;
+
+	public:
+		DBConsignTableLoadRes (int l_retcode = 0,const Octets& l_nextbeginkey = Octets())
+			: retcode(l_retcode),nextbeginkey(l_nextbeginkey)
+		{
+		}
+
+		DBConsignTableLoadRes(const DBConsignTableLoadRes &rhs)
+			: retcode(rhs.retcode),items(rhs.items),nextbeginkey(rhs.nextbeginkey) { }
+
+		Rpc::Data *Clone() const { return new DBConsignTableLoadRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignTableLoadRes *r = dynamic_cast<const DBConsignTableLoadRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				items = r->items;
+				nextbeginkey = r->nextbeginkey;
+			}
+			return *this;
+		}
+
+		DBConsignTableLoadRes& operator = (const DBConsignTableLoadRes &rhs)
+		{
+			const DBConsignTableLoadRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				items = r->items;
+				nextbeginkey = r->nextbeginkey;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << items;
+			os << nextbeginkey;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> items;
+			os >> nextbeginkey;
+			return os;
+		}
+
+	};
+};
+#endif

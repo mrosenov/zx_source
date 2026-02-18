@@ -1,0 +1,98 @@
+
+#ifndef __GNET_DBFAMILYJOIN_HPP
+#define __GNET_DBFAMILYJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "dbfamilyjoinarg"
+#include "dbfamilyjoinres"
+
+namespace GNET
+{
+
+class DBFamilyJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyjoin"
+#undef	RPC_BASECLASS
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilyJoinArg *arg = (DBFamilyJoinArg *)argument;
+		DBFamilyJoinRes *res = (DBFamilyJoinRes *)result;
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kfamily;
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GRoleBase base;
+				GFamily family;
+				GFolk folk;
+
+				Log::formatlog("familyjoin","familyid=%d:rid=%d", arg->fid, arg->rid);
+                               	key << arg->rid;
+				Marshal::OctetsStream(pbase->find(key, txn)) >> base;
+				if(base.familyid)
+				{
+					res->retcode = ERR_FC_FULL;
+					return;	
+				}
+				kfamily << arg->fid;
+				Marshal::OctetsStream(pfamily->find(kfamily, txn)) >> family;
+				if (family.member.size() >= MAX_FAMILY_MEMBER_NUMBER)
+				{
+					res->retcode = ERR_FC_FULL;
+					return;	
+				}
+
+				base.familyid = arg->fid;
+				base.title = TITLE_MEMBER;
+				base.jointime = Timer::GetTime();
+
+				folk.rid = arg->rid;
+				folk.name = base.name;
+				folk.title = TITLE_MEMBER;
+				folk.level = arg->level;
+				folk.occupation = arg->occupation;
+				folk.jointime = base.jointime;
+				folk.devotion = 0;
+				family.member.push_back(folk);
+
+				pfamily->insert( kfamily, Marshal::OctetsStream()<<family, txn );
+				pbase->insert( key, Marshal::OctetsStream()<< base, txn );
+
+				res->name = base.name;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionJoin, familyid=%d, roleid=%d what=%s.",arg->fid,arg->rid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

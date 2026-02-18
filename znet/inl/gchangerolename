@@ -1,0 +1,47 @@
+	public:
+		int roleid;
+		Octets newname;
+		int itemid;
+		int item_pos;
+		GMailSyncData syncdata;
+		enum { PROTOCOL_TYPE = PROTOCOL_GCHANGEROLENAME };
+	public:
+		GChangeRolename() { type = PROTOCOL_GCHANGEROLENAME; }
+		GChangeRolename(void*) : Protocol(PROTOCOL_GCHANGEROLENAME) { }
+		GChangeRolename (int l_roleid,const Octets& l_newname,int l_itemid = 0,
+			int l_item_pos = -1,const GMailSyncData& l_syncdata = GMailSyncData())
+			 : roleid(l_roleid),newname(l_newname),itemid(l_itemid)
+			,item_pos(l_item_pos),syncdata(l_syncdata)
+		{
+			type = PROTOCOL_GCHANGEROLENAME;
+		}
+
+		GChangeRolename(const GChangeRolename &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),newname(rhs.newname),itemid(rhs.itemid)
+			,item_pos(rhs.item_pos),syncdata(rhs.syncdata) { }
+
+		GNET::Protocol *Clone() const { return new GChangeRolename(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << newname;
+			os << itemid;
+			os << item_pos;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> newname;
+			os >> itemid;
+			os >> item_pos;
+			os >> syncdata;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2097152; }

@@ -1,0 +1,44 @@
+	public:
+		int gs_id;
+		int tag;
+		int map_id;
+		int end_time;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDINSTANCINGSTART };
+	public:
+		SendInstancingStart() { type = PROTOCOL_SENDINSTANCINGSTART; }
+		SendInstancingStart(void*) : Protocol(PROTOCOL_SENDINSTANCINGSTART) { }
+		SendInstancingStart (int l_gs_id,int l_tag = 0,int l_map_id = 0,
+			int l_end_time = 0)
+			 : gs_id(l_gs_id),tag(l_tag),map_id(l_map_id)
+			,end_time(l_end_time)
+		{
+			type = PROTOCOL_SENDINSTANCINGSTART;
+		}
+
+		SendInstancingStart(const SendInstancingStart &rhs)
+			: Protocol(rhs),gs_id(rhs.gs_id),tag(rhs.tag),map_id(rhs.map_id)
+			,end_time(rhs.end_time) { }
+
+		GNET::Protocol *Clone() const { return new SendInstancingStart(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gs_id;
+			os << tag;
+			os << map_id;
+			os << end_time;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gs_id;
+			os >> tag;
+			os >> map_id;
+			os >> end_time;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

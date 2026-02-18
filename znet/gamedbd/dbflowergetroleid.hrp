@@ -1,0 +1,108 @@
+
+#ifndef __GNET_DBFLOWERGETROLEID_HPP
+#define __GNET_DBFLOWERGETROLEID_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbflowergetroleidarg"
+#include "dbflowergetroleidres"
+
+namespace GNET
+{
+
+class DBFlowerGetRoleId : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbflowergetroleid"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFlowerGetRoleIdArg *arg = (DBFlowerGetRoleIdArg *)argument;
+		DBFlowerGetRoleIdRes *res = (DBFlowerGetRoleIdRes *)result;
+		
+		try
+		{
+			StorageEnv::Storage * prolename = StorageEnv::GetStorage("rolename");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::AtomTransaction txn;
+			try
+			{
+				Marshal::OctetsStream rolename_value, base_key, base_value;
+				if(prolename->find(arg->rolename, rolename_value, txn))
+				{
+					rolename_value >> res->roleid;
+				}
+				else
+				{
+					//std::string _rolename(arg->rolename.begin(), arg->rolename.size());
+					LOG_TRACE("DBFlowerGetRoleId, no found for rolename:%s, size=%d.", arg->rolename.begin() ,arg->rolename.size());
+					res->retcode = TOPFLOWER_GETROLEID_ERR_OLDNAME;
+					return;
+
+				}
+
+				//Marshal::OctetsStream( prolename->find( arg->rolename, txn ) ) >> res->roleid;
+				GRoleBase base;
+				//Marshal::OctetsStream(pbase->find(Marshal::OctetsStream() << res->roleid, txn)) >> base;
+				base_key << res->roleid;
+				if(pbase->find(base_key, base_value, txn))
+				{
+					base_value >> base;
+					LOG_TRACE("DBFlowerGetRoleId, roleid:%d, old_rolename:%s, old_size=%d. base_rolename=%s,base_size=%d", res->roleid, arg->rolename.begin() ,arg->rolename.size(),base.name.begin() ,base.name.size());
+
+					if(arg->rolename != base.name)
+					{
+						// 如果不相同，则说明玩家已经修改名字了，并且传过来的是老名字
+						res->retcode = TOPFLOWER_GETROLEID_ERR_OLDNAME;
+					}
+					else
+					{
+						res->retcode = TOPFLOWER_GETROLEID_SUCCESS;
+						res->userid = base.userid;
+						res->gender = base.gender;
+					}
+
+				}
+				else
+				{
+					LOG_TRACE("DBFlowerGetRoleId, no found for rolename." );
+					res->retcode = TOPFLOWER_GETROLEID_ERR_OLDNAME;
+				}
+
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			res->retcode = -1;
+		}
+		
+		LOG_TRACE("DBFlowerGetRoleId, retcode=%d,roleid=%d", res->retcode, res->roleid);
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFlowerGetRoleIdArg *arg = (DBFlowerGetRoleIdArg *)argument;
+		// DBFlowerGetRoleIdRes *res = (DBFlowerGetRoleIdRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

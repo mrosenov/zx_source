@@ -1,0 +1,59 @@
+	public:
+		int gs_id;
+		int roleid;
+		int map_id;
+		int index;
+		float scalex;
+		float scaley;
+		float scalez;
+		int reason;
+		enum { PROTOCOL_TYPE = PROTOCOL_GRAIDLEAVE };
+	public:
+		GRaidLeave() { type = PROTOCOL_GRAIDLEAVE; }
+		GRaidLeave(void*) : Protocol(PROTOCOL_GRAIDLEAVE) { }
+		GRaidLeave (int l_gs_id,int l_roleid = 0,int l_map_id = 0,
+			int l_index = 0,float l_scalex = 0.0f,float l_scaley = 0.0f,
+			float l_scalez = 0.0f,int l_reason = 0)
+			 : gs_id(l_gs_id),roleid(l_roleid),map_id(l_map_id)
+			,index(l_index),scalex(l_scalex),scaley(l_scaley)
+			,scalez(l_scalez),reason(l_reason)
+		{
+			type = PROTOCOL_GRAIDLEAVE;
+		}
+
+		GRaidLeave(const GRaidLeave &rhs)
+			: Protocol(rhs),gs_id(rhs.gs_id),roleid(rhs.roleid),map_id(rhs.map_id)
+			,index(rhs.index),scalex(rhs.scalex),scaley(rhs.scaley)
+			,scalez(rhs.scalez),reason(rhs.reason) { }
+
+		GNET::Protocol *Clone() const { return new GRaidLeave(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gs_id;
+			os << roleid;
+			os << map_id;
+			os << index;
+			os << scalex;
+			os << scaley;
+			os << scalez;
+			os << reason;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gs_id;
+			os >> roleid;
+			os >> map_id;
+			os >> index;
+			os >> scalex;
+			os >> scaley;
+			os >> scalez;
+			os >> reason;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

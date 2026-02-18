@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBUNIQUEAUCTIONSAVE_HPP
+#define __GNET_DBUNIQUEAUCTIONSAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbuniqueauctionsavearg"
+#include "dbuniqueauctionsaveres"
+
+namespace GNET
+{
+
+class DBUniqueAuctionSave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbuniqueauctionsave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBUniqueAuctionSaveArg *arg = (DBUniqueAuctionSaveArg *)argument;
+		// DBUniqueAuctionSaveRes *res = (DBUniqueAuctionSaveRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBUniqueAuctionSaveArg *arg = (DBUniqueAuctionSaveArg *)argument;
+		// DBUniqueAuctionSaveRes *res = (DBUniqueAuctionSaveRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

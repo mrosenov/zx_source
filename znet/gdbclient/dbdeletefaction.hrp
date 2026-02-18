@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBDELETEFACTION_HPP
+#define __GNET_DBDELETEFACTION_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbdeletefactionarg"
+#include "dbdeletefactionres"
+
+namespace GNET
+{
+
+class DBDeleteFaction : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbdeletefaction"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBDeleteFactionArg *arg = (DBDeleteFactionArg *)argument;
+		// DBDeleteFactionRes *res = (DBDeleteFactionRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBDeleteFactionArg *arg = (DBDeleteFactionArg *)argument;
+		// DBDeleteFactionRes *res = (DBDeleteFactionRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

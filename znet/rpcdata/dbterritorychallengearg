@@ -1,0 +1,88 @@
+#ifndef __GNET_DBTERRITORYCHALLENGEARG_RPCDATA
+#define __GNET_DBTERRITORYCHALLENGEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBTerritoryChallengeArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int territoryid;
+		unsigned int factionid;
+		int itemid;
+		int item_count;
+		GMailSyncData syncdata;
+
+	public:
+		DBTerritoryChallengeArg (int l_roleid = 0,int l_territoryid = 0,unsigned int l_factionid = 0
+			,int l_itemid = 0,int l_item_count = 0,const GMailSyncData& l_syncdata = GMailSyncData())
+			: roleid(l_roleid),territoryid(l_territoryid),factionid(l_factionid)
+			,itemid(l_itemid),item_count(l_item_count),syncdata(l_syncdata)
+		{
+		}
+
+		DBTerritoryChallengeArg(const DBTerritoryChallengeArg &rhs)
+			: roleid(rhs.roleid),territoryid(rhs.territoryid),factionid(rhs.factionid),
+			itemid(rhs.itemid),item_count(rhs.item_count),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBTerritoryChallengeArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBTerritoryChallengeArg *r = dynamic_cast<const DBTerritoryChallengeArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				territoryid = r->territoryid;
+				factionid = r->factionid;
+				itemid = r->itemid;
+				item_count = r->item_count;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBTerritoryChallengeArg& operator = (const DBTerritoryChallengeArg &rhs)
+		{
+			const DBTerritoryChallengeArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				territoryid = r->territoryid;
+				factionid = r->factionid;
+				itemid = r->itemid;
+				item_count = r->item_count;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << territoryid;
+			os << factionid;
+			os << itemid;
+			os << item_count;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> territoryid;
+			os >> factionid;
+			os >> itemid;
+			os >> item_count;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

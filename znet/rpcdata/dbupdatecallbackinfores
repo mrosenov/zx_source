@@ -1,0 +1,59 @@
+#ifndef __GNET_DBUPDATECALLBACKINFORES_RPCDATA
+#define __GNET_DBUPDATECALLBACKINFORES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBUpdateCallbackInfoRes : public GNET::Rpc::Data
+	{
+	public:
+		unsigned char retcode;
+
+	public:
+		DBUpdateCallbackInfoRes (unsigned char l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBUpdateCallbackInfoRes(const DBUpdateCallbackInfoRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBUpdateCallbackInfoRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBUpdateCallbackInfoRes *r = dynamic_cast<const DBUpdateCallbackInfoRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBUpdateCallbackInfoRes& operator = (const DBUpdateCallbackInfoRes &rhs)
+		{
+			const DBUpdateCallbackInfoRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

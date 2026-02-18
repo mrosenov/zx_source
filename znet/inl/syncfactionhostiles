@@ -1,0 +1,32 @@
+	public:
+		std::vector<FactionHostiles> list;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYNCFACTIONHOSTILES };
+	public:
+		SyncFactionHostiles() { type = PROTOCOL_SYNCFACTIONHOSTILES; }
+		SyncFactionHostiles(void*) : Protocol(PROTOCOL_SYNCFACTIONHOSTILES) { }
+		SyncFactionHostiles (const std::vector<FactionHostiles>& l_list)
+			 : list(l_list)
+		{
+			type = PROTOCOL_SYNCFACTIONHOSTILES;
+		}
+
+		SyncFactionHostiles(const SyncFactionHostiles &rhs)
+			: Protocol(rhs),list(rhs.list) { }
+
+		GNET::Protocol *Clone() const { return new SyncFactionHostiles(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << list;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> list;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 131072; }

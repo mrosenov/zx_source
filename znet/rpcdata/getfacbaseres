@@ -1,0 +1,65 @@
+#ifndef __GNET_GETFACBASERES_RPCDATA
+#define __GNET_GETFACBASERES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfactionbase"
+
+namespace GNET
+{
+	class GetFacBaseRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GFactionBase value;
+
+	public:
+		GetFacBaseRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		GetFacBaseRes(const GetFacBaseRes &rhs)
+			: retcode(rhs.retcode),value(rhs.value) { }
+
+		Rpc::Data *Clone() const { return new GetFacBaseRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GetFacBaseRes *r = dynamic_cast<const GetFacBaseRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		GetFacBaseRes& operator = (const GetFacBaseRes &rhs)
+		{
+			const GetFacBaseRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << value;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> value;
+			return os;
+		}
+
+	};
+};
+#endif

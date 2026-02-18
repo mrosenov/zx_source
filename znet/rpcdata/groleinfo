@@ -1,0 +1,309 @@
+#ifndef __GNET_GROLEINFO_RPCDATA
+#define __GNET_GROLEINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "groleinventory"
+#include "groleforbid"
+
+namespace GNET
+{
+	class GRoleInfo : public GNET::Rpc::Data
+	{
+	public:
+		char status;
+		int uptime;
+		unsigned int id;
+		int userid;
+		Octets name;
+		unsigned char faceid;
+		unsigned char hairid;
+		unsigned char earid;
+		unsigned char tailid;
+		unsigned char gender;
+		unsigned char occupation;
+		int level;
+		unsigned int spouse;
+		int sectid;
+		unsigned int familyid;
+		unsigned char title;
+		float posx;
+		float posy;
+		float posz;
+		int worldtag;
+		Octets custom_status;
+		Octets charactermode;
+		GRoleInventoryVector equipment;
+		char delete_flag;
+		int create_time;
+		int delete_time;
+		int lastlogin_time;
+		GRoleForbidVector forbid;
+		Octets config_data;
+		Octets help_states;
+		Octets reborndata;
+		int reborn_cnt;
+		short cultivation;
+		int data_timestamp;
+		int src_zoneid;
+		unsigned char fashionid;
+		int ct_leave_cool;
+		int ct_teamid;
+		int ct_score;
+		int ct_last_max_score;
+		int ct_last_punish_time;
+		int ct_last_battle_count;
+		int64_t fac_coupon_add;
+
+	public:
+		GRoleInfo (char l_status = 0,int l_uptime = 0,unsigned int l_id = 0
+			,int l_userid = 0,const Octets& l_name = Octets(0),unsigned char l_faceid = 0
+			,unsigned char l_hairid = 0,unsigned char l_earid = 0,unsigned char l_tailid = 0
+			,unsigned char l_gender = 0,unsigned char l_occupation = 0,int l_level = 0
+			,unsigned int l_spouse = 0,int l_sectid = 0,unsigned int l_familyid = 0
+			,unsigned char l_title = 0,float l_posx = 0,float l_posy = 0
+			,float l_posz = 0,int l_worldtag = 0,char l_delete_flag = 0
+			,int l_create_time = 0,int l_delete_time = 0,int l_lastlogin_time = 0
+			,Octets l_config_data = Octets(0),Octets l_help_states = Octets(0),Octets l_reborndata = Octets(0)
+			,int l_reborn_cnt = 0,short l_cultivation = 0,int l_data_timestamp = 0
+			,int l_src_zoneid = 0,unsigned char l_fashionid = 0,int l_ct_leave_cool = 0
+			,int l_ct_teamid = 0,int l_ct_score = 0,int l_ct_last_max_score = 0
+			,int l_ct_last_punish_time = 0,int l_ct_last_battle_count = 0,int64_t l_fac_coupon_add = 0)
+			: status(l_status),uptime(l_uptime),id(l_id)
+			,userid(l_userid),name(l_name),faceid(l_faceid)
+			,hairid(l_hairid),earid(l_earid),tailid(l_tailid)
+			,gender(l_gender),occupation(l_occupation),level(l_level)
+			,spouse(l_spouse),sectid(l_sectid),familyid(l_familyid)
+			,title(l_title),posx(l_posx),posy(l_posy)
+			,posz(l_posz),worldtag(l_worldtag),delete_flag(l_delete_flag)
+			,create_time(l_create_time),delete_time(l_delete_time),lastlogin_time(l_lastlogin_time)
+			,config_data(l_config_data),help_states(l_help_states),reborndata(l_reborndata)
+			,reborn_cnt(l_reborn_cnt),cultivation(l_cultivation),data_timestamp(l_data_timestamp)
+			,src_zoneid(l_src_zoneid),fashionid(l_fashionid),ct_leave_cool(l_ct_leave_cool)
+			,ct_teamid(l_ct_teamid),ct_score(l_ct_score),ct_last_max_score(l_ct_last_max_score)
+			,ct_last_punish_time(l_ct_last_punish_time),ct_last_battle_count(l_ct_last_battle_count),fac_coupon_add(l_fac_coupon_add)
+		{
+		}
+
+		GRoleInfo(const GRoleInfo &rhs)
+			: status(rhs.status),uptime(rhs.uptime),id(rhs.id),
+			userid(rhs.userid),name(rhs.name),faceid(rhs.faceid),
+			hairid(rhs.hairid),earid(rhs.earid),tailid(rhs.tailid),
+			gender(rhs.gender),occupation(rhs.occupation),level(rhs.level),
+			spouse(rhs.spouse),sectid(rhs.sectid),familyid(rhs.familyid),
+			title(rhs.title),posx(rhs.posx),posy(rhs.posy),
+			posz(rhs.posz),worldtag(rhs.worldtag),custom_status(rhs.custom_status),
+			charactermode(rhs.charactermode),equipment(rhs.equipment),delete_flag(rhs.delete_flag),
+			create_time(rhs.create_time),delete_time(rhs.delete_time),lastlogin_time(rhs.lastlogin_time),
+			forbid(rhs.forbid),config_data(rhs.config_data),help_states(rhs.help_states),
+			reborndata(rhs.reborndata),reborn_cnt(rhs.reborn_cnt),cultivation(rhs.cultivation),
+			data_timestamp(rhs.data_timestamp),src_zoneid(rhs.src_zoneid),fashionid(rhs.fashionid),
+			ct_leave_cool(rhs.ct_leave_cool),ct_teamid(rhs.ct_teamid),ct_score(rhs.ct_score),
+			ct_last_max_score(rhs.ct_last_max_score),ct_last_punish_time(rhs.ct_last_punish_time),ct_last_battle_count(rhs.ct_last_battle_count),
+			fac_coupon_add(rhs.fac_coupon_add) { }
+
+		Rpc::Data *Clone() const { return new GRoleInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GRoleInfo *r = dynamic_cast<const GRoleInfo *>(&rhs);
+			if (r && r != this)
+			{
+				status = r->status;
+				uptime = r->uptime;
+				id = r->id;
+				userid = r->userid;
+				name = r->name;
+				faceid = r->faceid;
+				hairid = r->hairid;
+				earid = r->earid;
+				tailid = r->tailid;
+				gender = r->gender;
+				occupation = r->occupation;
+				level = r->level;
+				spouse = r->spouse;
+				sectid = r->sectid;
+				familyid = r->familyid;
+				title = r->title;
+				posx = r->posx;
+				posy = r->posy;
+				posz = r->posz;
+				worldtag = r->worldtag;
+				custom_status = r->custom_status;
+				charactermode = r->charactermode;
+				equipment = r->equipment;
+				delete_flag = r->delete_flag;
+				create_time = r->create_time;
+				delete_time = r->delete_time;
+				lastlogin_time = r->lastlogin_time;
+				forbid = r->forbid;
+				config_data = r->config_data;
+				help_states = r->help_states;
+				reborndata = r->reborndata;
+				reborn_cnt = r->reborn_cnt;
+				cultivation = r->cultivation;
+				data_timestamp = r->data_timestamp;
+				src_zoneid = r->src_zoneid;
+				fashionid = r->fashionid;
+				ct_leave_cool = r->ct_leave_cool;
+				ct_teamid = r->ct_teamid;
+				ct_score = r->ct_score;
+				ct_last_max_score = r->ct_last_max_score;
+				ct_last_punish_time = r->ct_last_punish_time;
+				ct_last_battle_count = r->ct_last_battle_count;
+				fac_coupon_add = r->fac_coupon_add;
+			}
+			return *this;
+		}
+
+		GRoleInfo& operator = (const GRoleInfo &rhs)
+		{
+			const GRoleInfo *r = &rhs;
+			if (r && r != this)
+			{
+				status = r->status;
+				uptime = r->uptime;
+				id = r->id;
+				userid = r->userid;
+				name = r->name;
+				faceid = r->faceid;
+				hairid = r->hairid;
+				earid = r->earid;
+				tailid = r->tailid;
+				gender = r->gender;
+				occupation = r->occupation;
+				level = r->level;
+				spouse = r->spouse;
+				sectid = r->sectid;
+				familyid = r->familyid;
+				title = r->title;
+				posx = r->posx;
+				posy = r->posy;
+				posz = r->posz;
+				worldtag = r->worldtag;
+				custom_status = r->custom_status;
+				charactermode = r->charactermode;
+				equipment = r->equipment;
+				delete_flag = r->delete_flag;
+				create_time = r->create_time;
+				delete_time = r->delete_time;
+				lastlogin_time = r->lastlogin_time;
+				forbid = r->forbid;
+				config_data = r->config_data;
+				help_states = r->help_states;
+				reborndata = r->reborndata;
+				reborn_cnt = r->reborn_cnt;
+				cultivation = r->cultivation;
+				data_timestamp = r->data_timestamp;
+				src_zoneid = r->src_zoneid;
+				fashionid = r->fashionid;
+				ct_leave_cool = r->ct_leave_cool;
+				ct_teamid = r->ct_teamid;
+				ct_score = r->ct_score;
+				ct_last_max_score = r->ct_last_max_score;
+				ct_last_punish_time = r->ct_last_punish_time;
+				ct_last_battle_count = r->ct_last_battle_count;
+				fac_coupon_add = r->fac_coupon_add;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << status;
+			os << uptime;
+			os << id;
+			os << userid;
+			os << name;
+			os << faceid;
+			os << hairid;
+			os << earid;
+			os << tailid;
+			os << gender;
+			os << occupation;
+			os << level;
+			os << spouse;
+			os << sectid;
+			os << familyid;
+			os << title;
+			os << posx;
+			os << posy;
+			os << posz;
+			os << worldtag;
+			os << custom_status;
+			os << charactermode;
+			os << equipment;
+			os << delete_flag;
+			os << create_time;
+			os << delete_time;
+			os << lastlogin_time;
+			os << forbid;
+			os << config_data;
+			os << help_states;
+			os << reborndata;
+			os << reborn_cnt;
+			os << cultivation;
+			os << data_timestamp;
+			os << src_zoneid;
+			os << fashionid;
+			os << ct_leave_cool;
+			os << ct_teamid;
+			os << ct_score;
+			os << ct_last_max_score;
+			os << ct_last_punish_time;
+			os << ct_last_battle_count;
+			os << fac_coupon_add;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> status;
+			os >> uptime;
+			os >> id;
+			os >> userid;
+			os >> name;
+			os >> faceid;
+			os >> hairid;
+			os >> earid;
+			os >> tailid;
+			os >> gender;
+			os >> occupation;
+			os >> level;
+			os >> spouse;
+			os >> sectid;
+			os >> familyid;
+			os >> title;
+			os >> posx;
+			os >> posy;
+			os >> posz;
+			os >> worldtag;
+			os >> custom_status;
+			os >> charactermode;
+			os >> equipment;
+			os >> delete_flag;
+			os >> create_time;
+			os >> delete_time;
+			os >> lastlogin_time;
+			os >> forbid;
+			os >> config_data;
+			os >> help_states;
+			os >> reborndata;
+			os >> reborn_cnt;
+			os >> cultivation;
+			os >> data_timestamp;
+			os >> src_zoneid;
+			os >> fashionid;
+			os >> ct_leave_cool;
+			os >> ct_teamid;
+			os >> ct_score;
+			os >> ct_last_max_score;
+			os >> ct_last_punish_time;
+			os >> ct_last_battle_count;
+			os >> fac_coupon_add;
+			return os;
+		}
+
+	};
+};
+#endif

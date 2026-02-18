@@ -1,0 +1,47 @@
+
+#ifndef __GNET_DBKINGDOMLOAD_HPP
+#define __GNET_DBKINGDOMLOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomloadarg"
+#include "dbkingdomloadres"
+#include "kingdommanager.h"
+#include "gamedbclient.hpp"
+
+namespace GNET
+{
+
+class DBKingdomLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBKingdomLoadArg *arg = (DBKingdomLoadArg *)argument;
+		DBKingdomLoadRes *res = (DBKingdomLoadRes *)result;
+		if(res->retcode==ERR_SUCCESS)
+			KingdomManager::GetInstance()->LoadKingdom(res->info);
+		else
+			Log::log(LOG_ERR, "dbkingdomload errno %d", res->retcode);
+	}
+
+	void OnTimeout()
+	{
+		DBKingdomLoadArg *arg = (DBKingdomLoadArg *)argument;
+		Log::log(LOG_ERR, "dbkingdomload timeout");
+		GameDBClient::GetInstance()->SendProtocol(Rpc::Call(RPC_DBKINGDOMLOAD, arg));
+	}
+
+};
+
+};
+#endif

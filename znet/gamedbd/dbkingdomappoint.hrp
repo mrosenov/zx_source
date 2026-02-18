@@ -1,0 +1,107 @@
+
+#ifndef __GNET_DBKINGDOMAPPOINT_HPP
+#define __GNET_DBKINGDOMAPPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomappointarg"
+#include "dbkingdomappointres"
+
+namespace GNET
+{
+
+class DBKingdomAppoint : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomappoint"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingdomAppointArg *arg = (DBKingdomAppointArg *)argument;
+		DBKingdomAppointRes *res = (DBKingdomAppointRes *)result;
+		try
+		{
+			StorageEnv::Storage * pkingdom = StorageEnv::GetStorage("kingdom");
+			StorageEnv::Storage * prolename = StorageEnv::GetStorage("rolename");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::AtomTransaction txn;
+			try{
+				Marshal::OctetsStream key, name_os, base_os;
+				key << 0;
+				GKingdomInfo data;
+				Marshal::OctetsStream(pkingdom->find(key, txn)) >> data;
+				if (!prolename->find(arg->candidate_name, name_os, txn))
+				{
+					res->retcode = ERR_KINGDOM_INVALID_NAME;
+					return;
+				}
+				int candidate_id = 0;
+				name_os >> candidate_id;
+				if (candidate_id == 0 || !pbase->find(Marshal::OctetsStream()<<candidate_id, base_os, txn))
+				{
+					res->retcode = ERR_KINGDOM_INVALID_NAME;
+					return;
+				}
+				GRoleBase base;
+				base_os >> base;
+				if (base.name != arg->candidate_name) //ÔøÓÃÃû
+				{
+					res->retcode = ERR_KINGDOM_INVALID_NAME;
+					return;
+				}
+				if (candidate_id == data.king.roleid
+						|| candidate_id == data.queen.roleid)
+				{
+					res->retcode = ERR_KINGDOM_TITLE_REPEAT;
+					return;
+				}
+				std::vector<GKingdomFunctionary>::const_iterator it, ite = data.functionaries.end();
+				for (it = data.functionaries.begin(); it != ite; ++it)
+				{
+					if (it->roleid == candidate_id)
+					{
+						res->retcode = ERR_KINGDOM_TITLE_REPEAT;
+						return;
+					}
+				}
+				res->candidate_id = candidate_id;
+				data.functionaries.push_back(GKingdomFunctionary(base.id, arg->title, base.name, FUNC_PRIVILEGE_INIT));
+				pkingdom->insert(key, Marshal::OctetsStream()<<data, txn);
+				res->retcode = ERR_SUCCESS;
+				Log::formatlog("kingdom", "appoint role %d title %d", candidate_id, arg->title);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBKingdomAppoint, what=%s\n", e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomAppointArg *arg = (DBKingdomAppointArg *)argument;
+		// DBKingdomAppointRes *res = (DBKingdomAppointRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,113 @@
+#ifndef __GNET_GREFERRAL_RPCDATA
+#define __GNET_GREFERRAL_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GReferral : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int bonus_total1;
+		int bonus_total2;
+		int bonus_withdraw;
+		int64_t exp_total1;
+		int64_t exp_total2;
+		int64_t exp_withdraw;
+		int reserved1;
+		int reserved2;
+		int reserved3;
+
+	public:
+		GReferral (int l_roleid = 0,int l_bonus_total1 = 0,int l_bonus_total2 = 0
+			,int l_bonus_withdraw = 0,int64_t l_exp_total1 = 0,int64_t l_exp_total2 = 0
+			,int64_t l_exp_withdraw = 0,int l_reserved1 = 0,int l_reserved2 = 0
+			,int l_reserved3 = 0)
+			: roleid(l_roleid),bonus_total1(l_bonus_total1),bonus_total2(l_bonus_total2)
+			,bonus_withdraw(l_bonus_withdraw),exp_total1(l_exp_total1),exp_total2(l_exp_total2)
+			,exp_withdraw(l_exp_withdraw),reserved1(l_reserved1),reserved2(l_reserved2)
+			,reserved3(l_reserved3)
+		{
+		}
+
+		GReferral(const GReferral &rhs)
+			: roleid(rhs.roleid),bonus_total1(rhs.bonus_total1),bonus_total2(rhs.bonus_total2),
+			bonus_withdraw(rhs.bonus_withdraw),exp_total1(rhs.exp_total1),exp_total2(rhs.exp_total2),
+			exp_withdraw(rhs.exp_withdraw),reserved1(rhs.reserved1),reserved2(rhs.reserved2),
+			reserved3(rhs.reserved3) { }
+
+		Rpc::Data *Clone() const { return new GReferral(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GReferral *r = dynamic_cast<const GReferral *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				bonus_total1 = r->bonus_total1;
+				bonus_total2 = r->bonus_total2;
+				bonus_withdraw = r->bonus_withdraw;
+				exp_total1 = r->exp_total1;
+				exp_total2 = r->exp_total2;
+				exp_withdraw = r->exp_withdraw;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+			}
+			return *this;
+		}
+
+		GReferral& operator = (const GReferral &rhs)
+		{
+			const GReferral *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				bonus_total1 = r->bonus_total1;
+				bonus_total2 = r->bonus_total2;
+				bonus_withdraw = r->bonus_withdraw;
+				exp_total1 = r->exp_total1;
+				exp_total2 = r->exp_total2;
+				exp_withdraw = r->exp_withdraw;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << bonus_total1;
+			os << bonus_total2;
+			os << bonus_withdraw;
+			os << exp_total1;
+			os << exp_total2;
+			os << exp_withdraw;
+			os << reserved1;
+			os << reserved2;
+			os << reserved3;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> bonus_total1;
+			os >> bonus_total2;
+			os >> bonus_withdraw;
+			os >> exp_total1;
+			os >> exp_total2;
+			os >> exp_withdraw;
+			os >> reserved1;
+			os >> reserved2;
+			os >> reserved3;
+			return os;
+		}
+
+	};
+};
+#endif

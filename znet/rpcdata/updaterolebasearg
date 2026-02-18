@@ -1,0 +1,69 @@
+#ifndef __GNET_UPDATEROLEBASEARG_RPCDATA
+#define __GNET_UPDATEROLEBASEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class UpdateRoleBaseArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int datatype;
+		Octets data;
+
+	public:
+		UpdateRoleBaseArg (int l_roleid = 0,int l_datatype = 0,Octets l_data = Octets(0))
+			: roleid(l_roleid),datatype(l_datatype),data(l_data)
+		{
+		}
+
+		UpdateRoleBaseArg(const UpdateRoleBaseArg &rhs)
+			: roleid(rhs.roleid),datatype(rhs.datatype),data(rhs.data) { }
+
+		Rpc::Data *Clone() const { return new UpdateRoleBaseArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const UpdateRoleBaseArg *r = dynamic_cast<const UpdateRoleBaseArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				datatype = r->datatype;
+				data = r->data;
+			}
+			return *this;
+		}
+
+		UpdateRoleBaseArg& operator = (const UpdateRoleBaseArg &rhs)
+		{
+			const UpdateRoleBaseArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				datatype = r->datatype;
+				data = r->data;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << datatype;
+			os << data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> datatype;
+			os >> data;
+			return os;
+		}
+
+	};
+};
+#endif

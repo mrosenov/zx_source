@@ -1,0 +1,64 @@
+#ifndef __GNET_DBFUNGAMEGETINFORES_RPCDATA
+#define __GNET_DBFUNGAMEGETINFORES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfungameinfo"
+
+namespace GNET
+{
+	class DBFunGameGetInfoRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GFunGameInfo fungame_info;
+
+	public:
+		DBFunGameGetInfoRes ()
+		{
+		}
+
+		DBFunGameGetInfoRes(const DBFunGameGetInfoRes &rhs)
+			: retcode(rhs.retcode),fungame_info(rhs.fungame_info) { }
+
+		Rpc::Data *Clone() const { return new DBFunGameGetInfoRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFunGameGetInfoRes *r = dynamic_cast<const DBFunGameGetInfoRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				fungame_info = r->fungame_info;
+			}
+			return *this;
+		}
+
+		DBFunGameGetInfoRes& operator = (const DBFunGameGetInfoRes &rhs)
+		{
+			const DBFunGameGetInfoRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				fungame_info = r->fungame_info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << fungame_info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> fungame_info;
+			return os;
+		}
+
+	};
+};
+#endif

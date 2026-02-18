@@ -1,0 +1,156 @@
+
+#ifndef __GNET_DBSAVEWEBORDER_HPP
+#define __GNET_DBSAVEWEBORDER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsaveweborderarg"
+#include "dbsaveweborderres"
+
+namespace GNET
+{
+
+class DBSaveWebOrder : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsaveweborder"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSaveWebOrderArg *arg = (DBSaveWebOrderArg *)argument;
+		DBSaveWebOrderRes *res = (DBSaveWebOrderRes *)result;
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pweborder = StorageEnv::GetStorage("weborder");
+			StorageEnv::Storage * prolename = StorageEnv::GetStorage("rolename");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				//通过曾用名也允许成功下单
+				if (arg->roleid == 0)
+					Marshal::OctetsStream(prolename->find(arg->rolename, txn)) >> arg->roleid;
+				Marshal::OctetsStream key_order, os_order;
+				key_order << arg->orderid;
+				if (pweborder->find(key_order, os_order, txn))
+				{
+					WebOrder order;
+					os_order >> order;
+					//roleid 一致 认为是重复订单
+					if (order.roleid == arg->roleid)
+						res->retcode = ERR_WEBORDER_REPEAT;
+					else
+						res->retcode = ERR_WEBORDER_ORDERID;
+					return;
+				}
+				GRoleBase base;
+				Marshal::OctetsStream key_role;
+				key_role << arg->roleid;
+				Marshal::OctetsStream(pbase->find(key_role, txn)) >> base;
+				int db_userid = (0==base.userid ? (LOGICUID(base.id)) : base.userid);
+				if (db_userid != arg->userid)
+				{
+					res->retcode = ERR_WEBORDER_USERID;
+					return;
+				}
+				if (base.status != _ROLE_STATUS_NORMAL && base.status != _ROLE_STATUS_FROZEN)
+				{
+					res->retcode = ERR_WEBORDER_ROLE_STATUS;
+					return;
+				}
+
+				Marshal::OctetsStream key_user;
+				key_user << arg->userid;
+				User user;
+				Marshal::OctetsStream(puser->find(key_user, txn)) >> user;
+
+				if (user.unprocessed_orders.size() >= WEB_ORDER_MAXSIZE)
+				{
+					res->retcode = ERR_WEBORDER_MAXSIZE;
+					return;
+				}
+				if (arg->paytype==WEB_ORDER_PAY_CASH && !arg->ongame)
+				{
+					//检查元宝数是否足够 此处逻辑应与 GetCashAvail 保持一致
+					int cash_avail = 0;
+					cash_avail = user.cash_add+user.cash_buy-user.cash_sell-user.cash_used-user.cash;
+					std::vector<int64_t>::const_iterator it, ite = user.unprocessed_orders.end();
+					for (it = user.unprocessed_orders.begin(); it != ite; ++it)
+					{
+						Marshal::OctetsStream key, value;
+						key << *it;
+						if (!pweborder->find(key, value, txn))
+						{
+							Log::log(LOG_ERR, "DBSaveWebOrder, can not find weborder %lld for user %d", *it, arg->userid);
+							continue;
+						}
+						WebOrder order;
+						value >> order;
+						//此处的验证逻辑 应与 GetRole 保持一致
+						if (order.userid != arg->userid)
+						{
+							Log::log(LOG_ERR, "DBSaveWebOrder, userid %d order %lld -> userid %d", arg->userid, *it, order.userid);
+							continue;
+						}
+						if (order.status != WEB_ORDER_UNPROCESSED)
+						{
+							Log::log(LOG_ERR, "DBSaveWebOrder, userid %d order %lld status %d invalid", arg->userid, *it, order.status);
+							continue;
+						}
+						if (order.paytype != WEB_ORDER_PAY_CASH)
+							continue;
+						WebMallFunctionVector::const_iterator fit, fite = order.functions.end();
+						for (fit = order.functions.begin(); fit != fite; ++fit)
+							cash_avail -= (fit->price * fit->count);
+					}
+					if (cash_avail < arg->moneyneed)
+					{
+						res->retcode = ERR_WEBORDER_CASH_NOTENGOUTH;
+						return;
+					}
+				}
+				user.unprocessed_orders.push_back(arg->orderid);
+				puser->insert(key_user, Marshal::OctetsStream()<<user, txn);
+				WebOrder new_order(arg->orderid, arg->userid, arg->roleid, arg->paytype, arg->functions, WEB_ORDER_UNPROCESSED, Timer::GetTime());
+				pweborder->insert(key_order, Marshal::OctetsStream()<<new_order, txn);
+				res->retcode = ERR_SUCCESS;
+				res->weborders.push_back(new_order);
+				Log::formatlog("dbsaveweborder", "paytype %d orderid %lld userid %d roleid %d moneyneed %d ongame %d", arg->paytype, arg->orderid, arg->userid, arg->roleid, arg->moneyneed, arg->ongame);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSaveWebOrder, orderid %lld, userid %d roleid %d what=%s\n", arg->orderid, arg->userid, arg->roleid, e.what() );
+			res->retcode = ERR_WEBORDER_INVALID_ROLE;
+			return;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSaveWebOrderArg *arg = (DBSaveWebOrderArg *)argument;
+		// DBSaveWebOrderRes *res = (DBSaveWebOrderRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

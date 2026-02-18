@@ -1,0 +1,19 @@
+/Makefile/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/README.txt/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/application.xml/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/configure/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logger.conf/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logrecord.cpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logrecord.hpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logrotate.cpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logrotate2.cpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logserver.cpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logsession.hpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logtcpserver.cpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logtcpserver.hpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logudpserver.cpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/logudpserver.hpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/rotatetimer.cpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/rotatetimer.hpp/1.1.1.1/Wed Dec 22 07:54:57 2010//
+/rpcalls.xml.template/1.1.1.1/Wed Dec 22 07:54:57 2010//
+D

@@ -1,0 +1,70 @@
+
+#ifndef __GNET_DBSECTGET_HPP
+#define __GNET_DBSECTGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "integer"
+#include "dbsectgetres"
+
+namespace GNET
+{
+
+class DBSectGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsectget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		Integer *arg = (Integer *)argument;
+		DBSectGetRes *res = (DBSectGetRes *)result;
+		LOG_TRACE( "DBSectGet, sectid=%d.\n", arg->value );
+
+		try
+		{
+			StorageEnv::Storage * psect = StorageEnv::GetStorage("sect");
+			Marshal::OctetsStream key, value;
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << arg->value;
+				if(psect->find(key,value,txn))
+				{
+					value >> res->sect;
+					res->retcode = ERR_SUCCESS;
+				}
+				else
+					res->retcode = ERR_NOTFOUND;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSectGet, sectid=%d, what=%s\n", arg->value, e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

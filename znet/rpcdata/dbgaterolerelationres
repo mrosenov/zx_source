@@ -1,0 +1,96 @@
+#ifndef __GNET_DBGATEROLERELATIONRES_RPCDATA
+#define __GNET_DBGATEROLERELATIONRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "ggateroleinfo"
+#include "gfriendinfo"
+#include "ggroupinfo"
+
+namespace GNET
+{
+	class DBGateRoleRelationRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GGateRoleInfo roledata;
+		GFriendInfoVector friends;
+		GGroupInfoVector groups;
+		int familyid;
+		int factionid;
+		int userid;
+
+	public:
+		DBGateRoleRelationRes (int l_retcode = -1,int l_familyid = 0,int l_factionid = 0
+			,int l_userid = 0)
+			: retcode(l_retcode),familyid(l_familyid),factionid(l_factionid)
+			,userid(l_userid)
+		{
+		}
+
+		DBGateRoleRelationRes(const DBGateRoleRelationRes &rhs)
+			: retcode(rhs.retcode),roledata(rhs.roledata),friends(rhs.friends),
+			groups(rhs.groups),familyid(rhs.familyid),factionid(rhs.factionid),
+			userid(rhs.userid) { }
+
+		Rpc::Data *Clone() const { return new DBGateRoleRelationRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGateRoleRelationRes *r = dynamic_cast<const DBGateRoleRelationRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				roledata = r->roledata;
+				friends = r->friends;
+				groups = r->groups;
+				familyid = r->familyid;
+				factionid = r->factionid;
+				userid = r->userid;
+			}
+			return *this;
+		}
+
+		DBGateRoleRelationRes& operator = (const DBGateRoleRelationRes &rhs)
+		{
+			const DBGateRoleRelationRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				roledata = r->roledata;
+				friends = r->friends;
+				groups = r->groups;
+				familyid = r->familyid;
+				factionid = r->factionid;
+				userid = r->userid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << roledata;
+			os << friends;
+			os << groups;
+			os << familyid;
+			os << factionid;
+			os << userid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> roledata;
+			os >> friends;
+			os >> groups;
+			os >> familyid;
+			os >> factionid;
+			os >> userid;
+			return os;
+		}
+
+	};
+};
+#endif

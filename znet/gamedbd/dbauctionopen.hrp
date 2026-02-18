@@ -1,0 +1,40 @@
+
+#ifndef __GNET_DBAUCTIONOPEN_HPP
+#define __GNET_DBAUCTIONOPEN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gmailsyncdata"
+#include "groleinventory"
+#include "gauctionitem"
+#include "gauctiondetail"
+#include "dbauctionopenarg"
+#include "dbauctionopenres"
+
+namespace GNET
+{
+
+class DBAuctionOpen : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbauctionopen"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

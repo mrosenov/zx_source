@@ -1,0 +1,43 @@
+
+#ifndef __GNET_DBPUTTOPTABLE_HPP
+#define __GNET_DBPUTTOPTABLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gtopitem"
+#include "gtoptable"
+#include "integer"
+
+namespace GNET
+{
+
+class DBPutTopTable : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbputtoptable"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GTopTable *arg = (GTopTable *)argument;
+		// Integer *res = (Integer *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GTopTable *arg = (GTopTable *)argument;
+		// Integer *res = (Integer *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,59 @@
+#ifndef __GNET_GUNIQUEBIDRES_RPCDATA
+#define __GNET_GUNIQUEBIDRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GUniqueBidRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		GUniqueBidRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		GUniqueBidRes(const GUniqueBidRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new GUniqueBidRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GUniqueBidRes *r = dynamic_cast<const GUniqueBidRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		GUniqueBidRes& operator = (const GUniqueBidRes &rhs)
+		{
+			const GUniqueBidRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

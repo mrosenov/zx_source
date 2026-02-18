@@ -1,0 +1,35 @@
+	public:
+		int gs_id;
+		std::vector<BattleFieldInfo> fields;
+		enum { PROTOCOL_TYPE = PROTOCOL_BATTLESERVERREGISTER };
+	public:
+		BattleServerRegister() { type = PROTOCOL_BATTLESERVERREGISTER; }
+		BattleServerRegister(void*) : Protocol(PROTOCOL_BATTLESERVERREGISTER) { }
+		BattleServerRegister (int l_gs_id,std::vector<BattleFieldInfo> l_fields = std::vector<BattleFieldInfo>())
+			 : gs_id(l_gs_id),fields(l_fields)
+		{
+			type = PROTOCOL_BATTLESERVERREGISTER;
+		}
+
+		BattleServerRegister(const BattleServerRegister &rhs)
+			: Protocol(rhs),gs_id(rhs.gs_id),fields(rhs.fields) { }
+
+		GNET::Protocol *Clone() const { return new BattleServerRegister(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gs_id;
+			os << fields;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gs_id;
+			os >> fields;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 10240; }

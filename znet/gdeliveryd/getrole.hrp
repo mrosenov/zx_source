@@ -1,0 +1,57 @@
+
+#ifndef __GNET_GETROLE_HPP
+#define __GNET_GETROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#ifdef USE_BDB
+#include "dbbuffer.h"
+#endif
+#include "roleid"
+#include "rolearg"
+#include "groleinventory"
+#include "roleres"
+
+#include "rolelist_re.hpp"
+#include "accountdelrole.hrp"
+#include "gdeliveryserver.hpp"
+#include "groledbclient.hpp"
+#include "gproviderserver.hpp"
+#include "../common/conv_charset.h"
+
+//GM forbid related headers
+#include "forbid.hxx"
+#include "gmshutuprole.hpp"
+#include "mapforbid.h"
+#include "maplinkserver.h"
+#include "mapuser.h"
+#define EQUIPMENT_SIZE	17
+namespace GNET
+{
+
+class GetRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getrole"
+#undef	RPC_BASECLASS
+	unsigned int save_link_sid;
+	unsigned int save_localsid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+#ifdef USE_BDB
+#endif
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+	}
+
+};
+
+};
+#endif

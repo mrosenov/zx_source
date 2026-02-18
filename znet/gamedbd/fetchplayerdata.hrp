@@ -1,0 +1,106 @@
+
+#ifndef __GNET_FETCHPLAYERDATA_HPP
+#define __GNET_FETCHPLAYERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "fetchplayerdataarg"
+#include "fetchplayerdatares"
+
+namespace GNET
+{
+
+class FetchPlayerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "fetchplayerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FetchPlayerDataArg *arg = (FetchPlayerDataArg *)argument;
+		FetchPlayerDataRes *res = (FetchPlayerDataRes *)result;
+		LOG_TRACE("FetchPlayerData, roleid %d userid %d", arg->roleid, arg->userid);
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * pstorehouse = StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage * ptask = StorageEnv::GetStorage("task");
+			StorageEnv::Storage * pachieve = StorageEnv::GetStorage("achievement");
+			StorageEnv::Storage * psnsplayerinfo = StorageEnv::GetStorage("snsplayerinfo");
+			StorageEnv::Storage * paward = StorageEnv::GetStorage("award");
+			StorageEnv::Storage * prolenamehis = StorageEnv::GetStorage("rolenamehis");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream role_key, user_key, base2_value, inventory_value, storehouse_value, task_value, achievement_value, sns_value, award_value, namehis_value;
+			try
+			{
+				user_key << arg->userid;
+				role_key << arg->roleid;
+				Marshal::OctetsStream(puser->find(user_key, txn)) >> res->data.user;
+				Marshal::OctetsStream(pbase->find(role_key, txn)) >> res->data.base;
+				if (res->data.base.status != _ROLE_STATUS_NORMAL)
+				{
+					Log::log(LOG_ERR, "FetchPlayerData, roleid %d userid %d status %d invalid", arg->roleid, arg->userid, res->data.base.status);
+					res->retcode = -1;
+					return;
+				}
+				Marshal::OctetsStream(pstatus->find(role_key, txn)) >> res->data.status;
+				if (pbase2->find(role_key, base2_value, txn))
+					base2_value >> res->data.base2;
+				if (pinventory->find(role_key, inventory_value, txn))
+					inventory_value >> res->data.inventory;
+				if (pstorehouse->find(role_key, storehouse_value, txn))
+					storehouse_value >> res->data.storehouse;
+				if (ptask->find(role_key, task_value, txn))
+					task_value >> res->data.task;
+				if (pachieve->find(role_key, achievement_value, txn))
+					achievement_value >> res->data.achievement;
+				if (psnsplayerinfo->find(role_key, sns_value, txn))
+					sns_value >> res->data.snsplayerinfo;
+				if (paward->find(role_key, award_value, txn))
+				{
+					GRoleAward award;
+					award_value >> award;
+					res->data.onlineaward = award.onlineaward;
+				}
+				if (prolenamehis->find(role_key, namehis_value, txn))
+					namehis_value >> res->data.rolenamehis;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException e)
+		{
+			Log::log(LOG_ERR, "FetchPlayerData, roleid %d userid %d what=%s", arg->roleid, arg->userid, e.what());
+			res->retcode = ERR_DATANOTFIND;
+			return;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// FetchPlayerDataArg *arg = (FetchPlayerDataArg *)argument;
+		// FetchPlayerDataRes *res = (FetchPlayerDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

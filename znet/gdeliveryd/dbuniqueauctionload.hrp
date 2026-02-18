@@ -1,0 +1,49 @@
+
+#ifndef __GNET_DBUNIQUEAUCTIONLOAD_HPP
+#define __GNET_DBUNIQUEAUCTIONLOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbuniqueauctionloadarg"
+#include "dbuniqueauctionloadres"
+
+namespace GNET
+{
+
+class DBUniqueAuctionLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbuniqueauctionload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBUniqueAuctionLoadArg *arg = (DBUniqueAuctionLoadArg *)argument;
+		// DBUniqueAuctionLoadRes *res = (DBUniqueAuctionLoadRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBUniqueAuctionLoadArg *arg = (DBUniqueAuctionLoadArg *)argument;
+		DBUniqueAuctionLoadRes *res = (DBUniqueAuctionLoadRes *)result;
+		if (res->retcode == ERR_SUCCESS)
+			UniqueAuctionManager::GetInstance()->LoadData(res->data);
+		else if (res->retcode == ERR_AGAIN)
+			GameDBClient::GetInstance()->SendProtocol(Rpc::Call(RPC_DBUNIQUEAUCTIONLOAD, arg));
+		else
+			Log::log(LOG_ERR, "dbuniqueauctionload errno %d", res->retcode);
+	}
+
+	void OnTimeout()
+	{
+		DBUniqueAuctionLoadArg *arg = (DBUniqueAuctionLoadArg *)argument;
+		Log::log(LOG_ERR, "dbuniqueauctionload timeout");
+		GameDBClient::GetInstance()->SendProtocol(Rpc::Call(RPC_DBUNIQUEAUCTIONLOAD, arg));
+	}
+
+};
+
+};
+#endif

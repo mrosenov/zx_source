@@ -1,0 +1,93 @@
+
+#ifndef __GNET_DBDELETEROLE_HPP
+#define __GNET_DBDELETEROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbdeleterolearg"
+#include "dbdeleteroleres"
+#include "deleterole_re.hpp"
+
+#include "mapuser.h"
+
+#include "postdeleterole.hrp"
+#include "uniquenameclient.hpp"
+#include "gdeliveryserver.hpp" //for zoneid
+#include "factionmanager.h"
+#include "familymanager.h"
+#include "circlemanager.h"
+#include "delhelper.h"
+#include "gtplatformagent.h"
+#include "namemanager.h"
+#include "topflowermanager.h"
+
+namespace GNET
+{
+
+class DBDeleteRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbdeleterole"
+#undef	RPC_BASECLASS
+	bool isbatch;
+	void NotifyUniqueNameSvr(int zoneid,int userid, int roleid,const std::vector<Octets> & namelist)
+	{
+		DEBUG_PRINT("dbdeleterole: Notify UniqueNameServer. zoneid=%d,roleid=%d,namelist.size=%d\n",
+				zoneid,roleid,namelist.size() );
+		UniqueNameClient::GetInstance()->SendProtocol( Rpc::Call( RPC_POSTDELETEROLE, PostDeleteRoleArg(userid,zoneid,roleid,namelist) ));	
+	}
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBDeleteRoleArg *arg = (DBDeleteRoleArg *)argument;
+		DBDeleteRoleRes *res = (DBDeleteRoleRes *)result;  
+		
+		GDeliveryServer* dsm=GDeliveryServer::GetInstance();
+		RoleInfoCache::Instance().Remove(arg->roleid);
+		
+		Thread::RWLock::WRScoped l(UserContainer::GetInstance().GetLocker());
+		UserInfo * pinfo = UserContainer::GetInstance().FindUser(res->userid);
+		
+		if (res->retcode == ERR_SUCCESS)
+		{
+			NameManager::GetInstance()->DelName(arg->roleid);
+			std::vector<Octets>::const_iterator it, ite = res->namelist.end();
+			for (it = res->namelist.begin(); it != ite; ++it)
+				NameManager::GetInstance()->ClearNameHistoryCache(*it);
+			STAT_DAY("role-delete",1);
+			if (pinfo!=NULL)
+			{
+				CircleManager::Instance()->OnDeleteRole(res->circleid,(unsigned int)arg->roleid);
+				pinfo->rolelist.DelRole(arg->roleid % MAX_ROLE_COUNT);
+			}
+			if ( !arg->create_rollback )
+				NotifyUniqueNameSvr(dsm->zoneid,res->userid, arg->roleid,res->namelist);
+			if(res->family)
+			{
+				FamilyManager::Instance()->OnDeleteRole(res->family, arg->roleid);
+			}
+			GTPlatformAgent::DeleteRole(res->userid,arg->roleid);
+
+			// ÏÊ»¨±¦±´É¾³ý
+			Thread::RWLock::RDScoped l(TopFlowerManager::Instance()->GetLocker());  
+			TopFlowerManager::Instance()->DelRoleTop(true, arg->roleid);
+			TopFlowerManager::Instance()->DelRoleTop(false, arg->roleid);
+
+		}
+		if (isbatch)
+			DeleteHelper::Instance()->DeleteNext();
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+	}
+
+};
+
+};
+#endif

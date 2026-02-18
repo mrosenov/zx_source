@@ -1,0 +1,46 @@
+
+#ifndef __GNET_DBFAMILYDEL_HPP
+#define __GNET_DBFAMILYDEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "familyid"
+#include "delfactionres"
+#include "familymanager.h"
+
+namespace GNET
+{
+
+class DBFamilyDel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilydel"
+#undef	RPC_BASECLASS
+
+	Octets master;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FamilyId *arg = (FamilyId *)argument;
+		DelFactionRes *res = (DelFactionRes *)result;
+                DEBUG_PRINT("DBFamilyDel, retcode=%d, familyid=%d", res->retcode, arg->fid);
+                if(res->retcode==ERR_SUCCESS)
+                {
+                        FamilyManager::Instance()->SetDelete(arg->fid, Timer::GetTime());
+                }
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

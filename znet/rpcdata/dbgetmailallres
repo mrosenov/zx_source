@@ -1,0 +1,65 @@
+#ifndef __GNET_DBGETMAILALLRES_RPCDATA
+#define __GNET_DBGETMAILALLRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailbox"
+
+namespace GNET
+{
+	class DBGetMailAllRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GMailBox mailbox;
+
+	public:
+		DBGetMailAllRes (int l_retcode = 0,const GMailBox& l_mailbox = GMailBox())
+			: retcode(l_retcode),mailbox(l_mailbox)
+		{
+		}
+
+		DBGetMailAllRes(const DBGetMailAllRes &rhs)
+			: retcode(rhs.retcode),mailbox(rhs.mailbox) { }
+
+		Rpc::Data *Clone() const { return new DBGetMailAllRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGetMailAllRes *r = dynamic_cast<const DBGetMailAllRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				mailbox = r->mailbox;
+			}
+			return *this;
+		}
+
+		DBGetMailAllRes& operator = (const DBGetMailAllRes &rhs)
+		{
+			const DBGetMailAllRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				mailbox = r->mailbox;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << mailbox;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> mailbox;
+			return os;
+		}
+
+	};
+};
+#endif

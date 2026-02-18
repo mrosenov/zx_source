@@ -1,0 +1,71 @@
+
+#ifndef __GNET_PUTTASKDATARPC_HPP
+#define __GNET_PUTTASKDATARPC_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gtaskdata"
+
+
+namespace GNET
+{
+
+class PutTaskDataRpc : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "puttaskdatarpc"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GTaskData *arg = (GTaskData *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+        Marshal::OctetsStream key;
+        Marshal::OctetsStream value;
+
+        LOG_TRACE( "PutTaskDataRpc, taskid=%d.", arg->taskid );
+
+        try
+        {
+            StorageEnv::Storage * pgtask = StorageEnv::GetStorage("gtask");
+            StorageEnv::CommonTransaction txn;
+            try
+            {
+                key << arg->taskid;
+                value << (*arg);
+                pgtask->insert( key, value, txn );
+                res->retcode = ERR_SUCCESS;
+            }
+            catch ( DbException e ) { throw; }
+            catch ( ... )
+            {
+                DbException ee( DB_OLD_VERSION );
+                txn.abort( ee );
+                throw ee;
+            }
+        }
+        catch ( DbException e )
+        {
+            Log::log( LOG_ERR, "PutTaskDataRpc, taskid=%d, what=%s\n", arg->taskid, e.what() );
+            res->retcode = -1;
+        }
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GTaskData *arg = (GTaskData *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,3 @@
+Put it in the root directory，Permissions 777
+
+Compile command  ./setup.sh  all

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFUNGAMEPUTSCORE_HPP
+#define __GNET_DBFUNGAMEPUTSCORE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfungameputscorearg"
+
+
+namespace GNET
+{
+
+class DBFunGamePutScore : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfungameputscore"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFunGamePutScoreArg *arg = (DBFunGamePutScoreArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFunGamePutScoreArg *arg = (DBFunGamePutScoreArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,32 @@
+	public:
+		StockOrder order;
+		enum { PROTOCOL_TYPE = PROTOCOL_LOGSTOCKCOMMISSION };
+	public:
+		LogStockCommission() { type = PROTOCOL_LOGSTOCKCOMMISSION; }
+		LogStockCommission(void*) : Protocol(PROTOCOL_LOGSTOCKCOMMISSION) { }
+		LogStockCommission (const StockOrder& l_order = StockOrder())
+			 : order(l_order)
+		{
+			type = PROTOCOL_LOGSTOCKCOMMISSION;
+		}
+
+		LogStockCommission(const LogStockCommission &rhs)
+			: Protocol(rhs),order(rhs.order) { }
+
+		GNET::Protocol *Clone() const { return new LogStockCommission(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << order;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> order;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 512; }

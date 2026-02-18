@@ -1,0 +1,90 @@
+
+#ifndef __GNET_DBFACTIONWITHDRAWMONEY_HPP
+#define __GNET_DBFACTIONWITHDRAWMONEY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionwithdrawmoneyarg"
+#include "dbfactionwithdrawmoneyres"
+#include "gmailheader"
+namespace GNET
+{
+
+class DBFactionWithDrawMoney : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionwithdrawmoney"
+#undef	RPC_BASECLASS
+	const static unsigned int FACTION_MONEY_MAX = 2000000000;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionWithDrawMoneyArg *arg = (DBFactionWithDrawMoneyArg *)argument;
+		DBFactionWithDrawMoneyRes *res = (DBFactionWithDrawMoneyRes *)result;
+		Marshal::OctetsStream key;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pmailbox = StorageEnv::GetStorage("mailbox");
+
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				GFactionInfo faction;
+				key << arg->factionid;
+				Marshal::OctetsStream(pfaction->find(key, txn )) >> faction;
+				if(faction.pk_bonus > FACTION_MONEY_MAX)
+					faction.pk_bonus = FACTION_MONEY_MAX;
+				//send mail
+			        int old_bonus = faction.pk_bonus;
+				GMailHeader header;
+				header.receiver = faction.master;
+				header.sndr_type = _MST_FACTION_PK_BONUS_NOTIFY;
+				header.sender = 0;
+				//header.title = title;
+				int ret=MailSender::Send(pmailbox,header, faction.pk_bonus, txn);
+				if(ret==0)
+				{
+					faction.pk_bonus = 0;
+					res->retcode = ERR_SUCCESS;
+				}
+				else
+					res->retcode = ERR_FC_MAILBOXFULL;
+				
+				pfaction->insert( key, Marshal::OctetsStream()<< faction, txn );
+				res->new_money = faction.pk_bonus;
+				Log::formatlog("faction withdraw money","factionid=%d money=%d", arg->factionid, old_bonus);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionWithDrawMoney, factionid=%d what=%s.",arg->factionid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFactionWithDrawMoneyArg *arg = (DBFactionWithDrawMoneyArg *)argument;
+		// DBFactionWithDrawMoneyRes *res = (DBFactionWithDrawMoneyRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

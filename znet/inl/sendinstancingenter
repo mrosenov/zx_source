@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int tag;
+		int map_id;
+		unsigned char team;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDINSTANCINGENTER };
+	public:
+		SendInstancingEnter() { type = PROTOCOL_SENDINSTANCINGENTER; }
+		SendInstancingEnter(void*) : Protocol(PROTOCOL_SENDINSTANCINGENTER) { }
+		SendInstancingEnter (int l_roleid,int l_tag = 0,int l_map_id = 0,
+			unsigned char l_team = 0)
+			 : roleid(l_roleid),tag(l_tag),map_id(l_map_id)
+			,team(l_team)
+		{
+			type = PROTOCOL_SENDINSTANCINGENTER;
+		}
+
+		SendInstancingEnter(const SendInstancingEnter &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),tag(rhs.tag),map_id(rhs.map_id)
+			,team(rhs.team) { }
+
+		GNET::Protocol *Clone() const { return new SendInstancingEnter(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << tag;
+			os << map_id;
+			os << team;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> tag;
+			os >> map_id;
+			os >> team;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

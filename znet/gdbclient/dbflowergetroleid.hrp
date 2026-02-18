@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFLOWERGETROLEID_HPP
+#define __GNET_DBFLOWERGETROLEID_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbflowergetroleidarg"
+#include "dbflowergetroleidres"
+
+namespace GNET
+{
+
+class DBFlowerGetRoleId : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbflowergetroleid"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFlowerGetRoleIdArg *arg = (DBFlowerGetRoleIdArg *)argument;
+		// DBFlowerGetRoleIdRes *res = (DBFlowerGetRoleIdRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFlowerGetRoleIdArg *arg = (DBFlowerGetRoleIdArg *)argument;
+		// DBFlowerGetRoleIdRes *res = (DBFlowerGetRoleIdRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

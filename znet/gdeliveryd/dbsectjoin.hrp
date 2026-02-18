@@ -1,0 +1,61 @@
+
+#ifndef __GNET_DBSECTJOIN_HPP
+#define __GNET_DBSECTJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsectjoinarg"
+#include "dbsectjoinres"
+#include "sectrecruit_re.hpp"
+#include "sectmanager.h"
+
+namespace GNET
+{
+
+class DBSectJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsectjoin"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSectJoinArg *arg = (DBSectJoinArg *)argument;
+		// DBSectJoinRes *res = (DBSectJoinRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSectJoinArg *arg = (DBSectJoinArg *)argument;
+		DBSectJoinRes *res = (DBSectJoinRes *)result;
+		DEBUG_PRINT("DBSectJoin, retcode=%d, master=%d, invitee=%d", res->retcode, arg->master, arg->disciple);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			SectManager::Instance()->OnJoin(arg->master,res->disciple);
+		}
+		else
+		{
+			PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->master);
+			if (pinfo != NULL)
+			{
+				SectRecruit_Re re;
+				re.retcode =  res->retcode;
+				re.sectid = arg->master;
+				re.disciple = arg->disciple;
+				re.localsid =  pinfo->localsid;
+				GDeliveryServer::GetInstance()->Send(pinfo->linksid, re);
+			}
+		}
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

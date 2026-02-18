@@ -1,0 +1,87 @@
+
+#ifndef __GNET_DBSECTUPDATE_HPP
+#define __GNET_DBSECTUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsectupdatearg"
+#include "dbsectupdateres"
+
+namespace GNET
+{
+
+class DBSectUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsectupdate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSectUpdateArg *arg = (DBSectUpdateArg *)argument;
+		DBSectUpdateRes *res = (DBSectUpdateRes *)result;
+		try
+		{
+			StorageEnv::Storage * psect = StorageEnv::GetStorage("sect");
+
+			Log::formatlog("sectupdate","sectid=%d:reputation=%d:skills=%d", arg->sectid, arg->sect.reputation, arg->sect.skills.size());
+
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, value, krole,kmaster;
+			try{
+				key << arg->sectid;
+				if(psect->find(key,value,txn))
+				{
+					value >> res->sect;
+					res->sect.reputation = arg->sect.reputation;
+					res->sect.skills = arg->sect.skills;
+					std::vector<GDisciple>::iterator it1=res->sect.disciples.begin(), it2;
+					for(;it1!=res->sect.disciples.end();++it1)
+					{
+						for(it2=arg->sect.disciples.begin();it2!=arg->sect.disciples.end();++it2)
+						{
+							if(it1->roleid==it2->roleid)
+							{
+								it1->level = it2->level;
+								it1->occupation = it2->occupation;
+								break;
+							}
+						}
+					}
+					psect->insert( key, Marshal::OctetsStream()<<res->sect, txn );
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSectUpdate, sectid=%d, what=%s.",arg->sectid,e.what());
+			res->retcode = ERR_SECT_BUSY;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSectUpdateArg *arg = (DBSectUpdateArg *)argument;
+		// Integer *res = (Integer *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

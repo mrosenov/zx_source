@@ -1,0 +1,59 @@
+#ifndef __GNET_DBSIEGEPUTDETAILRES_RPCDATA
+#define __GNET_DBSIEGEPUTDETAILRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSiegePutDetailRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DBSiegePutDetailRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBSiegePutDetailRes(const DBSiegePutDetailRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBSiegePutDetailRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegePutDetailRes *r = dynamic_cast<const DBSiegePutDetailRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBSiegePutDetailRes& operator = (const DBSiegePutDetailRes &rhs)
+		{
+			const DBSiegePutDetailRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,84 @@
+#ifndef __GNET_DBFAMILYSYNCARG_RPCDATA
+#define __GNET_DBFAMILYSYNCARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfamilyskill"
+#include "gfolk"
+
+namespace GNET
+{
+	class DBFamilySyncArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int fid;
+		std::vector<GFamilySkill> skills;
+		std::vector<GFolk> member;
+		Octets task_data;
+		std::vector<int> task_record;
+
+	public:
+		DBFamilySyncArg (unsigned int l_fid = 0,const std::vector<GFamilySkill>& l_skills = std::vector<GFamilySkill>() ,const std::vector<GFolk>& l_member = std::vector<GFolk>()
+			,const Octets& l_task_data = Octets(),const std::vector<int>& l_task_record = std::vector<int>())
+			: fid(l_fid),skills(l_skills),member(l_member)
+			,task_data(l_task_data),task_record(l_task_record)
+		{
+		}
+
+		DBFamilySyncArg(const DBFamilySyncArg &rhs)
+			: fid(rhs.fid),skills(rhs.skills),member(rhs.member),
+			task_data(rhs.task_data),task_record(rhs.task_record) { }
+
+		Rpc::Data *Clone() const { return new DBFamilySyncArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFamilySyncArg *r = dynamic_cast<const DBFamilySyncArg *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				skills = r->skills;
+				member = r->member;
+				task_data = r->task_data;
+				task_record = r->task_record;
+			}
+			return *this;
+		}
+
+		DBFamilySyncArg& operator = (const DBFamilySyncArg &rhs)
+		{
+			const DBFamilySyncArg *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				skills = r->skills;
+				member = r->member;
+				task_data = r->task_data;
+				task_record = r->task_record;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << skills;
+			os << member;
+			os << task_data;
+			os << task_record;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> skills;
+			os >> member;
+			os >> task_data;
+			os >> task_record;
+			return os;
+		}
+
+	};
+};
+#endif

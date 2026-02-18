@@ -1,0 +1,59 @@
+
+#ifndef __GNET_DBCONSIGNTABLELOAD_HPP
+#define __GNET_DBCONSIGNTABLELOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsigntableloadarg"
+#include "dbconsigntableloadres"
+#include "consignmanager.h"
+#include "gamedbclient.hpp"
+namespace GNET
+{
+
+class DBConsignTableLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsigntableload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignTableLoadArg *arg = (DBConsignTableLoadArg *)argument;
+		// DBConsignTableLoadRes *res = (DBConsignTableLoadRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+//		DBConsignTableLoadArg *arg = (DBConsignTableLoadArg *)argument;
+		DBConsignTableLoadRes *res = (DBConsignTableLoadRes *)result;
+		DEBUG_PRINT("dbconsigntableload: received. items.size()=%d,nextbeginkey.size()=%d retcode=%d\n",\
+				res->items.size(),res->nextbeginkey.size(), res->retcode);
+		if(res->retcode == ERR_SUCCESS)
+		{
+			ConsignManager::GetInstance()->OnDBLoad(res->items,res->items.size()==0||res->nextbeginkey.size()==0);	
+			if(res->nextbeginkey.size()!=0)//nextkey exist
+				GameDBClient::GetInstance()->SendProtocol(Rpc::Call(RPC_DBCONSIGNTABLELOAD,DBConsignTableLoadArg(res->nextbeginkey) ));
+		}
+/*		else if(res->retcode==ERR_AGAIN)
+		{
+			GameDBClient::GetInstance()->SendProtocol( Rpc::Call(RPC_DBConsignTableLoad,arg) );
+		}*/
+		
+
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+		DBConsignTableLoadArg *arg = (DBConsignTableLoadArg *)argument;
+		Log::formatlog("consign","dbconsigntableload: rpc timeout. Resend request.\n");
+		GameDBClient::GetInstance()->SendProtocol( Rpc::Call(RPC_DBCONSIGNTABLELOAD,arg) );
+	}
+
+};
+
+};
+#endif

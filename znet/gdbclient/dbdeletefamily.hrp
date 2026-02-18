@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBDELETEFAMILY_HPP
+#define __GNET_DBDELETEFAMILY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbdeletefamilyarg"
+#include "dbdeletefamilyres"
+
+namespace GNET
+{
+
+class DBDeleteFamily : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbdeletefamily"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBDeleteFamilyArg *arg = (DBDeleteFamilyArg *)argument;
+		// DBDeleteFamilyRes *res = (DBDeleteFamilyRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBDeleteFamilyArg *arg = (DBDeleteFamilyArg *)argument;
+		// DBDeleteFamilyRes *res = (DBDeleteFamilyRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

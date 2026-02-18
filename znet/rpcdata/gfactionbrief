@@ -1,0 +1,100 @@
+#ifndef __GNET_GFACTIONBRIEF_RPCDATA
+#define __GNET_GFACTIONBRIEF_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GFactionBrief : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int fid;
+		Octets name;
+		Octets announce;
+		char level;
+		unsigned int master;
+		unsigned int prosperity;
+		int createtime;
+		int population;
+
+	public:
+		GFactionBrief (unsigned int l_fid = 0,const Octets& l_name = Octets(0),char l_level = 0
+			,unsigned int l_master = 0,unsigned int l_prosperity = 0,int l_createtime = 0
+			,int l_population = 0)
+			: fid(l_fid),name(l_name),level(l_level)
+			,master(l_master),prosperity(l_prosperity),createtime(l_createtime)
+			,population(l_population)
+		{
+		}
+
+		GFactionBrief(const GFactionBrief &rhs)
+			: fid(rhs.fid),name(rhs.name),announce(rhs.announce),
+			level(rhs.level),master(rhs.master),prosperity(rhs.prosperity),
+			createtime(rhs.createtime),population(rhs.population) { }
+
+		Rpc::Data *Clone() const { return new GFactionBrief(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFactionBrief *r = dynamic_cast<const GFactionBrief *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				name = r->name;
+				announce = r->announce;
+				level = r->level;
+				master = r->master;
+				prosperity = r->prosperity;
+				createtime = r->createtime;
+				population = r->population;
+			}
+			return *this;
+		}
+
+		GFactionBrief& operator = (const GFactionBrief &rhs)
+		{
+			const GFactionBrief *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				name = r->name;
+				announce = r->announce;
+				level = r->level;
+				master = r->master;
+				prosperity = r->prosperity;
+				createtime = r->createtime;
+				population = r->population;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << name;
+			os << announce;
+			os << level;
+			os << master;
+			os << prosperity;
+			os << createtime;
+			os << population;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> name;
+			os >> announce;
+			os >> level;
+			os >> master;
+			os >> prosperity;
+			os >> createtime;
+			os >> population;
+			return os;
+		}
+
+	};
+};
+#endif

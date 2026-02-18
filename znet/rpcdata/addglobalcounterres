@@ -1,0 +1,59 @@
+#ifndef __GNET_ADDGLOBALCOUNTERRES_RPCDATA
+#define __GNET_ADDGLOBALCOUNTERRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class AddGlobalCounterRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		AddGlobalCounterRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		AddGlobalCounterRes(const AddGlobalCounterRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new AddGlobalCounterRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const AddGlobalCounterRes *r = dynamic_cast<const AddGlobalCounterRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		AddGlobalCounterRes& operator = (const AddGlobalCounterRes &rhs)
+		{
+			const AddGlobalCounterRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

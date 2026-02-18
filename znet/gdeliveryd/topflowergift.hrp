@@ -1,0 +1,42 @@
+
+#ifndef __GNET_TOPFLOWERGIFT_HPP
+#define __GNET_TOPFLOWERGIFT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "topflowergiftarg"
+#include "topflowergiftres"
+
+namespace GNET
+{
+
+class TopFlowerGift : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "topflowergift"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TopFlowerGiftArg *arg = (TopFlowerGiftArg *)argument;
+		// TopFlowerGiftRes *res = (TopFlowerGiftRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// TopFlowerGiftArg *arg = (TopFlowerGiftArg *)argument;
+		// TopFlowerGiftRes *res = (TopFlowerGiftRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

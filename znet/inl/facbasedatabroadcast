@@ -1,0 +1,35 @@
+	public:
+		int fid;
+		Octets data;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACBASEDATABROADCAST };
+	public:
+		FacBaseDataBroadcast() { type = PROTOCOL_FACBASEDATABROADCAST; }
+		FacBaseDataBroadcast(void*) : Protocol(PROTOCOL_FACBASEDATABROADCAST) { }
+		FacBaseDataBroadcast (int l_fid,const Octets& l_data = Octets())
+			 : fid(l_fid),data(l_data)
+		{
+			type = PROTOCOL_FACBASEDATABROADCAST;
+		}
+
+		FacBaseDataBroadcast(const FacBaseDataBroadcast &rhs)
+			: Protocol(rhs),fid(rhs.fid),data(rhs.data) { }
+
+		GNET::Protocol *Clone() const { return new FacBaseDataBroadcast(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> data;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 65536; }

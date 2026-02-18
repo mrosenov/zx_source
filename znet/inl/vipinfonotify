@@ -1,0 +1,62 @@
+	public:
+		int roleid;
+		int currenttime;
+		int starttime;
+		int endtime;
+		int viplevel;
+		int status;
+		int totalcash;
+		int recenttotalcash;
+		int infolack;
+		enum { PROTOCOL_TYPE = PROTOCOL_VIPINFONOTIFY };
+	public:
+		VIPInfoNotify() { type = PROTOCOL_VIPINFONOTIFY; }
+		VIPInfoNotify(void*) : Protocol(PROTOCOL_VIPINFONOTIFY) { }
+		VIPInfoNotify (int l_roleid,int l_currenttime,int l_starttime,
+			int l_endtime,int l_viplevel,int l_status = 0,
+			int l_totalcash = 0,int l_recenttotalcash = 0,int l_infolack = 0)
+			 : roleid(l_roleid),currenttime(l_currenttime),starttime(l_starttime)
+			,endtime(l_endtime),viplevel(l_viplevel),status(l_status)
+			,totalcash(l_totalcash),recenttotalcash(l_recenttotalcash),infolack(l_infolack)
+		{
+			type = PROTOCOL_VIPINFONOTIFY;
+		}
+
+		VIPInfoNotify(const VIPInfoNotify &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),currenttime(rhs.currenttime),starttime(rhs.starttime)
+			,endtime(rhs.endtime),viplevel(rhs.viplevel),status(rhs.status)
+			,totalcash(rhs.totalcash),recenttotalcash(rhs.recenttotalcash),infolack(rhs.infolack) { }
+
+		GNET::Protocol *Clone() const { return new VIPInfoNotify(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << currenttime;
+			os << starttime;
+			os << endtime;
+			os << viplevel;
+			os << status;
+			os << totalcash;
+			os << recenttotalcash;
+			os << infolack;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> currenttime;
+			os >> starttime;
+			os >> endtime;
+			os >> viplevel;
+			os >> status;
+			os >> totalcash;
+			os >> recenttotalcash;
+			os >> infolack;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

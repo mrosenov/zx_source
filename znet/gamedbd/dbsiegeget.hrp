@@ -1,0 +1,101 @@
+
+#ifndef __GNET_DBSIEGEGET_HPP
+#define __GNET_DBSIEGEGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegegetarg"
+#include "dbsiegegetres"
+#include "gcitystore"
+
+namespace GNET
+{
+
+class DBSiegeGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegeget"
+#undef	RPC_BASECLASS
+
+	GCity * FindCity(GCityStore & store, int battle_id)
+	{
+		for (std::vector<GCity>::iterator it = store.cities.begin(); it != store.cities.end(); ++ it)
+		{
+			if (it->info.battle_id == battle_id)
+			{
+				return &*it;
+			}
+		}
+		return NULL;
+	}
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSiegeGetArg *arg = (DBSiegeGetArg *)argument;
+		DBSiegeGetRes *res = (DBSiegeGetRes *)result;
+		try
+		{
+			LOG_TRACE("DBSiegeGet battle_id=%d", arg->battle_id);
+			StorageEnv::Storage * pcity = StorageEnv::GetStorage("citystore");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream key, value;
+			GCityStore store;
+			try{
+				key << 0;
+				if (pcity->find(key, value, txn))
+				{
+					value >> store;
+				}
+				else
+				{
+					pcity->insert(key, Marshal::OctetsStream()<<store, txn);
+				}
+				GCity * city = FindCity(store, arg->battle_id);
+				if (city == NULL)
+				{
+					res->city_info.info.battle_id = arg->battle_id;
+					res->city_info.timestamp = 0;
+					store.cities.push_back(res->city_info);
+					pcity->insert(key, Marshal::OctetsStream()<<store, txn);
+					res->retcode = ERR_SUCCESS;
+					return;
+				}
+				res->city_info = *city;
+				res->retcode = ERR_SUCCESS;
+				LOG_TRACE("DBSiegeGet retcode=%d battle_id=%d", res->retcode, arg->battle_id);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSiegeGet, what=%s\n", e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSiegeGetArg *arg = (DBSiegeGetArg *)argument;
+		// DBSiegeGetRes *res = (DBSiegeGetRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

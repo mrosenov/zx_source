@@ -1,0 +1,65 @@
+#ifndef __GNET_DBQUERYROLENAMERES_RPCDATA
+#define __GNET_DBQUERYROLENAMERES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "namehistory"
+
+namespace GNET
+{
+	class DBQueryRoleNameRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		std::vector<NameHistory> list;
+
+	public:
+		DBQueryRoleNameRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBQueryRoleNameRes(const DBQueryRoleNameRes &rhs)
+			: retcode(rhs.retcode),list(rhs.list) { }
+
+		Rpc::Data *Clone() const { return new DBQueryRoleNameRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBQueryRoleNameRes *r = dynamic_cast<const DBQueryRoleNameRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				list = r->list;
+			}
+			return *this;
+		}
+
+		DBQueryRoleNameRes& operator = (const DBQueryRoleNameRes &rhs)
+		{
+			const DBQueryRoleNameRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				list = r->list;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << list;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> list;
+			return os;
+		}
+
+	};
+};
+#endif

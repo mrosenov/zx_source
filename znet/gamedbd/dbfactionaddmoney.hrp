@@ -1,0 +1,80 @@
+
+#ifndef __GNET_DBFACTIONADDMONEY_HPP
+#define __GNET_DBFACTIONADDMONEY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionaddmoneyarg"
+#include "dbfactionaddmoneyres"
+
+namespace GNET
+{
+
+class DBFactionAddMoney : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionaddmoney"
+#undef	RPC_BASECLASS
+	const static unsigned int FACTION_MONEY_MAX = 2000000000;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionAddMoneyArg *arg = (DBFactionAddMoneyArg *)argument;
+		DBFactionAddMoneyRes *res = (DBFactionAddMoneyRes *)result;
+		Marshal::OctetsStream key;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				GFactionInfo faction;
+				key << arg->factionid;
+				Marshal::OctetsStream(pfaction->find(key, txn )) >> faction;
+        			if(arg->delta_money< FACTION_MONEY_MAX)
+			        {
+			                faction.pk_bonus += arg->delta_money; 
+			                if(faction.pk_bonus > FACTION_MONEY_MAX)
+	                  			faction.pk_bonus = FACTION_MONEY_MAX;
+				}
+				else
+				        faction.pk_bonus = FACTION_MONEY_MAX;
+
+				pfaction->insert( key, Marshal::OctetsStream()<< faction, txn );
+				res->retcode = ERR_SUCCESS;
+				res->new_money = faction.pk_bonus;
+				Log::formatlog("faction add money","factionid=%d delta=%d money=%d", arg->factionid, arg->delta_money, faction.pk_bonus);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionAddMoney, factionid=%d what=%s.",arg->factionid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFactionAddMoneyArg *arg = (DBFactionAddMoneyArg *)argument;
+		// DBFactionAddMoneyRes *res = (DBFactionAddMoneyRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

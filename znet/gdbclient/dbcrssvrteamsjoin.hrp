@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSJOIN_HPP
+#define __GNET_DBCRSSVRTEAMSJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsjoinarg"
+#include "dbcrssvrteamsjoinres"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsjoin"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsJoinArg *arg = (DBCrssvrTeamsJoinArg *)argument;
+		// DBCrssvrTeamsJoinRes *res = (DBCrssvrTeamsJoinRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsJoinArg *arg = (DBCrssvrTeamsJoinArg *)argument;
+		// DBCrssvrTeamsJoinRes *res = (DBCrssvrTeamsJoinRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

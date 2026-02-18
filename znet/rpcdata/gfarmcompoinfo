@@ -1,0 +1,125 @@
+#ifndef __GNET_GFARMCOMPOINFO_RPCDATA
+#define __GNET_GFARMCOMPOINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfarmplayer"
+#include "gfarm"
+
+namespace GNET
+{
+	class GFarmCompoInfo : public GNET::Rpc::Data
+	{
+	public:
+		GFarmPlayer owner;
+		GFarm farm;
+		Octets farm_dynamic;
+		Octets action_dynamic;
+		int reserved1;
+		int reserved2;
+		int reserved3;
+		int reserved4;
+		int reserved5;
+		int reserved6;
+		int reserved7;
+		int reserved8;
+
+	public:
+		GFarmCompoInfo (const GFarmPlayer& l_owner = GFarmPlayer(),const GFarm& l_farm = GFarm(),const Octets& l_farm_dynamic = Octets()
+			,const Octets& l_action_dynamic = Octets(),int l_reserved1 = 0,int l_reserved2 = 0
+			,int l_reserved3 = 0,int l_reserved4 = 0,int l_reserved5 = 0
+			,int l_reserved6 = 0,int l_reserved7 = 0,int l_reserved8 = 0)
+			: owner(l_owner),farm(l_farm),farm_dynamic(l_farm_dynamic)
+			,action_dynamic(l_action_dynamic),reserved1(l_reserved1),reserved2(l_reserved2)
+			,reserved3(l_reserved3),reserved4(l_reserved4),reserved5(l_reserved5)
+			,reserved6(l_reserved6),reserved7(l_reserved7),reserved8(l_reserved8)
+		{
+		}
+
+		GFarmCompoInfo(const GFarmCompoInfo &rhs)
+			: owner(rhs.owner),farm(rhs.farm),farm_dynamic(rhs.farm_dynamic),
+			action_dynamic(rhs.action_dynamic),reserved1(rhs.reserved1),reserved2(rhs.reserved2),
+			reserved3(rhs.reserved3),reserved4(rhs.reserved4),reserved5(rhs.reserved5),
+			reserved6(rhs.reserved6),reserved7(rhs.reserved7),reserved8(rhs.reserved8) { }
+
+		Rpc::Data *Clone() const { return new GFarmCompoInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFarmCompoInfo *r = dynamic_cast<const GFarmCompoInfo *>(&rhs);
+			if (r && r != this)
+			{
+				owner = r->owner;
+				farm = r->farm;
+				farm_dynamic = r->farm_dynamic;
+				action_dynamic = r->action_dynamic;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+				reserved5 = r->reserved5;
+				reserved6 = r->reserved6;
+				reserved7 = r->reserved7;
+				reserved8 = r->reserved8;
+			}
+			return *this;
+		}
+
+		GFarmCompoInfo& operator = (const GFarmCompoInfo &rhs)
+		{
+			const GFarmCompoInfo *r = &rhs;
+			if (r && r != this)
+			{
+				owner = r->owner;
+				farm = r->farm;
+				farm_dynamic = r->farm_dynamic;
+				action_dynamic = r->action_dynamic;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+				reserved5 = r->reserved5;
+				reserved6 = r->reserved6;
+				reserved7 = r->reserved7;
+				reserved8 = r->reserved8;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << owner;
+			os << farm;
+			os << farm_dynamic;
+			os << action_dynamic;
+			os << reserved1;
+			os << reserved2;
+			os << reserved3;
+			os << reserved4;
+			os << reserved5;
+			os << reserved6;
+			os << reserved7;
+			os << reserved8;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> owner;
+			os >> farm;
+			os >> farm_dynamic;
+			os >> action_dynamic;
+			os >> reserved1;
+			os >> reserved2;
+			os >> reserved3;
+			os >> reserved4;
+			os >> reserved5;
+			os >> reserved6;
+			os >> reserved7;
+			os >> reserved8;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSGET_HPP
+#define __GNET_DBCRSSVRTEAMSGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "teamid"
+#include "dbcrssvrteamsgetres"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TeamId *arg = (TeamId *)argument;
+		// DBCrssvrTeamsGetRes *res = (DBCrssvrTeamsGetRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// TeamId *arg = (TeamId *)argument;
+		// DBCrssvrTeamsGetRes *res = (DBCrssvrTeamsGetRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,65 @@
+#ifndef __GNET_FRIENDLISTRES_RPCDATA
+#define __GNET_FRIENDLISTRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfriendlist"
+
+namespace GNET
+{
+	class FriendListRes : public GNET::Rpc::Data
+	{
+	public:
+		char retcode;
+		GFriendList value;
+
+	public:
+		FriendListRes (char l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		FriendListRes(const FriendListRes &rhs)
+			: retcode(rhs.retcode),value(rhs.value) { }
+
+		Rpc::Data *Clone() const { return new FriendListRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FriendListRes *r = dynamic_cast<const FriendListRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		FriendListRes& operator = (const FriendListRes &rhs)
+		{
+			const FriendListRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << value;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> value;
+			return os;
+		}
+
+	};
+};
+#endif

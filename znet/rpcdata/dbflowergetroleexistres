@@ -1,0 +1,75 @@
+#ifndef __GNET_DBFLOWERGETROLEEXISTRES_RPCDATA
+#define __GNET_DBFLOWERGETROLEEXISTRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFlowerGetRoleExistRes : public GNET::Rpc::Data
+	{
+	public:
+		int gender;
+		int userid;
+		int retcode;
+		Octets rolename;
+
+	public:
+		DBFlowerGetRoleExistRes (int l_gender = 0,int l_userid = 0,const Octets& l_rolename = Octets())
+			: gender(l_gender),userid(l_userid),rolename(l_rolename)
+		{
+		}
+
+		DBFlowerGetRoleExistRes(const DBFlowerGetRoleExistRes &rhs)
+			: gender(rhs.gender),userid(rhs.userid),retcode(rhs.retcode),
+			rolename(rhs.rolename) { }
+
+		Rpc::Data *Clone() const { return new DBFlowerGetRoleExistRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFlowerGetRoleExistRes *r = dynamic_cast<const DBFlowerGetRoleExistRes *>(&rhs);
+			if (r && r != this)
+			{
+				gender = r->gender;
+				userid = r->userid;
+				retcode = r->retcode;
+				rolename = r->rolename;
+			}
+			return *this;
+		}
+
+		DBFlowerGetRoleExistRes& operator = (const DBFlowerGetRoleExistRes &rhs)
+		{
+			const DBFlowerGetRoleExistRes *r = &rhs;
+			if (r && r != this)
+			{
+				gender = r->gender;
+				userid = r->userid;
+				retcode = r->retcode;
+				rolename = r->rolename;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gender;
+			os << userid;
+			os << retcode;
+			os << rolename;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gender;
+			os >> userid;
+			os >> retcode;
+			os >> rolename;
+			return os;
+		}
+
+	};
+};
+#endif

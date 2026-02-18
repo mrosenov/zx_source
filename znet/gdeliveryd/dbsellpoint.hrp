@@ -1,0 +1,44 @@
+
+#ifndef __GNET_DBSELLPOINT_HPP
+#define __GNET_DBSELLPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "sellpointarg"
+#include "sellpointres"
+#include "gamedbclient.hpp"
+#include "cardmarket.h"
+#include "mapuser.h"
+#include "dbsyncsellinfo.hrp"
+#include "sellpoint_re.hpp"
+
+#include "worldchat.hpp"
+#include "maplinkserver.h"
+#include "putmessage.hrp"
+#include "conv_charset.h"
+namespace GNET
+{
+
+class DBSellPoint : public ProxyRpc
+{
+#define	RPC_BASECLASS	ProxyRpc
+	#include "dbsellpoint"
+#undef	RPC_BASECLASS
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		return false;
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+	}
+
+	void OnTimeout( const OctetsStream &osArg )
+	{
+	}
+
+};
+
+};
+#endif

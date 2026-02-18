@@ -1,0 +1,60 @@
+#ifndef __GNET_FAMILYID_RPCDATA
+#define __GNET_FAMILYID_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class FamilyId : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int fid;
+
+	public:
+		FamilyId (unsigned int l_fid = 0)
+			: fid(l_fid)
+		{
+		}
+
+		FamilyId(const FamilyId &rhs)
+			: fid(rhs.fid) { }
+
+		Rpc::Data *Clone() const { return new FamilyId(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FamilyId *r = dynamic_cast<const FamilyId *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+			}
+			return *this;
+		}
+
+		FamilyId& operator = (const FamilyId &rhs)
+		{
+			const FamilyId *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<FamilyId>	FamilyIdVector;
+};
+#endif

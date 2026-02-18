@@ -1,0 +1,165 @@
+
+#ifndef __GNET_DBTERRITORYCHALLENGE_HPP
+#define __GNET_DBTERRITORYCHALLENGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbterritorychallengearg"
+#include "dbterritorychallengeres"
+
+namespace GNET
+{
+
+class DBTerritoryChallenge : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbterritorychallenge"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBTerritoryChallengeArg *arg = (DBTerritoryChallengeArg *)argument;
+		DBTerritoryChallengeRes *res = (DBTerritoryChallengeRes *)result;
+		Log::formatlog("dbterritorychallenge", "roleid %d tid %d faction_id %d item_id %d item_count %d", arg->roleid, arg->territoryid, arg->factionid, arg->itemid, arg->item_count);
+		try
+		{
+
+			StorageEnv::Storage * pcity = StorageEnv::GetStorage("citystore");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * puser = (arg->syncdata.data_mask&SYNC_CASHUSED)?StorageEnv::GetStorage("user"):NULL;
+//			StorageEnv::Storage * pstore = (arg->syncdata.data_mask&SYNC_STOTEHOUSE)?StorageEnv::GetStorage("storehouse"):NULL;
+			StorageEnv::Storage * pstore = StorageEnv::GetStorage("storehouse");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream terri_key, terri_value, role_key;
+			int delta = arg->syncdata.inventory.money; 
+			GTerritoryStore store;
+			GRolePocket pocket;
+			try{
+
+				terri_key << 1;
+				Marshal::OctetsStream( pcity->find( terri_key, txn ) ) >> store;
+				GTerritoryInfoVector::iterator cit, cite;
+				for (cit=store.tlist.begin(),cite=store.tlist.end();cit!=cite;++cit)
+				{
+					if (cit->id == arg->territoryid)
+						break;
+				}
+				if (cit == cite)
+				{
+					Log::log(LOG_ERR, "dbterritorychallenge can not find territory %d", arg->territoryid);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				role_key << arg->roleid;
+				Marshal::OctetsStream(pinventory->find(role_key, txn)) >> pocket;
+				if(arg->syncdata.inventory.timestamp-pocket.timestamp<=0)
+				{
+					Log::log(LOG_ERR,"dbterritorychallenge, tid %d timestamp mismatch. %d<%d",
+						arg->territoryid, arg->syncdata.inventory.timestamp, pocket.timestamp);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				delta -= pocket.money;
+				GTChallengeVector::iterator bit, bite;
+				GTChallenge challenge(arg->factionid, arg->item_count);
+				for (bit=cit->challengelist.begin(),bite=cit->challengelist.end();bit!=bite;++bit)
+				{
+					if (bit->factionid == arg->factionid)
+					{
+						challenge.itemcount += bit->itemcount;
+						cit->challengelist.erase(bit);
+						break;
+					}
+				}
+				int need = arg->item_count;
+				GRoleInventoryVector::iterator it;
+				GRoleInventoryVector& v = arg->syncdata.inventory.items;
+				for (it = v.begin(); it != v.end();)
+				{
+					GRoleInventory & item = *it;
+					if (item.id != (unsigned int)arg->itemid)
+					{
+						++it;
+						continue;
+					}
+					if (item.count > need)
+					{
+						item.count -= need;
+						need = 0;
+						res->syncdata.inventory.items.push_back(item);
+						break;
+					}
+					else if (item.count == need)
+					{
+						need = 0;
+						item.count = 0;
+						res->syncdata.inventory.items.push_back(item);
+						it = v.erase(it);
+						break;
+					}
+					else
+					{
+						need -= item.count;
+						item.count = 0;
+						res->syncdata.inventory.items.push_back(item);
+						it = v.erase(it);
+					}
+				}
+				if (need)
+				{
+					Log::log(LOG_ERR, "dbterritorychallenge item not enough", arg->territoryid);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				pinventory->insert(role_key, Marshal::OctetsStream()<<arg->syncdata.inventory, txn);
+				::UpdateCash(puser, arg->syncdata, txn);
+				//::UpdateShoplog(plog, arg->syncdata, txn);
+				::UpdateStore(arg->roleid, pstore, arg->syncdata, txn, delta);
+
+				for (bit=cit->challengelist.begin(),bite=cit->challengelist.end();bit!=bite;++bit)
+				{
+					if (challenge.itemcount > bit->itemcount)
+						break;
+				}
+				cit->challengelist.insert(bit, challenge);
+				LOG_TRACE("challengelist territoryid %d", cit->id);
+				for (bit=cit->challengelist.begin(),bite=cit->challengelist.end();bit!=bite;++bit)
+					LOG_TRACE("factionid %d deposit %d", bit->factionid, bit->itemcount);
+				pcity->insert(terri_key,Marshal::OctetsStream()<<store,txn);
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				res->syncdata.data_mask = arg->syncdata.data_mask;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBTerritoryChallenge, roleid=%d, tid=%d, what=%s.\n",
+				arg->roleid, arg->territoryid, e.what() );
+			res->syncdata.inventory.money = arg->syncdata.inventory.money;
+			res->syncdata.data_mask = 0;
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBTerritoryChallengeArg *arg = (DBTerritoryChallengeArg *)argument;
+		// DBTerritoryChallengeRes *res = (DBTerritoryChallengeRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

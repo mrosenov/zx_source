@@ -1,0 +1,89 @@
+#ifndef __GNET_DBCHANGEROLENAMERES_RPCDATA
+#define __GNET_DBCHANGEROLENAMERES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "grolenamehis"
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBChangeRolenameRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int familyid;
+		int circleid;
+		int sectid;
+		GRoleNameHisVector rolenamehis;
+		GMailSyncData syncdata;
+
+	public:
+		DBChangeRolenameRes (int l_retcode = -1,int l_familyid = 0,int l_circleid = 0
+			,int l_sectid = 0,GRoleNameHisVector l_rolenamehis = GRoleNameHisVector(),const GMailSyncData& l_syncdata = GMailSyncData())
+			: retcode(l_retcode),familyid(l_familyid),circleid(l_circleid)
+			,sectid(l_sectid),rolenamehis(l_rolenamehis),syncdata(l_syncdata)
+		{
+		}
+
+		DBChangeRolenameRes(const DBChangeRolenameRes &rhs)
+			: retcode(rhs.retcode),familyid(rhs.familyid),circleid(rhs.circleid),
+			sectid(rhs.sectid),rolenamehis(rhs.rolenamehis),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBChangeRolenameRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBChangeRolenameRes *r = dynamic_cast<const DBChangeRolenameRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				familyid = r->familyid;
+				circleid = r->circleid;
+				sectid = r->sectid;
+				rolenamehis = r->rolenamehis;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBChangeRolenameRes& operator = (const DBChangeRolenameRes &rhs)
+		{
+			const DBChangeRolenameRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				familyid = r->familyid;
+				circleid = r->circleid;
+				sectid = r->sectid;
+				rolenamehis = r->rolenamehis;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << familyid;
+			os << circleid;
+			os << sectid;
+			os << rolenamehis;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> familyid;
+			os >> circleid;
+			os >> sectid;
+			os >> rolenamehis;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

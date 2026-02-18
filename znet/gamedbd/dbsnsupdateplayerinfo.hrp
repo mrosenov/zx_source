@@ -1,0 +1,93 @@
+
+#ifndef __GNET_DBSNSUPDATEPLAYERINFO_HPP
+#define __GNET_DBSNSUPDATEPLAYERINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsupdateplayerinfoarg"
+#include "dbsnsupdateplayerinfores"
+
+namespace GNET
+{
+
+class DBSNSUpdatePlayerInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsupdateplayerinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSNSUpdatePlayerInfoArg *arg = (DBSNSUpdatePlayerInfoArg *)argument;
+		DBSNSUpdatePlayerInfoRes *res = (DBSNSUpdatePlayerInfoRes *)result;
+
+		try
+		{
+			StorageEnv::Storage *pinfo = StorageEnv::GetStorage("snsplayerinfo");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key;
+			Octets oct_info;
+			GSNSPlayerInfoCache info;
+
+			try
+			{
+				key << arg->info.roleid;
+				if (pinfo->find(key, oct_info, txn))
+					Marshal::OctetsStream(oct_info) >> info;
+				info.playerinfo.roleid = arg->info.roleid;
+				info.playerinfo.is_private = arg->info.is_private;
+				if (arg->info.rolename.size() > 0)
+					info.playerinfo.rolename = arg->info.rolename;
+				if (arg->info.nickname.size() > 0)
+					info.playerinfo.nickname = arg->info.nickname;
+				info.playerinfo.age = arg->info.age;
+				info.playerinfo.birthday = arg->info.birthday;
+				info.playerinfo.province = arg->info.province;
+				info.playerinfo.city = arg->info.city;
+				if (arg->info.career.size() > 0)
+					info.playerinfo.career = arg->info.career;
+				if (arg->info.address.size() > 0)
+					info.playerinfo.address = arg->info.address;
+				if (arg->info.introduce.size() > 0)
+					info.playerinfo.introduce = arg->info.introduce;
+				info.playerinfo.charm_personal = arg->info.charm_personal;
+				info.playerinfo.charm_friend = arg->info.charm_friend;
+				info.playerinfo.charm_sect = arg->info.charm_sect;
+				info.playerinfo.charm_faction = arg->info.charm_faction;
+				info.playerinfo.press_time = arg->info.press_time;
+				pinfo->insert(key, Marshal::OctetsStream()<<info, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+			res->retcode = ERR_FAILED;
+			Log::log(LOG_ERR, "gamedbd:DBSNSUpdatePlayerInfo error, what=%s\n", e.what());
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSNSUpdatePlayerInfoArg *arg = (DBSNSUpdatePlayerInfoArg *)argument;
+		// DBSNSUpdatePlayerInfoRes *res = (DBSNSUpdatePlayerInfoRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

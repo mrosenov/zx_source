@@ -1,0 +1,65 @@
+#ifndef __GNET_DBCRSSVRTEAMSGETSEASONTOPRES_RPCDATA
+#define __GNET_DBCRSSVRTEAMSGETSEASONTOPRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcrssvrteamsseasontop"
+
+namespace GNET
+{
+	class DBCrssvrTeamsGetSeasonTopRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GCrssvrTeamsSeasonTop seasontop;
+
+	public:
+		DBCrssvrTeamsGetSeasonTopRes (int l_retcode = -1,GCrssvrTeamsSeasonTop l_seasontop = GCrssvrTeamsSeasonTop())
+			: retcode(l_retcode),seasontop(l_seasontop)
+		{
+		}
+
+		DBCrssvrTeamsGetSeasonTopRes(const DBCrssvrTeamsGetSeasonTopRes &rhs)
+			: retcode(rhs.retcode),seasontop(rhs.seasontop) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsGetSeasonTopRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsGetSeasonTopRes *r = dynamic_cast<const DBCrssvrTeamsGetSeasonTopRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				seasontop = r->seasontop;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsGetSeasonTopRes& operator = (const DBCrssvrTeamsGetSeasonTopRes &rhs)
+		{
+			const DBCrssvrTeamsGetSeasonTopRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				seasontop = r->seasontop;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << seasontop;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> seasontop;
+			return os;
+		}
+
+	};
+};
+#endif

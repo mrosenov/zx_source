@@ -1,0 +1,44 @@
+	public:
+		int gs_id;
+		int battle_id;
+		int world_tag;
+		int status;
+		enum { PROTOCOL_TYPE = PROTOCOL_GINSTANCINGSTATUS };
+	public:
+		GInstancingStatus() { type = PROTOCOL_GINSTANCINGSTATUS; }
+		GInstancingStatus(void*) : Protocol(PROTOCOL_GINSTANCINGSTATUS) { }
+		GInstancingStatus (int l_gs_id,int l_battle_id = 0,int l_world_tag = 0,
+			int l_status = 0)
+			 : gs_id(l_gs_id),battle_id(l_battle_id),world_tag(l_world_tag)
+			,status(l_status)
+		{
+			type = PROTOCOL_GINSTANCINGSTATUS;
+		}
+
+		GInstancingStatus(const GInstancingStatus &rhs)
+			: Protocol(rhs),gs_id(rhs.gs_id),battle_id(rhs.battle_id),world_tag(rhs.world_tag)
+			,status(rhs.status) { }
+
+		GNET::Protocol *Clone() const { return new GInstancingStatus(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gs_id;
+			os << battle_id;
+			os << world_tag;
+			os << status;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gs_id;
+			os >> battle_id;
+			os >> world_tag;
+			os >> status;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

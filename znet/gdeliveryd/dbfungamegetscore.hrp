@@ -1,0 +1,46 @@
+
+#ifndef __GNET_DBFUNGAMEGETSCORE_HPP
+#define __GNET_DBFUNGAMEGETSCORE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfungamegetscorearg"
+#include "dbfungamegetscoreres"
+#include "fungamemanager.h"
+
+namespace GNET
+{
+
+class DBFunGameGetScore : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfungamegetscore"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFunGameGetScoreArg *arg = (DBFunGameGetScoreArg *)argument;
+		// DBFunGameGetScoreRes *res = (DBFunGameGetScoreRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFunGameGetScoreArg *arg = (DBFunGameGetScoreArg *)argument;
+		DBFunGameGetScoreRes *res = (DBFunGameGetScoreRes *)result;
+		FunGameManager fm = FunGameManager::GetInstance();
+		fm.OnLoadScore(res->retcode, arg->roleid, arg->gametype, res->game_score);
+	}
+
+	void OnTimeout()
+	{
+		DBFunGameGetScoreArg *arg = (DBFunGameGetScoreArg *)argument;
+		FunGameManager fm = FunGameManager::GetInstance();
+		fm.OnLoadScore(ERR_TIMEOUT, arg->roleid, arg->gametype, Octets());
+	}
+
+};
+
+};
+#endif

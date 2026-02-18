@@ -1,0 +1,44 @@
+
+#ifndef __GNET_DBFUNGAMEPUTSCORE_HPP
+#define __GNET_DBFUNGAMEPUTSCORE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfungameputscorearg"
+#include "fungamemanager.h"
+
+
+namespace GNET
+{
+
+class DBFunGamePutScore : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfungameputscore"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFunGamePutScoreArg *arg = (DBFunGamePutScoreArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFunGamePutScoreArg *arg = (DBFunGamePutScoreArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		FunGameManager::GetInstance().OnSyncGameScore(res->retcode, arg->gametype, arg->roleid);
+	}
+
+	void OnTimeout()
+	{
+		DBFunGamePutScoreArg *arg = (DBFunGamePutScoreArg *)argument;
+		FunGameManager::GetInstance().OnSyncGameScore(ERR_TIMEOUT, arg->gametype, arg->roleid);
+	}
+
+};
+
+};
+#endif

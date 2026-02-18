@@ -1,0 +1,64 @@
+#ifndef __GNET_SYNCCRSSVRTEAMSROLEARG_RPCDATA
+#define __GNET_SYNCCRSSVRTEAMSROLEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcrssvrteamsrole"
+
+namespace GNET
+{
+	class SyncCrssvrTeamsRoleArg : public GNET::Rpc::Data
+	{
+	public:
+		int teamid;
+		GCrssvrTeamsRole role;
+
+	public:
+		SyncCrssvrTeamsRoleArg ()
+		{
+		}
+
+		SyncCrssvrTeamsRoleArg(const SyncCrssvrTeamsRoleArg &rhs)
+			: teamid(rhs.teamid),role(rhs.role) { }
+
+		Rpc::Data *Clone() const { return new SyncCrssvrTeamsRoleArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SyncCrssvrTeamsRoleArg *r = dynamic_cast<const SyncCrssvrTeamsRoleArg *>(&rhs);
+			if (r && r != this)
+			{
+				teamid = r->teamid;
+				role = r->role;
+			}
+			return *this;
+		}
+
+		SyncCrssvrTeamsRoleArg& operator = (const SyncCrssvrTeamsRoleArg &rhs)
+		{
+			const SyncCrssvrTeamsRoleArg *r = &rhs;
+			if (r && r != this)
+			{
+				teamid = r->teamid;
+				role = r->role;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << teamid;
+			os << role;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> teamid;
+			os >> role;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,133 @@
+
+#ifndef __GNET_DBVERIFYMASTER_HPP
+#define __GNET_DBVERIFYMASTER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbverifymasterarg"
+#include "deffactionres"
+#include "gfactioninfo"
+#include "grolebase"
+
+namespace GNET
+{
+
+class DBVerifyMaster : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbverifymaster"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBVerifyMasterArg *arg = (DBVerifyMasterArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+		GFactionInfo info;
+		int rid;
+		unsigned int fid;
+		try
+		{
+			StorageEnv::Storage * proles = StorageEnv::GetStorage("rolename");
+			StorageEnv::Storage * pfactions = StorageEnv::GetStorage("factionname");
+			StorageEnv::Storage * pinfo = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream key,value;
+			try{
+				//get role id
+				if(proles->find(arg->name,value,txn))
+                                        value >> rid;
+                                else
+                                {
+                                        res->retcode = -4;
+                                        return;
+                                }
+                                value.clear();
+
+				if (arg->faction.size() == 0){
+        	                        Marshal::OctetsStream key2,key3;
+                                        key2 << rid;
+
+                                        GRoleBase user;
+                                        Marshal::OctetsStream value_faction;
+
+                                        res->retcode = -6; //role is not master
+                                        if( pbase->find( key2, value_faction, txn ) )
+                                        {
+                                                value_faction >> user;
+                                                if( user.title == 2 && user.familyid ){
+							GFamily family;
+							key3 << user.familyid;
+							Marshal::OctetsStream(pfamily->find( key3, txn )) >> family;
+							if((int)family.master==rid && family.factionid)
+								res->retcode = family.factionid;
+                                                }
+                                        }
+	                                return;
+
+                                }
+
+				//get faction id
+				if(pfactions->find(Marshal::OctetsStream()<<arg->faction,value,txn))
+					value >> fid;
+				else
+				{
+					res->retcode = -5;
+					return;
+				}
+				value.clear();
+
+				//get faction info
+				if(pinfo->find(Marshal::OctetsStream()<<fid,value,txn))
+					value >> info;
+				else 
+				{
+					res->retcode = -5;
+					return;
+				}
+
+				if(info.master!=(unsigned int)rid)
+				{
+					res->retcode = -6;
+					return;
+				}
+
+				//low level faction
+				if(info.level<2)
+				{
+					res->retcode = -7;
+					return;
+				}
+				res->retcode = fid;
+				return;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBVerifyMaster, what=%s\n", e.what());
+			res->retcode = -8;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

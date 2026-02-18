@@ -1,0 +1,71 @@
+#ifndef __GNET_GFRIENDCALLBACK_RPCDATA
+#define __GNET_GFRIENDCALLBACK_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcallbackinfo"
+#include "gcallbackaward"
+
+namespace GNET
+{
+	class GFriendCallback : public GNET::Rpc::Data
+	{
+	public:
+		GCallbackInfo callback_info;
+		GCallbackAward callback_award;
+		int reserved;
+
+	public:
+		GFriendCallback (const GCallbackInfo& l_callback_info = GCallbackInfo(),const GCallbackAward& l_callback_award = GCallbackAward(),int l_reserved = 0)
+			: callback_info(l_callback_info),callback_award(l_callback_award),reserved(l_reserved)
+		{
+		}
+
+		GFriendCallback(const GFriendCallback &rhs)
+			: callback_info(rhs.callback_info),callback_award(rhs.callback_award),reserved(rhs.reserved) { }
+
+		Rpc::Data *Clone() const { return new GFriendCallback(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFriendCallback *r = dynamic_cast<const GFriendCallback *>(&rhs);
+			if (r && r != this)
+			{
+				callback_info = r->callback_info;
+				callback_award = r->callback_award;
+				reserved = r->reserved;
+			}
+			return *this;
+		}
+
+		GFriendCallback& operator = (const GFriendCallback &rhs)
+		{
+			const GFriendCallback *r = &rhs;
+			if (r && r != this)
+			{
+				callback_info = r->callback_info;
+				callback_award = r->callback_award;
+				reserved = r->reserved;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << callback_info;
+			os << callback_award;
+			os << reserved;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> callback_info;
+			os >> callback_award;
+			os >> reserved;
+			return os;
+		}
+
+	};
+};
+#endif

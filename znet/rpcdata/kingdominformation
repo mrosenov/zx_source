@@ -1,0 +1,78 @@
+#ifndef __GNET_KINGDOMINFORMATION_RPCDATA
+#define __GNET_KINGDOMINFORMATION_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "kingdomfunctionary"
+
+namespace GNET
+{
+	class KingdomInformation : public GNET::Rpc::Data
+	{
+	public:
+		int kingfaction;
+		int points;
+		std::vector<KingdomFunctionary> functionaries;
+		int task_type;
+
+	public:
+		KingdomInformation (int l_kingfaction = 0,int l_points = 0,const std::vector<KingdomFunctionary>& l_functionaries = std::vector<KingdomFunctionary>()
+			,int l_task_type = 0)
+			: kingfaction(l_kingfaction),points(l_points),functionaries(l_functionaries)
+			,task_type(l_task_type)
+		{
+		}
+
+		KingdomInformation(const KingdomInformation &rhs)
+			: kingfaction(rhs.kingfaction),points(rhs.points),functionaries(rhs.functionaries),
+			task_type(rhs.task_type) { }
+
+		Rpc::Data *Clone() const { return new KingdomInformation(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const KingdomInformation *r = dynamic_cast<const KingdomInformation *>(&rhs);
+			if (r && r != this)
+			{
+				kingfaction = r->kingfaction;
+				points = r->points;
+				functionaries = r->functionaries;
+				task_type = r->task_type;
+			}
+			return *this;
+		}
+
+		KingdomInformation& operator = (const KingdomInformation &rhs)
+		{
+			const KingdomInformation *r = &rhs;
+			if (r && r != this)
+			{
+				kingfaction = r->kingfaction;
+				points = r->points;
+				functionaries = r->functionaries;
+				task_type = r->task_type;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << kingfaction;
+			os << points;
+			os << functionaries;
+			os << task_type;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> kingfaction;
+			os >> points;
+			os >> functionaries;
+			os >> task_type;
+			return os;
+		}
+
+	};
+};
+#endif

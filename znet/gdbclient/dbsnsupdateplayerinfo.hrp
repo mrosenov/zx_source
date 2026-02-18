@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSNSUPDATEPLAYERINFO_HPP
+#define __GNET_DBSNSUPDATEPLAYERINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsupdateplayerinfoarg"
+#include "dbsnsupdateplayerinfores"
+
+namespace GNET
+{
+
+class DBSNSUpdatePlayerInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsupdateplayerinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSNSUpdatePlayerInfoArg *arg = (DBSNSUpdatePlayerInfoArg *)argument;
+		// DBSNSUpdatePlayerInfoRes *res = (DBSNSUpdatePlayerInfoRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSNSUpdatePlayerInfoArg *arg = (DBSNSUpdatePlayerInfoArg *)argument;
+		// DBSNSUpdatePlayerInfoRes *res = (DBSNSUpdatePlayerInfoRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

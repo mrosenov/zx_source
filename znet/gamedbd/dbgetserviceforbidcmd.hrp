@@ -1,0 +1,77 @@
+
+#ifndef __GNET_DBGETSERVICEFORBIDCMD_HPP
+#define __GNET_DBGETSERVICEFORBIDCMD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbgetserviceforbidcmdarg"
+#include "dbgetserviceforbidcmdres"
+
+namespace GNET
+{
+
+class DBGetServiceForbidCmd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgetserviceforbidcmd"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBGetServiceForbidCmdArg *arg = (DBGetServiceForbidCmdArg *)argument;
+		DBGetServiceForbidCmdRes *res = (DBGetServiceForbidCmdRes *)result;
+		try
+		{
+			StorageEnv::Storage * pcmd = StorageEnv::GetStorage("operationcmd");
+			StorageEnv::AtomTransaction txn;
+			try{
+				Marshal::OctetsStream key, value;
+				key << 0;
+				GServiceForbidCmdList store;
+				if (pcmd->find(key, value, txn))
+					value >> store;
+				LOG_TRACE("dbgetserviceforbidcmd conf_version %d db_version %d db_cmdlist.size %d",
+						arg->version, store.version, store.cmdlist.size());
+				if (arg->version > store.version)
+				{
+					store.version = arg->version;
+					store.cmdlist.clear();
+				}
+				pcmd->insert(key, Marshal::OctetsStream()<<store, txn);
+//				res->res_ver = store.version;
+				res->cmdlist = store.cmdlist;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "dbgetserviceforbidcmd, what=%s\n", e.what());
+			res->retcode = ERR_IWEBCMD_DB;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBGetServiceForbidCmdArg *arg = (DBGetServiceForbidCmdArg *)argument;
+		// DBGetServiceForbidCmdRes *res = (DBGetServiceForbidCmdRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

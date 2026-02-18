@@ -1,0 +1,71 @@
+
+#ifndef __GNET_DBUNIQUEAUCTIONLOAD_HPP
+#define __GNET_DBUNIQUEAUCTIONLOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbuniqueauctionloadarg"
+#include "dbuniqueauctionloadres"
+
+namespace GNET
+{
+
+class DBUniqueAuctionLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbuniqueauctionload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBUniqueAuctionLoadArg *arg = (DBUniqueAuctionLoadArg *)argument;
+		DBUniqueAuctionLoadRes *res = (DBUniqueAuctionLoadRes *)result;
+		try
+		{
+			StorageEnv::Storage * punique = StorageEnv::GetStorage("uniqueauction");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream key, value;
+			GUniqueAuction store;
+			try{
+				key << 0;
+				if(punique->find(key, value, txn))
+					value >> store;
+				res->data = store;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBUniqueAuctionLoad, what=%s\n", e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBUniqueAuctionLoadArg *arg = (DBUniqueAuctionLoadArg *)argument;
+		// DBUniqueAuctionLoadRes *res = (DBUniqueAuctionLoadRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

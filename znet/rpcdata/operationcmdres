@@ -1,0 +1,64 @@
+#ifndef __GNET_OPERATIONCMDRES_RPCDATA
+#define __GNET_OPERATIONCMDRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class OperationCmdRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		Octets errmsg;
+
+	public:
+		OperationCmdRes (int l_retcode = 0,const Octets& l_errmsg = Octets(0))
+			: retcode(l_retcode),errmsg(l_errmsg)
+		{
+		}
+
+		OperationCmdRes(const OperationCmdRes &rhs)
+			: retcode(rhs.retcode),errmsg(rhs.errmsg) { }
+
+		Rpc::Data *Clone() const { return new OperationCmdRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const OperationCmdRes *r = dynamic_cast<const OperationCmdRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				errmsg = r->errmsg;
+			}
+			return *this;
+		}
+
+		OperationCmdRes& operator = (const OperationCmdRes &rhs)
+		{
+			const OperationCmdRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				errmsg = r->errmsg;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << errmsg;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> errmsg;
+			return os;
+		}
+
+	};
+};
+#endif

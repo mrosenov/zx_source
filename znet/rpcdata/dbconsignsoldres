@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCONSIGNSOLDRES_RPCDATA
+#define __GNET_DBCONSIGNSOLDRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignSoldRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int buyer_roleid;
+
+	public:
+		DBConsignSoldRes (int l_retcode = 0,int l_buyer_roleid = 0)
+			: retcode(l_retcode),buyer_roleid(l_buyer_roleid)
+		{
+		}
+
+		DBConsignSoldRes(const DBConsignSoldRes &rhs)
+			: retcode(rhs.retcode),buyer_roleid(rhs.buyer_roleid) { }
+
+		Rpc::Data *Clone() const { return new DBConsignSoldRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignSoldRes *r = dynamic_cast<const DBConsignSoldRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				buyer_roleid = r->buyer_roleid;
+			}
+			return *this;
+		}
+
+		DBConsignSoldRes& operator = (const DBConsignSoldRes &rhs)
+		{
+			const DBConsignSoldRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				buyer_roleid = r->buyer_roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << buyer_roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> buyer_roleid;
+			return os;
+		}
+
+	};
+};
+#endif

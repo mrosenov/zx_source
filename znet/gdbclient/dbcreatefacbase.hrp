@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCREATEFACBASE_HPP
+#define __GNET_DBCREATEFACBASE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcreatefacbasearg"
+#include "dbcreatefacbaseres"
+
+namespace GNET
+{
+
+class DBCreateFacBase : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcreatefacbase"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCreateFacBaseArg *arg = (DBCreateFacBaseArg *)argument;
+		// DBCreateFacBaseRes *res = (DBCreateFacBaseRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCreateFacBaseArg *arg = (DBCreateFacBaseArg *)argument;
+		// DBCreateFacBaseRes *res = (DBCreateFacBaseRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

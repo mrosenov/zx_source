@@ -1,0 +1,73 @@
+
+#ifndef __GNET_GATEGETROLERELATION_HPP
+#define __GNET_GATEGETROLERELATION_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "dbgaterolerelationres"
+
+namespace GNET
+{
+
+class GateGetRoleRelation : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "gategetrolerelation"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBGateRoleRelationRes *res = (DBGateRoleRelationRes *)result;
+		
+		int roleid = arg->id;
+		DEBUG_PRINT("GateGetRoleRelation roleid=%d",roleid);
+		PlayerInfo* role = UserContainer::GetInstance().FindRoleOnline(roleid);
+		if(!role)
+		{
+			res->retcode = ERR_GT_DATANOTFIND;
+			return;
+		}
+
+		GRoleInfo* info = RoleInfoCache::Instance().Get(roleid);
+		if(!info)
+		{
+			res->retcode = ERR_GT_DATANOTFIND;
+			return;
+		}
+		res->roledata.roleid = roleid;
+		res->roledata.occupation = role->occupation;
+		res->roledata.level = role->level;
+		res->familyid = role->familyid;
+		res->factionid = role->factionid;
+		res->friends = role->friends;
+		res->groups = role->groups;
+		res->userid = role->userid;
+
+		res->roledata.rolename = info->name;
+		res->roledata.gender = info->gender;
+		res->roledata.reborntimes = info->reborn_cnt;
+		res->roledata.cultivation = info->cultivation;
+
+		res->retcode = ERR_SUCCESS;
+		return;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleId *arg = (RoleId *)argument;
+		// DBGateRoleRelationRes *res = (DBGateRoleRelationRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

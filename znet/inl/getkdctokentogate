@@ -1,0 +1,50 @@
+	public:
+		int roleid;
+		 Octets rolename;
+		unsigned int localsid;
+		unsigned int linksid;
+		int userid;
+		 Octets passport;
+		enum { PROTOCOL_TYPE = PROTOCOL_GETKDCTOKENTOGATE };
+	public:
+		GetKDCTokenToGate() { type = PROTOCOL_GETKDCTOKENTOGATE; }
+		GetKDCTokenToGate(void*) : Protocol(PROTOCOL_GETKDCTOKENTOGATE) { }
+		GetKDCTokenToGate (int l_roleid,const  Octets& l_rolename,unsigned int l_localsid = 0,
+			unsigned int l_linksid = 0,int l_userid = 0,const  Octets& l_passport = Octets())
+			 : roleid(l_roleid),rolename(l_rolename),localsid(l_localsid)
+			,linksid(l_linksid),userid(l_userid),passport(l_passport)
+		{
+			type = PROTOCOL_GETKDCTOKENTOGATE;
+		}
+
+		GetKDCTokenToGate(const GetKDCTokenToGate &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),rolename(rhs.rolename),localsid(rhs.localsid)
+			,linksid(rhs.linksid),userid(rhs.userid),passport(rhs.passport) { }
+
+		GNET::Protocol *Clone() const { return new GetKDCTokenToGate(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << rolename;
+			os << localsid;
+			os << linksid;
+			os << userid;
+			os << passport;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> rolename;
+			os >> localsid;
+			os >> linksid;
+			os >> userid;
+			os >> passport;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

@@ -1,0 +1,77 @@
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSENDBRIEFARG_RPCDATA
+#define __GNET_SYNCCROSSCRSSVRTEAMSENDBRIEFARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class SyncCrossCrssvrTeamsEndBriefArg : public GNET::Rpc::Data
+	{
+	public:
+		int teamid;
+		std::vector<int> team_roles;
+		int team_b_score;
+		int result;
+
+	public:
+		SyncCrossCrssvrTeamsEndBriefArg (int l_teamid = -1,const std::vector<int>& l_team_roles = std::vector<int>(),int l_team_b_score = 0
+			,int l_result = -2)
+			: teamid(l_teamid),team_roles(l_team_roles),team_b_score(l_team_b_score)
+			,result(l_result)
+		{
+		}
+
+		SyncCrossCrssvrTeamsEndBriefArg(const SyncCrossCrssvrTeamsEndBriefArg &rhs)
+			: teamid(rhs.teamid),team_roles(rhs.team_roles),team_b_score(rhs.team_b_score),
+			result(rhs.result) { }
+
+		Rpc::Data *Clone() const { return new SyncCrossCrssvrTeamsEndBriefArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SyncCrossCrssvrTeamsEndBriefArg *r = dynamic_cast<const SyncCrossCrssvrTeamsEndBriefArg *>(&rhs);
+			if (r && r != this)
+			{
+				teamid = r->teamid;
+				team_roles = r->team_roles;
+				team_b_score = r->team_b_score;
+				result = r->result;
+			}
+			return *this;
+		}
+
+		SyncCrossCrssvrTeamsEndBriefArg& operator = (const SyncCrossCrssvrTeamsEndBriefArg &rhs)
+		{
+			const SyncCrossCrssvrTeamsEndBriefArg *r = &rhs;
+			if (r && r != this)
+			{
+				teamid = r->teamid;
+				team_roles = r->team_roles;
+				team_b_score = r->team_b_score;
+				result = r->result;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << teamid;
+			os << team_roles;
+			os << team_b_score;
+			os << result;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> teamid;
+			os >> team_roles;
+			os >> team_b_score;
+			os >> result;
+			return os;
+		}
+
+	};
+};
+#endif

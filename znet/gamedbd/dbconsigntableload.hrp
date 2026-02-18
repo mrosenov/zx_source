@@ -1,0 +1,115 @@
+
+#ifndef __GNET_DBCONSIGNTABLELOAD_HPP
+#define __GNET_DBCONSIGNTABLELOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsigntableloadarg"
+#include "dbconsigntableloadres"
+#include "localmacro.h"
+namespace GNET
+{
+
+class DBConsignTableLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsigntableload"
+#undef	RPC_BASECLASS
+class ListConsignQuery : public StorageEnv::IQuery
+{
+	std::vector<GConsignDB>* plist;
+	int total;
+	int64_t sn;
+	GConsignDB detail;
+	Octets newkey;
+	int64_t max_sn;
+public:
+	ListConsignQuery(std::vector<GConsignDB>* p) : plist(p),  total(0), sn(0)
+	{ 
+	}
+
+	bool Update( StorageEnv::Transaction& txn, Octets& key, Octets& value)
+	{
+		try
+		{
+			Marshal::OctetsStream(key) >> sn;
+			if(sn == 0)
+			{
+//				Marshal::OctetsStream(value) >> max_sn;
+//				LOG_TRACE("ListConsignQuery, sn=0 ok,total=%d\n", total);
+				return true;
+			}
+				
+			if(total>50)
+			{
+				newkey = key;
+				return false;
+			}
+//			LOG_TRACE("ListConsignQuery, sn=%lld begin unmarshal,total=%d\n", sn,total);
+			Marshal::OctetsStream(value) >> detail;
+			plist->push_back(detail);
+			total++;
+//			LOG_TRACE("ListConsignQuery, sn=%lld ok,total=%d\n", sn,total);
+		} catch ( Marshal::Exception & ) {
+			Log::log( LOG_ERR, "ListConsignQuery, error unmarshal.sn=%lld",sn);
+//			LOG_TRACE("ListConsignQuery, error unmarshal.sn=%lld\n",sn);
+		}
+		return true;
+	}
+	const Octets& GetHandle() { return newkey; }
+//	const int64_t GetMaxSN() { return max_sn; }
+};
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignTableLoadArg *arg = (DBConsignTableLoadArg *)argument;
+		DBConsignTableLoadRes *res = (DBConsignTableLoadRes *)result;
+		try
+		{
+			ListConsignQuery q(&res->items);
+			
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				StorageEnv::Storage::Cursor cursor = pconsign->cursor( txn );
+				cursor.walk(arg->beginkey, q );
+				res->nextbeginkey = q.GetHandle();
+	//			res->max_sn  = q.GetMaxSN();
+				res->retcode = ERR_SUCCESS;
+				LOG_TRACE("DBConsignTableLoad, size=%d,nextbeginkey=%d\n", res->items.size(), \
+						res->nextbeginkey.size());
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignTableLoad, what=%s\n",e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignTableLoadArg *arg = (DBConsignTableLoadArg *)argument;
+		// DBConsignTableLoadRes *res = (DBConsignTableLoadRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,276 @@
+
+#ifndef __GNET_DBSENDMAIL_HPP
+#define __GNET_DBSENDMAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsendmailarg"
+#include "dbsendmailres"
+
+#include "gmailheader"
+#include "gmail"
+#include "gmailbox"
+
+#include "utilfunction.h"
+#include "localmacro.h"
+
+namespace GNET
+{
+
+class DBSendMail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsendmail"
+#undef	RPC_BASECLASS
+/*	const static unsigned int MAILBOX_MAIL_LIMITS = 128;
+	bool NextMailid(GMailBox& box, unsigned char & id)
+	{		
+		size_t size = box.mails.size();
+		if(size > MAILBOX_MAIL_LIMITS)
+			return false;
+		id = 0;
+		if(size) 
+			id = box.mails[size-1].header.id+1;
+		for(GMailVector::iterator it=box.mails.begin(),ie=box.mails.end();it!=ie;++it)
+		{
+			if(it->header.id==id)
+			{
+				id++;
+				it = box.mails.begin();
+			}
+		}
+		return true;
+	}*/
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSendMailArg *arg = (DBSendMailArg *)argument;
+		DBSendMailRes *res = (DBSendMailRes *)result;
+
+		Marshal::OctetsStream key, value, keysrc, valuestatus, os_base;
+		int src = arg->mail.header.sender;
+		int dst = arg->mail.header.receiver;
+
+		res->syncdata.data_mask = arg->syncdata.data_mask;
+		try
+		{
+			StorageEnv::Storage * pmailbox = StorageEnv::GetStorage("mailbox");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * puser = (arg->syncdata.data_mask&SYNC_CASHUSED)?StorageEnv::GetStorage("user"):NULL;
+//			StorageEnv::Storage * pstore = (arg->syncdata.data_mask&SYNC_STOTEHOUSE)?StorageEnv::GetStorage("storehouse"):NULL;
+			StorageEnv::Storage * pstore = StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage * psyslog = (arg->mail.header.sndr_type==_MST_WEB)?StorageEnv::GetStorage("syslog"):NULL;
+			//StorageEnv::Storage * plog = arg->syncdata.logs.size()?StorageEnv::GetStorage("shoplog"):NULL;
+			StorageEnv::CommonTransaction txn;
+			int money_delta = 0;
+			try{
+				time_t now = Timer::GetTime();
+				GMailBox box;
+				key << dst;
+				keysrc << src;
+
+				if (!pbase->find(key, os_base, txn))
+				{
+					res->retcode = ERR_MS_ACCOUNTFROZEN;
+					return;
+				}
+				GRoleBase dst_base;
+				os_base >> dst_base;
+				if (dst_base.status != _ROLE_STATUS_NORMAL && dst_base.status != _ROLE_STATUS_FROZEN)
+				{
+					res->retcode = ERR_MS_ACCOUNTFROZEN;
+					return;
+				}
+				if(pmailbox->find(key,value,txn))
+					value >> box;
+				else
+				{
+					box.timestamp = now;
+					box.mails.clear();
+				}
+				int size = box.mails.size();
+				if(arg->mail.header.sndr_type==_MST_WEB)
+				{
+					STAT_MIN5("SysMail",1);
+					if(size>=SYSMAIL_LIMIT)
+						res->retcode = ERR_MS_BOXFULL;
+					else
+					{
+						unsigned char id;
+						if(!MailSender::NextId(box,id))
+						{
+							res->retcode = ERR_MS_BOXFULL;
+							return;
+						}
+						Log::formatlog("sysmail","src=%d:dst=%d:mid=%d:size=%d:money=%d:item=%d:"
+							"count=%d:pos=%d", src, dst, id, arg->mail.context.size(), 
+							arg->mail.attach_money, arg->mail.attach_obj.id, 
+							arg->mail.attach_obj.count, arg->mail.attach_obj.pos);
+						arg->mail.header.id = id;
+						arg->mail.header.receiver = arg->mail.header.send_time;
+						box.mails.push_back(arg->mail);
+						pmailbox->insert( key, Marshal::OctetsStream()<<box, txn );
+						::PutSyslog(psyslog,txn,dst,GameDBServer::GetInstance()->GetSessionIP(sid), arg->mail.attach_obj);
+
+						res->mail_id = id;
+						res->retcode = ERR_SUCCESS;
+					}
+					return;
+				}
+				else if(arg->mail.header.sndr_type!=_MST_PLAYER)
+					return;
+				if(now-box.timestamp>2592000)
+				{
+					res->retcode = ERR_MS_ACCOUNTFROZEN;
+					bool changed = false;
+					for(GMailVector::iterator i=box.mails.begin();i!=box.mails.end();)
+					{
+						bool todelete = false;
+						if((i->header.attribute&MAIL_RESERVED)==0)
+						{
+							if(now - i->header.receiver > 2592000)
+								todelete = true;
+						}
+						if(todelete)
+						{
+							changed = true;
+							i = box.mails.erase(i);
+						}else
+							i++;
+					}
+					if(changed)
+						pmailbox->insert( key, Marshal::OctetsStream()<<box, txn );
+					return;
+				}
+				else if(size>=32)
+				{
+					res->retcode = ERR_MS_BOXFULL;
+					return;
+				}
+				GRolePocket bag;
+				Marshal::OctetsStream(pinventory->find(keysrc,txn)) >> bag;
+				if(arg->syncdata.inventory.timestamp-bag.timestamp<=0)
+				{
+					Log::log(LOG_ERR,"DBSendMail, timestamp mismatch. %d<%d",
+						arg->syncdata.inventory.timestamp, bag.timestamp);
+					DbException e(DB_VERIFY_BAD);
+					txn.abort( e );
+					throw e;
+				}
+				money_delta = arg->syncdata.inventory.money - bag.money;
+				unsigned char id;
+				if(!MailSender::NextId(box,id))
+				{
+					res->retcode = ERR_MS_BOXFULL;
+					return;
+				}
+				Log::formatlog("sendmail","timestamp=%u:src=%d:dst=%d:mid=%d:size=%d:money=%d:"
+					"item=%d:count=%d:pos=%d", arg->syncdata.inventory.timestamp, src, dst, id, 
+					arg->mail.context.size(), arg->mail.attach_money, arg->mail.attach_obj.id, 
+					arg->mail.attach_obj.count, arg->mail.attach_obj.pos);
+				arg->mail.header.id = id;
+				GRoleBase base;
+				Marshal::OctetsStream(pbase->find(keysrc,txn)) >> base;
+				if(arg->syncdata.inventory.money < 500)
+				{
+					DbException e(DB_VERIFY_BAD);
+					txn.abort( e );
+					throw e;
+				}
+				arg->syncdata.inventory.money -= 500;
+				int mail_fee = 500;
+				if(arg->mail.header.attribute & (1<<_MA_ATTACH_MONEY))
+				{
+					if(arg->mail.attach_money > arg->syncdata.inventory.money)
+					{
+						DbException e(DB_VERIFY_BAD);
+						txn.abort( e );
+						throw e;
+					}
+					arg->syncdata.inventory.money -= arg->mail.attach_money;
+					mail_fee += arg->mail.attach_money;
+				}
+				if (mail_fee)
+				{
+					Log::log(LOG_MONEY,"money_change:[roleid=%d,userid=%d]:moneychange=%d:type=2:reason=13:hint=%d",src,base.userid,mail_fee,0);
+				}
+				if(arg->mail.header.attribute & (1<<_MA_ATTACH_OBJ))
+				{
+					GRoleInventoryVector::iterator it;
+					GRoleInventoryVector& v = arg->syncdata.inventory.items;
+					unsigned int pos;
+					for(pos=0;pos<v.size();pos++)
+					{
+						if(v[pos].pos == arg->mail.attach_obj.pos)
+							break;
+					}
+					if(pos >= v.size())
+					{
+						DbException e(DB_VERIFY_BAD);
+						txn.abort( e );
+						throw e;
+					}
+
+					int count = arg->mail.attach_obj.count;
+					if((v[pos].proctype & MASK_ITEM_NOTRADE)||v[pos].id!=arg->mail.attach_obj.id 
+							|| v[pos].count<arg->mail.attach_obj.count)
+					{
+						DbException e(DB_VERIFY_BAD);
+						txn.abort( e );
+						throw e;
+					}
+					arg->mail.attach_obj = v[pos];
+					arg->mail.attach_obj.count = count;
+					if(v[pos].count==count)
+					{
+						v[pos].count = 0;
+						res->syncdata.inventory.items.push_back(v[pos]);
+						v.erase(v.begin()+pos); 
+					} else {
+						v[pos].count -= count;
+						res->syncdata.inventory.items.push_back(v[pos]);
+					}
+				}
+
+				pinventory->insert(keysrc, Marshal::OctetsStream()<<arg->syncdata.inventory, txn);
+				arg->mail.header.receiver = arg->mail.header.send_time;
+				box.mails.push_back(arg->mail);
+				pmailbox->insert( key, Marshal::OctetsStream()<<box, txn );
+				//::UpdateShoplog(plog, arg->syncdata, txn);
+				::UpdateCash(puser, arg->syncdata, txn);
+				::UpdateStore(src, pstore, arg->syncdata, txn, money_delta);
+
+				res->mail_id = id;
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSendMail, src=%d, dst=%d, what=%s\n", src, dst, e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

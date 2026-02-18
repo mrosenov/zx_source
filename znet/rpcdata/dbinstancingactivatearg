@@ -1,0 +1,96 @@
+#ifndef __GNET_DBINSTANCINGACTIVATEARG_RPCDATA
+#define __GNET_DBINSTANCINGACTIVATEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBInstancingActivateArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int gs_id;
+		int map_id;
+		unsigned char team;
+		int required_money;
+		int required_item;
+		GMailSyncData syncdata;
+
+	public:
+		DBInstancingActivateArg (int l_roleid = 0,int l_gs_id = 0,int l_map_id = 0
+			,unsigned char l_team = 0,int l_required_money = 0,int l_required_item = 0
+			,const GMailSyncData& l_syncdata = GMailSyncData())
+			: roleid(l_roleid),gs_id(l_gs_id),map_id(l_map_id)
+			,team(l_team),required_money(l_required_money),required_item(l_required_item)
+			,syncdata(l_syncdata)
+		{
+		}
+
+		DBInstancingActivateArg(const DBInstancingActivateArg &rhs)
+			: roleid(rhs.roleid),gs_id(rhs.gs_id),map_id(rhs.map_id),
+			team(rhs.team),required_money(rhs.required_money),required_item(rhs.required_item),
+			syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBInstancingActivateArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBInstancingActivateArg *r = dynamic_cast<const DBInstancingActivateArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				gs_id = r->gs_id;
+				map_id = r->map_id;
+				team = r->team;
+				required_money = r->required_money;
+				required_item = r->required_item;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBInstancingActivateArg& operator = (const DBInstancingActivateArg &rhs)
+		{
+			const DBInstancingActivateArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				gs_id = r->gs_id;
+				map_id = r->map_id;
+				team = r->team;
+				required_money = r->required_money;
+				required_item = r->required_item;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << gs_id;
+			os << map_id;
+			os << team;
+			os << required_money;
+			os << required_item;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> gs_id;
+			os >> map_id;
+			os >> team;
+			os >> required_money;
+			os >> required_item;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

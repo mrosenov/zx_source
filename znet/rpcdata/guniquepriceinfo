@@ -1,0 +1,79 @@
+#ifndef __GNET_GUNIQUEPRICEINFO_RPCDATA
+#define __GNET_GUNIQUEPRICEINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "guniquebidder"
+
+namespace GNET
+{
+	class GUniquePriceInfo : public GNET::Rpc::Data
+	{
+	public:
+		int money;
+		GUniqueBidderVector bidderlist;
+		int reserve1;
+		int reserve2;
+
+	public:
+		GUniquePriceInfo (int l_money = 0,const GUniqueBidderVector& l_bidderlist = GUniqueBidderVector(),int l_reserve1 = 0
+			,int l_reserve2 = 0)
+			: money(l_money),bidderlist(l_bidderlist),reserve1(l_reserve1)
+			,reserve2(l_reserve2)
+		{
+		}
+
+		GUniquePriceInfo(const GUniquePriceInfo &rhs)
+			: money(rhs.money),bidderlist(rhs.bidderlist),reserve1(rhs.reserve1),
+			reserve2(rhs.reserve2) { }
+
+		Rpc::Data *Clone() const { return new GUniquePriceInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GUniquePriceInfo *r = dynamic_cast<const GUniquePriceInfo *>(&rhs);
+			if (r && r != this)
+			{
+				money = r->money;
+				bidderlist = r->bidderlist;
+				reserve1 = r->reserve1;
+				reserve2 = r->reserve2;
+			}
+			return *this;
+		}
+
+		GUniquePriceInfo& operator = (const GUniquePriceInfo &rhs)
+		{
+			const GUniquePriceInfo *r = &rhs;
+			if (r && r != this)
+			{
+				money = r->money;
+				bidderlist = r->bidderlist;
+				reserve1 = r->reserve1;
+				reserve2 = r->reserve2;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << money;
+			os << bidderlist;
+			os << reserve1;
+			os << reserve2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> money;
+			os >> bidderlist;
+			os >> reserve1;
+			os >> reserve2;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<GUniquePriceInfo>	GUniquePriceInfoVector;
+};
+#endif

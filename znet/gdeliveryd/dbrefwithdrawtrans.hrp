@@ -1,0 +1,53 @@
+
+#ifndef __GNET_DBREFWITHDRAWTRANS_HPP
+#define __GNET_DBREFWITHDRAWTRANS_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbrefwithdrawtransarg"
+
+namespace GNET
+{
+
+class DBRefWithdrawTrans : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbrefwithdrawtrans"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBRefWithdrawTransArg *arg = (DBRefWithdrawTransArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBRefWithdrawTransArg *arg = (DBRefWithdrawTransArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+
+		ReferenceManager *refman = ReferenceManager::GetInstance();
+		if (res->retcode == ERR_SUCCESS)
+			refman->OnDBWithdrawConfirm(arg->referrer.roleid);
+		else
+		{
+			Log::log(LOG_ERR, "DBRefWithdrawTrans errno %d bonus_withdraw %d",
+				res->retcode, arg->referrer.bonus_withdraw);
+			refman->OnDBWithdrawRollback(arg->referrer.roleid);
+		}
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBRefWithdrawTransArg *arg = (DBRefWithdrawTransArg *)argument;
+		Log::log(LOG_ERR, "DBRefWithdrawTrans timeout bonus_withdraw %d",
+				arg->referrer.bonus_withdraw);
+		ReferenceManager::GetInstance()->OnDBWithdrawRollback(arg->referrer.roleid);
+	}
+
+};
+
+};
+#endif

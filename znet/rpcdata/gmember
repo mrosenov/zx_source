@@ -1,0 +1,119 @@
+#ifndef __GNET_GMEMBER_RPCDATA
+#define __GNET_GMEMBER_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GMember : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int rid;
+		Octets name;
+		Octets nickname;
+		unsigned char title;
+		unsigned char level;
+		unsigned char occupation;
+		int contribution;
+		int jointime;
+		int reserved1;
+		int reserved2;
+		int reserved3;
+
+	public:
+		GMember (unsigned int l_rid = 0,const Octets& l_name = Octets(0),const Octets& l_nickname = Octets(0)
+			,unsigned char l_title = 0,unsigned char l_level = 0,unsigned char l_occupation = 0
+			,int l_contribution = 0,int l_jointime = 0,int l_reserved1 = 0
+			,int l_reserved2 = 0,int l_reserved3 = 0)
+			: rid(l_rid),name(l_name),nickname(l_nickname)
+			,title(l_title),level(l_level),occupation(l_occupation)
+			,contribution(l_contribution),jointime(l_jointime),reserved1(l_reserved1)
+			,reserved2(l_reserved2),reserved3(l_reserved3)
+		{
+		}
+
+		GMember(const GMember &rhs)
+			: rid(rhs.rid),name(rhs.name),nickname(rhs.nickname),
+			title(rhs.title),level(rhs.level),occupation(rhs.occupation),
+			contribution(rhs.contribution),jointime(rhs.jointime),reserved1(rhs.reserved1),
+			reserved2(rhs.reserved2),reserved3(rhs.reserved3) { }
+
+		Rpc::Data *Clone() const { return new GMember(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GMember *r = dynamic_cast<const GMember *>(&rhs);
+			if (r && r != this)
+			{
+				rid = r->rid;
+				name = r->name;
+				nickname = r->nickname;
+				title = r->title;
+				level = r->level;
+				occupation = r->occupation;
+				contribution = r->contribution;
+				jointime = r->jointime;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+			}
+			return *this;
+		}
+
+		GMember& operator = (const GMember &rhs)
+		{
+			const GMember *r = &rhs;
+			if (r && r != this)
+			{
+				rid = r->rid;
+				name = r->name;
+				nickname = r->nickname;
+				title = r->title;
+				level = r->level;
+				occupation = r->occupation;
+				contribution = r->contribution;
+				jointime = r->jointime;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << rid;
+			os << name;
+			os << nickname;
+			os << title;
+			os << level;
+			os << occupation;
+			os << contribution;
+			os << jointime;
+			os << reserved1;
+			os << reserved2;
+			os << reserved3;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> rid;
+			os >> name;
+			os >> nickname;
+			os >> title;
+			os >> level;
+			os >> occupation;
+			os >> contribution;
+			os >> jointime;
+			os >> reserved1;
+			os >> reserved2;
+			os >> reserved3;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<GMember>	GMemberVector;
+};
+#endif

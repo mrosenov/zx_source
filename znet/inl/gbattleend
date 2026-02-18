@@ -1,0 +1,44 @@
+	public:
+		int gs_id;
+		int tag;
+		int map_id;
+		char battle_type;
+		enum { PROTOCOL_TYPE = PROTOCOL_GBATTLEEND };
+	public:
+		GBattleEnd() { type = PROTOCOL_GBATTLEEND; }
+		GBattleEnd(void*) : Protocol(PROTOCOL_GBATTLEEND) { }
+		GBattleEnd (int l_gs_id = 0,int l_tag = 0,int l_map_id = 0,
+			char l_battle_type = 0)
+			 : gs_id(l_gs_id),tag(l_tag),map_id(l_map_id)
+			,battle_type(l_battle_type)
+		{
+			type = PROTOCOL_GBATTLEEND;
+		}
+
+		GBattleEnd(const GBattleEnd &rhs)
+			: Protocol(rhs),gs_id(rhs.gs_id),tag(rhs.tag),map_id(rhs.map_id)
+			,battle_type(rhs.battle_type) { }
+
+		GNET::Protocol *Clone() const { return new GBattleEnd(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gs_id;
+			os << tag;
+			os << map_id;
+			os << battle_type;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gs_id;
+			os >> tag;
+			os >> map_id;
+			os >> battle_type;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

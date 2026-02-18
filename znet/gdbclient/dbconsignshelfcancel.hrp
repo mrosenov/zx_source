@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCONSIGNSHELFCANCEL_HPP
+#define __GNET_DBCONSIGNSHELFCANCEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignshelfcancelarg"
+#include "dbconsignshelfcancelres"
+
+namespace GNET
+{
+
+class DBConsignShelfCancel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignshelfcancel"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignShelfCancelArg *arg = (DBConsignShelfCancelArg *)argument;
+		// DBConsignShelfCancelRes *res = (DBConsignShelfCancelRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignShelfCancelArg *arg = (DBConsignShelfCancelArg *)argument;
+		// DBConsignShelfCancelRes *res = (DBConsignShelfCancelRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

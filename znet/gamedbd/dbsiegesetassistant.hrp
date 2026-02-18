@@ -1,0 +1,141 @@
+
+#ifndef __GNET_DBSIEGESETASSISTANT_HPP
+#define __GNET_DBSIEGESETASSISTANT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegesetassistantarg"
+#include "dbsiegesetassistantres"
+#include "gcitystore"
+#include "gfactioninfo"
+
+namespace GNET
+{
+
+class DBSiegeSetAssistant : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegesetassistant"
+#undef	RPC_BASECLASS
+
+	GCity * FindCity(GCityStore & store, int battle_id)
+	{
+		for (std::vector<GCity>::iterator it = store.cities.begin(); it != store.cities.end(); ++ it)
+		{
+			if (it->info.battle_id == battle_id)
+			{
+				return &*it;
+			}
+		}
+		return NULL;
+	}
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSiegeSetAssistantArg *arg = (DBSiegeSetAssistantArg *)argument;
+		DBSiegeSetAssistantRes *res = (DBSiegeSetAssistantRes *)result;
+		try
+		{
+			StorageEnv::Storage * pcity = StorageEnv::GetStorage("citystore");
+			StorageEnv::Storage * pname = StorageEnv::GetStorage("factionname");
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream kcity, name_value;
+			GCityStore store;
+			try{
+				Octets name;
+				CharsetConverter::conv_charset_u2l( arg->faction_name, name );
+				LOG_TRACE( "DBSiegeSetAssistant, attacker=%d, assistant=%.*s)", arg->attacker, name.size(), (char*)name.begin() );
+
+				kcity << 0;
+				Marshal::OctetsStream(pcity->find(kcity, txn)) >> store;
+				GCity * city = FindCity(store, arg->battle_id);
+				if (!city)
+				{
+					res->retcode = ERR_VERIFYFAILED;
+					return;
+				}
+				if (city->challengers.size() == 0)
+				{
+					res->retcode = ERR_VERIFYFAILED;
+					return;
+				}
+
+				GChallenger & challenger = *(city->challengers.begin());
+				if (challenger.challenger.fid != arg->attacker)
+				{
+					res->retcode = ERR_VERIFYFAILED;
+					return;
+				}
+				if(!pname->find(Marshal::OctetsStream()<<arg->faction_name, name_value,txn))
+				{
+					res->retcode = ERR_SIEGE_FACTIONNOTFOUND;
+					return;
+				}
+				name_value >> res->assistant;
+				GFactionInfo faction;
+				Marshal::OctetsStream(pfaction->find( Marshal::OctetsStream() << res->assistant, txn )) >> faction;
+				if (faction.createtime + 7 * 3600 * 24 > Timer::GetTime())
+				{
+					res->retcode = ERR_SIEGE_ASSISTANT_TIME;
+					return;
+				}
+				if (faction.level < 2)
+				{
+					res->retcode = ERR_SIEGE_ASSISTANT_LEVEL;
+					return;
+				}
+				if (res->assistant == arg->attacker)
+				{
+					res->retcode = ERR_SIEGE_ASSISTANT_SELF;
+					return;
+				}
+				if (res->assistant == city->info.owner.fid)
+				{
+					res->retcode = ERR_SIEGE_ASSISTANT_OWNER;
+					return;
+				}
+
+				res->pre_assistant = challenger.assistant.fid;
+				challenger.assistant.fid = res->assistant;
+				res->master = challenger.assistant.master = faction.master;
+				pcity->insert(kcity, Marshal::OctetsStream()<<store, txn);
+				res->retcode = ERR_SUCCESS;
+				Log::formatlog("siegesetassistant","attacker=%d pre_assistant=%d assistant=%d."
+						, arg->attacker, res->pre_assistant, res->assistant);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSiegeSetAssistant, what=%s\n", e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSiegeSetAssistantArg *arg = (DBSiegeSetAssistantArg *)argument;
+		// DBSiegeSetAssistantRes *res = (DBSiegeSetAssistantRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

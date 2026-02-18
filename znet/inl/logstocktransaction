@@ -1,0 +1,50 @@
+	public:
+		int roleid;
+		char withdraw;
+		int cash;
+		int money;
+		int total_cash;
+		int total_money;
+		enum { PROTOCOL_TYPE = PROTOCOL_LOGSTOCKTRANSACTION };
+	public:
+		LogStockTransaction() { type = PROTOCOL_LOGSTOCKTRANSACTION; }
+		LogStockTransaction(void*) : Protocol(PROTOCOL_LOGSTOCKTRANSACTION) { }
+		LogStockTransaction (int l_roleid = 0,char l_withdraw = 0,int l_cash = 0,
+			int l_money = 0,int l_total_cash = 0,int l_total_money = 0)
+			 : roleid(l_roleid),withdraw(l_withdraw),cash(l_cash)
+			,money(l_money),total_cash(l_total_cash),total_money(l_total_money)
+		{
+			type = PROTOCOL_LOGSTOCKTRANSACTION;
+		}
+
+		LogStockTransaction(const LogStockTransaction &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),withdraw(rhs.withdraw),cash(rhs.cash)
+			,money(rhs.money),total_cash(rhs.total_cash),total_money(rhs.total_money) { }
+
+		GNET::Protocol *Clone() const { return new LogStockTransaction(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << withdraw;
+			os << cash;
+			os << money;
+			os << total_cash;
+			os << total_money;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> withdraw;
+			os >> cash;
+			os >> money;
+			os >> total_cash;
+			os >> total_money;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 512; }

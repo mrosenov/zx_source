@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCONSIGNGETROLEARG_RPCDATA
+#define __GNET_DBCONSIGNGETROLEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignGetRoleArg : public GNET::Rpc::Data
+	{
+	public:
+		int64_t sn;
+		int roleid;
+
+	public:
+		DBConsignGetRoleArg (int64_t l_sn = 0,int l_roleid = 0)
+			: sn(l_sn),roleid(l_roleid)
+		{
+		}
+
+		DBConsignGetRoleArg(const DBConsignGetRoleArg &rhs)
+			: sn(rhs.sn),roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new DBConsignGetRoleArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignGetRoleArg *r = dynamic_cast<const DBConsignGetRoleArg *>(&rhs);
+			if (r && r != this)
+			{
+				sn = r->sn;
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		DBConsignGetRoleArg& operator = (const DBConsignGetRoleArg &rhs)
+		{
+			const DBConsignGetRoleArg *r = &rhs;
+			if (r && r != this)
+			{
+				sn = r->sn;
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << sn;
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> sn;
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

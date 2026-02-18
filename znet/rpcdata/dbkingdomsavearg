@@ -1,0 +1,60 @@
+#ifndef __GNET_DBKINGDOMSAVEARG_RPCDATA
+#define __GNET_DBKINGDOMSAVEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gkingdominfo"
+
+namespace GNET
+{
+	class DBKingdomSaveArg : public GNET::Rpc::Data
+	{
+	public:
+		GKingdomInfo info;
+
+	public:
+		DBKingdomSaveArg (const GKingdomInfo& l_info = GKingdomInfo())
+			: info(l_info)
+		{
+		}
+
+		DBKingdomSaveArg(const DBKingdomSaveArg &rhs)
+			: info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomSaveArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomSaveArg *r = dynamic_cast<const DBKingdomSaveArg *>(&rhs);
+			if (r && r != this)
+			{
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBKingdomSaveArg& operator = (const DBKingdomSaveArg &rhs)
+		{
+			const DBKingdomSaveArg *r = &rhs;
+			if (r && r != this)
+			{
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

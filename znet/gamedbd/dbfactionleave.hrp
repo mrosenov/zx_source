@@ -1,0 +1,108 @@
+
+#ifndef __GNET_DBFACTIONLEAVE_HPP
+#define __GNET_DBFACTIONLEAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionleavearg"
+#include "deffactionres"
+#include "integer"
+#include "familyid"
+#include "utilfunction.h"
+#include "grolebase"
+
+namespace GNET
+{
+
+class DBFactionLeave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionleave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionLeaveArg *arg = (DBFactionLeaveArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole;
+		Marshal::OctetsStream kfamily;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+
+			StorageEnv::CommonTransaction txn;
+			Log::formatlog("factionleave","familyid=%d:factionid=%d",arg->familyid,arg->fid);
+			try{
+				GFactionInfo faction;
+				GFamily family;
+
+				kfamily << arg->familyid;
+				Marshal::OctetsStream(pfamily->find(kfamily, txn)) >> family;
+				if(family.factionid==arg->fid)
+				{
+					for(GFolkVector::iterator it = family.member.begin(); it != family.member.end(); ++it)
+					{
+						it->contribution = 0;
+						if (it->rid == family.master)
+						{
+							if (it->title != TITLE_HEADER)
+								it->title = TITLE_HEADER;
+							break;
+						}
+					}
+				}
+
+				key << arg->fid;
+				Marshal::OctetsStream(pfaction->find(key, txn )) >> faction;
+				FamilyIdVector::iterator it = faction.member.begin();
+				for(; it != faction.member.end();)
+				{
+					if (it->fid == arg->familyid)
+						it = faction.member.erase(it);
+					else 
+						++it;
+				}
+				//faction.contribution += arg->contribution;
+				pfaction->insert( key, Marshal::OctetsStream()<<faction, txn );
+				if(family.factionid==arg->fid)
+				{
+					family.factionid = 0;
+					pfamily->insert( kfamily, Marshal::OctetsStream()<<family, txn );
+					FamilyCache::InsertFaction(arg->familyid, 0);
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionLeave, familyid=%d, factionid=%d what=%s.",arg->familyid,arg->fid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFactionLeaveArg *arg = (DBFactionLeaveArg *)argument;
+		// DefFactionRes *res = (DefFactionRes *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

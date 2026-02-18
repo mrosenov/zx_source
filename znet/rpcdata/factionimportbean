@@ -1,0 +1,88 @@
+#ifndef __GNET_FACTIONIMPORTBEAN_RPCDATA
+#define __GNET_FACTIONIMPORTBEAN_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "titlebean"
+
+namespace GNET
+{
+	class FactionImportBean : public GNET::Rpc::Data
+	{
+	public:
+		int ftype;
+		int64_t factionid;
+		Octets factionname;
+		Octets announcement;
+		Octets extinfo;
+		std::vector<TitleBean> members;
+
+	public:
+		FactionImportBean (int l_ftype = 0,int64_t l_factionid = 0,const Octets& l_factionname = Octets()
+			,const Octets& l_announcement = Octets(),const Octets& l_extinfo = Octets(),const std::vector<TitleBean>& l_members = std::vector<TitleBean>())
+			: ftype(l_ftype),factionid(l_factionid),factionname(l_factionname)
+			,announcement(l_announcement),extinfo(l_extinfo),members(l_members)
+		{
+		}
+
+		FactionImportBean(const FactionImportBean &rhs)
+			: ftype(rhs.ftype),factionid(rhs.factionid),factionname(rhs.factionname),
+			announcement(rhs.announcement),extinfo(rhs.extinfo),members(rhs.members) { }
+
+		Rpc::Data *Clone() const { return new FactionImportBean(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FactionImportBean *r = dynamic_cast<const FactionImportBean *>(&rhs);
+			if (r && r != this)
+			{
+				ftype = r->ftype;
+				factionid = r->factionid;
+				factionname = r->factionname;
+				announcement = r->announcement;
+				extinfo = r->extinfo;
+				members = r->members;
+			}
+			return *this;
+		}
+
+		FactionImportBean& operator = (const FactionImportBean &rhs)
+		{
+			const FactionImportBean *r = &rhs;
+			if (r && r != this)
+			{
+				ftype = r->ftype;
+				factionid = r->factionid;
+				factionname = r->factionname;
+				announcement = r->announcement;
+				extinfo = r->extinfo;
+				members = r->members;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << ftype;
+			os << factionid;
+			os << factionname;
+			os << announcement;
+			os << extinfo;
+			os << members;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> ftype;
+			os >> factionid;
+			os >> factionname;
+			os >> announcement;
+			os >> extinfo;
+			os >> members;
+			return os;
+		}
+
+	};
+};
+#endif

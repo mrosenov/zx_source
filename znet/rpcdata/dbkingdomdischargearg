@@ -1,0 +1,64 @@
+#ifndef __GNET_DBKINGDOMDISCHARGEARG_RPCDATA
+#define __GNET_DBKINGDOMDISCHARGEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBKingdomDischargeArg : public GNET::Rpc::Data
+	{
+	public:
+		int candidate_id;
+		char title;
+
+	public:
+		DBKingdomDischargeArg (int l_candidate_id = 0,char l_title = 0)
+			: candidate_id(l_candidate_id),title(l_title)
+		{
+		}
+
+		DBKingdomDischargeArg(const DBKingdomDischargeArg &rhs)
+			: candidate_id(rhs.candidate_id),title(rhs.title) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomDischargeArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomDischargeArg *r = dynamic_cast<const DBKingdomDischargeArg *>(&rhs);
+			if (r && r != this)
+			{
+				candidate_id = r->candidate_id;
+				title = r->title;
+			}
+			return *this;
+		}
+
+		DBKingdomDischargeArg& operator = (const DBKingdomDischargeArg &rhs)
+		{
+			const DBKingdomDischargeArg *r = &rhs;
+			if (r && r != this)
+			{
+				candidate_id = r->candidate_id;
+				title = r->title;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << candidate_id;
+			os << title;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> candidate_id;
+			os >> title;
+			return os;
+		}
+
+	};
+};
+#endif

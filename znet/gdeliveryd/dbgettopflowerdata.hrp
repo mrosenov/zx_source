@@ -1,0 +1,80 @@
+
+#ifndef __GNET_DBGETTOPFLOWERDATA_HPP
+#define __GNET_DBGETTOPFLOWERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gamedbclient.hpp" 
+#include "topflowermanager.h"
+#include "dbgettopflowerdataarg"
+#include "dbgettopflowerdatares"
+
+namespace GNET
+{
+
+class DBGetTopFlowerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgettopflowerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBGetTopFlowerDataArg *arg = (DBGetTopFlowerDataArg *)argument;
+		// DBGetTopFlowerDataRes *res = (DBGetTopFlowerDataRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBGetTopFlowerDataArg *arg = (DBGetTopFlowerDataArg *)argument;
+		DBGetTopFlowerDataRes *res = (DBGetTopFlowerDataRes *)result;
+		
+		bool isRecv = arg->isRecv;
+		DEBUG_PRINT("DBGetTopFlowerData: retcode=%d, size=%d, isRecv:%d", res->retcode,res->data.size(), isRecv);
+		bool init_top_success = false;
+		bool init_addtop_success = false;
+		if(res->retcode==TOPFLOWER_LOAD_TOP_SUCCESS) 
+		{
+			DEBUG_PRINT("DBGetTopFlowerData:TOPFLOWER_LOAD_TOP_SUCCESS retcode=%d, size=%d, isRecv:%d", res->retcode,res->data.size(), isRecv);
+
+			init_top_success = TopFlowerManager::Instance()->InitTop(isRecv, res->data);
+			init_addtop_success = TopFlowerManager::Instance()->InitAddTop(isRecv, res->data);
+		}
+		
+		if(res->retcode==TOPFLOWER_LOAD_TOP_SUCCESS && init_top_success)
+		{
+			DEBUG_PRINT("DBGetTopFlowerData:TOPFLOWER_LOAD_TOP_SUCCESS init_top_success is true");
+
+			DBGetTopFlowerData* rpc = (DBGetTopFlowerData*) Rpc::Call(RPC_DBGETTOPFLOWERDATA, DBGetTopFlowerDataArg(arg->startIndex + arg->count, 1000, isRecv)); 
+			GameDBClient::GetInstance()->SendProtocol(rpc); 
+		}
+
+                if(res->retcode==TOPFLOWER_LOAD_ADD_SUCCESS || res->retcode==TOPFLOWER_LOAD_END)
+		{
+			DEBUG_PRINT("DBGetTopFlowerData:TOPFLOWER_LOAD_ADD_SUCCESS  retcode=%d, size=%d, isRecv:%d", res->retcode,res->data.size(), isRecv);
+			init_addtop_success = TopFlowerManager::Instance()->InitAddTop(isRecv, res->data);
+			if(res->retcode==TOPFLOWER_LOAD_END)
+			{
+				DEBUG_PRINT("DBGetTopFlowerData:TOPFLOWER_LOAD_END retcode=%d, size=%d, isRecv:%d", res->retcode,res->data.size(), isRecv);
+				TopFlowerManager::Instance()->Open();
+			}
+			else
+			{
+				DBGetTopFlowerData* rpc = (DBGetTopFlowerData*) Rpc::Call(RPC_DBGETTOPFLOWERDATA, DBGetTopFlowerDataArg(arg->startIndex + arg->count, 1000, isRecv)); 
+				GameDBClient::GetInstance()->SendProtocol(rpc); 
+			}
+
+		}
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

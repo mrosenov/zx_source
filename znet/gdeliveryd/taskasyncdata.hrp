@@ -1,0 +1,44 @@
+
+#ifndef __GNET_TASKASYNCDATA_HPP
+#define __GNET_TASKASYNCDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "asyncdata"
+#include "asyncdata"
+#include "familymanager.h"
+
+namespace GNET
+{
+
+class TaskAsyncData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "taskasyncdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		AsyncData *arg = (AsyncData *)argument;
+		AsyncData *res = (AsyncData *)result;
+		FamilyManager::Instance()->OnAsyncData(arg, res);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// AsyncData *arg = (AsyncData *)argument;
+		// AsyncData *res = (AsyncData *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

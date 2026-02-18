@@ -1,0 +1,32 @@
+	public:
+		WaitDelKeyVector waitdelist;
+		enum { PROTOCOL_TYPE = PROTOCOL_DELROLEANNOUNCE };
+	public:
+		DelRoleAnnounce() { type = PROTOCOL_DELROLEANNOUNCE; }
+		DelRoleAnnounce(void*) : Protocol(PROTOCOL_DELROLEANNOUNCE) { }
+		DelRoleAnnounce (WaitDelKeyVector l_waitdelist)
+			 : waitdelist(l_waitdelist)
+		{
+			type = PROTOCOL_DELROLEANNOUNCE;
+		}
+
+		DelRoleAnnounce(const DelRoleAnnounce &rhs)
+			: Protocol(rhs),waitdelist(rhs.waitdelist) { }
+
+		GNET::Protocol *Clone() const { return new DelRoleAnnounce(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << waitdelist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> waitdelist;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 512; }

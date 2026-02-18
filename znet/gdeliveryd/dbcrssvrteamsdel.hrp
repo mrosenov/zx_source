@@ -1,0 +1,91 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSDEL_HPP
+#define __GNET_DBCRSSVRTEAMSDEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "teamid"
+#include "delcrssvrteamsres"
+#include "postcrssvrteamsdel.hrp"
+#include "gtplatformagent.h"
+#include "crssvrteamsmanager.h"
+#include "crssvrteamsnotify_re.hpp"
+#include "synccrosscrssvrteamsdismiss.hrp"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsDel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsdel"
+#undef	RPC_BASECLASS
+
+	int linksid, localsid;
+	int roleid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TeamId *arg = (TeamId *)argument;
+		// DelCrssvrTeamsRes *res = (DelCrssvrTeamsRes *)result;
+	}
+
+	void NotifyCentral(int zoneid, int teamid, int createtime)
+	{
+		//if(!CrssvrTeamsManager::Instance()->GetCrssvrSync(teamid)) 队伍已经解散，直接告诉跨服
+		//	return;
+
+		SyncCrossCrssvrTeamsDismiss* rpc = (SyncCrossCrssvrTeamsDismiss*) Rpc::Call(RPC_SYNCCROSSCRSSVRTEAMSDISMISS, 
+				SyncCrossCrssvrTeamsDismissArg(zoneid, teamid, createtime));
+		CentralDeliveryClient::GetInstance()->SendProtocol(rpc);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		TeamId *arg = (TeamId *)argument;
+		DelCrssvrTeamsRes *res = (DelCrssvrTeamsRes *)result;
+
+		LOG_TRACE("DBCrssvrTeamsDel, retcode=%d, teamid=%d, roleid=%d, createtime=%d", res->retcode, arg->teamid, roleid, res->createtime);
+		if(res->retcode==ERR_SUCCESS)
+		{
+			PostCrssvrTeamsDelArg post_argument(GDeliveryServer::GetInstance()->zoneid,res->teamname,arg->teamid);
+			PostCrssvrTeamsDel* rpc = (PostCrssvrTeamsDel*) Rpc::Call(RPC_POSTCRSSVRTEAMSDEL, post_argument);
+			UniqueNameClient::GetInstance()->SendProtocol(rpc);
+
+	                int ret = CrssvrTeamsManager::Instance()->OnDismiss(arg->teamid);
+			if(ret == ERR_SUCCESS)
+			{
+				int zoneid = GDeliveryServer::GetInstance()->zoneid;
+				NotifyCentral(zoneid, arg->teamid, res->createtime);
+
+				// 通知战队所有人，跨服的玩家通知不了
+				CrssvrTeamsNotify_Re re(ERR_CRSSVRTEAMS_DISMISS_OK, roleid, arg->teamid, 0);
+				CrssvrTeamsManager::Instance()->Broadcast(arg->teamid, re, re.localsid);
+			}
+			else
+			{
+				// 通知队长
+				GDeliveryServer::GetInstance()->Send(linksid, CrssvrTeamsNotify_Re(ret, roleid, arg->teamid, localsid));
+			}
+
+		}
+		else
+		{
+			// 通知队长
+			GDeliveryServer::GetInstance()->Send(linksid,CrssvrTeamsNotify_Re(res->retcode,roleid,arg->teamid,localsid));
+		}
+	}
+
+	void OnTimeout()
+	{
+		TeamId *arg = (TeamId *)argument;
+		Log::log( LOG_ERR,"DBCrssvrTeamsDel: timeout. roleid=%d,teamid=%d", roleid, arg->teamid);
+		GDeliveryServer::GetInstance()->Send(linksid,CrssvrTeamsNotify_Re(ERR_CRSSVRTEAMS_DB_TIMEOUT,roleid,arg->teamid,localsid));
+
+	}
+
+};
+
+};
+#endif

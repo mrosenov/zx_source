@@ -1,0 +1,78 @@
+
+#ifndef __GNET_DBFRIENDCALLBACKSUBSCRIBE_HPP
+#define __GNET_DBFRIENDCALLBACKSUBSCRIBE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gfriendcallback"
+#include "dbfriendcallbacksubscribearg"
+#include "dbfriendcallbacksubscriberes"
+
+namespace GNET
+{
+
+class DBFriendCallbackSubscribe : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfriendcallbacksubscribe"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFriendCallbackSubscribeArg *arg = (DBFriendCallbackSubscribeArg *)argument;
+		DBFriendCallbackSubscribeRes *res = (DBFriendCallbackSubscribeRes *)result;
+
+		Marshal::OctetsStream key, value;
+		LOG_TRACE("DBFriendCallbackSubscribe, roleid=%d, is_subscribe=%d.", arg->roleid, arg->is_subscribe);
+		try
+		{
+			StorageEnv::Storage *friendcallback = StorageEnv::GetStorage("friendcallback");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				GFriendCallback callback;
+				key << arg->roleid;
+				if(friendcallback->find(key, value, txn))
+				{
+					value >> callback;
+				}
+				callback.callback_info.is_subscribe = arg->is_subscribe;
+				friendcallback->insert(key, Marshal::OctetsStream() << callback, txn);
+				res->retcode = ERR_CALLBACK_SUCCESS;
+			}
+			catch(DbException e)
+			{
+				throw;
+			}
+			catch(...)
+			{
+				DbException e(DB_OLD_VERSION);
+				txn.abort(e);
+				throw e;
+			}
+		}
+		catch(DbException e)
+		{
+			Log::log(LOG_ERR, "DBFriendCallbackSubscribe, roleid=%d, is_subscribe=%d, what=%s\n", arg->roleid, arg->is_subscribe, e.what());
+			res->retcode = ERR_CALLBACK_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFriendCallbackSubscribeArg *arg = (DBFriendCallbackSubscribeArg *)argument;
+		// DBFriendCallbackSubscribeRes *res = (DBFriendCallbackSubscribeRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

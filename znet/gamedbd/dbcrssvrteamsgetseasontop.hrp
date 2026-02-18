@@ -1,0 +1,80 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSGETSEASONTOP_HPP
+#define __GNET_DBCRSSVRTEAMSGETSEASONTOP_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsgetseasontoparg"
+#include "dbcrssvrteamsgetseasontopres"
+#include "gcrssvrteamsseasontop"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsGetSeasonTop : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsgetseasontop"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsGetSeasonTopArg *arg = (DBCrssvrTeamsGetSeasonTopArg *)argument;
+		DBCrssvrTeamsGetSeasonTopRes *res = (DBCrssvrTeamsGetSeasonTopRes *)result;
+
+		LOG_TRACE("DBCrssvrTeamsGetSeasonTop, roleid=%d", arg->roleid);
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream kteamid, krole;
+		try
+		{
+			// 战队赛季排行榜存在于crssvrteams第0位
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			
+			GCrssvrTeamsSeasonTop toptable;
+			StorageEnv::CommonTransaction txn;
+			try{
+				kteamid << 0;
+				
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> toptable;
+				}
+
+				res->seasontop = toptable;
+				res->retcode = ERR_SUCCESS;
+
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrssvrTeamsGetSeasonTop, roleid=%d what=%s.",arg->roleid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsGetSeasonTopArg *arg = (DBCrssvrTeamsGetSeasonTopArg *)argument;
+		// DBCrssvrTeamsGetSeasonTopRes *res = (DBCrssvrTeamsGetSeasonTopRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

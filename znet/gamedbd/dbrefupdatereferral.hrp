@@ -1,0 +1,66 @@
+
+#ifndef __GNET_DBREFUPDATEREFERRAL_HPP
+#define __GNET_DBREFUPDATEREFERRAL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbrefupdatereferralarg"
+
+
+namespace GNET
+{
+
+class DBRefUpdateReferral : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbrefupdatereferral"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBRefUpdateReferralArg *arg = (DBRefUpdateReferralArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+
+		try
+		{
+			StorageEnv::Storage *pdb = StorageEnv::GetStorage("referral");
+			StorageEnv::CommonTransaction txn;
+
+			try
+			{
+				pdb->insert(Marshal::OctetsStream()<<arg->referral.roleid, Marshal::OctetsStream()<<arg->referral, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+			Log::log(LOG_ERR, "gamedbd: DBSNSUpdateReferral failed, what=%s\n", e.what());
+			res->retcode = ERR_FAILED;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBRefUpdateReferralArg *arg = (DBRefUpdateReferralArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

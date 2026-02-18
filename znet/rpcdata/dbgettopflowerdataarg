@@ -1,0 +1,69 @@
+#ifndef __GNET_DBGETTOPFLOWERDATAARG_RPCDATA
+#define __GNET_DBGETTOPFLOWERDATAARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBGetTopFlowerDataArg : public GNET::Rpc::Data
+	{
+	public:
+		int startIndex;
+		int count;
+		bool isRecv;
+
+	public:
+		DBGetTopFlowerDataArg (int l_startIndex = 0,int l_count = 0,bool l_isRecv = 0)
+			: startIndex(l_startIndex),count(l_count),isRecv(l_isRecv)
+		{
+		}
+
+		DBGetTopFlowerDataArg(const DBGetTopFlowerDataArg &rhs)
+			: startIndex(rhs.startIndex),count(rhs.count),isRecv(rhs.isRecv) { }
+
+		Rpc::Data *Clone() const { return new DBGetTopFlowerDataArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGetTopFlowerDataArg *r = dynamic_cast<const DBGetTopFlowerDataArg *>(&rhs);
+			if (r && r != this)
+			{
+				startIndex = r->startIndex;
+				count = r->count;
+				isRecv = r->isRecv;
+			}
+			return *this;
+		}
+
+		DBGetTopFlowerDataArg& operator = (const DBGetTopFlowerDataArg &rhs)
+		{
+			const DBGetTopFlowerDataArg *r = &rhs;
+			if (r && r != this)
+			{
+				startIndex = r->startIndex;
+				count = r->count;
+				isRecv = r->isRecv;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << startIndex;
+			os << count;
+			os << isRecv;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> startIndex;
+			os >> count;
+			os >> isRecv;
+			return os;
+		}
+
+	};
+};
+#endif

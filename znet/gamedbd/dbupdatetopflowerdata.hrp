@@ -1,0 +1,169 @@
+
+#ifndef __GNET_DBUPDATETOPFLOWERDATA_HPP
+#define __GNET_DBUPDATETOPFLOWERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbupdatetopflowerdataarg"
+#include "dbupdatetopflowerdatares"
+
+namespace GNET
+{
+
+class DBUpdateTopFlowerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbupdatetopflowerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBUpdateTopFlowerDataArg *arg = (DBUpdateTopFlowerDataArg *)argument;
+		DBUpdateTopFlowerDataRes *res = (DBUpdateTopFlowerDataRes *)result;
+		try
+		{
+			StorageEnv::Storage * pflower = StorageEnv::GetStorage("topflower");
+			StorageEnv::AtomTransaction txn;
+			try
+			{
+				if(pflower)
+				{
+					if(arg->type == 0) // update
+					{
+						Marshal::OctetsStream key, value_old, value_new;
+						key << arg->data.roleid;
+						
+						GTableTopFlowerData oldData;
+						
+						if(pflower->find(key, value_old, txn))
+						{
+							value_old >> oldData;
+						}
+
+						GTableTopFlowerData new_data;
+						new_data.rolename = arg->data.rolename;
+						new_data.gender = arg->data.gender;
+						if(arg->isRecv)
+						{
+							new_data.recv_count = arg->data.count;
+							new_data.recv_stamp = arg->data.stamp;
+							new_data.recv_isGiftTake = arg->data.isGiftTake;
+
+							new_data.send_count = oldData.send_count;
+							new_data.send_stamp = oldData.send_stamp;
+							new_data.send_isGiftTake = oldData.send_isGiftTake;
+						}
+						else
+						{
+							new_data.send_count = arg->data.count;
+							new_data.send_stamp = arg->data.stamp;
+							new_data.send_isGiftTake = arg->data.isGiftTake;
+
+							new_data.recv_count = oldData.recv_count;
+							new_data.recv_stamp = oldData.recv_stamp;
+							new_data.recv_isGiftTake = oldData.recv_isGiftTake;
+
+						}
+						LOG_TRACE("DBUpdateTopFlowerData Update, isGiftTake=%d,stamp:%d, gender:%d,roleid=%d, isRecv:%d, ccount:%d", new_data.send_isGiftTake, new_data.send_stamp, new_data.gender, arg->data.roleid, arg->isRecv, arg->data.count);
+
+						value_new << new_data;
+
+						pflower->insert(key, value_new, txn);
+						res->retcode = TOPFLOWER_UPDATA_DATA_SUCCESS;
+				
+					}
+					else if(arg->type == 1)// del
+					{
+						Marshal::OctetsStream key;
+						key << arg->data.roleid;
+						
+						LOG_TRACE("DBUpdateTopFlowerData Del, roleid=%d, isRecv:%d", arg->data.roleid, arg->isRecv);
+						pflower->del(key, txn);	
+						res->retcode = TOPFLOWER_UPDATA_DATA_SUCCESS;
+					}
+					else if(arg->type == 2)// 更新领奖标识
+					{
+						Marshal::OctetsStream key, value_old, value_new;
+						key << arg->data.roleid;
+						GTableTopFlowerData flowerData;
+						if(pflower->find(key, value_old, txn))
+						{
+							value_old >> flowerData;
+							if(arg->isRecv)
+							{
+								flowerData.recv_isGiftTake = 1;
+							}
+							else
+							{
+								flowerData.send_isGiftTake = 1;
+							}
+							value_new << flowerData;
+							pflower->insert(key, value_new, txn);
+
+							res->retcode = TOPFLOWER_UPDATA_DATA_SUCCESS;
+						}
+						else
+						{
+							LOG_TRACE("DBUpdateTopFlowerData update isGiftTake, no found for roleid %d.", arg->data.roleid );
+							res->retcode = TOPFLOWER_UPDATA_DATA_ERR;
+						}
+					}
+					else if(arg->type == 3)// 更新名字
+					{
+						Marshal::OctetsStream key, value_old, value_new;
+						key << arg->data.roleid;
+						GTableTopFlowerData flowerData;
+						if(pflower->find(key, value_old, txn))
+						{
+							value_old >> flowerData;
+							flowerData.rolename = arg->data.rolename;
+							value_new << flowerData;
+							pflower->insert(key, value_new, txn);
+
+							res->retcode = TOPFLOWER_UPDATA_DATA_SUCCESS;
+						}
+						else
+						{
+							LOG_TRACE("DBUpdateTopFlowerData update isGiftTake, no found for roleid %d.", arg->data.roleid );
+							res->retcode = TOPFLOWER_UPDATA_DATA_ERR;
+						}
+					}
+
+					else{}
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			res->retcode = -1;
+		}
+
+		LOG_TRACE("DBUpdateTopFlowerData, retcode=%d,roleid=%d", res->retcode, arg->data.roleid);
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBUpdateTopFlowerDataArg *arg = (DBUpdateTopFlowerDataArg *)argument;
+		// DBUpdateTopFlowerDataRes *res = (DBUpdateTopFlowerDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

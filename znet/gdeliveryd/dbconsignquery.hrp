@@ -1,0 +1,70 @@
+
+#ifndef __GNET_DBCONSIGNQUERY_HPP
+#define __GNET_DBCONSIGNQUERY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignqueryarg"
+#include "dbconsignqueryres"
+#include "consignmanager.h"
+#include "consignquery_re.hpp"
+#include "gdeliveryserver.hpp"
+#include "mapuser.h"
+
+namespace GNET
+{
+
+class DBConsignQuery : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignquery"
+#undef	RPC_BASECLASS
+	int roleid;
+	int count;
+	int localsid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignQueryArg *arg = (DBConsignQueryArg *)argument;
+		// DBConsignQueryRes *res = (DBConsignQueryRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+//		DBConsignQueryArg *arg = (DBConsignQueryArg *)argument;
+		DBConsignQueryRes *res = (DBConsignQueryRes *)result;
+		DEBUG_PRINT("DBConsignQuery: receive. roleid=%d,count=%d \n", roleid,count);
+		if(res->retcode == ERR_SUCCESS)
+		{
+			PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline( roleid );
+			if ( NULL!=pinfo )
+			{
+				ConsignQuery_Re re;
+				re.localsid = localsid;
+				re.items = res->items;
+				
+				if((int)re.items.size()!=count)
+					Log::formatlog("consign","dbconsignquery: result counts%d !=req counts%d.\n",\
+						re.items.size(),count);
+				
+				ConsignManager::GetInstance()->OnDBConsignQuery(roleid,re.items);
+//				std::vector<GConsignItem>::iterator it,ie=items.end();
+//				for(it=items.begin();it!=ie;it++)
+//					ConsignManager::GetInstance()->AddCacheEntry(*it);
+				GDeliveryServer::GetInstance()->Send( pinfo->linksid, re);
+			}
+		}
+	}
+
+	void OnTimeout()
+	{
+//		DBConsignQueryArg *arg = (DBConsignQueryArg *)argument;
+		Log::formatlog("consign","dbconsignquery: rpc timeout. roleid=%d.\n",roleid);
+		
+	}
+
+};
+
+};
+#endif

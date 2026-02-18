@@ -1,0 +1,263 @@
+
+#ifndef __GNET_DBCONSIGNPREPOST_HPP
+#define __GNET_DBCONSIGNPREPOST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignprepostarg"
+#include "dbconsignprepostres"
+#include "localmacro.h"
+#include "gamedbserver.hpp"
+namespace GNET
+{
+
+class DBConsignPrePost : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignprepost"
+#undef	RPC_BASECLASS
+
+	static const int64_t CONSIGNID_FOR_SN_STORAGE=0;
+	static const int CONSIGN_MONEY_MAX=2000000000;
+	static const int CONSIGN_MONEY_MIN=1000000;
+	static const int CONSIGN_MARGIN = 100000;
+	
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignPrePostArg *arg = (DBConsignPrePostArg *)argument;
+		DBConsignPrePostRes *res = (DBConsignPrePostRes *)result;
+		Log::formatlog("consign","DBConsignPrePost roleid=%d,margin=%d,item_id=%d,item_cnt=%d,money=%d,price=%d,shelf_period=%d,consign_type=%d,category=%d",arg->roleid,arg->margin,arg->item_id,arg->item_cnt,arg->money,arg->price,arg->shelf_period,arg->consign_type,arg->category);
+		int buyer_rid=0;
+		int buyer_uid=0;
+		if(arg->sell_to_rolename.size() > 0)
+		{
+			try
+			{
+				StorageEnv::Storage * prolename = StorageEnv::GetStorage("rolename");
+				StorageEnv::AtomTransaction txn;
+				try
+				{
+					Marshal::OctetsStream( prolename->find( arg->sell_to_rolename, txn ) ) >> buyer_rid;
+				//	res->retcode = ERR_SUCCESS;
+				}
+				catch ( DbException e ) { throw; }
+				catch ( ... )
+				{
+					DbException ee( DB_OLD_VERSION );
+					txn.abort( ee );
+					throw ee;
+				}
+			}
+			catch ( DbException e )
+			{
+				res->retcode = ERR_WT_BUYERNAME_INVALID;
+				return;
+			}
+
+			try
+			{
+				StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+				StorageEnv::AtomTransaction txn;
+				try
+				{
+					GRoleBase buyer_base;
+					Marshal::OctetsStream(pbase->find(Marshal::OctetsStream()<<buyer_rid, txn)) >> buyer_base;
+					if(buyer_base.userid)
+						buyer_uid = buyer_base.userid;
+					else
+						buyer_uid = LOGICUID(buyer_rid);
+				}
+				catch ( DbException e ) { throw; }
+				catch ( ... )
+				{
+					DbException ee( DB_OLD_VERSION );
+					txn.abort( ee );
+					throw ee;
+				}
+			}
+			catch ( DbException e )
+			{
+				res->retcode = ERR_WT_DB_FAILURE;
+				return;
+			}
+		}
+		if(arg->money > CONSIGN_MONEY_MAX || arg->margin != CONSIGN_MARGIN ||
+			(arg->consign_type == CONSIGNTYPE_MONEY && arg->money<CONSIGN_MONEY_MIN )||(arg->consign_type == CONSIGNTYPE_ITEM && arg->money!=0))
+		{
+			res->retcode= ERR_WT_PREPOST_ARG_ERR;
+			return;
+		}
+		try
+		{
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				//reject sell to same user
+				if(buyer_uid == arg->userid)
+				{
+					res->retcode = ERR_WT_BUYER_SAMEUSER;
+					return;
+				}	
+
+				GRolePocket bag;
+				Marshal::OctetsStream krole;
+			//	GRoleInventoryVector items;
+			//	std::map<unsigned int, unsigned int> verify;
+				krole<< arg->roleid;
+				Marshal::OctetsStream( pinventory->find( krole, txn ) ) >> bag;
+				GRoleInventoryVector::iterator ititem;
+				if(arg->consign_type == CONSIGNTYPE_MONEY)  //寄售游戏币
+				{
+					if(arg->margin > (int)bag.money - arg->money)
+					{
+						Log::log( LOG_ERR, "DBConsignPrePost money,money=%d,bagmoney=%d,margin=%d\n",arg->money,bag.money,arg->margin);
+						res->retcode = ERR_WT_PREPOST_ARG_ERR;
+					//	throw DbException(DB_VERIFY_BAD);
+						return;
+					}
+				}
+				else if(arg->consign_type == CONSIGNTYPE_ITEM)     //寄售物品
+				{
+					GRoleInventoryVector::iterator it,ie;
+					for(it=bag.items.begin(),ie=bag.items.end();it!=ie;++it)
+					{
+						if(it->pos == arg->item_idx)
+						{	
+							if(it->id != arg->item_id || it->count < arg->item_cnt || arg->item_cnt<=0)
+								it=ie;
+							else
+								ititem = it;
+							break;
+						}
+					}
+					if(it == ie || it->proctype&MASK_ITEM_NOTRADE || arg->margin > (int)bag.money)
+					{
+					//	throw DbException(DB_VERIFY_BAD);
+						Log::log( LOG_ERR, "DBConsignPrePost item,it_ie=%d,bagmoney=%d,margin=%d,proctype=%d,bagit=%d,id=%d,bagcount=%d,count=%d\n",it==ie,bag.money,arg->margin,it->proctype,it->id,arg->item_id,it->count,arg->item_cnt);
+						res->retcode = ERR_WT_PREPOST_ARG_ERR;
+						return;
+					}
+				}
+				else
+				{
+				//	throw DbException(DB_VERIFY_BAD);
+					Log::log( LOG_ERR, "DBConsignPrePost,consign_type=%d",arg->consign_type);
+					res->retcode = ERR_WT_DB_FAILURE;
+					return;
+				}
+				
+				Marshal::OctetsStream ksn;
+				ksn <<CONSIGNID_FOR_SN_STORAGE;
+				int64_t sn;
+				Marshal::OctetsStream stateos;
+				if(pconsign->find(ksn, stateos,txn)==true)// use this find to avoid exception
+					stateos>>sn;
+				else
+				{
+					sn = (((int64_t)(GameDBServer::GetInstance()->zoneid))<<32) + 1;//record 0 is not exist, init value of sn to 1
+					Log::formatlog("consign","init db consign sn=%lld, zoneid=%d",sn,GameDBServer::GetInstance()->zoneid);
+							
+				}
+
+				//check sn with delivery zoneid 
+				/* 11.05.17 remove this limit, let zoneid of either server be used after mergedb*/
+				/*int sn_prefix = (int)(sn>>32);
+				if(sn_prefix != GameDBServer::GetInstance()->delivery_zoneid)
+				{
+					Log::log( LOG_ERR, "DBConsignPrePost,sn prefix=%d delivery_zoneid=%d unequal",sn_prefix,GameDBServer::GetInstance()->delivery_zoneid);
+					res->retcode = ERR_WT_DB_FAILURE;
+					return;
+				}*/
+
+				GConsignDB detail;
+				detail.info.sn = sn;
+				detail.info.state = DSTATE_PRE_POST;
+				detail.info.consign_type = arg->consign_type;
+				detail.info.money = arg->money;
+				detail.info.item_id = arg->item_id;
+				detail.info.item_cnt = arg->item_cnt;
+				detail.info.post_endtime = 0;
+				detail.info.show_endtime = 0;
+				detail.info.sell_endtime = arg->shelf_period*60*24;
+				detail.info.price = arg->price;
+				detail.category = arg->category;
+
+				if(arg->consign_type == CONSIGNTYPE_ITEM)
+				{
+					detail.item = *ititem;
+					detail.item.count = arg->item_cnt;
+				}
+				detail.post_time = Timer::GetTime();
+				//detail.post_time *= 1000;
+				detail.shelf_time = detail.post_time;
+				detail.largest_web_timestamp = 0;
+				detail.margin = arg->margin;
+				detail.loginip = arg->loginip;
+				detail.seller_roleid = arg->roleid;
+				detail.seller_userid = arg->userid;
+				detail.seller_name = arg->seller_name;
+				detail.buyer_roleid = buyer_rid;
+				detail.buyer_userid = buyer_uid;
+				detail.buyer_name = arg->sell_to_rolename;
+				detail.game_timestamp =1;
+				//modify inventory
+				bag.money-=arg->margin;
+				Log::log(LOG_MONEY,"money_change:[roleid=%d,userid=%d]:moneychange=%d:type=2:reason=3:hint=%d",arg->roleid,arg->userid,arg->margin,arg->item_id);
+				if(arg->consign_type == CONSIGNTYPE_MONEY)
+					bag.money-=arg->money;
+				if(arg->consign_type == CONSIGNTYPE_ITEM)
+				{
+					ititem->count -= arg->item_cnt;
+					if(ititem->count==0)
+						bag.items.erase(ititem);
+				}
+				//write db
+			//	int64_t newsn = ((int64_t)(GameDBServer::GetInstance()->zoneid))<<32;
+			//     	newsn+= sn& 0xFFFFFFFFLL;
+				int64_t newsn=sn+1;
+				pconsign->insert(ksn,Marshal::OctetsStream()<<newsn, txn);
+				pconsign->insert(Marshal::OctetsStream()<<sn, Marshal::OctetsStream()<<detail, txn, \
+						DB_NOOVERWRITE);
+			       	pinventory->insert(krole, Marshal::OctetsStream()<<bag, txn);
+				
+				res->detail = detail;
+			//	res->detail.item.pos = detail.category;//handled in deliver
+				res->retcode = ERR_SUCCESS;
+			/*	Log::formatlog("webtrade","webtradeprepost:timestamp=%d:roleid=%d:sn=%lld:posttype=%d:money=%d:item=%d:count=%d:post_time=%d:price=%d:margin=%d",detail.game_timestamp,arg->roleid,sn,arg->consign_type,arg->money/10000,arg->item_id,arg->item_cnt,detail.post_time,arg->price,arg->margin/10000);*/
+				Log::formatlog("webtradeprepost","roleid=%d:sn=%lld:type=%d:itemid=%d:item_count=%d:money=%d:role=0:petid=0:pet_count=0",arg->roleid,sn,arg->consign_type,arg->item_id,arg->item_cnt,arg->money/10000);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignPrePost, roleid=%d, what=%s\n",arg->roleid, e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignPrePostArg *arg = (DBConsignPrePostArg *)argument;
+		// DBConsignPrePostRes *res = (DBConsignPrePostRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

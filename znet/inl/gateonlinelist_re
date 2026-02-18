@@ -1,0 +1,32 @@
+	public:
+		int last_role;
+		enum { PROTOCOL_TYPE = PROTOCOL_GATEONLINELIST_RE };
+	public:
+		GateOnlineList_Re() { type = PROTOCOL_GATEONLINELIST_RE; }
+		GateOnlineList_Re(void*) : Protocol(PROTOCOL_GATEONLINELIST_RE) { }
+		GateOnlineList_Re (int l_last_role)
+			 : last_role(l_last_role)
+		{
+			type = PROTOCOL_GATEONLINELIST_RE;
+		}
+
+		GateOnlineList_Re(const GateOnlineList_Re &rhs)
+			: Protocol(rhs),last_role(rhs.last_role) { }
+
+		GNET::Protocol *Clone() const { return new GateOnlineList_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << last_role;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> last_role;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_POSTCRSSVRTEAMSRENAME_HPP
+#define __GNET_POSTCRSSVRTEAMSRENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "postcrssvrteamsrenamearg"
+#include "postcrssvrteamsrenameres"
+
+namespace GNET
+{
+
+class PostCrssvrTeamsRename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "postcrssvrteamsrename"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// PostCrssvrTeamsRenameArg *arg = (PostCrssvrTeamsRenameArg *)argument;
+		// PostCrssvrTeamsRenameRes *res = (PostCrssvrTeamsRenameRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PostCrssvrTeamsRenameArg *arg = (PostCrssvrTeamsRenameArg *)argument;
+		// PostCrssvrTeamsRenameRes *res = (PostCrssvrTeamsRenameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

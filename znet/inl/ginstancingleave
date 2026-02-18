@@ -1,0 +1,44 @@
+	public:
+		int gs_id;
+		int map_id;
+		int roleid;
+		int reason;
+		enum { PROTOCOL_TYPE = PROTOCOL_GINSTANCINGLEAVE };
+	public:
+		GInstancingLeave() { type = PROTOCOL_GINSTANCINGLEAVE; }
+		GInstancingLeave(void*) : Protocol(PROTOCOL_GINSTANCINGLEAVE) { }
+		GInstancingLeave (int l_gs_id,int l_map_id = 0,int l_roleid = 0,
+			int l_reason = 0)
+			 : gs_id(l_gs_id),map_id(l_map_id),roleid(l_roleid)
+			,reason(l_reason)
+		{
+			type = PROTOCOL_GINSTANCINGLEAVE;
+		}
+
+		GInstancingLeave(const GInstancingLeave &rhs)
+			: Protocol(rhs),gs_id(rhs.gs_id),map_id(rhs.map_id),roleid(rhs.roleid)
+			,reason(rhs.reason) { }
+
+		GNET::Protocol *Clone() const { return new GInstancingLeave(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gs_id;
+			os << map_id;
+			os << roleid;
+			os << reason;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gs_id;
+			os >> map_id;
+			os >> roleid;
+			os >> reason;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

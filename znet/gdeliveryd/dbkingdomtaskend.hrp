@@ -1,0 +1,44 @@
+
+#ifndef __GNET_DBKINGDOMTASKEND_HPP
+#define __GNET_DBKINGDOMTASKEND_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomtaskendarg"
+#include "dbkingdomtaskendres"
+
+namespace GNET
+{
+
+class DBKingdomTaskEnd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomtaskend"
+#undef	RPC_BASECLASS
+	int type;
+	int time;
+	int win_points;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomTaskEndArg *arg = (DBKingdomTaskEndArg *)argument;
+		// DBKingdomTaskEndRes *res = (DBKingdomTaskEndRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomTaskEndArg *arg = (DBKingdomTaskEndArg *)argument;
+		DBKingdomTaskEndRes *res = (DBKingdomTaskEndRes *)result;
+		if (res->retcode)
+			Log::log(LOG_ERR, "dbkingdomtaskend err %d, type %d time %d win_points %d", res->retcode, type, time, win_points);
+	}
+
+	void OnTimeout()
+	{
+		Log::log(LOG_ERR, "dbkingdomtaskend timeout, type %d time %d win_points %d", type, time, win_points);
+	}
+};
+
+};
+#endif

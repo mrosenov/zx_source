@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCONSIGNQUERYBACKUP_HPP
+#define __GNET_DBCONSIGNQUERYBACKUP_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignquerybackuparg"
+#include "dbconsignquerybackupres"
+
+namespace GNET
+{
+
+class DBConsignQueryBackup : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignquerybackup"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignQueryBackupArg *arg = (DBConsignQueryBackupArg *)argument;
+		// DBConsignQueryBackupRes *res = (DBConsignQueryBackupRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignQueryBackupArg *arg = (DBConsignQueryBackupArg *)argument;
+		// DBConsignQueryBackupRes *res = (DBConsignQueryBackupRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

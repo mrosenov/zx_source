@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCONSIGNSOLD_HPP
+#define __GNET_DBCONSIGNSOLD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignsoldarg"
+#include "dbconsignsoldres"
+
+namespace GNET
+{
+
+class DBConsignSold : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignsold"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		// DBConsignSoldRes *res = (DBConsignSoldRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		// DBConsignSoldRes *res = (DBConsignSoldRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

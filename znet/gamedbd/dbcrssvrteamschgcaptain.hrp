@@ -1,0 +1,98 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSCHGCAPTAIN_HPP
+#define __GNET_DBCRSSVRTEAMSCHGCAPTAIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamschgcaptainarg"
+#include "dbcrssvrteamschgcaptainres"
+
+#include "gcrssvrteamsrole"
+#include "gcrssvrteamsdata"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsChgCaptain : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamschgcaptain"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsChgCaptainArg *arg = (DBCrssvrTeamsChgCaptainArg *)argument;
+		DBCrssvrTeamsChgCaptainRes *res = (DBCrssvrTeamsChgCaptainRes *)result;
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kteamid;
+		try
+		{
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				if(arg->teamid == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+	
+				GCrssvrTeamsData crssvrteams;
+
+				krole << arg->caption_roleid;
+				kteamid << arg->teamid;
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> crssvrteams;
+				}
+				
+				if(crssvrteams.info.teamid <= 0)
+				{
+					Log::log( LOG_ERR, "CrssvrTeamsChgCaptain, teamid=%d, not found", arg->teamid);
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}
+				crssvrteams.info.master = arg->caption_roleid;
+				
+				Log::formatlog("CrssvrTeamsChgCaptain","teamid=%d:roleid=%d", arg->teamid, arg->caption_roleid);
+
+				pcrssvrteams->insert( kteamid, Marshal::OctetsStream()<<crssvrteams, txn );
+				res->name = crssvrteams.info.name;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrssvrTeamsJoin, teamid=%d, roleid=%d what=%s.",arg->teamid,arg->caption_roleid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsChgCaptainArg *arg = (DBCrssvrTeamsChgCaptainArg *)argument;
+		// DBCrssvrTeamsChgCaptainRes *res = (DBCrssvrTeamsChgCaptainRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

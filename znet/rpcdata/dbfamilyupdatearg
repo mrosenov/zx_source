@@ -1,0 +1,82 @@
+#ifndef __GNET_DBFAMILYUPDATEARG_RPCDATA
+#define __GNET_DBFAMILYUPDATEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFamilyUpdateArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int familyid;
+		unsigned int rid;
+		char reason;
+		Octets announce;
+		int reserved;
+
+	public:
+		DBFamilyUpdateArg (unsigned int l_familyid = 0,unsigned int l_rid = 0,char l_reason = 0
+			,int l_reserved = 0)
+			: familyid(l_familyid),rid(l_rid),reason(l_reason)
+			,reserved(l_reserved)
+		{
+		}
+
+		DBFamilyUpdateArg(const DBFamilyUpdateArg &rhs)
+			: familyid(rhs.familyid),rid(rhs.rid),reason(rhs.reason),
+			announce(rhs.announce),reserved(rhs.reserved) { }
+
+		Rpc::Data *Clone() const { return new DBFamilyUpdateArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFamilyUpdateArg *r = dynamic_cast<const DBFamilyUpdateArg *>(&rhs);
+			if (r && r != this)
+			{
+				familyid = r->familyid;
+				rid = r->rid;
+				reason = r->reason;
+				announce = r->announce;
+				reserved = r->reserved;
+			}
+			return *this;
+		}
+
+		DBFamilyUpdateArg& operator = (const DBFamilyUpdateArg &rhs)
+		{
+			const DBFamilyUpdateArg *r = &rhs;
+			if (r && r != this)
+			{
+				familyid = r->familyid;
+				rid = r->rid;
+				reason = r->reason;
+				announce = r->announce;
+				reserved = r->reserved;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << familyid;
+			os << rid;
+			os << reason;
+			os << announce;
+			os << reserved;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> familyid;
+			os >> rid;
+			os >> reason;
+			os >> announce;
+			os >> reserved;
+			return os;
+		}
+
+	};
+};
+#endif

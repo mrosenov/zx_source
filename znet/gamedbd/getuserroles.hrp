@@ -1,0 +1,115 @@
+
+#ifndef __GNET_GETUSERROLES_HPP
+#define __GNET_GETUSERROLES_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "dbbuffer.h"
+#include "getuserrolesarg"
+#include "getuserrolesres"
+
+namespace GNET
+{
+
+class GetUserRoles : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getuserroles"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GetUserRolesArg *arg = (GetUserRolesArg *)argument;
+		GetUserRolesRes *res = (GetUserRolesRes *)result;
+
+		LOG_TRACE( "GetUserRoles, userid=%d.\n", arg->userid );
+
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * pstore =  StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream value;
+			try
+			{
+				User user;
+				if(!puser->find( Marshal::OctetsStream()<<arg->userid, value, txn ))
+				{
+					res->retcode = ERR_DATANOTFIND;
+					return;
+				}
+				value >> user;
+				if( 0 == user.logicuid )        
+					user.logicuid = arg->userid;
+				RoleList rolelist(user.rolelist);
+				int roleid;
+				GRoleBase base;
+				GRoleStatus status;
+				GRolePocket pocket;
+				GRoleStorehouse store;
+				while( (roleid = rolelist.GetNextRole()) >= 0 )
+				{
+					Marshal::OctetsStream key, vbase, vstatus, vstore, vpocket;
+					int r = user.logicuid+roleid;
+					key << r;
+					if(!pbase->find(key,vbase,txn ))
+						continue;
+					if(!pstatus->find(key,vstatus,txn ))
+						continue;
+					vbase >> base;
+					vstatus >> status;
+					if(pinventory->find( key, vpocket, txn))
+						vpocket >> pocket;
+					if(pstore->find( key, vstore, txn))
+						vstore >> store;
+					res->roles.add(IntOctets(r,base.name));
+					GRoleBrief brief;
+					brief.roleid = r;
+					brief.name = base.name;
+					brief.level = status.level;
+					brief.money = (int64_t)pocket.money + store.money;
+					brief.cashadd = user.cash_add;
+					brief.cashused = user.cash_used;
+					brief.itemnum = pocket.items.size()+pocket.equipment.size()+pocket.petbadge.size()+pocket.petequip.size()+
+							store.items.size()+store.items2.size();
+					res->data.push_back(brief);
+				}
+
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetUserRoles, userid=%d, what=%s\n", arg->userid, e.what() );
+			res->retcode = ERR_DATANOTFIND;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GetUserRolesArg *arg = (GetUserRolesArg *)argument;
+		// GetUserRolesRes *res = (GetUserRolesRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

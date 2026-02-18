@@ -1,0 +1,52 @@
+
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSCHGCAPTAIN_HPP
+#define __GNET_SYNCCROSSCRSSVRTEAMSCHGCAPTAIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrosscrssvrteamschgcaptainarg"
+#include "synccrosscrssvrteamschgcaptainres"
+#include "crosscrssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class SyncCrossCrssvrTeamsChgCaptain : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrosscrssvrteamschgcaptain"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsChgCaptainArg *arg = (SyncCrossCrssvrTeamsChgCaptainArg *)argument;
+		SyncCrossCrssvrTeamsChgCaptainRes *res = (SyncCrossCrssvrTeamsChgCaptainRes *)result;
+
+		int ret = CrossCrssvrTeamsManager::Instance()->OnChgCaptain(arg->teamid, arg->caption_roleid, arg->zoneid);
+
+		LOG_TRACE("SyncCrossCrssvrTeamsChgCaptain, zoneid=%d, retcode=%d, teamid=%d, caption_roleid=%d, ret=%d", arg->zoneid, res->retcode, arg->teamid, arg->caption_roleid, ret);
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsChgCaptainArg *arg = (SyncCrossCrssvrTeamsChgCaptainArg *)argument;
+		SyncCrossCrssvrTeamsChgCaptainRes *res = (SyncCrossCrssvrTeamsChgCaptainRes *)result;
+
+		//GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		LOG_TRACE("SyncCrossCrssvrTeamsChgCaptain, zoneid=%d, retcode=%d, teamid=%d", arg->zoneid, res->retcode, arg->teamid);
+
+	}
+
+	void OnTimeout()
+	{
+		SyncCrossCrssvrTeamsChgCaptainArg *arg = (SyncCrossCrssvrTeamsChgCaptainArg *)argument;
+		Log::log( LOG_ERR,"SyncCrossCrssvrTeamsChgCaptain: timeout,teamid=%d", arg->teamid);
+	}
+
+};
+
+};
+#endif

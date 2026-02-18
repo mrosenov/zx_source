@@ -1,0 +1,174 @@
+
+#ifndef __GNET_PUTROLEDATA_HPP
+#define __GNET_PUTROLEDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roledatapair"
+#include "gamedbserver.hpp"
+
+
+namespace GNET
+{
+
+class PutRoleData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "putroledata"
+#undef	RPC_BASECLASS
+	bool IsEqual(GRoleInventory& inv1, GRoleInventory& inv2)
+	{
+		return inv1.id==inv2.id && inv1.count==inv2.count && inv1.data==inv2.data && inv1.expire_date==inv2.expire_date
+			&& inv1.guid1==inv2.guid1 && inv1.guid2==inv2.guid2 && inv1.proctype==inv2.proctype && inv1.max_count==inv2.max_count;
+	}
+	void CheckItems(GRoleInventoryVector& src, GRoleInventoryVector& dst, GRoleInventoryVector& list, int capacity)
+	{
+		std::set<int> index;
+		GRoleInventoryVector::iterator it,is;
+		for(it=dst.begin();it!=dst.end();)
+		{
+			if(it->pos>=0 && it->pos<capacity && index.find(it->pos)==index.end())
+			{
+				index.insert(it->pos);
+				++it;
+			}
+			else
+			{
+				LOG_TRACE( "PutRoleData: ignore item %d with invalid position %d", it->id, it->pos);
+				it = dst.erase(it);
+			}
+		}
+		for(it=dst.begin();it!=dst.end();++it)
+		{
+			for(is=src.begin();is!=src.end();++is)
+			{
+				if(it->pos==is->pos)
+				{
+				       	if(!IsEqual(*it, *is))
+						list.push_back(*it);
+					break;
+				}
+			}
+			if(is==src.end())
+				list.push_back(*it);
+		}
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleDataPair *arg = (RoleDataPair *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		unsigned int money = arg->value.pocket.money + arg->value.storehouse.money;
+		Log::formatlog("putroledata","sid=%d:roleid=%d:overwrite=%d:timestamp=%d:level=%d:exp=%lld:money=%u", 
+			sid, arg->key.id, arg->overwrite, arg->value.pocket.timestamp, arg->value.status.level, arg->value.status.exp, money);
+
+		STAT_MIN5("PutData",1);
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * pstorehouse = StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage * ptask = StorageEnv::GetStorage("task");
+			StorageEnv::Storage * psyslog = StorageEnv::GetStorage("syslog");
+			StorageEnv::Storage * pachieve = StorageEnv::GetStorage("achievement");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, value_store, value_pocket;
+			try
+			{
+				key << arg->key.id;
+				GRoleBase	base;
+				Marshal::OctetsStream(pbase->find( key, txn )) >> base;
+				if(!arg->overwrite)
+				{
+					base.config_data = arg->value.base.config_data;
+					base.help_states = arg->value.base.help_states;
+					pbase->insert( key, Marshal::OctetsStream() << base, txn );
+				}
+				else
+				{
+					arg->value.base.id = arg->key.id;
+					arg->value.base.userid = base.userid;
+					arg->value.base.name = base.name;
+					arg->value.base.familyid = base.familyid;
+					arg->value.base.title = base.title;
+					arg->value.base.jointime = base.jointime;
+					if(arg->value.base.spouse)
+					{
+						Marshal::OctetsStream tmp;
+						if(!pbase->find(Marshal::OctetsStream()<<arg->value.base.spouse, tmp, txn))
+							arg->value.base.spouse = 0;
+					}
+					pbase->insert(key,Marshal::OctetsStream()<<arg->value.base,txn);
+				}
+				arg->value.status.id = arg->key.id;
+				pstatus->insert(key,Marshal::OctetsStream()<<arg->value.status,txn);
+				arg->value.base2.id = arg->key.id;
+				pbase2->insert(key,Marshal::OctetsStream()<<arg->value.base2,txn);
+
+				//if (atoi(Conf::GetInstance()->find("gamedbd", "allow_modify_inventory").c_str()) != 0)
+				{
+					int money_delta = 0;
+					GRoleInventoryVector invs;
+					if(pinventory->find(key, value_pocket, txn))
+					{
+						GRolePocket pocket;
+						value_pocket >> pocket;
+						money_delta += arg->value.pocket.money - pocket.money;
+						CheckItems(pocket.items, arg->value.pocket.items, invs, arg->value.pocket.capacity);
+						CheckItems(pocket.equipment, arg->value.pocket.equipment, invs, 32);
+						CheckItems(pocket.petbadge, arg->value.pocket.petbadge, invs, 32);
+						CheckItems(pocket.petequip, arg->value.pocket.petequip, invs, 32);
+						pinventory->insert(key,Marshal::OctetsStream()<<arg->value.pocket,txn);
+					}
+					if(pstorehouse->find(key, value_store, txn))
+					{
+						GRoleStorehouse store;
+						value_store >> store;
+						money_delta += arg->value.storehouse.money - store.money;
+						CheckItems(store.items, arg->value.storehouse.items, invs, arg->value.storehouse.capacity);
+						CheckItems(store.items2, arg->value.storehouse.items2, invs, arg->value.storehouse.capacity2);
+						pstorehouse->insert(key,Marshal::OctetsStream()<<arg->value.storehouse,txn);
+					}
+					if(invs.size())
+						STAT_MIN5("ItemPut",invs.size());
+					if(money_delta)
+						STAT_MIN5("MoneyPut",abs(money_delta));
+					::PutSyslog(psyslog,txn,arg->key.id,GameDBServer::GetInstance()->GetSessionIP(sid), money_delta, invs);
+				}
+				ptask->insert(key,Marshal::OctetsStream()<<arg->value.task,txn);
+				pachieve->insert(key, Marshal::OctetsStream() << arg->value.achievement, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PutRoleData, roleid=%d, what=%s\n", arg->key.id, e.what() );
+			res->retcode = -1;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleDataPair *arg = (RoleDataPair *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

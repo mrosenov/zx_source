@@ -1,0 +1,48 @@
+
+#ifndef __GNET_DBCROSSCRSSVRTEAMSDISMISS_HPP
+#define __GNET_DBCROSSCRSSVRTEAMSDISMISS_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrosscrssvrteamsdismissarg"
+#include "dbcrosscrssvrteamsdismissres"
+#include "crosscrssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class DBCrossCrssvrTeamsDismiss : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrosscrssvrteamsdismiss"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TeamId *arg = (TeamId *)argument;
+		// DBCrossCrssvrTeamsDismissRes *res = (DBCrossCrssvrTeamsDismissRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		/*
+		DBCrossCrssvrTeamsDismissArg *arg = (DBCrossCrssvrTeamsDismissArg *)argument;
+		DBCrossCrssvrTeamsDismissRes *res = (DBCrossCrssvrTeamsDismissRes *)result;
+		LOG_TRACE("DBCrossCrssvrTeamsDismiss, retcode=%d, teamid=%d, zoneid=%d, createtime=%d", res->retcode, arg->teamid, arg->zoneid, arg->createtime);
+		if(res->retcode == ERR_SUCCESS)
+		{
+			CrossCrssvrTeamsManager::Instance()->OnDismiss(arg->teamid, arg->zoneid);
+		}*/
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

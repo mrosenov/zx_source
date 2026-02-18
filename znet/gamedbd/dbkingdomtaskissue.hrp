@@ -1,0 +1,78 @@
+
+#ifndef __GNET_DBKINGDOMTASKISSUE_HPP
+#define __GNET_DBKINGDOMTASKISSUE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomtaskissuearg"
+#include "dbkingdomtaskissueres"
+
+namespace GNET
+{
+
+class DBKingdomTaskIssue : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomtaskissue"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingdomTaskIssueArg *arg = (DBKingdomTaskIssueArg *)argument;
+		DBKingdomTaskIssueRes *res = (DBKingdomTaskIssueRes *)result;
+		try
+		{
+			StorageEnv::Storage * pkingdom = StorageEnv::GetStorage("kingdom");
+			StorageEnv::AtomTransaction txn;
+			try{
+				Marshal::OctetsStream key;
+				key << 0;
+				GKingdomInfo data;
+				Marshal::OctetsStream(pkingdom->find(key, txn)) >> data;
+				if (data.kingfaction != arg->king_faction)
+				{
+					Log::log(LOG_ERR, "dbkingdomtaskissue king_faction mismatch %d:%d", data.kingfaction, arg->king_faction);
+					res->retcode = -1;
+					return;
+				}
+				Log::formatlog("kingdom", "issue task, oldtasktype %d oldissuetime %d newtasktype %d newissuetime %d ", data.tasktype, data.taskissuetime, arg->task_type, arg->task_issue_time);
+				data.taskstatus = KINGDOM_TASK_OPEN;
+				data.tasktype = arg->task_type;
+				data.taskissuetime = arg->task_issue_time;
+				data.taskpoints = 0;
+				pkingdom->insert(key, Marshal::OctetsStream()<<data, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBKingdomTaskIssue, what=%s\n", e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomTaskIssueArg *arg = (DBKingdomTaskIssueArg *)argument;
+		// DBKingdomTaskIssueRes *res = (DBKingdomTaskIssueRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

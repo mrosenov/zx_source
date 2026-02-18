@@ -1,0 +1,39 @@
+
+#ifndef __GNET_DBFAMILYSYNC_HPP
+#define __GNET_DBFAMILYSYNC_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfamilysyncarg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBFamilySync : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilysync"
+#undef	RPC_BASECLASS
+	bool isbatch;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilySyncArg *arg = (DBFamilySyncArg *)argument;
+		if (isbatch)
+			FamilyManager::Instance()->OnSync(arg->fid);
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

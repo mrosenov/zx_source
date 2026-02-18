@@ -1,0 +1,69 @@
+#ifndef __GNET_GCOMMONDATA_RPCDATA
+#define __GNET_GCOMMONDATA_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GCommonData : public GNET::Rpc::Data
+	{
+	public:
+		int scole;
+		int key;
+		Octets value;
+
+	public:
+		GCommonData (int l_scole = 0,int l_key = 0,const Octets& l_value = Octets())
+			: scole(l_scole),key(l_key),value(l_value)
+		{
+		}
+
+		GCommonData(const GCommonData &rhs)
+			: scole(rhs.scole),key(rhs.key),value(rhs.value) { }
+
+		Rpc::Data *Clone() const { return new GCommonData(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GCommonData *r = dynamic_cast<const GCommonData *>(&rhs);
+			if (r && r != this)
+			{
+				scole = r->scole;
+				key = r->key;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		GCommonData& operator = (const GCommonData &rhs)
+		{
+			const GCommonData *r = &rhs;
+			if (r && r != this)
+			{
+				scole = r->scole;
+				key = r->key;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << scole;
+			os << key;
+			os << value;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> scole;
+			os >> key;
+			os >> value;
+			return os;
+		}
+
+	};
+};
+#endif

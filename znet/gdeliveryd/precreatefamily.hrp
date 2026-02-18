@@ -1,0 +1,77 @@
+
+#ifndef __GNET_PRECREATEFAMILY_HPP
+#define __GNET_PRECREATEFAMILY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "precreatefamilyarg"
+#include "precreatefamilyres"
+
+namespace GNET
+{
+
+class PreCreateFamily : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "precreatefamily"
+#undef	RPC_BASECLASS
+
+	int roleid, gamesid, linksid, localsid;
+        unsigned char level, occupation;
+        GMailSyncData syncdata;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void SendError(int errcode)
+        {
+                FactionCreate_Re res;
+                res.retcode = errcode;
+                res.localsid = localsid;
+		res.scale = 1;
+                GDeliveryServer::GetInstance()->Send(linksid, res);
+
+                GMailEndSync sync(0,errcode,roleid);
+                GProviderServer::GetInstance()->Send( gamesid, sync);
+        }
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PreCreateFamilyArg *arg = (PreCreateFamilyArg *)argument;
+                PreCreateFamilyRes *res = (PreCreateFamilyRes *)result;
+                DEBUG_PRINT("PreCreateFamily, retcode=%d, familyid=%d", res->retcode, res->familyid);
+
+                if(res->retcode == ERR_SUCCESS)
+                {
+                        DBFamilyAddArg rpcarg(roleid, res->familyid, level, occupation, arg->familyname);
+                        Utility::SwapSyncData(rpcarg.syncdata, syncdata);
+
+                        DBFamilyAdd* rpc = (DBFamilyAdd*) Rpc::Call( RPC_DBFAMILYADD,rpcarg);
+                        rpc->gamesid = gamesid;
+                        rpc->linksid = linksid;
+                        rpc->localsid = localsid;
+                        GameDBClient::GetInstance()->SendProtocol(rpc);
+                }
+                else
+                {
+                        if(res->retcode==ERR_DUPLICATRECORD)
+                                SendError(ERR_FC_CREATE_DUP);
+                        else
+                                SendError(ERR_FC_OUTOFSERVICE);
+		}
+                
+	}
+
+	void OnTimeout()
+	{
+		Log::log( LOG_ERR,"precreatefamily: timeout. roleid=%d", roleid);
+                SendError(ERR_FC_OP_TIMEOUT);
+	}
+
+};
+
+};
+#endif

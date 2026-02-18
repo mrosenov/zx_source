@@ -1,0 +1,64 @@
+
+#ifndef __GNET_DBCHANGEPROFILE_HPP
+#define __GNET_DBCHANGEPROFILE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbchangeprofilearg"
+#include "gproviderserver.hpp"
+#include "sendchangeprofile_re.hpp"
+#include "mapuser.h"
+
+
+namespace GNET
+{
+
+class DBChangeProfile : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbchangeprofile"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBChangeProfileArg *arg = (DBChangeProfileArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBChangeProfileArg *arg = (DBChangeProfileArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+
+		if (res->retcode == ERR_SUCCESS)
+		{
+			GRoleInfo *roleinfo = RoleInfoCache::Instance().Get(arg->roleid);
+			if (roleinfo != NULL)
+			{
+				roleinfo->faceid = arg->faceid;
+				roleinfo->hairid = arg->hairid;
+				roleinfo->earid = arg->earid;
+				roleinfo->tailid = arg->tailid;
+				roleinfo->fashionid = arg->fashionid;
+			}
+		}
+
+		PlayerInfo *pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if (pinfo != NULL)
+			GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, SendChangeProfile_Re(res->retcode, arg->roleid, arg->faceid, arg->hairid, arg->earid, arg->tailid,  arg->fashionid));
+	}
+
+	void OnTimeout()
+	{
+		DBChangeProfileArg *arg = (DBChangeProfileArg *)argument;
+		PlayerInfo *pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if (pinfo != NULL)
+			GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, SendChangeProfile_Re(ERR_TIMEOUT, arg->roleid, arg->faceid, arg->hairid, arg->earid, arg->tailid, arg->fashionid));
+	}
+
+};
+
+};
+#endif

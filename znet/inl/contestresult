@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int score;
+		int place;
+		int right_amount;
+		enum { PROTOCOL_TYPE = PROTOCOL_CONTESTRESULT };
+	public:
+		ContestResult() { type = PROTOCOL_CONTESTRESULT; }
+		ContestResult(void*) : Protocol(PROTOCOL_CONTESTRESULT) { }
+		ContestResult (int l_roleid,int l_score,int l_place,
+			int l_right_amount)
+			 : roleid(l_roleid),score(l_score),place(l_place)
+			,right_amount(l_right_amount)
+		{
+			type = PROTOCOL_CONTESTRESULT;
+		}
+
+		ContestResult(const ContestResult &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),score(rhs.score),place(rhs.place)
+			,right_amount(rhs.right_amount) { }
+
+		GNET::Protocol *Clone() const { return new ContestResult(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << score;
+			os << place;
+			os << right_amount;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> score;
+			os >> place;
+			os >> right_amount;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

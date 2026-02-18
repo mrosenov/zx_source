@@ -1,0 +1,86 @@
+
+#ifndef __GNET_DBCONSIGNPREPOST_HPP
+#define __GNET_DBCONSIGNPREPOST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignprepostarg"
+#include "dbconsignprepostres"
+#include "consignmanager.h"
+#include "consignstarterr.hpp"
+#include "gconsignend.hpp"
+#include "gdeliveryserver.hpp"
+#include "gproviderserver.hpp"
+#include "dbconsignfail.hrp"
+namespace GNET
+{
+
+class DBConsignPrePost : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignprepost"
+#undef	RPC_BASECLASS
+        unsigned int save_linksid;
+        unsigned int save_localsid;
+        int          save_gsid;
+
+	void SendResult( int retcode)
+	{
+		int ret  = ConsignManager::GetClientRqstRetcode(retcode);
+		GDeliveryServer::GetInstance()->Send(
+				save_linksid,
+				ConsignStartErr(ret,save_localsid)
+			);
+	}
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignPrePostArg *arg = (DBConsignPrePostArg *)argument;
+		// DBConsignPrePostRes *res = (DBConsignPrePostRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignPrePostArg *arg = (DBConsignPrePostArg *)argument;
+		DBConsignPrePostRes *res = (DBConsignPrePostRes *)result;
+		DEBUG_PRINT("dbconsignprepost: retcode=%d sn=%lld roleid=%d", res->retcode, res->detail.info.sn, arg->roleid);
+		if(res->retcode == ERR_SUCCESS)
+		{
+			if(ConsignManager::GetInstance()->OnDBPrePost(res->detail)!=ERR_SUCCESS)
+			{
+				Log::formatlog("consign","dbconsignprepost while manager uninit. sn=%lld,roleid=%d",\
+					res->detail.info.sn,arg->roleid);
+			}
+			
+		}
+		else
+		{
+			DEBUG_PRINT("dbconsignprepost err: retcode=%d sn=%lld roleid=%d", res->retcode, res->detail.info.sn, arg->roleid);
+			ConsignManager::GetInstance()->ClearConsignStarting(arg->roleid);
+		}
+
+		if(arg->consign_type != CONSIGNTYPE_ROLE)//end post procedure
+		{
+			SendResult( res->retcode);
+			GProviderServer::GetInstance()->DispatchProtocol( save_gsid, GConsignEnd(arg->roleid,1));
+		}
+	}
+
+	void OnTimeout()
+	{
+		DBConsignPrePostArg *arg = (DBConsignPrePostArg *)argument;
+		Log::log(LOG_ERR,"dbconsignprepost: timeout. db status unknown. roleid=%d",arg->roleid); 
+		if(arg->consign_type != CONSIGNTYPE_ROLE)
+		{
+		/*if db has succeeded, post msg will be sent to web when deliver restart.*/
+		SendResult(ERR_WT_TIMEOUT);
+		/*dont know status of db, let gs timeout and disconnect the player. if db has succeeded, client would find item has been moved out of his packet.*/
+		}
+		ConsignManager::GetInstance()->ClearConsignStarting(arg->roleid);
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,109 @@
+
+#ifndef __GNET_POSTCRSSVRTEAMSRENAME_HPP
+#define __GNET_POSTCRSSVRTEAMSRENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "postcrssvrteamsrenamearg"
+#include "postcrssvrteamsrenameres"
+
+namespace GNET
+{
+
+class PostCrssvrTeamsRename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "postcrssvrteamsrename"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PostCrssvrTeamsRenameArg *arg = (PostCrssvrTeamsRenameArg *)argument;
+		PostCrssvrTeamsRenameRes *res = (PostCrssvrTeamsRenameRes *)result;
+
+		if(arg->newname.size() <= 0 || arg->oldname.size() <= 0)
+		{
+			res->retcode = ERR_DUPLICATRECORD;
+			return;
+		}
+	
+		UniqueNameServer::GetInstance()->TransformName(arg->newname);
+		UniqueNameServer::GetInstance()->TransformName(arg->oldname);
+		LOG_TRACE("PostCrssvrTeamsRename(success=%d, zoneid=%d teamid=%d", arg->success, arg->zoneid,
+				arg->teamid);
+		try
+		{
+			StorageEnv::Storage * puname = NULL;
+			puname = StorageEnv::GetStorage("unamecrssvrteams");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				Marshal::OctetsStream key_nextid;
+				int nextid_forkey = 0;
+				key_nextid << nextid_forkey;
+				if (arg->newname == key_nextid || arg->oldname == key_nextid)
+				{
+					res->retcode = ERR_DUPLICATRECORD;
+					Log::log(LOG_ERR, "PostCrssvrTeamsRename teamid=%d old or new name is nextid_key",
+							arg->teamid);
+					return;
+				}
+				if (arg->success)
+				{
+					Marshal::OctetsStream value_uname, value_old;
+					if (puname->find(arg->oldname, value_old, txn))
+					{
+						int old_zoneid, old_teamid, old_status, old_time;
+						value_old >> old_zoneid >> old_teamid >> old_status >> old_time;
+						if (old_teamid == arg->teamid)
+						{
+							old_status = UNIQUENAME_OBSOLETE;
+							value_old.clear();
+							value_old << old_zoneid << old_teamid << old_status << old_time;
+							puname->insert(arg->oldname, value_old, txn);
+						}
+						else
+							Log::log(LOG_ERR, "PostCrssvrTeamsRenamename oldteamid %d newteamid %d not equal", old_teamid, arg->teamid);
+					}
+					int status = UNIQUENAME_USED;
+					value_uname << arg->zoneid << arg->teamid << status << (int)Timer::GetTime();
+					puname->insert(arg->newname, value_uname, txn);
+				}
+				else
+					puname->del(arg->newname, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PostCrssvrTeamsRenamename, zoneid=%d, teamid=%d, what=%s\n", arg->zoneid, arg->teamid, e.what() );
+			res->retcode = -1;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PostCrssvrTeamsRenameArg *arg = (PostCrssvrTeamsRenameArg *)argument;
+		// PostCrssvrTeamsRenameRes *res = (PostCrssvrTeamsRenameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

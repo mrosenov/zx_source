@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSIEGESETASSISTANT_HPP
+#define __GNET_DBSIEGESETASSISTANT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegesetassistantarg"
+#include "dbsiegesetassistantres"
+
+namespace GNET
+{
+
+class DBSiegeSetAssistant : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegesetassistant"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSiegeSetAssistantArg *arg = (DBSiegeSetAssistantArg *)argument;
+		// DBSiegeSetAssistantRes *res = (DBSiegeSetAssistantRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSiegeSetAssistantArg *arg = (DBSiegeSetAssistantArg *)argument;
+		// DBSiegeSetAssistantRes *res = (DBSiegeSetAssistantRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

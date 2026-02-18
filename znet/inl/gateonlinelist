@@ -1,0 +1,38 @@
+	public:
+		std::vector<GGateOnlineInfo> onlinelist;
+		char start;
+		char finish;
+		enum { PROTOCOL_TYPE = PROTOCOL_GATEONLINELIST };
+	public:
+		GateOnlineList() { type = PROTOCOL_GATEONLINELIST; }
+		GateOnlineList(void*) : Protocol(PROTOCOL_GATEONLINELIST) { }
+		GateOnlineList (const std::vector<GGateOnlineInfo>& l_onlinelist,char l_start = 0,char l_finish = 0)
+			 : onlinelist(l_onlinelist),start(l_start),finish(l_finish)
+		{
+			type = PROTOCOL_GATEONLINELIST;
+		}
+
+		GateOnlineList(const GateOnlineList &rhs)
+			: Protocol(rhs),onlinelist(rhs.onlinelist),start(rhs.start),finish(rhs.finish) { }
+
+		GNET::Protocol *Clone() const { return new GateOnlineList(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << onlinelist;
+			os << start;
+			os << finish;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> onlinelist;
+			os >> start;
+			os >> finish;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 65536; }

@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int familyid;
+		int skillid;
+		int ability;
+		enum { PROTOCOL_TYPE = PROTOCOL_FAMILYUSESKILL };
+	public:
+		FamilyUseSkill() { type = PROTOCOL_FAMILYUSESKILL; }
+		FamilyUseSkill(void*) : Protocol(PROTOCOL_FAMILYUSESKILL) { }
+		FamilyUseSkill (int l_roleid,int l_familyid,int l_skillid = 0,
+			int l_ability = 0)
+			 : roleid(l_roleid),familyid(l_familyid),skillid(l_skillid)
+			,ability(l_ability)
+		{
+			type = PROTOCOL_FAMILYUSESKILL;
+		}
+
+		FamilyUseSkill(const FamilyUseSkill &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),familyid(rhs.familyid),skillid(rhs.skillid)
+			,ability(rhs.ability) { }
+
+		GNET::Protocol *Clone() const { return new FamilyUseSkill(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << familyid;
+			os << skillid;
+			os << ability;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> familyid;
+			os >> skillid;
+			os >> ability;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

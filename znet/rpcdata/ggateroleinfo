@@ -1,0 +1,100 @@
+#ifndef __GNET_GGATEROLEINFO_RPCDATA
+#define __GNET_GGATEROLEINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GGateRoleInfo : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		unsigned char gender;
+		int occupation;
+		int level;
+		int reborntimes;
+		int cultivation;
+		Octets rolename;
+		int gameid;
+
+	public:
+		GGateRoleInfo (int l_roleid = 0,unsigned char l_gender = 0,int l_occupation = 0
+			,int l_level = 0,int l_reborntimes = 0,int l_cultivation = 0
+			,const Octets& l_rolename = Octets(),int l_gameid = -1)
+			: roleid(l_roleid),gender(l_gender),occupation(l_occupation)
+			,level(l_level),reborntimes(l_reborntimes),cultivation(l_cultivation)
+			,rolename(l_rolename),gameid(l_gameid)
+		{
+		}
+
+		GGateRoleInfo(const GGateRoleInfo &rhs)
+			: roleid(rhs.roleid),gender(rhs.gender),occupation(rhs.occupation),
+			level(rhs.level),reborntimes(rhs.reborntimes),cultivation(rhs.cultivation),
+			rolename(rhs.rolename),gameid(rhs.gameid) { }
+
+		Rpc::Data *Clone() const { return new GGateRoleInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GGateRoleInfo *r = dynamic_cast<const GGateRoleInfo *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				gender = r->gender;
+				occupation = r->occupation;
+				level = r->level;
+				reborntimes = r->reborntimes;
+				cultivation = r->cultivation;
+				rolename = r->rolename;
+				gameid = r->gameid;
+			}
+			return *this;
+		}
+
+		GGateRoleInfo& operator = (const GGateRoleInfo &rhs)
+		{
+			const GGateRoleInfo *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				gender = r->gender;
+				occupation = r->occupation;
+				level = r->level;
+				reborntimes = r->reborntimes;
+				cultivation = r->cultivation;
+				rolename = r->rolename;
+				gameid = r->gameid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << gender;
+			os << occupation;
+			os << level;
+			os << reborntimes;
+			os << cultivation;
+			os << rolename;
+			os << gameid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> gender;
+			os >> occupation;
+			os >> level;
+			os >> reborntimes;
+			os >> cultivation;
+			os >> rolename;
+			os >> gameid;
+			return os;
+		}
+
+	};
+};
+#endif

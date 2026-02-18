@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		char fieldtype;
+		enum { PROTOCOL_TYPE = PROTOCOL_GKINGDOMBATTLEENTER };
+	public:
+		GKingdomBattleEnter() { type = PROTOCOL_GKINGDOMBATTLEENTER; }
+		GKingdomBattleEnter(void*) : Protocol(PROTOCOL_GKINGDOMBATTLEENTER) { }
+		GKingdomBattleEnter (int l_roleid,char l_fieldtype = 0)
+			 : roleid(l_roleid),fieldtype(l_fieldtype)
+		{
+			type = PROTOCOL_GKINGDOMBATTLEENTER;
+		}
+
+		GKingdomBattleEnter(const GKingdomBattleEnter &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),fieldtype(rhs.fieldtype) { }
+
+		GNET::Protocol *Clone() const { return new GKingdomBattleEnter(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << fieldtype;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> fieldtype;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

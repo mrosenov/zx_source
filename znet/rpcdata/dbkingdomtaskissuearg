@@ -1,0 +1,77 @@
+#ifndef __GNET_DBKINGDOMTASKISSUEARG_RPCDATA
+#define __GNET_DBKINGDOMTASKISSUEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBKingdomTaskIssueArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int king_faction;
+		int task_type;
+		int task_issue_time;
+
+	public:
+		DBKingdomTaskIssueArg (int l_roleid = 0,int l_king_faction = 0,int l_task_type = 0
+			,int l_task_issue_time = 0)
+			: roleid(l_roleid),king_faction(l_king_faction),task_type(l_task_type)
+			,task_issue_time(l_task_issue_time)
+		{
+		}
+
+		DBKingdomTaskIssueArg(const DBKingdomTaskIssueArg &rhs)
+			: roleid(rhs.roleid),king_faction(rhs.king_faction),task_type(rhs.task_type),
+			task_issue_time(rhs.task_issue_time) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomTaskIssueArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomTaskIssueArg *r = dynamic_cast<const DBKingdomTaskIssueArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				king_faction = r->king_faction;
+				task_type = r->task_type;
+				task_issue_time = r->task_issue_time;
+			}
+			return *this;
+		}
+
+		DBKingdomTaskIssueArg& operator = (const DBKingdomTaskIssueArg &rhs)
+		{
+			const DBKingdomTaskIssueArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				king_faction = r->king_faction;
+				task_type = r->task_type;
+				task_issue_time = r->task_issue_time;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << king_faction;
+			os << task_type;
+			os << task_issue_time;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> king_faction;
+			os >> task_type;
+			os >> task_issue_time;
+			return os;
+		}
+
+	};
+};
+#endif

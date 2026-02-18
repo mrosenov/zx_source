@@ -1,0 +1,38 @@
+	public:
+		int roleid;
+		unsigned int factionid;
+		int territoryid;
+		enum { PROTOCOL_TYPE = PROTOCOL_GTERRITORYENTER };
+	public:
+		GTerritoryEnter() { type = PROTOCOL_GTERRITORYENTER; }
+		GTerritoryEnter(void*) : Protocol(PROTOCOL_GTERRITORYENTER) { }
+		GTerritoryEnter (int l_roleid,unsigned int l_factionid = 0,int l_territoryid = 0)
+			 : roleid(l_roleid),factionid(l_factionid),territoryid(l_territoryid)
+		{
+			type = PROTOCOL_GTERRITORYENTER;
+		}
+
+		GTerritoryEnter(const GTerritoryEnter &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),factionid(rhs.factionid),territoryid(rhs.territoryid) { }
+
+		GNET::Protocol *Clone() const { return new GTerritoryEnter(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << factionid;
+			os << territoryid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> factionid;
+			os >> territoryid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

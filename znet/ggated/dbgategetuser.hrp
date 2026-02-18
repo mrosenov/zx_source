@@ -1,0 +1,55 @@
+
+#ifndef __GNET_DBGATEGETUSER_HPP
+#define __GNET_DBGATEGETUSER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "gamedbclient.hpp"
+#include "userid"
+#include "dbgategetuserres"
+#include "gtmanager.h"
+namespace GNET
+{
+
+class DBGateGetUser : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgategetuser"
+#undef	RPC_BASECLASS
+	int pt_type;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// UserID *arg = (UserID *)argument;
+		// DBGateGetUserRes *res = (DBGateGetUserRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		UserID *arg = (UserID *)argument;
+		DBGateGetUserRes *res = (DBGateGetUserRes *)result;
+		DEBUG_PRINT("dbgategetuser: userid=%d logicuid=%d pt_type=%d", arg->id,res->logicuid,pt_type);
+		if(res->retcode == ERR_SUCCESS)
+		{
+			GTManager::Instance()->OnDBGateGetUser(arg->id,res->rolelist,res->logicuid,pt_type);
+		}
+		else
+		{
+			DEBUG_PRINT("DBGateGetUser error:retcode =%d",res->retcode);
+			GTManager::Instance()->OnDBGateGetUser(arg->id,res->rolelist,res->logicuid,pt_type);//sendback a null list
+		}
+	}
+
+	void OnTimeout()
+	{
+		UserID *arg = (UserID *)argument;
+		DBGateGetUser * rpc=(DBGateGetUser*)Rpc::Call(RPC_DBGATEGETUSER,arg);
+		rpc->pt_type = pt_type;
+		DEBUG_PRINT("dbgategetuser: timeout. userid=%d", arg->id);
+		GameDBClient::GetInstance()->SendProtocol( rpc );
+	}
+
+};
+
+};
+#endif

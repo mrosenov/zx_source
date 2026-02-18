@@ -1,0 +1,38 @@
+	public:
+		int battle_id;
+		int world_tag;
+		char use_for_battle;
+		enum { PROTOCOL_TYPE = PROTOCOL_GSIEGESERVERREGISTER };
+	public:
+		GSiegeServerRegister() { type = PROTOCOL_GSIEGESERVERREGISTER; }
+		GSiegeServerRegister(void*) : Protocol(PROTOCOL_GSIEGESERVERREGISTER) { }
+		GSiegeServerRegister (int l_battle_id,int l_world_tag = 0,char l_use_for_battle = 0)
+			 : battle_id(l_battle_id),world_tag(l_world_tag),use_for_battle(l_use_for_battle)
+		{
+			type = PROTOCOL_GSIEGESERVERREGISTER;
+		}
+
+		GSiegeServerRegister(const GSiegeServerRegister &rhs)
+			: Protocol(rhs),battle_id(rhs.battle_id),world_tag(rhs.world_tag),use_for_battle(rhs.use_for_battle) { }
+
+		GNET::Protocol *Clone() const { return new GSiegeServerRegister(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << battle_id;
+			os << world_tag;
+			os << use_for_battle;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> battle_id;
+			os >> world_tag;
+			os >> use_for_battle;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

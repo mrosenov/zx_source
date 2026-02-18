@@ -1,0 +1,142 @@
+
+#ifndef __GNET_DBCONSIGNROLEFAIL_HPP
+#define __GNET_DBCONSIGNROLEFAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignrolefailarg"
+#include "dbconsignrolefailres"
+#include "consignmanager.h"
+#include "gwebtradeclient.hpp"
+#include "webpostcancel_re.hpp"
+#include "gamedbclient.hpp"
+#include "postexpire_re.hpp"
+#include "gdeliveryserver.hpp"
+#include "consignplayer_re.hpp"
+#include "consigncancelpost_re.hpp"
+
+namespace GNET
+{
+
+class DBConsignRoleFail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignrolefail"
+#undef	RPC_BASECLASS
+
+	int64_t messageid;
+	int64_t timestamp;
+	int userid;
+	bool userid_mismatch;
+	bool roleid_mismatch;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignRoleFailArg *arg = (DBConsignRoleFailArg *)argument;
+		// DBConsignRoleFailRes *res = (DBConsignRoleFailRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignRoleFailArg *arg = (DBConsignRoleFailArg *)argument;
+		DBConsignRoleFailRes *res = (DBConsignRoleFailRes *)result;
+		DEBUG_PRINT("dbconsignrolefail: rpc return. retcode=%d,sn=%lld,roleid=%d,finstate=%d", res->retcode, arg->sn, arg->roleid, arg->fin_state);
+
+		if(res->retcode == ERR_SUCCESS || res->retcode == ERR_WT_DB_DUPLICATE_RQST)
+		{
+			
+			if(ConsignManager::GetInstance()->OnDBConsignFailRole(arg->sn,arg->fin_state,timestamp)!=ERR_SUCCESS)
+			{
+				Log::log(LOG_ERR,"dbconsignrolefail: OnDBConsignFailRole failed. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+			//	ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			}
+			//notify web
+			int retcode =0;
+			if(userid_mismatch)
+				retcode = 7;
+			else if(roleid_mismatch)
+				retcode =8;
+			PlayerInfo * pinfo = UserContainer::GetInstance().FindRole( arg->roleid );
+			switch(arg->fin_state)
+			{
+				case DSTATE_POST_FORCE_CANCEL:
+				case DSTATE_POST_WEB_CANCEL:
+					GWebTradeClient::GetInstance()->SendProtocol(WebPostCancel_Re(userid,arg->roleid,arg->sn,\
+								retcode,messageid));
+					break;
+				case DSTATE_EXPIRE:
+					GWebTradeClient::GetInstance()->SendProtocol(PostExpire_Re(userid,arg->roleid,arg->sn,\
+								retcode,messageid));
+					break;
+				case DSTATE_POST_FAIL:
+					if ( NULL!=pinfo)
+					{
+						GDeliveryServer::GetInstance()->Send(pinfo->linksid,ConsignPlayer_Re(arg->roleid,pinfo->localsid,ConsignManager::GetClientRqstRetcode(ERR_WT_DB_STATEERR)));
+					}
+					break;	
+				case DSTATE_POST_GAME_CANCEL:
+				default:
+					Log::log(LOG_ERR,"dbconsignrolefail: return state err. sn=%lld,roleid=%d,state=%d retcode=%d", arg->sn,arg->roleid,arg->fin_state,res->retcode);
+					return;
+			}
+		}
+		else
+		{
+			ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			Log::log(LOG_ERR,"dbconsignrolefail: failed. sn=%lld,roleid=%d,finstate=%d retcode=%d", arg->sn,arg->roleid,arg->fin_state,res->retcode);
+			int ret;
+			switch(res->retcode)
+			{
+				case ERR_WT_DB_STATEERR:
+					ret = 3;//web 重发
+					break;
+				default:
+					ret = -1;//web 重发
+			}
+			switch(arg->fin_state)
+			{
+			case DSTATE_POST_FAIL:
+			case DSTATE_POST_GAME_CANCEL:	
+//				GameDBClient::GetInstance()->SendProtocol( Rpc::Call(RPC_DBCONSIGNFAIL,arg));
+				break;
+			case DSTATE_POST_WEB_CANCEL:
+			case DSTATE_POST_FORCE_CANCEL:	
+				GWebTradeClient::GetInstance()->SendProtocol(WebPostCancel_Re(userid,arg->roleid,arg->sn,ret,messageid));
+				break;
+			case DSTATE_EXPIRE:
+				GWebTradeClient::GetInstance()->SendProtocol(PostExpire_Re(userid,arg->roleid,arg->sn,ret,messageid));
+				break;
+			}
+		}
+	}
+
+	void OnTimeout()
+	{
+		DBConsignRoleFailArg *arg = (DBConsignRoleFailArg *)argument;
+		Log::log(LOG_ERR,"dbconsignrolefail: timeout. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+		switch(arg->fin_state)
+		{
+		case DSTATE_POST_WEB_CANCEL:
+		case DSTATE_POST_FORCE_CANCEL:
+	//	GameDBClient::GetInstance()->SendProtocol( Rpc::Call(RPC_DBCONSIGNFAIL,arg));
+			ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			GWebTradeClient::GetInstance()->SendProtocol(WebPostCancel_Re(userid,arg->roleid,arg->sn,-1,messageid));
+			break;
+		case DSTATE_EXPIRE:
+			ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			GWebTradeClient::GetInstance()->SendProtocol(PostExpire_Re(userid,arg->roleid,arg->sn,-1,messageid));
+			break;
+		case DSTATE_POST_FAIL:
+			GameDBClient::GetInstance()->SendProtocol( Rpc::Call(RPC_DBCONSIGNFAIL,arg) );
+			break;
+		case DSTATE_POST_GAME_CANCEL:
+			break;
+		}
+	}
+
+};
+
+};
+#endif

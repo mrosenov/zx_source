@@ -1,0 +1,100 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSJOIN_HPP
+#define __GNET_DBCRSSVRTEAMSJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsjoinarg"
+#include "dbcrssvrteamsjoinres"
+
+#include "crssvrteamsmanager.h"
+#include "crssvrteamsnotify_re.hpp"
+#include "synccrosscrssvrteamsadd.hrp"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsjoin"
+#undef	RPC_BASECLASS
+
+	int roleid;// 邀请人
+	int invitee_linksid, invitee_localsid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsJoinArg *arg = (DBCrssvrTeamsJoinArg *)argument;
+		// DBCrssvrTeamsJoinRes *res = (DBCrssvrTeamsJoinRes *)result;
+	}
+
+	void NotifyCentral(int zoneid, int teamid, GCrssvrTeamsRole& roleinfo)
+	{
+		LOG_TRACE("DBCrssvrTeamsJoin send to center");
+		//if(!CrssvrTeamsManager::Instance()->IsRoleCrossOnline(teamid))
+		//	return;
+
+		SyncCrossCrssvrTeamsAdd* rpc = (SyncCrossCrssvrTeamsAdd*) Rpc::Call(RPC_SYNCCROSSCRSSVRTEAMSADD, SyncCrossCrssvrTeamsAddArg(zoneid, teamid, roleinfo));
+		CentralDeliveryClient::GetInstance()->SendProtocol(rpc);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsJoinArg *arg = (DBCrssvrTeamsJoinArg *)argument;
+		DBCrssvrTeamsJoinRes *res = (DBCrssvrTeamsJoinRes *)result;
+		
+		LOG_TRACE("DBCrssvrTeamsJoin, retcode=%d, teamid=%d, roleid=%d", res->retcode, arg->teamid, arg->roleid);
+		Thread::RWLock::WRScoped l(UserContainer::GetInstance().GetLocker());
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(roleid);
+		if (NULL==pinfo)
+		{
+			LOG_TRACE("DBCrssvrTeamsJoin, NULL==pinfo, roleid=%d", roleid);
+			return;
+		}
+
+		if (res->retcode == ERR_SUCCESS)
+		{
+			int ret = CrssvrTeamsManager::Instance()->OnJoin(arg->teamid, res->info);
+			if(ret != ERR_SUCCESS)
+			{
+				// 邀请人提示
+				//GDeliveryServer::GetInstance()->Send(pinfo->linksid, CrssvrTeamsNotify_Re(ret, arg->roleid, arg->teamid, pinfo->localsid));
+			}
+			else
+			{
+				int zoneid = GDeliveryServer::GetInstance()->zoneid;
+				NotifyCentral(zoneid, arg->teamid, arg->info);
+
+				ret = ERR_CRSSVRTEAMS_INVITE_JOIN_OK;
+			}
+			
+			// 邀请人提示
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, CrssvrTeamsNotify_Re(ret, arg->roleid, arg->teamid, pinfo->localsid));
+
+			// 被邀请人提示
+			GDeliveryServer::GetInstance()->Send(invitee_linksid, CrssvrTeamsNotify_Re(ret, arg->roleid, arg->teamid, invitee_localsid));
+
+		}
+		else
+		{
+			// 邀请人提示
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid,CrssvrTeamsNotify_Re(res->retcode,arg->roleid,arg->teamid,pinfo->localsid));
+			GDeliveryServer::GetInstance()->Send(invitee_linksid, CrssvrTeamsNotify_Re(res->retcode, arg->roleid, arg->teamid, invitee_localsid));
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		//DBCrssvrTeamsJoinArg *arg = (DBCrssvrTeamsJoinArg *)argument;
+		//Log::log( LOG_ERR,"DBCrssvrTeamsJoin: timeout. roleid=%d,teamid=%d", arg->roleid, arg->teamid);
+		//GDeliveryServer::GetInstance()->Send(linksid,CrssvrTeamsNotify_Re(ERR_CRSSVRTEAMS_DB_TIMEOUT,arg->roleid,arg->teamid,localsid));
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,185 @@
+#ifndef __GNET_GCONSIGNDB_RPCDATA
+#define __GNET_GCONSIGNDB_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gconsignitem"
+#include "groleinventory"
+
+namespace GNET
+{
+	class GConsignDB : public GNET::Rpc::Data
+	{
+	public:
+		GConsignItem info;
+		GRoleInventory item;
+		int post_time;
+		int game_timestamp;
+		int64_t largest_web_timestamp;
+		int margin;
+		int loginip;
+		int seller_roleid;
+		int seller_userid;
+		Octets seller_name;
+		int buyer_roleid;
+		int buyer_userid;
+		Octets buyer_name;
+		int64_t orderid;
+		int category;
+		char mail_status;
+		int commodityid;
+		int shelf_time;
+		Octets gs_roleinfo;
+		char reserved2;
+		short reserved3;
+		int reserved4;
+
+	public:
+		GConsignDB (int l_post_time = 0,int l_game_timestamp = 0,int64_t l_largest_web_timestamp = 0
+			,int l_margin = 0,int l_loginip = 0,int l_seller_roleid = 0
+			,int l_seller_userid = 0,const Octets& l_seller_name = Octets(),int l_buyer_roleid = 0
+			,int l_buyer_userid = 0,const Octets& l_buyer_name = Octets(),int64_t l_orderid = 0
+			,int l_category = 0,char l_mail_status = 0,int l_commodityid = 0
+			,int l_shelf_time = 0,const Octets& l_gs_roleinfo = Octets(),char l_reserved2 = 0
+			,short l_reserved3 = 0,int l_reserved4 = 0)
+			: post_time(l_post_time),game_timestamp(l_game_timestamp),largest_web_timestamp(l_largest_web_timestamp)
+			,margin(l_margin),loginip(l_loginip),seller_roleid(l_seller_roleid)
+			,seller_userid(l_seller_userid),seller_name(l_seller_name),buyer_roleid(l_buyer_roleid)
+			,buyer_userid(l_buyer_userid),buyer_name(l_buyer_name),orderid(l_orderid)
+			,category(l_category),mail_status(l_mail_status),commodityid(l_commodityid)
+			,shelf_time(l_shelf_time),gs_roleinfo(l_gs_roleinfo),reserved2(l_reserved2)
+			,reserved3(l_reserved3),reserved4(l_reserved4)
+		{
+		}
+
+		GConsignDB(const GConsignDB &rhs)
+			: info(rhs.info),item(rhs.item),post_time(rhs.post_time),
+			game_timestamp(rhs.game_timestamp),largest_web_timestamp(rhs.largest_web_timestamp),margin(rhs.margin),
+			loginip(rhs.loginip),seller_roleid(rhs.seller_roleid),seller_userid(rhs.seller_userid),
+			seller_name(rhs.seller_name),buyer_roleid(rhs.buyer_roleid),buyer_userid(rhs.buyer_userid),
+			buyer_name(rhs.buyer_name),orderid(rhs.orderid),category(rhs.category),
+			mail_status(rhs.mail_status),commodityid(rhs.commodityid),shelf_time(rhs.shelf_time),
+			gs_roleinfo(rhs.gs_roleinfo),reserved2(rhs.reserved2),reserved3(rhs.reserved3),
+			reserved4(rhs.reserved4) { }
+
+		Rpc::Data *Clone() const { return new GConsignDB(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GConsignDB *r = dynamic_cast<const GConsignDB *>(&rhs);
+			if (r && r != this)
+			{
+				info = r->info;
+				item = r->item;
+				post_time = r->post_time;
+				game_timestamp = r->game_timestamp;
+				largest_web_timestamp = r->largest_web_timestamp;
+				margin = r->margin;
+				loginip = r->loginip;
+				seller_roleid = r->seller_roleid;
+				seller_userid = r->seller_userid;
+				seller_name = r->seller_name;
+				buyer_roleid = r->buyer_roleid;
+				buyer_userid = r->buyer_userid;
+				buyer_name = r->buyer_name;
+				orderid = r->orderid;
+				category = r->category;
+				mail_status = r->mail_status;
+				commodityid = r->commodityid;
+				shelf_time = r->shelf_time;
+				gs_roleinfo = r->gs_roleinfo;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+			}
+			return *this;
+		}
+
+		GConsignDB& operator = (const GConsignDB &rhs)
+		{
+			const GConsignDB *r = &rhs;
+			if (r && r != this)
+			{
+				info = r->info;
+				item = r->item;
+				post_time = r->post_time;
+				game_timestamp = r->game_timestamp;
+				largest_web_timestamp = r->largest_web_timestamp;
+				margin = r->margin;
+				loginip = r->loginip;
+				seller_roleid = r->seller_roleid;
+				seller_userid = r->seller_userid;
+				seller_name = r->seller_name;
+				buyer_roleid = r->buyer_roleid;
+				buyer_userid = r->buyer_userid;
+				buyer_name = r->buyer_name;
+				orderid = r->orderid;
+				category = r->category;
+				mail_status = r->mail_status;
+				commodityid = r->commodityid;
+				shelf_time = r->shelf_time;
+				gs_roleinfo = r->gs_roleinfo;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << info;
+			os << item;
+			os << post_time;
+			os << game_timestamp;
+			os << largest_web_timestamp;
+			os << margin;
+			os << loginip;
+			os << seller_roleid;
+			os << seller_userid;
+			os << seller_name;
+			os << buyer_roleid;
+			os << buyer_userid;
+			os << buyer_name;
+			os << orderid;
+			os << category;
+			os << mail_status;
+			os << commodityid;
+			os << shelf_time;
+			os << gs_roleinfo;
+			os << reserved2;
+			os << reserved3;
+			os << reserved4;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> info;
+			os >> item;
+			os >> post_time;
+			os >> game_timestamp;
+			os >> largest_web_timestamp;
+			os >> margin;
+			os >> loginip;
+			os >> seller_roleid;
+			os >> seller_userid;
+			os >> seller_name;
+			os >> buyer_roleid;
+			os >> buyer_userid;
+			os >> buyer_name;
+			os >> orderid;
+			os >> category;
+			os >> mail_status;
+			os >> commodityid;
+			os >> shelf_time;
+			os >> gs_roleinfo;
+			os >> reserved2;
+			os >> reserved3;
+			os >> reserved4;
+			return os;
+		}
+
+	};
+};
+#endif

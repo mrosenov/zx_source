@@ -1,0 +1,157 @@
+
+#ifndef __GNET_MATRIXPASSWD_HPP
+#define __GNET_MATRIXPASSWD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "matrixpasswdarg"
+#include "matrixpasswdres"
+#include "gauthclient.hpp"
+#include "mapuser.h"
+#include "localmacro.h"
+#include "mapforbid.h"
+
+namespace GNET
+{
+
+class MatrixPasswd : public ProxyRpc
+{
+	GNET::Protocol *Clone() const {  return new MatrixPasswd(*this); }
+public:
+	enum { PROTOCOL_TYPE = RPC_MATRIXPASSWD };
+	MatrixPasswd(Type type, Rpc::Data *argument, Rpc::Data *result)
+		: ProxyRpc(type, argument, result ) { }
+	MatrixPasswd(const MatrixPasswd &rhs) : ProxyRpc(rhs) { }
+	int  PriorPolicy( ) const { return 101; }
+	bool SizePolicy(size_t size) const { return size <= 512; }
+	bool TimePolicy(int timeout) const { return timeout <= 20; }
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+			
+		MatrixPasswdArg arg;
+		osArg >> arg;
+		if (GDeliveryServer::GetInstance()->IsCentralDS())
+		{
+			Log::log(LOG_ERR, "User(%.*s) Try to Login Central Delivery Server directly, Refuse him!", 
+						arg.account.size(), (char*)arg.account.begin());
+			MatrixPasswdRes res;
+			res.retcode = -1;
+			SetResult(res);
+			SendToSponsor();
+			return false;
+		}
+		if ( UserContainer::GetInstance().Size() >= UserContainer::GetInstance().GetPlayerLimit() )
+		{
+			MatrixPasswdRes res;
+			res.retcode = ERR_SERVEROVERLOAD;
+			SetResult(res);
+			SendToSponsor();
+			return false;
+		}	   
+		LOG_TRACE("gdelivery::matrixpasswd query, user=%.*s", arg.account.size(),(char*) arg.account.begin());
+/*
+		//testbegin
+		UserInfo ui;
+		ui.GenSSOInfo(arg.account);
+		LOG_TRACE("trylogin ssoinfo isagent %d userid %lld account:%.*s agentname:%.*s agentaccount:%.*s",
+				ui.ssoinfo.isagent, ui.ssoinfo.userid,
+				ui.ssoinfo.account.size(), (char*)ui.ssoinfo.account.begin(),
+				ui.ssoinfo.agentname.size(), (char*)ui.ssoinfo.agentname.begin(),
+				ui.ssoinfo.agentaccount.size(), (char*)ui.ssoinfo.agentaccount.begin());
+		//testend
+*/
+		if( GAuthClient::GetInstance()->SendProtocol( *this ) )
+		{
+			return true;
+		}
+		else
+		{
+			TryResponse(arg);
+			return false;
+		}
+	}
+
+	void CalcResponse(MatrixPasswdArg& arg,MatrixPasswdRes& res)
+	{
+		HMAC_MD5Hash hash;
+		hash.SetParameter(res.response);
+		hash.Update(arg.challenge);
+		hash.Final(res.response);
+	}
+
+	void TryResponse(MatrixPasswdArg& arg)
+	{
+		MatrixPasswdRes res;
+		std::string account_str((char*)arg.account.begin(), arg.account.size());
+		if (account_str.rfind("@sso") != std::string::npos)
+		{
+			LOG_TRACE("gdelivery::matrixpasswd sso login failed, user=%.*s",arg.account.size(),(char*)arg.account.begin());
+			res.retcode = ERR_COMMUNICATION;
+		}
+		else
+		{
+			char algo = GDeliveryServer::GetInstance()->ChallengeAlgo();
+			if (algo == ALGO_MD5)
+			{
+				if( Passwd::GetInstance().GetPasswd( arg.account, res.userid, res.response, res.matrix, res.algorithm ) )
+				{
+					res.retcode=ERR_SUCCESS;
+					CalcResponse(arg,res);
+				}
+				else
+				{
+					LOG_TRACE("gdelivery::matrixpasswd cache missing, user=%.*s",arg.account.size(),(char*)arg.account.begin());
+					res.retcode = ERR_COMMUNICATION;
+				}
+			}
+			else
+			{       
+				LOG_TRACE("gdelivery::matrixpasswd try response, user=%.*s",arg.account.size(),(char*)arg.account.begin());
+				res.retcode = ERR_COMMUNICATION;
+			}
+		}
+		SetResult(res);
+		SendToSponsor();
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		MatrixPasswdArg arg;
+		osArg >> arg;
+		MatrixPasswdRes res;
+		osRes >> res;
+		if (res.retcode == ERR_SUCCESS)
+		{
+			Passwd::GetInstance().CacheAlgo(res.userid, res.algorithm);
+			if (res.algorithm & ALGORITHM_OPT_STUDIO_USER)
+				ForbidStudioUser::GetInstance()->RecordUser(res.userid);
+		}
+		char algo = GDeliveryServer::GetInstance()->ChallengeAlgo();
+		if (algo != ALGO_MD5)
+			return;
+		if (res.retcode == ERR_SUCCESS)
+		{
+			if((res.algorithm&ALGORITHM_OPT_NOCACHE)==0)
+				Passwd::GetInstance().SetPasswd( arg.account, res.userid, res.response, res.matrix, res.algorithm );
+			else if(0 == (res.algorithm & ALGORITHM_SINGLE_SING_ON)) // 账号没有采用单点登录方式
+				Passwd::GetInstance().ClearPasswd(arg.account);
+
+			CalcResponse(arg,res);
+		}
+		SetResult( &res ); // if you modified res, do not forget to call this. 
+	}
+
+	void OnTimeout(const OctetsStream &osArg)
+	{
+		MatrixPasswdArg arg;
+		osArg >> arg;
+		LOG_TRACE("gdelivery::passwdtimeout. user=%.*s", arg.account.size(),(char*)arg.account.begin());
+		STAT_MIN5("PasswordTimeout", 1);
+		TryResponse(arg);
+	}
+};
+
+};
+#endif

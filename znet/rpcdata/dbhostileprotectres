@@ -1,0 +1,65 @@
+#ifndef __GNET_DBHOSTILEPROTECTRES_RPCDATA
+#define __GNET_DBHOSTILEPROTECTRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBHostileProtectRes : public GNET::Rpc::Data
+	{
+	public:
+		unsigned char retcode;
+		GMailSyncData syncdata;
+
+	public:
+		DBHostileProtectRes (const GMailSyncData& l_syncdata = GMailSyncData())
+			: syncdata(l_syncdata)
+		{
+		}
+
+		DBHostileProtectRes(const DBHostileProtectRes &rhs)
+			: retcode(rhs.retcode),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBHostileProtectRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBHostileProtectRes *r = dynamic_cast<const DBHostileProtectRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBHostileProtectRes& operator = (const DBHostileProtectRes &rhs)
+		{
+			const DBHostileProtectRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

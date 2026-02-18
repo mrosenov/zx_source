@@ -1,0 +1,38 @@
+	public:
+		int roleid;
+		int award_type;
+		int award_level;
+		enum { PROTOCOL_TYPE = PROTOCOL_GCRSSVRTEAMSGETSCORE };
+	public:
+		GCrssvrTeamsGetScore() { type = PROTOCOL_GCRSSVRTEAMSGETSCORE; }
+		GCrssvrTeamsGetScore(void*) : Protocol(PROTOCOL_GCRSSVRTEAMSGETSCORE) { }
+		GCrssvrTeamsGetScore (int l_roleid,int l_award_type = 0,int l_award_level = 0)
+			 : roleid(l_roleid),award_type(l_award_type),award_level(l_award_level)
+		{
+			type = PROTOCOL_GCRSSVRTEAMSGETSCORE;
+		}
+
+		GCrssvrTeamsGetScore(const GCrssvrTeamsGetScore &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),award_type(rhs.award_type),award_level(rhs.award_level) { }
+
+		GNET::Protocol *Clone() const { return new GCrssvrTeamsGetScore(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << award_type;
+			os << award_level;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> award_type;
+			os >> award_level;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

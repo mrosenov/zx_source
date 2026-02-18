@@ -1,0 +1,59 @@
+#ifndef __GNET_DBROLENAMELISTARG_RPCDATA
+#define __GNET_DBROLENAMELISTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBRoleNameListArg : public GNET::Rpc::Data
+	{
+	public:
+		int page;
+
+	public:
+		DBRoleNameListArg (const int& l_page = 0)
+			: page(l_page)
+		{
+		}
+
+		DBRoleNameListArg(const DBRoleNameListArg &rhs)
+			: page(rhs.page) { }
+
+		Rpc::Data *Clone() const { return new DBRoleNameListArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBRoleNameListArg *r = dynamic_cast<const DBRoleNameListArg *>(&rhs);
+			if (r && r != this)
+			{
+				page = r->page;
+			}
+			return *this;
+		}
+
+		DBRoleNameListArg& operator = (const DBRoleNameListArg &rhs)
+		{
+			const DBRoleNameListArg *r = &rhs;
+			if (r && r != this)
+			{
+				page = r->page;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << page;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> page;
+			return os;
+		}
+
+	};
+};
+#endif

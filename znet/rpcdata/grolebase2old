@@ -1,0 +1,219 @@
+#ifndef __GNET_GROLEBASE2OLD_RPCDATA
+#define __GNET_GROLEBASE2OLD_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GRoleBase2old : public GNET::Rpc::Data
+	{
+	public:
+		int id;
+		int bonus_withdraw;
+		int bonus_reward;
+		int bonus_used;
+		int64_t exp_withdraw_today;
+		int exp_withdraw_time;
+		Octets composkills;
+		Octets tower_raid;
+		unsigned short deity_level;
+		int data_timestamp;
+		int src_zoneid;
+		int64_t deity_exp;
+		int dp;
+		Octets littlepet;
+		unsigned char flag_mask;
+		Octets ui_transfer;
+		Octets collision_info;
+		int runescore;
+		int64_t comsumption;
+		Octets astrology_info;
+		Octets liveness_info;
+		Octets sale_promotion_info;
+		Octets propadd;
+		Octets multi_exp;
+		Octets fuwen_info;
+		std::map<int, int64_t> datagroup;
+		Octets phase;
+		Octets award_info_6v6;
+
+	public:
+		GRoleBase2old (int l_id = 0,int l_bonus_withdraw = 0,int l_bonus_reward = 0
+			,int l_bonus_used = 0,int64_t l_exp_withdraw_today = 0,int l_exp_withdraw_time = 0
+			,Octets l_composkills = Octets(0),const Octets& l_tower_raid = Octets(0),unsigned short l_deity_level = 0
+			,int l_data_timestamp = 0,int l_src_zoneid = 0,int64_t l_deity_exp = 0
+			,int l_dp = 0,Octets l_littlepet = Octets(0),unsigned char l_flag_mask = 0
+			,Octets l_ui_transfer = Octets(0),Octets l_collision_info = Octets(0),int l_runescore = 0
+			,int64_t l_comsumption = 0,Octets l_astrology_info = Octets(0),Octets l_liveness_info = Octets(0)
+			,Octets l_sale_promotion_info = Octets(0),Octets l_propadd = Octets(0),Octets l_multi_exp = Octets(0)
+			,Octets l_fuwen_info = Octets(0),Octets l_phase = Octets(0),Octets l_award_info_6v6 = Octets(0))
+			: id(l_id),bonus_withdraw(l_bonus_withdraw),bonus_reward(l_bonus_reward)
+			,bonus_used(l_bonus_used),exp_withdraw_today(l_exp_withdraw_today),exp_withdraw_time(l_exp_withdraw_time)
+			,composkills(l_composkills),tower_raid(l_tower_raid),deity_level(l_deity_level)
+			,data_timestamp(l_data_timestamp),src_zoneid(l_src_zoneid),deity_exp(l_deity_exp)
+			,dp(l_dp),littlepet(l_littlepet),flag_mask(l_flag_mask)
+			,ui_transfer(l_ui_transfer),collision_info(l_collision_info),runescore(l_runescore)
+			,comsumption(l_comsumption),astrology_info(l_astrology_info),liveness_info(l_liveness_info)
+			,sale_promotion_info(l_sale_promotion_info),propadd(l_propadd),multi_exp(l_multi_exp)
+			,fuwen_info(l_fuwen_info),phase(l_phase),award_info_6v6(l_award_info_6v6)
+		{
+		}
+
+		GRoleBase2old(const GRoleBase2old &rhs)
+			: id(rhs.id),bonus_withdraw(rhs.bonus_withdraw),bonus_reward(rhs.bonus_reward),
+			bonus_used(rhs.bonus_used),exp_withdraw_today(rhs.exp_withdraw_today),exp_withdraw_time(rhs.exp_withdraw_time),
+			composkills(rhs.composkills),tower_raid(rhs.tower_raid),deity_level(rhs.deity_level),
+			data_timestamp(rhs.data_timestamp),src_zoneid(rhs.src_zoneid),deity_exp(rhs.deity_exp),
+			dp(rhs.dp),littlepet(rhs.littlepet),flag_mask(rhs.flag_mask),
+			ui_transfer(rhs.ui_transfer),collision_info(rhs.collision_info),runescore(rhs.runescore),
+			comsumption(rhs.comsumption),astrology_info(rhs.astrology_info),liveness_info(rhs.liveness_info),
+			sale_promotion_info(rhs.sale_promotion_info),propadd(rhs.propadd),multi_exp(rhs.multi_exp),
+			fuwen_info(rhs.fuwen_info),datagroup(rhs.datagroup),phase(rhs.phase),
+			award_info_6v6(rhs.award_info_6v6) { }
+
+		Rpc::Data *Clone() const { return new GRoleBase2old(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GRoleBase2old *r = dynamic_cast<const GRoleBase2old *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				bonus_withdraw = r->bonus_withdraw;
+				bonus_reward = r->bonus_reward;
+				bonus_used = r->bonus_used;
+				exp_withdraw_today = r->exp_withdraw_today;
+				exp_withdraw_time = r->exp_withdraw_time;
+				composkills = r->composkills;
+				tower_raid = r->tower_raid;
+				deity_level = r->deity_level;
+				data_timestamp = r->data_timestamp;
+				src_zoneid = r->src_zoneid;
+				deity_exp = r->deity_exp;
+				dp = r->dp;
+				littlepet = r->littlepet;
+				flag_mask = r->flag_mask;
+				ui_transfer = r->ui_transfer;
+				collision_info = r->collision_info;
+				runescore = r->runescore;
+				comsumption = r->comsumption;
+				astrology_info = r->astrology_info;
+				liveness_info = r->liveness_info;
+				sale_promotion_info = r->sale_promotion_info;
+				propadd = r->propadd;
+				multi_exp = r->multi_exp;
+				fuwen_info = r->fuwen_info;
+				datagroup = r->datagroup;
+				phase = r->phase;
+				award_info_6v6 = r->award_info_6v6;
+			}
+			return *this;
+		}
+
+		GRoleBase2old& operator = (const GRoleBase2old &rhs)
+		{
+			const GRoleBase2old *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				bonus_withdraw = r->bonus_withdraw;
+				bonus_reward = r->bonus_reward;
+				bonus_used = r->bonus_used;
+				exp_withdraw_today = r->exp_withdraw_today;
+				exp_withdraw_time = r->exp_withdraw_time;
+				composkills = r->composkills;
+				tower_raid = r->tower_raid;
+				deity_level = r->deity_level;
+				data_timestamp = r->data_timestamp;
+				src_zoneid = r->src_zoneid;
+				deity_exp = r->deity_exp;
+				dp = r->dp;
+				littlepet = r->littlepet;
+				flag_mask = r->flag_mask;
+				ui_transfer = r->ui_transfer;
+				collision_info = r->collision_info;
+				runescore = r->runescore;
+				comsumption = r->comsumption;
+				astrology_info = r->astrology_info;
+				liveness_info = r->liveness_info;
+				sale_promotion_info = r->sale_promotion_info;
+				propadd = r->propadd;
+				multi_exp = r->multi_exp;
+				fuwen_info = r->fuwen_info;
+				datagroup = r->datagroup;
+				phase = r->phase;
+				award_info_6v6 = r->award_info_6v6;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << bonus_withdraw;
+			os << bonus_reward;
+			os << bonus_used;
+			os << exp_withdraw_today;
+			os << exp_withdraw_time;
+			os << composkills;
+			os << tower_raid;
+			os << deity_level;
+			os << data_timestamp;
+			os << src_zoneid;
+			os << deity_exp;
+			os << dp;
+			os << littlepet;
+			os << flag_mask;
+			os << ui_transfer;
+			os << collision_info;
+			os << runescore;
+			os << comsumption;
+			os << astrology_info;
+			os << liveness_info;
+			os << sale_promotion_info;
+			os << propadd;
+			os << multi_exp;
+			os << fuwen_info;
+			os << datagroup;
+			os << phase;
+			os << award_info_6v6;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> bonus_withdraw;
+			os >> bonus_reward;
+			os >> bonus_used;
+			os >> exp_withdraw_today;
+			os >> exp_withdraw_time;
+			os >> composkills;
+			os >> tower_raid;
+			os >> deity_level;
+			os >> data_timestamp;
+			os >> src_zoneid;
+			os >> deity_exp;
+			os >> dp;
+			os >> littlepet;
+			os >> flag_mask;
+			os >> ui_transfer;
+			os >> collision_info;
+			os >> runescore;
+			os >> comsumption;
+			os >> astrology_info;
+			os >> liveness_info;
+			os >> sale_promotion_info;
+			os >> propadd;
+			os >> multi_exp;
+			os >> fuwen_info;
+			os >> datagroup;
+			os >> phase;
+			os >> award_info_6v6;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,59 @@
+
+#ifndef __GNET_DBSAVEWEBORDER_HPP
+#define __GNET_DBSAVEWEBORDER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsaveweborderarg"
+#include "dbsaveweborderres"
+#include "webordernotice.hpp"
+
+namespace GNET
+{
+
+class DBSaveWebOrder : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsaveweborder"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSaveWebOrderArg *arg = (DBSaveWebOrderArg *)argument;
+		// DBSaveWebOrderRes *res = (DBSaveWebOrderRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSaveWebOrderArg *arg = (DBSaveWebOrderArg *)argument;
+		DBSaveWebOrderRes *res = (DBSaveWebOrderRes *)result;
+		LOG_TRACE("DBSaveWebOrder ret %d, orderid %lld userid %d", res->retcode, arg->orderid, arg->userid);
+		if (res->retcode != ERR_SUCCESS)
+			Log::log(LOG_ERR, "DBSaveWebOrder err %d, orderid %lld userid %d", res->retcode, arg->orderid, arg->userid);
+		SysSendMail4_Re re(arg->paytype, arg->orderid, res->retcode, arg->userid, arg->roleid);
+		GAuthClient::GetInstance()->SendProtocol(re);
+		Log::formatlog("syssendmail4", "orderid %lld userid %d roleid %lld ret %d", arg->orderid, arg->userid, arg->roleid, res->retcode);
+
+		if (res->retcode == ERR_SUCCESS)
+		{
+			UserInfo * userinfo = UserContainer::GetInstance().FindUser(arg->userid);
+			if (userinfo && userinfo->gameid > 0)
+			{
+				LOG_TRACE("notify new weborder to gs, orderid %lld userid %d roleid %d", arg->orderid, arg->userid, userinfo->roleid);
+				GProviderServer::GetInstance()->DispatchProtocol(userinfo->gameid, WebOrderNotice(userinfo->roleid, res->weborders));
+			}
+		}
+	}
+
+	void OnTimeout()
+	{
+		DBSaveWebOrderArg *arg = (DBSaveWebOrderArg *)argument;
+		Log::log(LOG_ERR, "DBSaveWebOrder timeout, orderid %lld userid %d", arg->orderid, arg->userid);
+	}
+
+};
+
+};
+#endif

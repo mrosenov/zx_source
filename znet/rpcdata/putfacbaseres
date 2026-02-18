@@ -1,0 +1,59 @@
+#ifndef __GNET_PUTFACBASERES_RPCDATA
+#define __GNET_PUTFACBASERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class PutFacBaseRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		PutFacBaseRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		PutFacBaseRes(const PutFacBaseRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new PutFacBaseRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PutFacBaseRes *r = dynamic_cast<const PutFacBaseRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		PutFacBaseRes& operator = (const PutFacBaseRes &rhs)
+		{
+			const PutFacBaseRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

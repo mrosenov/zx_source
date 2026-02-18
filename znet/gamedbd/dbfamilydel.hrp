@@ -1,0 +1,77 @@
+
+#ifndef __GNET_DBFAMILYDEL_HPP
+#define __GNET_DBFAMILYDEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "familyid"
+#include "delfactionres"
+
+namespace GNET
+{
+
+class DBFamilyDel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilydel"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FamilyId *arg = (FamilyId *)argument;
+		DelFactionRes *res = (DelFactionRes *)result;
+
+		GFamily family;
+		Marshal::OctetsStream key,value;
+
+		try
+		{
+			StorageEnv::Storage * pfamily  = StorageEnv::GetStorage("family");
+			StorageEnv::Storage * pwaitdel = StorageEnv::GetStorage("waitdel");
+			StorageEnv::CommonTransaction txn;
+			try{
+				Log::formatlog("delfamily", "familyid=%d", arg->fid);
+				key << arg->fid;
+				if(!pfamily->find( key, value, txn ))
+				{
+					Log::log( LOG_ERR, "DBFamilyDel, fid=%d, not found", arg->fid);
+					res->retcode = ERR_SUCCESS;
+					return;
+				}
+				value >> family;
+				family.deletetime = Timer::GetTime();
+				pfamily->insert(key, Marshal::OctetsStream()<< family, txn);
+				Marshal::OctetsStream delkey;
+				delkey << WaitDelKey(arg->fid, TYPE_FAMILY);
+				pwaitdel->insert(delkey, Marshal::OctetsStream() << family.deletetime, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFamilyDel, fid=%d, what=%s\n", arg->fid, e.what() );
+			res->retcode = -1;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

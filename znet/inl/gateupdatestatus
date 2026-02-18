@@ -1,0 +1,35 @@
+	public:
+		GGateRoleGTStatus friendstatus;
+		std::vector<int> rolelist;
+		enum { PROTOCOL_TYPE = PROTOCOL_GATEUPDATESTATUS };
+	public:
+		GateUpdateStatus() { type = PROTOCOL_GATEUPDATESTATUS; }
+		GateUpdateStatus(void*) : Protocol(PROTOCOL_GATEUPDATESTATUS) { }
+		GateUpdateStatus (GGateRoleGTStatus l_friendstatus,const std::vector<int>& l_rolelist)
+			 : friendstatus(l_friendstatus),rolelist(l_rolelist)
+		{
+			type = PROTOCOL_GATEUPDATESTATUS;
+		}
+
+		GateUpdateStatus(const GateUpdateStatus &rhs)
+			: Protocol(rhs),friendstatus(rhs.friendstatus),rolelist(rhs.rolelist) { }
+
+		GNET::Protocol *Clone() const { return new GateUpdateStatus(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << friendstatus;
+			os << rolelist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> friendstatus;
+			os >> rolelist;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2048; }

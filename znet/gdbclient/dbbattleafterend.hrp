@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBBATTLEAFTEREND_HPP
+#define __GNET_DBBATTLEAFTEREND_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbbattleafterendarg"
+#include "dbbattleafterendres"
+
+namespace GNET
+{
+
+class DBBattleAfterEnd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbbattleafterend"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBBattleAfterEndArg *arg = (DBBattleAfterEndArg *)argument;
+		// DBBattleAfterEndRes *res = (DBBattleAfterEndRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBBattleAfterEndArg *arg = (DBBattleAfterEndArg *)argument;
+		// DBBattleAfterEndRes *res = (DBBattleAfterEndRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

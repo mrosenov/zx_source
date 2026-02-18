@@ -1,0 +1,44 @@
+	public:
+		int gs_id;
+		int roleid;
+		int map_id;
+		int index;
+		enum { PROTOCOL_TYPE = PROTOCOL_GRAIDENTERSUCCESS };
+	public:
+		GRaidEnterSuccess() { type = PROTOCOL_GRAIDENTERSUCCESS; }
+		GRaidEnterSuccess(void*) : Protocol(PROTOCOL_GRAIDENTERSUCCESS) { }
+		GRaidEnterSuccess (int l_gs_id,int l_roleid = 0,int l_map_id = 0,
+			int l_index = 0)
+			 : gs_id(l_gs_id),roleid(l_roleid),map_id(l_map_id)
+			,index(l_index)
+		{
+			type = PROTOCOL_GRAIDENTERSUCCESS;
+		}
+
+		GRaidEnterSuccess(const GRaidEnterSuccess &rhs)
+			: Protocol(rhs),gs_id(rhs.gs_id),roleid(rhs.roleid),map_id(rhs.map_id)
+			,index(rhs.index) { }
+
+		GNET::Protocol *Clone() const { return new GRaidEnterSuccess(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gs_id;
+			os << roleid;
+			os << map_id;
+			os << index;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gs_id;
+			os >> roleid;
+			os >> map_id;
+			os >> index;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 16; }

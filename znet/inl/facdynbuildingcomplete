@@ -1,0 +1,38 @@
+	public:
+		int fid;
+		int tid;
+		int level;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACDYNBUILDINGCOMPLETE };
+	public:
+		FacDynBuildingComplete() { type = PROTOCOL_FACDYNBUILDINGCOMPLETE; }
+		FacDynBuildingComplete(void*) : Protocol(PROTOCOL_FACDYNBUILDINGCOMPLETE) { }
+		FacDynBuildingComplete (int l_fid,int l_tid = 0,int l_level = 0)
+			 : fid(l_fid),tid(l_tid),level(l_level)
+		{
+			type = PROTOCOL_FACDYNBUILDINGCOMPLETE;
+		}
+
+		FacDynBuildingComplete(const FacDynBuildingComplete &rhs)
+			: Protocol(rhs),fid(rhs.fid),tid(rhs.tid),level(rhs.level) { }
+
+		GNET::Protocol *Clone() const { return new FacDynBuildingComplete(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << tid;
+			os << level;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> tid;
+			os >> level;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

@@ -1,0 +1,94 @@
+
+#ifndef __GNET_DBGATEGETROLE_HPP
+#define __GNET_DBGATEGETROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "dbgategetroleres"
+#include "grolebase"
+#include "grolestatus"
+
+namespace GNET
+{
+
+class DBGateGetRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgategetrole"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBGateGetRoleRes *res = (DBGateGetRoleRes *)result;
+		Marshal::OctetsStream key, value_status,value;
+
+		LOG_TRACE( "DBGateGetRole, roleid=%d.\n",arg->id);
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::AtomTransaction txn;
+			try
+			{
+				key << arg->id;
+				GRoleBase	base;
+				if(pbase->find( key,value,txn )) 
+				{
+					value >> base;
+					res->roledata.roleid = arg->id;
+					res->roledata.rolename = base.name;
+					res->roledata.gender = base.gender;
+				}
+				else
+				{
+					res->retcode = ERR_GT_DATANOTFIND;
+					return;
+				}
+				GRoleStatus     status;
+				if(pstatus->find( key, value_status, txn ))
+				{
+					value_status >> status;
+					res->roledata.occupation = status.occupation;
+					res->roledata.level = status.level;
+					res->roledata.reborntimes = status.reborndata.size()/sizeof(int);
+					res->roledata.cultivation = status.cultivation;
+				}
+				res->retcode = ERR_SUCCESS;
+
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBGateGetRole, roleid=%d, what=%s\n", arg->id, e.what() );
+			res->retcode = ERR_GT_DB_FAILURE;
+		}
+	
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// RoleId *arg = (RoleId *)argument;
+		// DBGateGetRoleRes *res = (DBGateGetRoleRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

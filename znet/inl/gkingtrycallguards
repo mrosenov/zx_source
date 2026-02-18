@@ -1,0 +1,47 @@
+	public:
+		int roleid;
+		int mapid;
+		float posx;
+		float posy;
+		float posz;
+		enum { PROTOCOL_TYPE = PROTOCOL_GKINGTRYCALLGUARDS };
+	public:
+		GKingTryCallGuards() { type = PROTOCOL_GKINGTRYCALLGUARDS; }
+		GKingTryCallGuards(void*) : Protocol(PROTOCOL_GKINGTRYCALLGUARDS) { }
+		GKingTryCallGuards (int l_roleid,int l_mapid = 0,float l_posx = 0.0f,
+			float l_posy = 0.0f,float l_posz = 0.0f)
+			 : roleid(l_roleid),mapid(l_mapid),posx(l_posx)
+			,posy(l_posy),posz(l_posz)
+		{
+			type = PROTOCOL_GKINGTRYCALLGUARDS;
+		}
+
+		GKingTryCallGuards(const GKingTryCallGuards &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),mapid(rhs.mapid),posx(rhs.posx)
+			,posy(rhs.posy),posz(rhs.posz) { }
+
+		GNET::Protocol *Clone() const { return new GKingTryCallGuards(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << mapid;
+			os << posx;
+			os << posy;
+			os << posz;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> mapid;
+			os >> posx;
+			os >> posy;
+			os >> posz;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

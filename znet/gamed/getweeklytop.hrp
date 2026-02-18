@@ -1,0 +1,51 @@
+
+#ifndef __GNET_GETWEEKLYTOP_HPP
+#define __GNET_GETWEEKLYTOP_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "integer"
+#include "gtopitem"
+#include "gtoptable"
+#include "weeklytopres"
+
+#include "gproviderclient.hpp"
+#include "gsp_if.h"
+#include "../include/localmacro.h"
+namespace GNET
+{
+
+class GetWeeklyTop : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getweeklytop"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		Integer *arg = (Integer *)argument;
+		WeeklyTopRes *res = (WeeklyTopRes *)result;
+		if(res->retcode)
+			Log::log(LOG_ERR,"gamed: GetWeekTop err, retcode=%d, index=%d", res->retcode,arg->value);
+		else
+			GMSV::OnLoadWeeklyTop(res->table);
+		if(arg->value<TOPTABLE_COUNT-1)
+			GProviderClient::DispatchProtocol(0,Rpc::Call(RPC_GETWEEKLYTOP,Integer(arg->value+1)));
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		Integer *arg = (Integer *)argument;
+		Log::log(LOG_ERR,"gamed: GetWeekTop timeout, index=%d", arg->value);
+	}
+
+};
+
+};
+#endif

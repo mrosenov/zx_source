@@ -1,0 +1,68 @@
+	public:
+		int roleid;
+		int margin;
+		unsigned int price;
+		unsigned int shelf_period;
+		Octets sell_to_rolename;
+		unsigned char consign_type;
+		unsigned int token_item_id;
+		int token_item_cnt;
+		int token_item_idx;
+		int category;
+		enum { PROTOCOL_TYPE = PROTOCOL_GCONSIGNSTARTROLE };
+	public:
+		GConsignStartRole() { type = PROTOCOL_GCONSIGNSTARTROLE; }
+		GConsignStartRole(void*) : Protocol(PROTOCOL_GCONSIGNSTARTROLE) { }
+		GConsignStartRole (int l_roleid,int l_margin,unsigned int l_price,
+			unsigned int l_shelf_period,const Octets& l_sell_to_rolename = Octets(),unsigned char l_consign_type = 0,
+			unsigned int l_token_item_id = 0,int l_token_item_cnt = 0,int l_token_item_idx = 0,
+			int l_category = 0)
+			 : roleid(l_roleid),margin(l_margin),price(l_price)
+			,shelf_period(l_shelf_period),sell_to_rolename(l_sell_to_rolename),consign_type(l_consign_type)
+			,token_item_id(l_token_item_id),token_item_cnt(l_token_item_cnt),token_item_idx(l_token_item_idx)
+			,category(l_category)
+		{
+			type = PROTOCOL_GCONSIGNSTARTROLE;
+		}
+
+		GConsignStartRole(const GConsignStartRole &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),margin(rhs.margin),price(rhs.price)
+			,shelf_period(rhs.shelf_period),sell_to_rolename(rhs.sell_to_rolename),consign_type(rhs.consign_type)
+			,token_item_id(rhs.token_item_id),token_item_cnt(rhs.token_item_cnt),token_item_idx(rhs.token_item_idx)
+			,category(rhs.category) { }
+
+		GNET::Protocol *Clone() const { return new GConsignStartRole(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << margin;
+			os << price;
+			os << shelf_period;
+			os << sell_to_rolename;
+			os << consign_type;
+			os << token_item_id;
+			os << token_item_cnt;
+			os << token_item_idx;
+			os << category;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> margin;
+			os >> price;
+			os >> shelf_period;
+			os >> sell_to_rolename;
+			os >> consign_type;
+			os >> token_item_id;
+			os >> token_item_cnt;
+			os >> token_item_idx;
+			os >> category;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

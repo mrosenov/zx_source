@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSNSGETPLAYERINFO_HPP
+#define __GNET_DBSNSGETPLAYERINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsgetplayerinfoarg"
+#include "dbsnsgetplayerinfores"
+
+namespace GNET
+{
+
+class DBSNSGetPlayerInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsgetplayerinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSNSGetPlayerInfoArg *arg = (DBSNSGetPlayerInfoArg *)argument;
+		// DBSNSGetPlayerInfoRes *res = (DBSNSGetPlayerInfoRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSNSGetPlayerInfoArg *arg = (DBSNSGetPlayerInfoArg *)argument;
+		// DBSNSGetPlayerInfoRes *res = (DBSNSGetPlayerInfoRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

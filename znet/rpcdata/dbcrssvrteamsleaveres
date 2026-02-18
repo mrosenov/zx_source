@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCRSSVRTEAMSLEAVERES_RPCDATA
+#define __GNET_DBCRSSVRTEAMSLEAVERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCrssvrTeamsLeaveRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int captain_roleid;
+
+	public:
+		DBCrssvrTeamsLeaveRes (int l_retcode = -1,int l_captain_roleid = -1)
+			: retcode(l_retcode),captain_roleid(l_captain_roleid)
+		{
+		}
+
+		DBCrssvrTeamsLeaveRes(const DBCrssvrTeamsLeaveRes &rhs)
+			: retcode(rhs.retcode),captain_roleid(rhs.captain_roleid) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsLeaveRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsLeaveRes *r = dynamic_cast<const DBCrssvrTeamsLeaveRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				captain_roleid = r->captain_roleid;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsLeaveRes& operator = (const DBCrssvrTeamsLeaveRes &rhs)
+		{
+			const DBCrssvrTeamsLeaveRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				captain_roleid = r->captain_roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << captain_roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> captain_roleid;
+			return os;
+		}
+
+	};
+};
+#endif

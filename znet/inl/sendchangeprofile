@@ -1,0 +1,50 @@
+	public:
+		int roleid;
+		unsigned char faceid;
+		unsigned char hairid;
+		unsigned char earid;
+		unsigned char tailid;
+		unsigned char fashionid;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDCHANGEPROFILE };
+	public:
+		SendChangeProfile() { type = PROTOCOL_SENDCHANGEPROFILE; }
+		SendChangeProfile(void*) : Protocol(PROTOCOL_SENDCHANGEPROFILE) { }
+		SendChangeProfile (int l_roleid,unsigned char l_faceid,unsigned char l_hairid,
+			unsigned char l_earid,unsigned char l_tailid,unsigned char l_fashionid)
+			 : roleid(l_roleid),faceid(l_faceid),hairid(l_hairid)
+			,earid(l_earid),tailid(l_tailid),fashionid(l_fashionid)
+		{
+			type = PROTOCOL_SENDCHANGEPROFILE;
+		}
+
+		SendChangeProfile(const SendChangeProfile &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),faceid(rhs.faceid),hairid(rhs.hairid)
+			,earid(rhs.earid),tailid(rhs.tailid),fashionid(rhs.fashionid) { }
+
+		GNET::Protocol *Clone() const { return new SendChangeProfile(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << faceid;
+			os << hairid;
+			os << earid;
+			os << tailid;
+			os << fashionid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> faceid;
+			os >> hairid;
+			os >> earid;
+			os >> tailid;
+			os >> fashionid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

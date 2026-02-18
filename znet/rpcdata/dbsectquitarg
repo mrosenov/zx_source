@@ -1,0 +1,64 @@
+#ifndef __GNET_DBSECTQUITARG_RPCDATA
+#define __GNET_DBSECTQUITARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSectQuitArg : public GNET::Rpc::Data
+	{
+	public:
+		int master;
+		int disciple;
+
+	public:
+		DBSectQuitArg (int l_master = 0,int l_disciple = 0)
+			: master(l_master),disciple(l_disciple)
+		{
+		}
+
+		DBSectQuitArg(const DBSectQuitArg &rhs)
+			: master(rhs.master),disciple(rhs.disciple) { }
+
+		Rpc::Data *Clone() const { return new DBSectQuitArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSectQuitArg *r = dynamic_cast<const DBSectQuitArg *>(&rhs);
+			if (r && r != this)
+			{
+				master = r->master;
+				disciple = r->disciple;
+			}
+			return *this;
+		}
+
+		DBSectQuitArg& operator = (const DBSectQuitArg &rhs)
+		{
+			const DBSectQuitArg *r = &rhs;
+			if (r && r != this)
+			{
+				master = r->master;
+				disciple = r->disciple;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << master;
+			os << disciple;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> master;
+			os >> disciple;
+			return os;
+		}
+
+	};
+};
+#endif

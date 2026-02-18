@@ -1,0 +1,51 @@
+
+#ifndef __GNET_SECTINVITE_HPP
+#define __GNET_SECTINVITE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "sectinvitearg"
+#include "sectinviteres"
+#include "glinkserver.hpp"
+
+namespace GNET
+{
+
+class SectInvite : public ProxyRpc
+{
+#define	RPC_BASECLASS	ProxyRpc
+	#include "sectinvite"
+#undef	RPC_BASECLASS
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		SectInviteArg arg;
+		osArg >> arg;
+		GLinkServer* lsm=GLinkServer::GetInstance();
+		unsigned int localsid=0;
+		RoleData * invitee = lsm->GetRoleInfo(arg.invitee);
+		if (invitee)
+			localsid = invitee->sid;
+		if( localsid && lsm->Send(localsid,*this) )
+			return true;
+		else
+		{
+			SetResult(SectInviteRes(ERR_DELIVER_SEND));
+			SendToSponsor();
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+	}
+
+	void OnTimeout( )
+	{
+	}
+
+};
+
+};
+#endif

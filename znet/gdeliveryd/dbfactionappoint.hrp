@@ -1,0 +1,45 @@
+
+#ifndef __GNET_DBFACTIONAPPOINT_HPP
+#define __GNET_DBFACTIONAPPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionappointarg"
+#include "dbfactionappointres"
+
+namespace GNET
+{
+
+class DBFactionAppoint : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionappoint"
+#undef	RPC_BASECLASS
+	int roleid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionAppointArg *arg = (DBFactionAppointArg *)argument;
+		DBFactionAppointRes *res = (DBFactionAppointRes *)result;
+		DEBUG_PRINT("DBFactionAppoint, retcode=%d, factionid=%d, roleid=%d, candidate=%d, title=%d, oldtitle=%d",
+				res->retcode, arg->fid, roleid, arg->roleid, arg->title, res->oldtitle);
+		if(res->retcode==ERR_SUCCESS)
+		{
+			FactionManager::Instance()->OnAppoint(arg->fid,roleid,arg->roleid,arg->title, res->oldtitle);
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

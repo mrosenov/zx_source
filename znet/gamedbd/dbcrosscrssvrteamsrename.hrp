@@ -1,0 +1,90 @@
+
+#ifndef __GNET_DBCROSSCRSSVRTEAMSRENAME_HPP
+#define __GNET_DBCROSSCRSSVRTEAMSRENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrosscrssvrteamsrenamearg"
+#include "dbcrosscrssvrteamsrenameres"
+
+namespace GNET
+{
+
+class DBCrossCrssvrTeamsRename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrosscrssvrteamsrename"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrossCrssvrTeamsRenameArg *arg = (DBCrossCrssvrTeamsRenameArg *)argument;
+		DBCrossCrssvrTeamsRenameRes *res = (DBCrossCrssvrTeamsRenameRes *)result;
+
+		// 跨服改名，只要改名字索引数据库，真正的数据库信息会统一延迟写入
+		LOG_TRACE("DBCrossCrssvrTeamsRename, oldname.size=%d, newname.size=%d, zoneid=%d, createtime=%d", arg->oldname.size(), arg->newname.size(), arg->zoneid, arg->createtime);
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream kteamid, koldname, knewname;
+		try
+		{
+			//StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			StorageEnv::Storage * pnamecrssvrteams = StorageEnv::GetStorage("crssvrteamsname");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				int teamid = -1;
+
+				koldname << arg->oldname;
+				if( pnamecrssvrteams->find(koldname, value, txn) )
+				{
+					value >> teamid;
+				}
+				if(teamid <= 0 || teamid != arg->teamid)
+				{
+					Log::log( LOG_ERR, "DBCrossCrssvrTeamsRename, teamid=%d not equal arg->teamid=%d in crssvrteamsname", teamid, arg->teamid);
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}
+
+				LOG_TRACE("DBCrossCrssvrTeamsRename, find teamid=%d", teamid);
+
+				kteamid << teamid;
+				pnamecrssvrteams->del( koldname, txn );
+				pnamecrssvrteams->insert( knewname, kteamid, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrossCrssvrTeamsRename, oldname.size=%d, what=%s.",arg->oldname.size(),e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrossCrssvrTeamsRenameArg *arg = (DBCrossCrssvrTeamsRenameArg *)argument;
+		// DBCrossCrssvrTeamsRenameRes *res = (DBCrossCrssvrTeamsRenameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

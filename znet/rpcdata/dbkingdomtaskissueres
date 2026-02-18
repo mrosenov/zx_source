@@ -1,0 +1,59 @@
+#ifndef __GNET_DBKINGDOMTASKISSUERES_RPCDATA
+#define __GNET_DBKINGDOMTASKISSUERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBKingdomTaskIssueRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DBKingdomTaskIssueRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBKingdomTaskIssueRes(const DBKingdomTaskIssueRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomTaskIssueRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomTaskIssueRes *r = dynamic_cast<const DBKingdomTaskIssueRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBKingdomTaskIssueRes& operator = (const DBKingdomTaskIssueRes &rhs)
+		{
+			const DBKingdomTaskIssueRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

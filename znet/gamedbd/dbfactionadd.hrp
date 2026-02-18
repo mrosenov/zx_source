@@ -1,0 +1,141 @@
+
+#ifndef __GNET_DBFACTIONADD_HPP
+#define __GNET_DBFACTIONADD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionaddarg"
+#include "dbfactionaddres"
+#include "integer"
+#include "familyid"
+#include "hostilefaction"
+#include "hostileinfo"
+
+namespace GNET
+{
+
+class DBFactionAdd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionadd"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionAddArg *arg = (DBFactionAddArg *)argument;
+		DBFactionAddRes *res = (DBFactionAddRes *)result;
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole;
+		Marshal::OctetsStream kfamily, vcache;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+			StorageEnv::Storage * pname = StorageEnv::GetStorage("factionname");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * puser = (arg->syncdata.data_mask&SYNC_CASHUSED)?StorageEnv::GetStorage("user"):NULL;
+//			StorageEnv::Storage * pstore = (arg->syncdata.data_mask&SYNC_STOTEHOUSE)?StorageEnv::GetStorage("storehouse"):NULL;
+			StorageEnv::Storage * pstore = StorageEnv::GetStorage("storehouse");
+
+			key << arg->fid;
+			krole << arg->rid;
+			Log::formatlog("factionadd","roleid=%d:factionid=%d:money=%d:timestamp=%d",
+				arg->rid, arg->fid, arg->syncdata.inventory.money, arg->syncdata.inventory.timestamp);
+
+			StorageEnv::CommonTransaction txn;
+			int money_delta;
+			try{
+				GRoleBase base;
+				GFamily family;		
+				GRolePocket pocket;
+				GFactionInfo info;
+
+				Marshal::OctetsStream(pinventory->find(krole, txn )) >> pocket;
+				if(arg->syncdata.inventory.timestamp-pocket.timestamp<=0)
+				{
+					Log::log(LOG_ERR,"DBFactionAdd, timestamp mismatch. %d<%d",
+					arg->syncdata.inventory.timestamp, pocket.timestamp);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				money_delta = arg->syncdata.inventory.money - pocket.money;
+				Marshal::OctetsStream(pbase->find(krole, txn )) >> base;
+
+				if(!base.familyid)
+				{
+					Log::log(LOG_ERR,"DBFactionAdd, roleid=%d not belongs to family", arg->rid);
+					throw DbException(DB_VERIFY_BAD);
+				}
+ 				if (base.title>TITLE_HEADER || base.title==TITLE_FREEMAN || base.title==TITLE_SYSTEM)
+				{
+					Log::log(LOG_ERR,"DBFactionAdd, roleid=%d is not header fid=%d", arg->rid, base.familyid);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				kfamily << base.familyid;
+				
+				FamilyCache::InsertFaction(base.familyid, arg->fid);
+				base.title = TITLE_MASTER;
+			
+				Marshal::OctetsStream(pfamily->find(kfamily, txn)) >> family;
+				family.factionid = arg->fid;
+				family.jointime = Timer::GetTime();
+				for (GFolkVector::iterator it = family.member.begin(); it != family.member.end(); ++ it)
+				{
+					if (it->nickname.size())
+						it->nickname.clear();
+					if (it->title!=TITLE_MEMBER)
+						it->title = TITLE_MASTER;
+				}
+
+				info.fid = arg->fid;
+				info.name = arg->name;
+				info.level = 0;
+				info.master = arg->rid;
+				info.population = 1;
+				info.createtime = Timer::GetTime();
+				info.member.push_back(FamilyId(family.id));
+
+				Log::log(LOG_MONEY,"money_change:[roleid=%d,userid=%d]:moneychange=300000:type=2:reason=17:hint=%d",arg->rid,base.userid,arg->fid);
+				pname->insert(Marshal::OctetsStream()<<arg->name, key, txn, DB_NOOVERWRITE);
+				pfaction->insert( key, Marshal::OctetsStream()<<info, txn, DB_NOOVERWRITE );
+				pfamily->insert(kfamily, Marshal::OctetsStream()<<family, txn);
+				pbase->insert( krole, Marshal::OctetsStream()<<base, txn );
+				pinventory->insert( krole, Marshal::OctetsStream()<<arg->syncdata.inventory, txn );
+				::UpdateCash(puser, arg->syncdata, txn);
+				::UpdateStore(arg->rid, pstore, arg->syncdata, txn, money_delta);
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				res->syncdata.data_mask = arg->syncdata.data_mask;
+				res->info = info;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionAdd, roleid=%d, factionid=%d what=%s.",
+				arg->rid, arg->fid, e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

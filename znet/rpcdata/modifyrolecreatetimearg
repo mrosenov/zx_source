@@ -1,0 +1,64 @@
+#ifndef __GNET_MODIFYROLECREATETIMEARG_RPCDATA
+#define __GNET_MODIFYROLECREATETIMEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class ModifyRoleCreateTimeArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int dec_year;
+
+	public:
+		ModifyRoleCreateTimeArg (int l_roleid = -1,int l_dec_year = 0)
+			: roleid(l_roleid),dec_year(l_dec_year)
+		{
+		}
+
+		ModifyRoleCreateTimeArg(const ModifyRoleCreateTimeArg &rhs)
+			: roleid(rhs.roleid),dec_year(rhs.dec_year) { }
+
+		Rpc::Data *Clone() const { return new ModifyRoleCreateTimeArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const ModifyRoleCreateTimeArg *r = dynamic_cast<const ModifyRoleCreateTimeArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				dec_year = r->dec_year;
+			}
+			return *this;
+		}
+
+		ModifyRoleCreateTimeArg& operator = (const ModifyRoleCreateTimeArg &rhs)
+		{
+			const ModifyRoleCreateTimeArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				dec_year = r->dec_year;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << dec_year;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> dec_year;
+			return os;
+		}
+
+	};
+};
+#endif

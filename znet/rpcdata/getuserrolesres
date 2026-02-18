@@ -1,0 +1,70 @@
+#ifndef __GNET_GETUSERROLESRES_RPCDATA
+#define __GNET_GETUSERROLESRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "grolebrief"
+
+namespace GNET
+{
+	class GetUserRolesRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		IntOctetsVector roles;
+		std::vector<GRoleBrief> data;
+
+	public:
+		GetUserRolesRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		GetUserRolesRes(const GetUserRolesRes &rhs)
+			: retcode(rhs.retcode),roles(rhs.roles),data(rhs.data) { }
+
+		Rpc::Data *Clone() const { return new GetUserRolesRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GetUserRolesRes *r = dynamic_cast<const GetUserRolesRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				roles = r->roles;
+				data = r->data;
+			}
+			return *this;
+		}
+
+		GetUserRolesRes& operator = (const GetUserRolesRes &rhs)
+		{
+			const GetUserRolesRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				roles = r->roles;
+				data = r->data;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << roles;
+			os << data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> roles;
+			os >> data;
+			return os;
+		}
+
+	};
+};
+#endif

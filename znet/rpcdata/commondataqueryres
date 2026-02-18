@@ -1,0 +1,64 @@
+#ifndef __GNET_COMMONDATAQUERYRES_RPCDATA
+#define __GNET_COMMONDATAQUERYRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class CommonDataQueryRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int value;
+
+	public:
+		CommonDataQueryRes (int l_retcode = 0,int l_value = -1)
+			: retcode(l_retcode),value(l_value)
+		{
+		}
+
+		CommonDataQueryRes(const CommonDataQueryRes &rhs)
+			: retcode(rhs.retcode),value(rhs.value) { }
+
+		Rpc::Data *Clone() const { return new CommonDataQueryRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const CommonDataQueryRes *r = dynamic_cast<const CommonDataQueryRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		CommonDataQueryRes& operator = (const CommonDataQueryRes &rhs)
+		{
+			const CommonDataQueryRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << value;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> value;
+			return os;
+		}
+
+	};
+};
+#endif

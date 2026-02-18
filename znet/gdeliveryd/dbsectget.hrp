@@ -1,0 +1,54 @@
+
+#ifndef __GNET_DBSECTGET_HPP
+#define __GNET_DBSECTGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "integer"
+#include "dbsectgetres"
+#include "sectmanager.h"
+#include "dbsectquit.hrp"
+#include "gamedbclient.hpp"
+
+namespace GNET
+{
+
+class DBSectGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsectget"
+#undef	RPC_BASECLASS
+	int asker;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// Integer *arg = (Integer *)argument;
+		// DBSectGetRes *res = (DBSectGetRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		Integer *arg = (Integer *)argument;
+		DBSectGetRes *res = (DBSectGetRes *)result;
+		DEBUG_PRINT("DBSectGet, retcode=%d, sectid=%d, asker=%d", res->retcode,arg->value,asker);
+                if(res->retcode==ERR_NOTFOUND && asker)
+		{
+			Log::log(LOG_ERR, "DBSectGet, sectid=%d not found, update player data roleid=%d", arg->value, asker);
+			DBSectQuit* rpc = (DBSectQuit*) Rpc::Call( RPC_DBSECTQUIT, DBSectQuitArg(arg->value, asker));
+			GameDBClient::GetInstance()->SendProtocol(rpc);
+			return;
+		}
+                if(res->retcode==ERR_SUCCESS)
+			SectManager::Instance()->OnLoad(arg->value,res->sect);
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

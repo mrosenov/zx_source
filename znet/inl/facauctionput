@@ -1,0 +1,47 @@
+	public:
+		int roleid;
+		Octets rolename;
+		int fid;
+		int itemid;
+		int base_tag;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACAUCTIONPUT };
+	public:
+		FacAuctionPut() { type = PROTOCOL_FACAUCTIONPUT; }
+		FacAuctionPut(void*) : Protocol(PROTOCOL_FACAUCTIONPUT) { }
+		FacAuctionPut (int l_roleid,const Octets& l_rolename = Octets(),int l_fid = 0,
+			int l_itemid = 0,int l_base_tag = 0)
+			 : roleid(l_roleid),rolename(l_rolename),fid(l_fid)
+			,itemid(l_itemid),base_tag(l_base_tag)
+		{
+			type = PROTOCOL_FACAUCTIONPUT;
+		}
+
+		FacAuctionPut(const FacAuctionPut &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),rolename(rhs.rolename),fid(rhs.fid)
+			,itemid(rhs.itemid),base_tag(rhs.base_tag) { }
+
+		GNET::Protocol *Clone() const { return new FacAuctionPut(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << rolename;
+			os << fid;
+			os << itemid;
+			os << base_tag;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> rolename;
+			os >> fid;
+			os >> itemid;
+			os >> base_tag;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

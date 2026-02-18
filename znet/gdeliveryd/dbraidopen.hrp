@@ -1,0 +1,51 @@
+
+#ifndef __GNET_DBRAIDOPEN_HPP
+#define __GNET_DBRAIDOPEN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbraidopenarg"
+#include "dbraidopenres"
+#include "raidmanager.h" 
+
+namespace GNET
+{
+
+class DBRaidOpen : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbraidopen"
+#undef	RPC_BASECLASS
+	int gs_id;
+	int map_id;
+	Octets roomname;
+	char can_vote;
+	char difficulty;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	//	DBRaidOpenArg *arg = (DBRaidOpenArg *)argument;
+	//	DBRaidOpenRes *res = (DBRaidOpenRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBRaidOpenArg *arg = (DBRaidOpenArg *)argument;
+		DBRaidOpenRes *res = (DBRaidOpenRes *)result;
+		LOG_TRACE("DBRaidOpen roleid=%d, itemid=%d item_count=%d",arg->roleid, arg->itemid, arg->item_count);
+		RaidManager::GetInstance()->OnDBRaidOpen(res->retcode,arg->roleid, gs_id, map_id, res->syncdata, roomname, can_vote, difficulty);
+	}
+
+	void OnTimeout()
+	{
+		DBRaidOpenArg *arg = (DBRaidOpenArg *)argument;
+                DBRaidOpenRes *res = (DBRaidOpenRes *)result;
+		Log::log(LOG_ERR, "DBRaidOpen timeout roleid=%d gs_id=%d", arg->roleid,gs_id);
+		RaidManager::GetInstance()->OnDBRaidOpen(ERR_RAID_DB_TIMEOUT,arg->roleid, gs_id, map_id, res->syncdata, roomname, can_vote, difficulty);
+	}
+
+};
+
+};
+#endif

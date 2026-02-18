@@ -1,0 +1,73 @@
+
+#ifndef __GNET_DBCONSIGNMAIL_HPP
+#define __GNET_DBCONSIGNMAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignmailarg"
+#include "dbconsignmailres"
+#include "postoffice.h" 
+#include "consignmanager.h"
+namespace GNET
+{
+
+class DBConsignMail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignmail"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignMailArg *arg = (DBConsignMailArg *)argument;
+		// DBConsignMailRes *res = (DBConsignMailRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignMailArg *arg = (DBConsignMailArg *)argument;
+		DBConsignMailRes *res = (DBConsignMailRes *)result;
+		DEBUG_PRINT("dbconsignmail. retcode=%d,sn=%lld,roleid=%d\n",res->retcode,arg->sn,arg->roleid);
+		if ( res->retcode==ERR_SUCCESS || res->retcode==ERR_WT_MAILBOX_FULL)
+		{
+			if(res->retcode==ERR_WT_MAILBOX_FULL){
+				Log::log(LOG_WARNING,"dbconsignmail mailboxfull sn=%lld,roleid=%d,mail_status=%d\n",arg->sn,arg->roleid,res->mail_status);
+				if(res->mail_status==SELLER_SENDED)
+					ConsignManager::GetInstance()->RemoveRoleEntry(arg->roleid,arg->sn);
+				ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			}
+			else{
+				if ( ConsignManager::GetInstance()->OnDBMail(arg->roleid,arg->sn) ==false){
+					Log::log( LOG_ERR,"dbconsignmail. db send mail success. but delivery failed. sn=%lld,roleid=%d\n",arg->sn,arg->roleid);
+				}
+
+			}
+			//mail notice
+			if(res->retcode==ERR_SUCCESS || res->mail_status ==SELLER_SENDED)
+				PostOffice::GetInstance().AddNewMail( res->seller_header.receiver,res->seller_header );
+			if(arg->cur_state == DSTATE_SOLD){
+				if(res->retcode==ERR_SUCCESS || res->mail_status ==BUYER_SENDED)
+					PostOffice::GetInstance().AddNewMail( res->buyer_header.receiver,res->buyer_header );
+			}
+		}
+		else
+		{
+			Log::log( LOG_ERR, "dbconsignmail,failed.retcode=%d roleid=%d sn=%lld.\n",res->retcode,arg->roleid,arg->sn);
+			ConsignManager::GetInstance()->ClearBusy(arg->sn);
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		DBConsignMailArg *arg = (DBConsignMailArg *)argument;
+		Log::log( LOG_ERR,"dbconsignmail. timeout.sn=%lld,roleid=%d\n",arg->sn,arg->roleid);
+		ConsignManager::GetInstance()->ClearBusy(arg->sn);
+	}
+
+};
+
+};
+#endif

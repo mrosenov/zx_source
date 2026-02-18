@@ -1,0 +1,100 @@
+#ifndef __GNET_GTOPTABLE_RPCDATA
+#define __GNET_GTOPTABLE_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gtopitem"
+#include "gtopdetail"
+
+namespace GNET
+{
+	class GTopTable : public GNET::Rpc::Data
+	{
+	public:
+		int id;
+		int maxsize;
+		int time;
+		std::vector<GTopItem> items;
+		int weekly;
+		std::vector<GTopDetail> items_detail;
+		char reserved;
+		short reserved1;
+
+	public:
+		GTopTable (int l_id = 0,int l_maxsize = 0,int l_time = 0
+			,int l_weekly = 0,char l_reserved = 0,short l_reserved1 = 0)
+			: id(l_id),maxsize(l_maxsize),time(l_time)
+			,weekly(l_weekly),reserved(l_reserved),reserved1(l_reserved1)
+		{
+		}
+
+		GTopTable(const GTopTable &rhs)
+			: id(rhs.id),maxsize(rhs.maxsize),time(rhs.time),
+			items(rhs.items),weekly(rhs.weekly),items_detail(rhs.items_detail),
+			reserved(rhs.reserved),reserved1(rhs.reserved1) { }
+
+		Rpc::Data *Clone() const { return new GTopTable(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GTopTable *r = dynamic_cast<const GTopTable *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				maxsize = r->maxsize;
+				time = r->time;
+				items = r->items;
+				weekly = r->weekly;
+				items_detail = r->items_detail;
+				reserved = r->reserved;
+				reserved1 = r->reserved1;
+			}
+			return *this;
+		}
+
+		GTopTable& operator = (const GTopTable &rhs)
+		{
+			const GTopTable *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				maxsize = r->maxsize;
+				time = r->time;
+				items = r->items;
+				weekly = r->weekly;
+				items_detail = r->items_detail;
+				reserved = r->reserved;
+				reserved1 = r->reserved1;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << maxsize;
+			os << time;
+			os << items;
+			os << weekly;
+			os << items_detail;
+			os << reserved;
+			os << reserved1;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> maxsize;
+			os >> time;
+			os >> items;
+			os >> weekly;
+			os >> items_detail;
+			os >> reserved;
+			os >> reserved1;
+			return os;
+		}
+
+	};
+};
+#endif

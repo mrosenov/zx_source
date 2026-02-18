@@ -1,0 +1,93 @@
+#ifndef __GNET_ADDFRIENDRQSTARG_RPCDATA
+#define __GNET_ADDFRIENDRQSTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class AddFriendRqstArg : public GNET::Rpc::Data
+	{
+	public:
+		int srcroleid;
+		Octets srcname;
+		unsigned int dstlsid;
+		int srcrolelevel;
+		unsigned int srcfactionid;
+		int srcsectid;
+		int referrer;
+
+	public:
+		AddFriendRqstArg (int l_srcroleid = -1,int l_srcrolelevel = 0,unsigned int l_srcfactionid = 0
+			,int l_srcsectid = 0,int l_referrer = 0)
+			: srcroleid(l_srcroleid),srcrolelevel(l_srcrolelevel),srcfactionid(l_srcfactionid)
+			,srcsectid(l_srcsectid),referrer(l_referrer)
+		{
+		}
+
+		AddFriendRqstArg(const AddFriendRqstArg &rhs)
+			: srcroleid(rhs.srcroleid),srcname(rhs.srcname),dstlsid(rhs.dstlsid),
+			srcrolelevel(rhs.srcrolelevel),srcfactionid(rhs.srcfactionid),srcsectid(rhs.srcsectid),
+			referrer(rhs.referrer) { }
+
+		Rpc::Data *Clone() const { return new AddFriendRqstArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const AddFriendRqstArg *r = dynamic_cast<const AddFriendRqstArg *>(&rhs);
+			if (r && r != this)
+			{
+				srcroleid = r->srcroleid;
+				srcname = r->srcname;
+				dstlsid = r->dstlsid;
+				srcrolelevel = r->srcrolelevel;
+				srcfactionid = r->srcfactionid;
+				srcsectid = r->srcsectid;
+				referrer = r->referrer;
+			}
+			return *this;
+		}
+
+		AddFriendRqstArg& operator = (const AddFriendRqstArg &rhs)
+		{
+			const AddFriendRqstArg *r = &rhs;
+			if (r && r != this)
+			{
+				srcroleid = r->srcroleid;
+				srcname = r->srcname;
+				dstlsid = r->dstlsid;
+				srcrolelevel = r->srcrolelevel;
+				srcfactionid = r->srcfactionid;
+				srcsectid = r->srcsectid;
+				referrer = r->referrer;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << srcroleid;
+			os << srcname;
+			os << dstlsid;
+			os << srcrolelevel;
+			os << srcfactionid;
+			os << srcsectid;
+			os << referrer;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> srcroleid;
+			os >> srcname;
+			os >> dstlsid;
+			os >> srcrolelevel;
+			os >> srcfactionid;
+			os >> srcsectid;
+			os >> referrer;
+			return os;
+		}
+
+	};
+};
+#endif

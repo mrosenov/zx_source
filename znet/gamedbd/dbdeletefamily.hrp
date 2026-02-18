@@ -1,0 +1,123 @@
+
+#ifndef __GNET_DBDELETEFAMILY_HPP
+#define __GNET_DBDELETEFAMILY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbdeletefamilyarg"
+#include "dbdeletefamilyres"
+
+namespace GNET
+{
+
+class DBDeleteFamily : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbdeletefamily"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBDeleteFamilyArg *arg = (DBDeleteFamilyArg *)argument;
+		DBDeleteFamilyRes *res = (DBDeleteFamilyRes *)result;
+
+		GFamily family;
+		GRoleBase base;
+		Marshal::OctetsStream key,value;
+
+		try
+		{
+			StorageEnv::Storage * pfamily  = StorageEnv::GetStorage("family");
+			StorageEnv::Storage * pname    = StorageEnv::GetStorage("familyname");
+			StorageEnv::Storage * pbase  = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pwaitdel    = StorageEnv::GetStorage("waitdel");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				pwaitdel->del(Marshal::OctetsStream() << WaitDelKey(arg->familyid, TYPE_FAMILY), txn);
+
+				key << arg->familyid;
+				if(!pfamily->find( key, value, txn ))
+				{
+					Log::log( LOG_ERR, "DBDeleteFamily, fid=%d, not found", arg->familyid);
+					res->retcode = ERR_SUCCESS;
+					return;
+				}
+				value >> family;
+				if (family.factionid != 0)
+				{
+					Log::formatlog("delfamily","familyid=%d in FACTION %d", arg->familyid, family.factionid);
+					res->retcode = ERR_FC_INFACTION;
+					return;
+				}
+				Log::formatlog("delfamily","familyid=%d,master=%d,factionid=%d,population=%d", arg->familyid,
+					family.master, family.factionid, family.member.size());
+
+				pfamily->del(key,txn);
+				if (family.namehis.size())
+				{
+					try
+					{
+						Marshal::OctetsStream(family.namehis) >> res->namelist;
+					}
+					catch (...)
+					{
+						Log::log(LOG_ERR, "DBDeleteFamily fid %d namehis unmarshal err", arg->familyid);
+						res->namelist.clear();
+					}
+				}
+				res->namelist.push_back(family.name);
+				std::vector<Octets>::const_iterator nit, nite = res->namelist.end();
+				for (nit = res->namelist.begin(); nit != nite; ++nit)
+					pname->del(Marshal::OctetsStream()<<*nit, txn);
+				//pname->del(Marshal::OctetsStream()<<family.name, txn);
+				for(GFolkVector::iterator it=family.member.begin(); it!=family.member.end();++it)
+				{
+					Marshal::OctetsStream krole,value;
+					krole << it->rid;
+					if(pbase->find(krole, value, txn))
+					{
+						value >> base;
+						if(base.familyid==(unsigned int)arg->familyid)
+						{
+							base.familyid = 0;
+							base.title = 0;
+							base.jointime = Timer::GetTime();
+							pbase->insert(krole, Marshal::OctetsStream() << base, txn);
+
+						}else
+							Log::log(LOG_ERR, "DBFamilyDel %d, data error role=%d fid=%d\n",
+									arg->familyid,it->rid,family.id);
+					}
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFamilyDel, fid=%d, what=%s\n", arg->familyid, e.what() );
+			res->retcode = -1;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,79 @@
+
+#ifndef __GNET_DBGETTOPFLOWERDATA_HPP
+#define __GNET_DBGETTOPFLOWERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+//#include "algorithm"
+#include "dbgettopflowerdataarg"
+#include "dbgettopflowerdatares"
+#include "gtabletopflowerdata"
+
+#include "topflowermanager.h"
+
+namespace GNET
+{
+
+class DBGetTopFlowerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgettopflowerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBGetTopFlowerDataArg *arg = (DBGetTopFlowerDataArg *)argument;
+		DBGetTopFlowerDataRes *res = (DBGetTopFlowerDataRes *)result;
+		
+		int _startIndex = arg->startIndex;
+		int _endIndex = arg->startIndex + arg->count;
+		LOG_TRACE("DB recv DBGetTopFlowerData, _startIndex=%d, count=%d, isrecv=%d", _startIndex, arg->count, arg->isRecv);
+		Thread::RWLock::WRScoped l(ListTopFlowerDataManager::Instance()->GetLocker());
+		if(ListTopFlowerDataManager::Instance()->GetInit())
+		{
+			if(_startIndex == 0) // top500
+			{
+				ListTopFlowerDataManager::Instance()->CopyFrom(arg->isRecv, _startIndex, _endIndex, res->data);
+				res->retcode = TOPFLOWER_LOAD_TOP_SUCCESS;				
+			}
+			else
+			{
+				bool _finished = ListTopFlowerDataManager::Instance()->CopyFrom(arg->isRecv, _startIndex, _endIndex, res->data);
+				if(_finished)
+				{
+					//ListTopFlowerDataManager::Instance()->Release();
+					res->retcode = TOPFLOWER_LOAD_END;
+				}
+				else
+				{
+					res->retcode = TOPFLOWER_LOAD_ADD_SUCCESS;
+				}
+			}
+		}
+		else
+		{
+			res->retcode = TOPFLOWER_LOAD_TOP_ERR;
+		}
+
+		LOG_TRACE("recv DBGetTopFlowerData opt finished, res->retcode=%d", res->retcode);
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBGetTopFlowerDataArg *arg = (DBGetTopFlowerDataArg *)argument;
+		// DBGetTopFlowerDataRes *res = (DBGetTopFlowerDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

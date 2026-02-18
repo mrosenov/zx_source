@@ -1,0 +1,32 @@
+	public:
+		int fid;
+		enum { PROTOCOL_TYPE = PROTOCOL_STARTFACBASE };
+	public:
+		StartFacBase() { type = PROTOCOL_STARTFACBASE; }
+		StartFacBase(void*) : Protocol(PROTOCOL_STARTFACBASE) { }
+		StartFacBase (int l_fid)
+			 : fid(l_fid)
+		{
+			type = PROTOCOL_STARTFACBASE;
+		}
+
+		StartFacBase(const StartFacBase &rhs)
+			: Protocol(rhs),fid(rhs.fid) { }
+
+		GNET::Protocol *Clone() const { return new StartFacBase(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

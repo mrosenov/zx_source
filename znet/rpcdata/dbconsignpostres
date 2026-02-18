@@ -1,0 +1,65 @@
+#ifndef __GNET_DBCONSIGNPOSTRES_RPCDATA
+#define __GNET_DBCONSIGNPOSTRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gconsignitem"
+
+namespace GNET
+{
+	class DBConsignPostRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GConsignItem item;
+
+	public:
+		DBConsignPostRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBConsignPostRes(const DBConsignPostRes &rhs)
+			: retcode(rhs.retcode),item(rhs.item) { }
+
+		Rpc::Data *Clone() const { return new DBConsignPostRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignPostRes *r = dynamic_cast<const DBConsignPostRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				item = r->item;
+			}
+			return *this;
+		}
+
+		DBConsignPostRes& operator = (const DBConsignPostRes &rhs)
+		{
+			const DBConsignPostRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				item = r->item;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << item;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> item;
+			return os;
+		}
+
+	};
+};
+#endif

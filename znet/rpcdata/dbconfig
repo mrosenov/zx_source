@@ -1,0 +1,77 @@
+#ifndef __GNET_DBCONFIG_RPCDATA
+#define __GNET_DBCONFIG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConfig : public GNET::Rpc::Data
+	{
+	public:
+		int init_time;
+		int open_time;
+		int is_central_db;
+		int reserved2;
+
+	public:
+		DBConfig (int l_init_time = 0,int l_open_time = 0,int l_is_central_db = 0
+			,int l_reserved2 = 0)
+			: init_time(l_init_time),open_time(l_open_time),is_central_db(l_is_central_db)
+			,reserved2(l_reserved2)
+		{
+		}
+
+		DBConfig(const DBConfig &rhs)
+			: init_time(rhs.init_time),open_time(rhs.open_time),is_central_db(rhs.is_central_db),
+			reserved2(rhs.reserved2) { }
+
+		Rpc::Data *Clone() const { return new DBConfig(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConfig *r = dynamic_cast<const DBConfig *>(&rhs);
+			if (r && r != this)
+			{
+				init_time = r->init_time;
+				open_time = r->open_time;
+				is_central_db = r->is_central_db;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		DBConfig& operator = (const DBConfig &rhs)
+		{
+			const DBConfig *r = &rhs;
+			if (r && r != this)
+			{
+				init_time = r->init_time;
+				open_time = r->open_time;
+				is_central_db = r->is_central_db;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << init_time;
+			os << open_time;
+			os << is_central_db;
+			os << reserved2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> init_time;
+			os >> open_time;
+			os >> is_central_db;
+			os >> reserved2;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,91 @@
+
+#ifndef __GNET_GETROLEPOCKET_HPP
+#define __GNET_GETROLEPOCKET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "rolepocketres"
+
+namespace GNET
+{
+
+class GetRolePocket : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getrolepocket"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		RolePocketRes *res = (RolePocketRes *)result;
+
+		LOG_TRACE( "GetRolePocket, roleid=%d.\n", arg->id );
+
+		try
+		{
+			StorageEnv::Storage * ppocket = StorageEnv::GetStorage("inventory");
+			StorageEnv::AtomTransaction txn;
+			try
+			{
+				Marshal::OctetsStream(ppocket->find( Marshal::OctetsStream() << *arg, txn )) >> res->value;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetRolePocket, roleid=%d, what=%s\n", arg->id, e.what() );
+			res->retcode = ERR_DATANOTFIND;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		RolePocketRes *res = (RolePocketRes *)result;
+		if(res->retcode != ERR_SUCCESS)
+		{
+			Log::log( LOG_ERR, "[NOK] GetRolePocket, roleid=%d, retcode=%d", arg->id, res->retcode);
+			return;
+		}
+		try
+		{
+			StorageEnv::Storage * ppocket = StorageEnv::GetStorage("inventory");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				ppocket->insert(Marshal::OctetsStream()<<*arg,Marshal::OctetsStream()<<res->value,txn);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+			Log::log( LOG_ERR, "[OK] GetRolePocket, roleid=%d", arg->id);
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "[NOK] GetRolePocket, roleid=%d, what=%s\n", arg->id, e.what() );
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

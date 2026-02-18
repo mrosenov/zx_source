@@ -1,0 +1,25 @@
+
+TOP_SRCDIR = ..
+
+SINGLE_THREAD = false
+DEBUG_VERSION = true
+
+include ../mk/gcc.defs.mk
+
+INCLUDES += -I$(TOP_SRCDIR)/storage -I$(TOP_SRCDIR)/include
+CFLAGS += -O2 -static
+LDFLAGS += -static 
+DEFINES += -DUSE_DB -DUSE_WDB -DUSE_LOGCLIENT -DMPPC_4WAY -DUSE_TRANSACTION -D_FILE_OFFSET_BITS=64
+
+OBJS = ../storage/storage.o ../storage/storagetool.o gamedbserver.o state.o stubs.o gamedbd.o gamedbmanager.o accessdb.o mergedb.o selldataimage.o tranlog.o transman.o utilfunction.o importdb.o gamedbclient.o
+
+all : gamedbd.wdb
+
+gamedbd.wdb : $(OBJS) $(SHAREOBJ) $(SHARE_SOBJ) $(LOGOBJ) $(LOGSTUB)
+	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(SHAREOBJ) $(SHARE_SOBJ) $(LOGOBJ) $(LOGSTUB)
+
+toplist : $(SHAREOBJ) $(SHARE_SOBJ) ../storage/storage.o toplist.cpp
+	$(LD) $(LDFLAGS) -D_REENTRANT -g -ggdb -o $@ toplist.cpp $(SHAREOBJ) $(SHARE_SOBJ) ../storage/storage.o -I$(INCLUDES) -DUSE_WDB
+
+include ../mk/gcc.rules.mk
+

@@ -1,0 +1,120 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSDEL_HPP
+#define __GNET_DBCRSSVRTEAMSDEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "teamid"
+#include "delcrssvrteamsres"
+
+#include "gcrssvrteamsrole"
+#include "gcrssvrteamsdata"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsDel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsdel"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		TeamId *arg = (TeamId *)argument;
+		DelCrssvrTeamsRes *res = (DelCrssvrTeamsRes *)result;
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream kteamid, kteamname;
+		try
+		{
+			StorageEnv::Storage * pnamecrssvrteams = StorageEnv::GetStorage("crssvrteamsname");
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				if(arg->teamid == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+
+				GCrssvrTeamsData crssvrteams;
+				LOG_TRACE("DBCrssvrTeamsDel, teamid=%d", arg->teamid);
+
+				kteamid << arg->teamid;
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> crssvrteams;
+				}
+				//Marshal::OctetsStream(pcrssvrteams->find(kteamid, txn)) >> crssvrteams;
+				if(crssvrteams.info.teamid <= 0)
+				{
+					Log::log( LOG_ERR, "CrssvrTeamsDel, teamid=%d, not found", arg->teamid);
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}
+
+				std::vector<GCrssvrTeamsRole>::iterator it_roles = crssvrteams.roles.begin(), ie_roles=crssvrteams.roles.end();
+				for(;it_roles!=ie_roles;++it_roles)
+				{
+					GRoleBase base;
+					Marshal::OctetsStream trole;
+					trole << it_roles->roleid;
+					value.clear();
+					if( pbase->find(trole, value, txn ))
+					{
+						value >> base;
+						//base.datagroup[KEY_DATAGOURP_ROLE_CT_COOLTIME] = Timer::GetTime();
+						base.datagroup[KEY_DATAGOURP_ROLE_CT_TEAMID] = -1;
+						pbase->insert( trole, Marshal::OctetsStream()<< base, txn );
+						LOG_TRACE("DBCrssvrTeamsDel, find roleid=%d in team teamid=%d, erase it", it_roles->roleid, arg->teamid);
+
+					}
+				}
+	
+				Log::formatlog("CrssvrTeamsDel","teamid=%d", arg->teamid);
+
+				kteamname << crssvrteams.info.name;
+				pcrssvrteams->del( kteamid, txn );
+				pnamecrssvrteams->del(kteamname, txn);
+				res->teamname = crssvrteams.info.name;
+				res->createtime = crssvrteams.info.createtime;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrssvrTeamsDel, teamid=%d, what=%s.",arg->teamid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// TeamId *arg = (TeamId *)argument;
+		// DelCrssvrTeamsRes *res = (DelCrssvrTeamsRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

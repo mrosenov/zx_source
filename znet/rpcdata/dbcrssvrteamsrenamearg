@@ -1,0 +1,77 @@
+#ifndef __GNET_DBCRSSVRTEAMSRENAMEARG_RPCDATA
+#define __GNET_DBCRSSVRTEAMSRENAMEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCrssvrTeamsRenameArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int teamid;
+		Octets oldname;
+		Octets newname;
+
+	public:
+		DBCrssvrTeamsRenameArg (int l_roleid = -1,int l_teamid = -1,const Octets& l_oldname = Octets(0)
+			,const Octets& l_newname = Octets(0))
+			: roleid(l_roleid),teamid(l_teamid),oldname(l_oldname)
+			,newname(l_newname)
+		{
+		}
+
+		DBCrssvrTeamsRenameArg(const DBCrssvrTeamsRenameArg &rhs)
+			: roleid(rhs.roleid),teamid(rhs.teamid),oldname(rhs.oldname),
+			newname(rhs.newname) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsRenameArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsRenameArg *r = dynamic_cast<const DBCrssvrTeamsRenameArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				teamid = r->teamid;
+				oldname = r->oldname;
+				newname = r->newname;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsRenameArg& operator = (const DBCrssvrTeamsRenameArg &rhs)
+		{
+			const DBCrssvrTeamsRenameArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				teamid = r->teamid;
+				oldname = r->oldname;
+				newname = r->newname;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << teamid;
+			os << oldname;
+			os << newname;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> teamid;
+			os >> oldname;
+			os >> newname;
+			return os;
+		}
+
+	};
+};
+#endif

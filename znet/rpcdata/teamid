@@ -1,0 +1,64 @@
+#ifndef __GNET_TEAMID_RPCDATA
+#define __GNET_TEAMID_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class TeamId : public GNET::Rpc::Data
+	{
+	public:
+		int teamid;
+		int season_start_time;
+
+	public:
+		TeamId (int l_teamid = -1,int l_season_start_time = -1)
+			: teamid(l_teamid),season_start_time(l_season_start_time)
+		{
+		}
+
+		TeamId(const TeamId &rhs)
+			: teamid(rhs.teamid),season_start_time(rhs.season_start_time) { }
+
+		Rpc::Data *Clone() const { return new TeamId(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const TeamId *r = dynamic_cast<const TeamId *>(&rhs);
+			if (r && r != this)
+			{
+				teamid = r->teamid;
+				season_start_time = r->season_start_time;
+			}
+			return *this;
+		}
+
+		TeamId& operator = (const TeamId &rhs)
+		{
+			const TeamId *r = &rhs;
+			if (r && r != this)
+			{
+				teamid = r->teamid;
+				season_start_time = r->season_start_time;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << teamid;
+			os << season_start_time;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> teamid;
+			os >> season_start_time;
+			return os;
+		}
+
+	};
+};
+#endif

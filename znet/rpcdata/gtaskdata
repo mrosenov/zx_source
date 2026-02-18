@@ -1,0 +1,69 @@
+#ifndef __GNET_GTASKDATA_RPCDATA
+#define __GNET_GTASKDATA_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GTaskData : public GNET::Rpc::Data
+	{
+	public:
+		int taskid;
+		unsigned int settime;
+		Octets taskdata;
+
+	public:
+		GTaskData (int l_taskid = -1,unsigned int l_settime = 0,const Octets& l_taskdata = Octets(0))
+			: taskid(l_taskid),settime(l_settime),taskdata(l_taskdata)
+		{
+		}
+
+		GTaskData(const GTaskData &rhs)
+			: taskid(rhs.taskid),settime(rhs.settime),taskdata(rhs.taskdata) { }
+
+		Rpc::Data *Clone() const { return new GTaskData(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GTaskData *r = dynamic_cast<const GTaskData *>(&rhs);
+			if (r && r != this)
+			{
+				taskid = r->taskid;
+				settime = r->settime;
+				taskdata = r->taskdata;
+			}
+			return *this;
+		}
+
+		GTaskData& operator = (const GTaskData &rhs)
+		{
+			const GTaskData *r = &rhs;
+			if (r && r != this)
+			{
+				taskid = r->taskid;
+				settime = r->settime;
+				taskdata = r->taskdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << taskid;
+			os << settime;
+			os << taskdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> taskid;
+			os >> settime;
+			os >> taskdata;
+			return os;
+		}
+
+	};
+};
+#endif

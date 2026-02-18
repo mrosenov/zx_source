@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCREATEFACBASEARG_RPCDATA
+#define __GNET_DBCREATEFACBASEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCreateFacBaseArg : public GNET::Rpc::Data
+	{
+	public:
+		int fid;
+		int roleid;
+
+	public:
+		DBCreateFacBaseArg (int l_fid = 0,int l_roleid = 0)
+			: fid(l_fid),roleid(l_roleid)
+		{
+		}
+
+		DBCreateFacBaseArg(const DBCreateFacBaseArg &rhs)
+			: fid(rhs.fid),roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new DBCreateFacBaseArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCreateFacBaseArg *r = dynamic_cast<const DBCreateFacBaseArg *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		DBCreateFacBaseArg& operator = (const DBCreateFacBaseArg &rhs)
+		{
+			const DBCreateFacBaseArg *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

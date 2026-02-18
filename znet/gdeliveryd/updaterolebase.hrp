@@ -1,0 +1,42 @@
+
+#ifndef __GNET_UPDATEROLEBASE_HPP
+#define __GNET_UPDATEROLEBASE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "updaterolebasearg"
+
+
+namespace GNET
+{
+
+class UpdateRoleBase : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "updaterolebase"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// UpdateRoleBaseArg *arg = (UpdateRoleBaseArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// UpdateRoleBaseArg *arg = (UpdateRoleBaseArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

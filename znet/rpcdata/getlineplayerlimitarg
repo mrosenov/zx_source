@@ -1,0 +1,59 @@
+#ifndef __GNET_GETLINEPLAYERLIMITARG_RPCDATA
+#define __GNET_GETLINEPLAYERLIMITARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GetLinePlayerLimitArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int version;
+
+	public:
+		GetLinePlayerLimitArg (unsigned int l_version = 0)
+			: version(l_version)
+		{
+		}
+
+		GetLinePlayerLimitArg(const GetLinePlayerLimitArg &rhs)
+			: version(rhs.version) { }
+
+		Rpc::Data *Clone() const { return new GetLinePlayerLimitArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GetLinePlayerLimitArg *r = dynamic_cast<const GetLinePlayerLimitArg *>(&rhs);
+			if (r && r != this)
+			{
+				version = r->version;
+			}
+			return *this;
+		}
+
+		GetLinePlayerLimitArg& operator = (const GetLinePlayerLimitArg &rhs)
+		{
+			const GetLinePlayerLimitArg *r = &rhs;
+			if (r && r != this)
+			{
+				version = r->version;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << version;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> version;
+			return os;
+		}
+
+	};
+};
+#endif

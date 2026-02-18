@@ -1,0 +1,57 @@
+
+#ifndef __GNET_CERTCHALLENGE_HPP
+#define __GNET_CERTCHALLENGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "certchallengearg"
+#include "certchallengeres"
+#include "gauthclient.hpp"
+
+namespace GNET
+{
+
+class CertChallenge : public ProxyRpc
+{
+#define	RPC_BASECLASS	ProxyRpc
+	#include "certchallenge"
+#undef	RPC_BASECLASS
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		// TODO
+		// CertChallengeArg arg;
+		// osArg >> arg;
+		if( GAuthClient::GetInstance()->SendProtocol( *this ) )
+		{
+			return true;
+		}
+		else
+		{
+			//SetResult(CertChallengeRes(ERR_DELIVER_SEND));
+			//SendToSponsor();
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		 CertChallengeArg arg;
+		 osArg >> arg;
+		 CertChallengeRes res;
+		 osRes >> res;
+		 res.authd_cert = GAuthClient::GetInstance()->authd_cert;		
+	
+		 SetResult( &res ); // if you modified res, do not forget to call this. 
+	}
+
+	void OnTimeout( )
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

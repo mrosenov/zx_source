@@ -1,0 +1,68 @@
+
+#ifndef __GNET_DBFAMILYADD_HPP
+#define __GNET_DBFAMILYADD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gfolk"
+#include "gfamily"
+#include "dbfamilyaddarg"
+#include "dbfamilyaddres"
+#include "factionmanager.h"
+#include "factioncreate_re.hpp"
+#include "postcreatefamily.hrp"
+
+namespace GNET
+{
+
+class DBFamilyAdd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyadd"
+#undef	RPC_BASECLASS
+	int gamesid;
+        int linksid;
+        int localsid;
+
+	void NotifyUnamed(char result,int zoneid,int familyid,const Octets& name)
+        {
+                PostCreateFamily* rpc = (PostCreateFamily*) Rpc::Call(RPC_POSTCREATEFAMILY,
+                        PostCreateFamilyArg((char)result,zoneid,familyid,name));
+                UniqueNameClient::GetInstance()->SendProtocol(rpc);
+        }
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilyAddArg *arg = (DBFamilyAddArg *)argument;
+		DBFamilyAddRes *res = (DBFamilyAddRes *)result;
+	
+		GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+                DEBUG_PRINT("DBFamilyAdd, retcode=%d, familyid=%d", res->retcode, arg->fid);
+                if(res->retcode==ERR_SUCCESS)
+                {
+                        FamilyManager::Instance()->OnCreate(res->info);
+                        dsm->Send(linksid, FactionCreate_Re(0, arg->rid, arg->fid, arg->name, 1, localsid));
+                }
+                else
+                        dsm->Send(linksid, FactionCreate_Re(ERR_FC_DBFAILURE,0,0,arg->name, 1, localsid));
+                NotifyUnamed(res->retcode==ERR_SUCCESS, dsm->zoneid, arg->fid, arg->name);
+                GProviderServer::GetInstance()->Send(gamesid, GMailEndSync(0,res->retcode,arg->rid,res->syncdata));
+	}
+
+	void OnTimeout()
+	{
+		DBFactionAddArg *arg = (DBFactionAddArg *)argument;
+                Log::log( LOG_ERR,"dbfamilyadd: timeout. roleid=%d,familyid=%d", arg->rid,arg->fid);
+                GDeliveryServer::GetInstance()->Send(linksid,FactionCreate_Re(ERR_DATABASE_TIMEOUT,0,0,arg->name,1,localsid));
+	}
+
+};
+
+};
+#endif

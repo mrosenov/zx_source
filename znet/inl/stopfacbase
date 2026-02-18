@@ -1,0 +1,35 @@
+	public:
+		int fid;
+		int base_tag;
+		enum { PROTOCOL_TYPE = PROTOCOL_STOPFACBASE };
+	public:
+		StopFacBase() { type = PROTOCOL_STOPFACBASE; }
+		StopFacBase(void*) : Protocol(PROTOCOL_STOPFACBASE) { }
+		StopFacBase (int l_fid,int l_base_tag = 0)
+			 : fid(l_fid),base_tag(l_base_tag)
+		{
+			type = PROTOCOL_STOPFACBASE;
+		}
+
+		StopFacBase(const StopFacBase &rhs)
+			: Protocol(rhs),fid(rhs.fid),base_tag(rhs.base_tag) { }
+
+		GNET::Protocol *Clone() const { return new StopFacBase(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << base_tag;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> base_tag;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

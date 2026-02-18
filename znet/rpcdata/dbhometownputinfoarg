@@ -1,0 +1,65 @@
+#ifndef __GNET_DBHOMETOWNPUTINFOARG_RPCDATA
+#define __GNET_DBHOMETOWNPUTINFOARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "ghometowninfo"
+
+namespace GNET
+{
+	class DBHometownPutInfoArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		GHometownInfo info;
+
+	public:
+		DBHometownPutInfoArg (int l_roleid = 0,const GHometownInfo& l_info = GHometownInfo())
+			: roleid(l_roleid),info(l_info)
+		{
+		}
+
+		DBHometownPutInfoArg(const DBHometownPutInfoArg &rhs)
+			: roleid(rhs.roleid),info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBHometownPutInfoArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBHometownPutInfoArg *r = dynamic_cast<const DBHometownPutInfoArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBHometownPutInfoArg& operator = (const DBHometownPutInfoArg &rhs)
+		{
+			const DBHometownPutInfoArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,92 @@
+
+#ifndef __GNET_DBRESTOREROLEDATA_HPP
+#define __GNET_DBRESTOREROLEDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbrestoreroledataarg"
+#include "dbrestoreroledatares"
+#include "clearroledata"
+
+namespace GNET
+{
+
+class DBRestoreRoleData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbrestoreroledata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBRestoreRoleDataArg *arg = (DBRestoreRoleDataArg *)argument;
+		DBRestoreRoleDataRes *res = (DBRestoreRoleDataRes *)result;
+		try
+		{
+			StorageEnv::Storage *pPocket = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage *pStore  = StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage *pClrrole  = StorageEnv::GetStorage("clrrole");
+
+			StorageEnv::CommonTransaction txn;
+			GRolePocket pocket;
+			GRoleStorehouse storehouse;
+			Marshal::OctetsStream key;
+
+			try
+			{
+				key << arg->roleid;
+				std::vector<ClearRoleData> clrrolelist; 
+				Marshal::OctetsStream(pClrrole->find(key, txn)) >> clrrolelist;
+				if (clrrolelist.size() == 0)
+				{
+					res->retcode = ERR_FAILED;
+					return;
+				}
+				ClearRoleData & data = clrrolelist.back();
+				int time = data.time;
+				res->restore_time = time;
+
+				pPocket->insert(key, Marshal::OctetsStream() << data.pocket, txn);
+				pStore->insert(key, Marshal::OctetsStream() << data.storehouse, txn);
+
+				if (arg->force) // force 表示恢复后删掉原来的备份,否则保留
+				{
+					clrrolelist.erase(clrrolelist.end()-1);
+					pClrrole->insert(key, Marshal::OctetsStream() << clrrolelist, txn);
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch (DbException e) { throw; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException e)
+		{
+			Log::log(LOG_ERR, "GameDBServer::DBRestoreRoleData: roleid=%d, force=%d, what=%s\n", arg->roleid, arg->force, e.what());
+			res->retcode = ERR_FAILED;
+		}
+		Log::formatlog("restorerole","retcode=%d,roleid=%d,restore_time=%d", res->retcode,arg->roleid, res->restore_time);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBRestoreRoleDataArg *arg = (DBRestoreRoleDataArg *)argument;
+		// DBRestoreRoleDataRes *res = (DBRestoreRoleDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

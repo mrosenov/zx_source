@@ -1,0 +1,51 @@
+
+#ifndef __GNET_GETCASHTOTAL_HPP
+#define __GNET_GETCASHTOTAL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "db_if.h"
+#include "roleid"
+#include "getcashtotalres"
+
+namespace GNET
+{
+
+class GetCashTotal : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getcashtotal"
+#undef	RPC_BASECLASS
+
+	GDB::Result *_callback;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleId *arg = (RoleId *)argument;
+		// GetCashTotalRes *res = (GetCashTotalRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//RoleId *arg = (RoleId *)argument;
+		GetCashTotalRes *res = (GetCashTotalRes *)result;
+		if(_callback==NULL)
+			return;
+		if(res->retcode) 
+		{
+			_callback->OnFailed();
+			return;
+		}
+		_callback->OnGetCashTotal(res->cash_total, res->cash_add2, res->userid);
+	}
+
+	void OnTimeout()
+	{
+		if(_callback)
+			_callback->OnTimeOut();
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSECTGET_HPP
+#define __GNET_DBSECTGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "integer"
+#include "dbsectgetres"
+
+namespace GNET
+{
+
+class DBSectGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsectget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// Integer *arg = (Integer *)argument;
+		// DBSectGetRes *res = (DBSectGetRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// Integer *arg = (Integer *)argument;
+		// DBSectGetRes *res = (DBSectGetRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

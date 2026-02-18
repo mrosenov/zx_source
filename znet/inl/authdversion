@@ -1,0 +1,38 @@
+	public:
+		int version;
+		int retcode;
+		int reserved2;
+		enum { PROTOCOL_TYPE = PROTOCOL_AUTHDVERSION };
+	public:
+		AuthdVersion() { type = PROTOCOL_AUTHDVERSION; }
+		AuthdVersion(void*) : Protocol(PROTOCOL_AUTHDVERSION) { }
+		AuthdVersion (int l_version,int l_retcode,int l_reserved2)
+			 : version(l_version),retcode(l_retcode),reserved2(l_reserved2)
+		{
+			type = PROTOCOL_AUTHDVERSION;
+		}
+
+		AuthdVersion(const AuthdVersion &rhs)
+			: Protocol(rhs),version(rhs.version),retcode(rhs.retcode),reserved2(rhs.reserved2) { }
+
+		GNET::Protocol *Clone() const { return new AuthdVersion(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << version;
+			os << retcode;
+			os << reserved2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> version;
+			os >> retcode;
+			os >> reserved2;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 256; }

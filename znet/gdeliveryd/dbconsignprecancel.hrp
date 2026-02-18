@@ -1,0 +1,71 @@
+
+#ifndef __GNET_DBCONSIGNPRECANCEL_HPP
+#define __GNET_DBCONSIGNPRECANCEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignprecancelarg"
+#include "dbconsignprecancelres"
+#include "consignmanager.h"
+#include "consigncancelpost_re.hpp"
+#include "gdeliveryserver.hpp"
+namespace GNET
+{
+
+class DBConsignPreCancel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignprecancel"
+#undef	RPC_BASECLASS
+	
+	unsigned int save_linksid;
+	unsigned int save_localsid;
+	
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignPreCancelArg *arg = (DBConsignPreCancelArg *)argument;
+		// DBConsignPreCancelRes *res = (DBConsignPreCancelRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignPreCancelArg *arg = (DBConsignPreCancelArg *)argument;
+		DBConsignPreCancelRes *res = (DBConsignPreCancelRes *)result;
+		DEBUG_PRINT("dbconsignprecancel: retcode=%d,sn=%lld,roleid=%d", res->retcode, arg->sn, arg->roleid);
+
+		if(res->retcode == ERR_SUCCESS || res->retcode == ERR_WT_DB_DUPLICATE_RQST)
+		{
+			if(ConsignManager::GetInstance()->OnDBPreCancelPost(arg->roleid, arg->sn,res->timestamp)!=ERR_SUCCESS)
+			{
+				Log::log(LOG_ERR,"dbconsignprecancel:OnDBPreCancelPost failed. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+			//	ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			}
+		}
+		else
+		{
+			ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			Log::log(LOG_ERR,"dbconsignprecancel: failed. sn=%lld,roleid=%d,retcode=%d", arg->sn,arg->roleid,res->retcode);
+			ConsignCancelPost_Re re;
+			re.retcode = ConsignManager::GetClientRqstRetcode(res->retcode);
+			re.sn = arg->sn;
+			re.localsid = save_localsid;
+			GDeliveryServer::GetInstance()->Send( save_linksid,re );
+		}
+	
+	}
+
+	void OnTimeout()
+	{
+		DBConsignFailArg *arg = (DBConsignFailArg *)argument;
+		Log::log(LOG_ERR,"dbconsignprecancel: timeout. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+		ConsignManager::GetInstance()->ClearBusy(arg->sn);
+		GDeliveryServer::GetInstance()->Send( save_linksid,
+				ConsignCancelPost_Re(ConsignManager::GetClientRqstRetcode(ERR_WT_TIMEOUT),arg->sn,save_localsid));
+	}
+
+};
+
+};
+#endif

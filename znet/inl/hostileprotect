@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int factionid;
+		int item_pos;
+		int item_id;
+		enum { PROTOCOL_TYPE = PROTOCOL_HOSTILEPROTECT };
+	public:
+		HostileProtect() { type = PROTOCOL_HOSTILEPROTECT; }
+		HostileProtect(void*) : Protocol(PROTOCOL_HOSTILEPROTECT) { }
+		HostileProtect (int l_roleid,int l_factionid,int l_item_pos = -1,
+			int l_item_id = 0)
+			 : roleid(l_roleid),factionid(l_factionid),item_pos(l_item_pos)
+			,item_id(l_item_id)
+		{
+			type = PROTOCOL_HOSTILEPROTECT;
+		}
+
+		HostileProtect(const HostileProtect &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),factionid(rhs.factionid),item_pos(rhs.item_pos)
+			,item_id(rhs.item_id) { }
+
+		GNET::Protocol *Clone() const { return new HostileProtect(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << factionid;
+			os << item_pos;
+			os << item_id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> factionid;
+			os >> item_pos;
+			os >> item_id;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 131072; }

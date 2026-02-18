@@ -1,0 +1,77 @@
+#ifndef __GNET_GROLEAWARD_RPCDATA
+#define __GNET_GROLEAWARD_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GRoleAward : public GNET::Rpc::Data
+	{
+	public:
+		Octets vipaward;
+		Octets onlineaward;
+		Octets reserved1;
+		Octets reserved2;
+
+	public:
+		GRoleAward (Octets l_vipaward = Octets(),Octets l_onlineaward = Octets(),Octets l_reserved1 = Octets()
+			,Octets l_reserved2 = Octets())
+			: vipaward(l_vipaward),onlineaward(l_onlineaward),reserved1(l_reserved1)
+			,reserved2(l_reserved2)
+		{
+		}
+
+		GRoleAward(const GRoleAward &rhs)
+			: vipaward(rhs.vipaward),onlineaward(rhs.onlineaward),reserved1(rhs.reserved1),
+			reserved2(rhs.reserved2) { }
+
+		Rpc::Data *Clone() const { return new GRoleAward(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GRoleAward *r = dynamic_cast<const GRoleAward *>(&rhs);
+			if (r && r != this)
+			{
+				vipaward = r->vipaward;
+				onlineaward = r->onlineaward;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		GRoleAward& operator = (const GRoleAward &rhs)
+		{
+			const GRoleAward *r = &rhs;
+			if (r && r != this)
+			{
+				vipaward = r->vipaward;
+				onlineaward = r->onlineaward;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << vipaward;
+			os << onlineaward;
+			os << reserved1;
+			os << reserved2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> vipaward;
+			os >> onlineaward;
+			os >> reserved1;
+			os >> reserved2;
+			return os;
+		}
+
+	};
+};
+#endif

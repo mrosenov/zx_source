@@ -1,0 +1,47 @@
+	public:
+		int paytype;
+		int64_t orderid;
+		int retcode;
+		int userid;
+		int64_t roleid;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYSSENDMAIL4_RE };
+	public:
+		SysSendMail4_Re() { type = PROTOCOL_SYSSENDMAIL4_RE; }
+		SysSendMail4_Re(void*) : Protocol(PROTOCOL_SYSSENDMAIL4_RE) { }
+		SysSendMail4_Re (int l_paytype,int64_t l_orderid,int l_retcode,
+			int l_userid,int64_t l_roleid)
+			 : paytype(l_paytype),orderid(l_orderid),retcode(l_retcode)
+			,userid(l_userid),roleid(l_roleid)
+		{
+			type = PROTOCOL_SYSSENDMAIL4_RE;
+		}
+
+		SysSendMail4_Re(const SysSendMail4_Re &rhs)
+			: Protocol(rhs),paytype(rhs.paytype),orderid(rhs.orderid),retcode(rhs.retcode)
+			,userid(rhs.userid),roleid(rhs.roleid) { }
+
+		GNET::Protocol *Clone() const { return new SysSendMail4_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << paytype;
+			os << orderid;
+			os << retcode;
+			os << userid;
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> paytype;
+			os >> orderid;
+			os >> retcode;
+			os >> userid;
+			os >> roleid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

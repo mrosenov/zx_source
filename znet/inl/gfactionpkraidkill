@@ -1,0 +1,47 @@
+	public:
+		int map_id;
+		int index;
+		int killer;
+		int victim;
+		int victim_faction;
+		enum { PROTOCOL_TYPE = PROTOCOL_GFACTIONPKRAIDKILL };
+	public:
+		GFactionPkRaidKill() { type = PROTOCOL_GFACTIONPKRAIDKILL; }
+		GFactionPkRaidKill(void*) : Protocol(PROTOCOL_GFACTIONPKRAIDKILL) { }
+		GFactionPkRaidKill (int l_map_id,int l_index,int l_killer,
+			int l_victim = 0,int l_victim_faction = 0)
+			 : map_id(l_map_id),index(l_index),killer(l_killer)
+			,victim(l_victim),victim_faction(l_victim_faction)
+		{
+			type = PROTOCOL_GFACTIONPKRAIDKILL;
+		}
+
+		GFactionPkRaidKill(const GFactionPkRaidKill &rhs)
+			: Protocol(rhs),map_id(rhs.map_id),index(rhs.index),killer(rhs.killer)
+			,victim(rhs.victim),victim_faction(rhs.victim_faction) { }
+
+		GNET::Protocol *Clone() const { return new GFactionPkRaidKill(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << map_id;
+			os << index;
+			os << killer;
+			os << victim;
+			os << victim_faction;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> map_id;
+			os >> index;
+			os >> killer;
+			os >> victim;
+			os >> victim_faction;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

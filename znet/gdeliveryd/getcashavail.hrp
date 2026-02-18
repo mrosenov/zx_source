@@ -1,0 +1,72 @@
+
+#ifndef __GNET_GETCASHAVAIL_HPP
+#define __GNET_GETCASHAVAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "getcashavailarg"
+#include "getcashavailres"
+#include "dbsaveweborderarg"
+#include "syssendmail4_re.hpp"
+#include "dbsaveweborder.hrp"
+
+namespace GNET
+{
+
+class GetCashAvail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getcashavail"
+#undef	RPC_BASECLASS
+
+	DBSaveWebOrderArg order;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GetCashAvailArg *arg = (GetCashAvailArg *)argument;
+		// GetCashAvailRes *res = (GetCashAvailRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GetCashAvailArg *arg = (GetCashAvailArg *)argument;
+		GetCashAvailRes *res = (GetCashAvailRes *)result;
+		if (res->retcode != ERR_SUCCESS)
+			Log::log(LOG_ERR, "GetCashAvail err %d, userid %d roleid %d flag %d", res->retcode, arg->userid, arg->roleid, arg->flag);
+		LOG_TRACE("GetCashAvail userid %d roleid %d flag %d, ret %d cash %d",
+				arg->userid, arg->roleid, arg->flag, res->retcode, res->cash_avail);
+		if (arg->flag == 0) //单纯网站查询可用元宝数
+		{
+			Game2AU re(0, AU_REQ_FLOWER_TOP, Octets(), 0);
+			OctetsStream re_os, act_data;
+			act_data << res->retcode << arg->userid << res->cash_avail;
+			re_os << (int)WEB_ACT_GET_CASH_AVAIL << act_data;
+			re.info = re_os;
+			GAuthClient::GetInstance()->SendProtocol(re);
+		}
+		else if (arg->flag == 1) //网站下订单时，用于检测元宝是否足够
+		{
+			if (order.moneyneed <= 0 || res->cash_avail < order.moneyneed)
+			{
+				SysSendMail4_Re re(order.paytype, order.orderid, ERR_WEBORDER_CASH_NOTENGOUTH, arg->userid, order.roleid);//注：arg->roleid 可能不等于 order.roleid
+				GAuthClient::GetInstance()->SendProtocol(re);
+				return;
+			}
+			LOG_TRACE("syssendmail orderid %lld userid %d moneyenough send to db", order.orderid, order.userid);
+			DBSaveWebOrder * rpc = (DBSaveWebOrder *)Rpc::Call(RPC_DBSAVEWEBORDER, order);
+			GameDBClient::GetInstance()->SendProtocol(rpc);
+		}
+	}
+
+	void OnTimeout()
+	{
+		GetCashAvailArg *arg = (GetCashAvailArg *)argument;
+		Log::log(LOG_ERR, "GetCashAvail timeout, userid %d roleid %d flag %d", arg->userid, arg->roleid, arg->flag);
+	}
+
+};
+
+};
+#endif

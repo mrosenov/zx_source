@@ -1,0 +1,112 @@
+
+#ifndef __GNET_DBGATEROLERELATION_HPP
+#define __GNET_DBGATEROLERELATION_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "familycache.h"
+
+#include "roleid"
+#include "dbgaterolerelationres"
+#include "grolebase"
+#include "grolestatus"
+#include "gfriendlist"
+
+namespace GNET
+{
+
+class DBGateRoleRelation : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgaterolerelation"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBGateRoleRelationRes *res = (DBGateRoleRelationRes *)result;
+		Marshal::OctetsStream key, value_status, value_friend,value;
+
+		LOG_TRACE( "DBGateRoleRelation, roleid=%d.\n",arg->id);
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * pfriends = StorageEnv::GetStorage("friends");
+			StorageEnv::AtomTransaction txn;
+			try
+			{
+				key << arg->id;
+				GRoleBase	base;
+				if(pbase->find( key, value,txn ))
+				{
+					value >> base;
+					res->roledata.roleid = arg->id;
+					res->roledata.rolename = base.name;
+					res->roledata.gender = base.gender;
+					res->userid = base.userid;
+					res->familyid = base.familyid;
+				}
+				else
+				{
+					res->retcode = ERR_GT_DATANOTFIND;
+					return;
+				}
+
+				unsigned int factionid = 0;
+				int jointime;
+				if (base.familyid)
+					FamilyCache::GetFaction(base.familyid, factionid, jointime);
+				res->factionid = factionid;
+
+				if(pstatus->find( key, value_status, txn ))
+				{
+					GRoleStatus     status;
+					value_status >> status;
+					res->roledata.occupation = status.occupation;
+					res->roledata.level = status.level;
+					res->roledata.reborntimes = status.reborndata.size()/sizeof(int);
+					res->roledata.cultivation = status.cultivation;
+				}
+				
+				if(pfriends->find(Marshal::OctetsStream() << *arg, value_friend, txn))	
+				{
+					GFriendList flist;
+					value_friend >> flist;
+					res->friends = flist.friends;
+					res->groups = flist.groups;
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBGateRoleRelation, roleid=%d, what=%s\n", arg->id, e.what() );
+			res->retcode = ERR_GT_DB_FAILURE;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// RoleId *arg = (RoleId *)argument;
+		// DBGateRoleRelationRes *res = (DBGateRoleRelationRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,89 @@
+#ifndef __GNET_DBCRSSVRTEAMSCREATEARG_RPCDATA
+#define __GNET_DBCRSSVRTEAMSCREATEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcrssvrteamsrole"
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBCrssvrTeamsCreateArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int zoneid;
+		int teamid;
+		Octets name;
+		GCrssvrTeamsRole info;
+		GMailSyncData syncdata;
+
+	public:
+		DBCrssvrTeamsCreateArg (int l_roleid = -1,int l_zoneid = -1,int l_teamid = -1
+			,const Octets& l_name = Octets(0),const GCrssvrTeamsRole& l_info = GCrssvrTeamsRole(),const GMailSyncData& l_syncdata = GMailSyncData())
+			: roleid(l_roleid),zoneid(l_zoneid),teamid(l_teamid)
+			,name(l_name),info(l_info),syncdata(l_syncdata)
+		{
+		}
+
+		DBCrssvrTeamsCreateArg(const DBCrssvrTeamsCreateArg &rhs)
+			: roleid(rhs.roleid),zoneid(rhs.zoneid),teamid(rhs.teamid),
+			name(rhs.name),info(rhs.info),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsCreateArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsCreateArg *r = dynamic_cast<const DBCrssvrTeamsCreateArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				zoneid = r->zoneid;
+				teamid = r->teamid;
+				name = r->name;
+				info = r->info;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsCreateArg& operator = (const DBCrssvrTeamsCreateArg &rhs)
+		{
+			const DBCrssvrTeamsCreateArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				zoneid = r->zoneid;
+				teamid = r->teamid;
+				name = r->name;
+				info = r->info;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << zoneid;
+			os << teamid;
+			os << name;
+			os << info;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> zoneid;
+			os >> teamid;
+			os >> name;
+			os >> info;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

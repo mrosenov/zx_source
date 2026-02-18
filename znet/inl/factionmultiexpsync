@@ -1,0 +1,38 @@
+	public:
+		int roleid;
+		int multi;
+		int end_time;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACTIONMULTIEXPSYNC };
+	public:
+		FactionMultiExpSync() { type = PROTOCOL_FACTIONMULTIEXPSYNC; }
+		FactionMultiExpSync(void*) : Protocol(PROTOCOL_FACTIONMULTIEXPSYNC) { }
+		FactionMultiExpSync (int l_roleid,int l_multi = 0,int l_end_time = 0)
+			 : roleid(l_roleid),multi(l_multi),end_time(l_end_time)
+		{
+			type = PROTOCOL_FACTIONMULTIEXPSYNC;
+		}
+
+		FactionMultiExpSync(const FactionMultiExpSync &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),multi(rhs.multi),end_time(rhs.end_time) { }
+
+		GNET::Protocol *Clone() const { return new FactionMultiExpSync(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << multi;
+			os << end_time;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> multi;
+			os >> end_time;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

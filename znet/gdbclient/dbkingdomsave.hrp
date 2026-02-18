@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBKINGDOMSAVE_HPP
+#define __GNET_DBKINGDOMSAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomsavearg"
+#include "dbkingdomsaveres"
+
+namespace GNET
+{
+
+class DBKingdomSave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomsave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomSaveArg *arg = (DBKingdomSaveArg *)argument;
+		// DBKingdomSaveRes *res = (DBKingdomSaveRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomSaveArg *arg = (DBKingdomSaveArg *)argument;
+		// DBKingdomSaveRes *res = (DBKingdomSaveRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

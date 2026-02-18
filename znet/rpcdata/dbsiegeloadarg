@@ -1,0 +1,59 @@
+#ifndef __GNET_DBSIEGELOADARG_RPCDATA
+#define __GNET_DBSIEGELOADARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSiegeLoadArg : public GNET::Rpc::Data
+	{
+	public:
+		int noparm;
+
+	public:
+		DBSiegeLoadArg (int l_noparm = 0)
+			: noparm(l_noparm)
+		{
+		}
+
+		DBSiegeLoadArg(const DBSiegeLoadArg &rhs)
+			: noparm(rhs.noparm) { }
+
+		Rpc::Data *Clone() const { return new DBSiegeLoadArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegeLoadArg *r = dynamic_cast<const DBSiegeLoadArg *>(&rhs);
+			if (r && r != this)
+			{
+				noparm = r->noparm;
+			}
+			return *this;
+		}
+
+		DBSiegeLoadArg& operator = (const DBSiegeLoadArg &rhs)
+		{
+			const DBSiegeLoadArg *r = &rhs;
+			if (r && r != this)
+			{
+				noparm = r->noparm;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << noparm;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> noparm;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,53 @@
+
+#ifndef __GNET_DBKINGDOMAPPOINT_HPP
+#define __GNET_DBKINGDOMAPPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomappointarg"
+#include "dbkingdomappointres"
+#include "kingdomappoint_re.hpp"
+
+namespace GNET
+{
+
+class DBKingdomAppoint : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomappoint"
+#undef	RPC_BASECLASS
+	int roleid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomAppointArg *arg = (DBKingdomAppointArg *)argument;
+		// DBKingdomAppointRes *res = (DBKingdomAppointRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingdomAppointArg *arg = (DBKingdomAppointArg *)argument;
+		DBKingdomAppointRes *res = (DBKingdomAppointRes *)result;
+		unsigned char online = 0;
+		if (res->retcode == ERR_SUCCESS)
+		{
+			PlayerInfo * pcandidate = UserContainer::GetInstance().FindRoleOnline(res->candidate_id);
+			online = (pcandidate == NULL ? 0 : 1);
+			KingdomManager::GetInstance()->OnDBAppoint(arg->title, res->candidate_id, arg->candidate_name);
+		}
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(roleid);
+		if (pinfo)
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, KingdomAppoint_Re(res->retcode, roleid, res->candidate_id, arg->title, pinfo->localsid, arg->candidate_name, online));
+		LOG_TRACE("dbkingdomappoint ret %d roleid %d candi %d title %d online %d", res->retcode, roleid, res->candidate_id, arg->title, online);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

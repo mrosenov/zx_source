@@ -1,0 +1,59 @@
+	public:
+		int roleid;
+		int map_id;
+		int itemid;
+		int item_count;
+		GMailSyncData syncdata;
+		Octets roomname;
+		char can_vote;
+		char difficulty;
+		enum { PROTOCOL_TYPE = PROTOCOL_GRAIDOPEN };
+	public:
+		GRaidOpen() { type = PROTOCOL_GRAIDOPEN; }
+		GRaidOpen(void*) : Protocol(PROTOCOL_GRAIDOPEN) { }
+		GRaidOpen (int l_roleid,int l_map_id,int l_itemid = -1,
+			int l_item_count = 0,const GMailSyncData& l_syncdata = GMailSyncData(),const Octets& l_roomname = Octets(),
+			char l_can_vote = 0,char l_difficulty = 0)
+			 : roleid(l_roleid),map_id(l_map_id),itemid(l_itemid)
+			,item_count(l_item_count),syncdata(l_syncdata),roomname(l_roomname)
+			,can_vote(l_can_vote),difficulty(l_difficulty)
+		{
+			type = PROTOCOL_GRAIDOPEN;
+		}
+
+		GRaidOpen(const GRaidOpen &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),map_id(rhs.map_id),itemid(rhs.itemid)
+			,item_count(rhs.item_count),syncdata(rhs.syncdata),roomname(rhs.roomname)
+			,can_vote(rhs.can_vote),difficulty(rhs.difficulty) { }
+
+		GNET::Protocol *Clone() const { return new GRaidOpen(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << map_id;
+			os << itemid;
+			os << item_count;
+			os << syncdata;
+			os << roomname;
+			os << can_vote;
+			os << difficulty;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> map_id;
+			os >> itemid;
+			os >> item_count;
+			os >> syncdata;
+			os >> roomname;
+			os >> can_vote;
+			os >> difficulty;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2097152; }

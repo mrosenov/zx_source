@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int fid;
+		Octets data;
+		int base_tag;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACBASEDATADELIVER };
+	public:
+		FacBaseDataDeliver() { type = PROTOCOL_FACBASEDATADELIVER; }
+		FacBaseDataDeliver(void*) : Protocol(PROTOCOL_FACBASEDATADELIVER) { }
+		FacBaseDataDeliver (int l_roleid,int l_fid = 0,const Octets& l_data = Octets(),
+			int l_base_tag = 0)
+			 : roleid(l_roleid),fid(l_fid),data(l_data)
+			,base_tag(l_base_tag)
+		{
+			type = PROTOCOL_FACBASEDATADELIVER;
+		}
+
+		FacBaseDataDeliver(const FacBaseDataDeliver &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),fid(rhs.fid),data(rhs.data)
+			,base_tag(rhs.base_tag) { }
+
+		GNET::Protocol *Clone() const { return new FacBaseDataDeliver(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << fid;
+			os << data;
+			os << base_tag;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> fid;
+			os >> data;
+			os >> base_tag;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 65536; }

@@ -1,0 +1,32 @@
+	public:
+		unsigned int scheme;
+		enum { PROTOCOL_TYPE = PROTOCOL_GSHOPSETDISCOUNTSCHEME };
+	public:
+		GShopSetDiscountScheme() { type = PROTOCOL_GSHOPSETDISCOUNTSCHEME; }
+		GShopSetDiscountScheme(void*) : Protocol(PROTOCOL_GSHOPSETDISCOUNTSCHEME) { }
+		GShopSetDiscountScheme (unsigned int l_scheme)
+			 : scheme(l_scheme)
+		{
+			type = PROTOCOL_GSHOPSETDISCOUNTSCHEME;
+		}
+
+		GShopSetDiscountScheme(const GShopSetDiscountScheme &rhs)
+			: Protocol(rhs),scheme(rhs.scheme) { }
+
+		GNET::Protocol *Clone() const { return new GShopSetDiscountScheme(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << scheme;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> scheme;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 16; }

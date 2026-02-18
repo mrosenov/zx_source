@@ -1,0 +1,46 @@
+
+#ifndef __GNET_GETCASHAVAIL_HPP
+#define __GNET_GETCASHAVAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "getcashavailarg"
+#include "getcashavailres"
+
+void get_cash_avail(int roleid, int & cash_avail);
+
+namespace GNET
+{
+
+class GetCashAvail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getcashavail"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		 GetCashAvailArg *arg = (GetCashAvailArg *)argument;
+		 GetCashAvailRes *res = (GetCashAvailRes *)result;
+		 res->cash_avail = 0;
+		 get_cash_avail(arg->roleid, res->cash_avail);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GetCashAvailArg *arg = (GetCashAvailArg *)argument;
+		// GetCashAvailRes *res = (GetCashAvailRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

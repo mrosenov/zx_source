@@ -1,0 +1,43 @@
+
+#ifndef __GNET_SYNCCRSSVRTEAMSROLE_HPP
+#define __GNET_SYNCCRSSVRTEAMSROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrssvrteamsrolearg"
+#include "synccrssvrteamsroleres"
+
+namespace GNET
+{
+
+class SyncCrssvrTeamsRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrssvrteamsrole"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// SyncCrssvrTeamsRoleArg *arg = (SyncCrssvrTeamsRoleArg *)argument;
+		// SyncCrssvrTeamsRoleRes *res = (SyncCrssvrTeamsRoleRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrssvrTeamsRoleArg *arg = (SyncCrssvrTeamsRoleArg *)argument;
+		SyncCrssvrTeamsRoleRes *res = (SyncCrssvrTeamsRoleRes *)result;
+
+		LOG_TRACE("SyncCrssvrTeamsRole, retcode=%d, teamid=%d, roleid=%d", res->retcode, arg->teamid, arg->role.roleid);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

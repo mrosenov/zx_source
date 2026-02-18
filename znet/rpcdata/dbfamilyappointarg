@@ -1,0 +1,78 @@
+#ifndef __GNET_DBFAMILYAPPOINTARG_RPCDATA
+#define __GNET_DBFAMILYAPPOINTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfolk"
+
+namespace GNET
+{
+	class DBFamilyAppointArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int familyid;
+		unsigned int roleid;
+		unsigned char title;
+		GFolk info;
+
+	public:
+		DBFamilyAppointArg (unsigned int l_familyid = 0,unsigned int l_roleid = 0,unsigned char l_title = 0
+			,const GFolk& l_info = GFolk())
+			: familyid(l_familyid),roleid(l_roleid),title(l_title)
+			,info(l_info)
+		{
+		}
+
+		DBFamilyAppointArg(const DBFamilyAppointArg &rhs)
+			: familyid(rhs.familyid),roleid(rhs.roleid),title(rhs.title),
+			info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBFamilyAppointArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFamilyAppointArg *r = dynamic_cast<const DBFamilyAppointArg *>(&rhs);
+			if (r && r != this)
+			{
+				familyid = r->familyid;
+				roleid = r->roleid;
+				title = r->title;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBFamilyAppointArg& operator = (const DBFamilyAppointArg &rhs)
+		{
+			const DBFamilyAppointArg *r = &rhs;
+			if (r && r != this)
+			{
+				familyid = r->familyid;
+				roleid = r->roleid;
+				title = r->title;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << familyid;
+			os << roleid;
+			os << title;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> familyid;
+			os >> roleid;
+			os >> title;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,165 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSCREATE_HPP
+#define __GNET_DBCRSSVRTEAMSCREATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamscreatearg"
+#include "dbcrssvrteamscreateres"
+#include "gcrssvrteamsrole"
+#include "gcrssvrteamsdata"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsCreate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamscreate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsCreateArg *arg = (DBCrssvrTeamsCreateArg *)argument;
+		DBCrssvrTeamsCreateRes *res = (DBCrssvrTeamsCreateRes *)result;
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kteamid, kteamname;
+		try
+		{
+			StorageEnv::Storage * pnamecrssvrteams = StorageEnv::GetStorage("crssvrteamsname");
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * puser = (arg->syncdata.data_mask&SYNC_CASHUSED)?StorageEnv::GetStorage("user"):NULL;
+			StorageEnv::Storage * pstore = StorageEnv::GetStorage("storehouse");
+
+			StorageEnv::CommonTransaction txn;
+			int money_delta;
+			try{
+				if(arg->teamid == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+
+				GCrssvrTeamsData crssvrteams;
+				//GCrssvrTeamsRole roleinfo;
+				GRolePocket pocket;
+				GRoleBase base;
+
+				krole << arg->roleid;
+				kteamid << arg->teamid;
+				
+				LOG_TRACE("CrssvrTeamsCreate teamid=%d, roleid=%d", arg->teamid, arg->roleid);
+				if( pinventory->find( krole, value, txn ) )
+				{
+					value >> pocket;
+				}
+
+				LOG_TRACE("CrssvrTeamsCreate timestamp=%d, pocket.timestamp=%d", arg->syncdata.inventory.timestamp, pocket.timestamp);
+				if(arg->syncdata.inventory.timestamp-pocket.timestamp<=0)
+				{
+					Log::log(LOG_ERR,"DBCrssvrTeamsCreate, timestamp mismatch. %d<%d",
+					arg->syncdata.inventory.timestamp, pocket.timestamp);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				money_delta = arg->syncdata.inventory.money - pocket.money;
+
+				value.clear();
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> crssvrteams;
+				}
+				
+				if(crssvrteams.info.teamid > 0)
+				{
+					LOG_TRACE("CrssvrTeamsCreate teamid=%d:roleid=%d IN TABLE", arg->teamid, arg->roleid);
+					res->retcode = ERR_CRSSVRTEAMS_DB_INTEAMS;
+					return;
+				}
+
+				Marshal::OctetsStream(pbase->find(krole, txn )) >> base;
+				base.datagroup[KEY_DATAGOURP_ROLE_CT_TEAMID] = arg->teamid;
+				std::map<int, int>::iterator it_group = base.datagroup.find(KEY_DATAGOURP_ROLE_CT_SCORE);
+				if(it_group == base.datagroup.end())
+				{
+					// 新战队玩家
+					base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE] = CRSSVRTEAMS_INIT_ROLE_SCORE;
+					base.datagroup[KEY_DATAGOURP_ROLE_CT_MAX_SCORE] = CRSSVRTEAMS_INIT_ROLE_SCORE;
+					base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE_UPDATETIME] = Timer::GetTime();
+					base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME] = Timer::GetTime();
+								
+					LOG_TRACE("CrssvrTeamsCreate roleid=%d the first create", arg->info.roleid);
+				}
+	
+				LOG_TRACE("CrssvrTeamsCreate roleid=%d, teamid=%d, ct_score=%d", arg->info.roleid, arg->teamid, base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE]);
+				arg->info.score = base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE];
+				arg->info.data_score.ct_max_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_MAX_SCORE];
+				arg->info.data_score.ct_score_updatetime = base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE_UPDATETIME];
+				arg->info.data_score.ct_last_max_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_MAX_SCORE];
+				arg->info.ct_last_punish_time = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME];
+
+				crssvrteams.info.createtime = Timer::GetTime();
+				crssvrteams.info.zoneid = arg->zoneid;
+				crssvrteams.info.teamid = arg->teamid;
+				crssvrteams.info.master = arg->info.roleid;
+				crssvrteams.info.name = arg->name;
+				crssvrteams.info.score = CRSSVRTEAMS_INIT_ROLE_SCORE;
+				crssvrteams.info.lastbattletime = Timer::GetTime();
+				crssvrteams.info.seasonlastbattletime = Timer::GetTime();
+
+				crssvrteams.roles.push_back(arg->info);	
+
+				Log::formatlog("CrssvrTeamsCreate","teamid=%d:roleid=%d", arg->teamid, arg->roleid);
+
+				kteamname << crssvrteams.info.name;
+				pnamecrssvrteams->insert( kteamname, Marshal::OctetsStream()<<crssvrteams.info.teamid, txn );
+				pcrssvrteams->insert( kteamid, Marshal::OctetsStream()<<crssvrteams, txn );
+				pbase->insert( krole, Marshal::OctetsStream()<< base, txn );
+				pinventory->insert( krole, Marshal::OctetsStream()<<arg->syncdata.inventory, txn );
+				::UpdateCash(puser, arg->syncdata, txn);
+				::UpdateStore(arg->roleid, pstore, arg->syncdata, txn, money_delta);
+				res->info = crssvrteams;
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				res->syncdata.data_mask = arg->syncdata.data_mask;
+				res->retcode = ERR_SUCCESS;
+
+				LOG_TRACE("CrssvrTeamsCreate res->teamid=%d, res->zoneid=%d, res->createtime=%d, res->master=%d, name.size=%d", 
+						res->info.info.teamid, res->info.info.zoneid, res->info.info.createtime, res->info.info.master, crssvrteams.info.name.size());
+
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrssvrTeamsCreate, teamid=%d, roleid=%d what=%s.",arg->teamid,arg->roleid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsCreateArg *arg = (DBCrssvrTeamsCreateArg *)argument;
+		// DBCrssvrTeamsCreateRes *res = (DBCrssvrTeamsCreateRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,38 @@
+	public:
+		unsigned int localsid;
+		unsigned int linksid;
+		GGateRoleInfo roledata;
+		enum { PROTOCOL_TYPE = PROTOCOL_GATEROLELOGIN };
+	public:
+		GateRoleLogin() { type = PROTOCOL_GATEROLELOGIN; }
+		GateRoleLogin(void*) : Protocol(PROTOCOL_GATEROLELOGIN) { }
+		GateRoleLogin (unsigned int l_localsid,unsigned int l_linksid,const GGateRoleInfo& l_roledata)
+			 : localsid(l_localsid),linksid(l_linksid),roledata(l_roledata)
+		{
+			type = PROTOCOL_GATEROLELOGIN;
+		}
+
+		GateRoleLogin(const GateRoleLogin &rhs)
+			: Protocol(rhs),localsid(rhs.localsid),linksid(rhs.linksid),roledata(rhs.roledata) { }
+
+		GNET::Protocol *Clone() const { return new GateRoleLogin(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << localsid;
+			os << linksid;
+			os << roledata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> localsid;
+			os >> linksid;
+			os >> roledata;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

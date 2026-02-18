@@ -1,0 +1,59 @@
+#ifndef __GNET_SETLINEPLAYERLIMITRES_RPCDATA
+#define __GNET_SETLINEPLAYERLIMITRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class SetLinePlayerLimitRes : public GNET::Rpc::Data
+	{
+	public:
+		char retcode;
+
+	public:
+		SetLinePlayerLimitRes (char l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		SetLinePlayerLimitRes(const SetLinePlayerLimitRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new SetLinePlayerLimitRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SetLinePlayerLimitRes *r = dynamic_cast<const SetLinePlayerLimitRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		SetLinePlayerLimitRes& operator = (const SetLinePlayerLimitRes &rhs)
+		{
+			const SetLinePlayerLimitRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

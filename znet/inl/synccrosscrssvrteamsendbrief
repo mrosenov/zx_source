@@ -1,0 +1,9 @@
+		GNET::Protocol *Clone() const {  return new SyncCrossCrssvrTeamsEndBrief(*this); }
+	public:
+		enum { PROTOCOL_TYPE = RPC_SYNCCROSSCRSSVRTEAMSENDBRIEF };
+		SyncCrossCrssvrTeamsEndBrief(Type type, Rpc::Data *argument, Rpc::Data *result)
+			: RPC_BASECLASS(type, argument, result ) { }
+		SyncCrossCrssvrTeamsEndBrief(const SyncCrossCrssvrTeamsEndBrief &rhs) : RPC_BASECLASS(rhs) { }
+		int  PriorPolicy( ) const { return 1; }
+		bool SizePolicy(size_t size) const { return size <= 128; }
+		bool TimePolicy(int timeout) const { return timeout <= 30; }

@@ -1,0 +1,65 @@
+#ifndef __GNET_WEEKLYTOPRES_RPCDATA
+#define __GNET_WEEKLYTOPRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gtoptable"
+
+namespace GNET
+{
+	class WeeklyTopRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GTopTable table;
+
+	public:
+		WeeklyTopRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		WeeklyTopRes(const WeeklyTopRes &rhs)
+			: retcode(rhs.retcode),table(rhs.table) { }
+
+		Rpc::Data *Clone() const { return new WeeklyTopRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const WeeklyTopRes *r = dynamic_cast<const WeeklyTopRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				table = r->table;
+			}
+			return *this;
+		}
+
+		WeeklyTopRes& operator = (const WeeklyTopRes &rhs)
+		{
+			const WeeklyTopRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				table = r->table;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << table;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> table;
+			return os;
+		}
+
+	};
+};
+#endif

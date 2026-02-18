@@ -1,0 +1,82 @@
+
+#ifndef __GNET_DBSIEGELOAD_HPP
+#define __GNET_DBSIEGELOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegeloadarg"
+#include "dbsiegeloadres"
+#include "gcitystore"
+
+namespace GNET
+{
+
+class DBSiegeLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegeload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSiegeLoadRes *res = (DBSiegeLoadRes *)result;
+
+		try
+		{
+			StorageEnv::Storage * pcity = StorageEnv::GetStorage("citystore");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream value;
+			GCityStore store;
+			try{
+				if(pcity->find(Marshal::OctetsStream()<<0,value,txn))
+				{
+					value >> store;
+				}
+				else
+				{
+					GCity initcity;
+					initcity.info.battle_id = 1;	
+					initcity.timestamp = 0;	
+					store.cities.push_back(initcity);	
+					pcity->insert(Marshal::OctetsStream()<<0, Marshal::OctetsStream()<<store, txn);
+				}
+				res->cities = store.cities;
+				res->retcode = ERR_SUCCESS;
+				LOG_TRACE("DBSiegeLoad, count=%d.", res->cities.size());
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSiegeLoad, what=%s\n", e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSiegeLoadArg *arg = (DBSiegeLoadArg *)argument;
+		// DBSiegeLoadRes *res = (DBSiegeLoadRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

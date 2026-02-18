@@ -1,0 +1,90 @@
+
+#ifndef __GNET_PUTFACBASE_HPP
+#define __GNET_PUTFACBASE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "putfacbasearg"
+#include "putfacbaseres"
+
+namespace GNET
+{
+
+class PutFacBase : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "putfacbase"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PutFacBaseArg *arg = (PutFacBaseArg *)argument;
+		PutFacBaseRes *res = (PutFacBaseRes *)result;
+		LOG_TRACE("putfacbase fid %d timestamp %d", arg->fid, arg->value.timestamp);
+		try
+		{
+			StorageEnv::Storage * pfactionbase = StorageEnv::GetStorage("factionbase");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				GFactionBase base;
+				Marshal::OctetsStream key;
+				key << arg->fid;
+				Marshal::OctetsStream(pfactionbase->find(key, txn)) >> base;
+				if (!(base.status_mask & ST_FAC_BASE_OPEN))
+				{
+					Log::log(LOG_ERR, "faction %d put base, status %d invalid", arg->fid, base.status_mask);
+					res->retcode = ERR_EXCEPTION;
+				}
+				if (arg->value.timestamp <= base.timestamp)
+				{
+					Log::log(LOG_ERR, "faction %d put base, timestamp %d<=%d", arg->fid, arg->value.timestamp, base.timestamp);
+					res->retcode = ERR_EXCEPTION;
+				}
+				base.grass = arg->value.grass;
+				base.mine = arg->value.mine;
+				base.monster_food = arg->value.monster_food;
+				base.monster_core = arg->value.monster_core;
+				base.cash = arg->value.cash;
+				base.fields = arg->value.fields;
+				base.msg = arg->value.msg;
+				base.auctions = arg->value.auctions;
+				base.auction_failers = arg->value.auction_failers;
+				base.auction_history = arg->value.auction_history;
+				base.timestamp = arg->value.timestamp;
+				pfactionbase->insert(key, Marshal::OctetsStream() << base, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "putfacbase, factionid=%d what=%s.", arg->fid, e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PutFacBaseArg *arg = (PutFacBaseArg *)argument;
+		// PutFacBaseRes *res = (PutFacBaseRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,50 @@
+	public:
+		int roleid;
+		int factionid;
+		int item_pos;
+		int item_id;
+		int item_num;
+		GMailSyncData syncdata;
+		enum { PROTOCOL_TYPE = PROTOCOL_GHOSTILEPROTECT };
+	public:
+		GHostileProtect() { type = PROTOCOL_GHOSTILEPROTECT; }
+		GHostileProtect(void*) : Protocol(PROTOCOL_GHOSTILEPROTECT) { }
+		GHostileProtect (int l_roleid,int l_factionid,int l_item_pos = -1,
+			int l_item_id = 0,int l_item_num = -1,const GMailSyncData& l_syncdata = GMailSyncData())
+			 : roleid(l_roleid),factionid(l_factionid),item_pos(l_item_pos)
+			,item_id(l_item_id),item_num(l_item_num),syncdata(l_syncdata)
+		{
+			type = PROTOCOL_GHOSTILEPROTECT;
+		}
+
+		GHostileProtect(const GHostileProtect &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),factionid(rhs.factionid),item_pos(rhs.item_pos)
+			,item_id(rhs.item_id),item_num(rhs.item_num),syncdata(rhs.syncdata) { }
+
+		GNET::Protocol *Clone() const { return new GHostileProtect(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << factionid;
+			os << item_pos;
+			os << item_id;
+			os << item_num;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> factionid;
+			os >> item_pos;
+			os >> item_id;
+			os >> item_num;
+			os >> syncdata;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2097152; }

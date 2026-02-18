@@ -1,0 +1,164 @@
+
+#ifndef __GNET_DBCONSIGNSOLD_HPP
+#define __GNET_DBCONSIGNSOLD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignsoldarg"
+#include "dbconsignsoldres"
+#include "consigntool.h" 
+namespace GNET
+{
+
+class DBConsignSold : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignsold"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		DBConsignSoldRes *res = (DBConsignSoldRes *)result;
+		try
+		{
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::CommonTransaction txn;
+			Log::formatlog("consign","dbconsignsold:role=%d:sn=%lld:buyer_roleid=%d:buyer_userid=%d:orderid=%lld", arg->roleid,arg->sn,arg->buyer_roleid,arg->buyer_userid,arg->orderid);
+			
+			Marshal::OctetsStream key_buyer, value_buyer_base;	
+			try
+			{
+				if(arg->sn == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+				
+				int db_userid = 0;
+				GRoleBase buyer_base;
+				key_buyer << arg->buyer_roleid;
+				if(pbase->find(key_buyer,value_buyer_base,txn))
+				{
+					value_buyer_base >> buyer_base;
+					if(buyer_base.userid) 
+						db_userid = buyer_base.userid;
+					else
+						db_userid = LOGICUID(arg->buyer_roleid);
+				}
+				if(db_userid == 0 || db_userid != arg->buyer_userid)	//买家roleid或与买家userid不匹配，以userid为准
+				{
+					Marshal::OctetsStream value_buyer_user;
+					if(!puser->find(Marshal::OctetsStream()<<arg->buyer_userid,value_buyer_user,txn))				
+						throw DbException(DB_VERIFY_BAD);
+					User buyer_user;
+					value_buyer_user >> buyer_user;
+					if(buyer_user.logicuid == 0)
+						throw DbException(DB_VERIFY_BAD);
+					RoleList rolelist(buyer_user.rolelist);
+					int r = rolelist.GetNextRole();
+					if(r < 0)
+						throw DbException(DB_VERIFY_BAD);
+					key_buyer.clear();
+					value_buyer_base.clear();
+					arg->buyer_roleid = buyer_user.logicuid + r;	
+					key_buyer << arg->buyer_roleid;
+					if(!pbase->find(key_buyer,value_buyer_base,txn))
+						throw DbException(DB_VERIFY_BAD);
+					value_buyer_base >> buyer_base;
+				}
+		
+				GConsignDB detail;
+				Marshal::OctetsStream(pconsign->find(Marshal::OctetsStream()<<arg->sn, txn)) >> detail;
+
+				//sold_re retcode 9, let it be...
+				/*	if(detail.seller_roleid != arg->roleid)
+                               	{
+					res->retcode = ERR_WT_DB_VERIFY_BAD;
+					return;
+				}*/
+			
+				//sold_re retcode 4, buyer roleid != seller assigned buyer roleid
+				if(detail.buyer_roleid && detail.buyer_roleid != arg->buyer_roleid)
+				{
+					if(!(detail.buyer_userid && detail.buyer_userid == arg->buyer_userid))
+						//if same user is ok
+						res->retcode = ERR_WT_BUYER_NOT_EXIST;
+					return;
+				}	
+
+				int changeres =CheckStateChange(detail,DSTATE_SOLD);
+				if(changeres == CHANGE_REPEAT)
+				{
+					//check orderid
+					if(arg->orderid != detail.orderid || arg->timestamp!=detail.largest_web_timestamp)
+					{
+						Log::log( LOG_ERR, "DBConsignSold, orderid=%lld,timestamp=%lld unequal with old order=%lld timestamp=%lld in duplicated request\n",arg->orderid,arg->timestamp,detail.orderid,detail.largest_web_timestamp);
+						res->retcode = ERR_WT_DB_STATEERR;
+					}
+					res->buyer_roleid = arg->buyer_roleid;//maybe modified
+					res->retcode = ERR_WT_DB_DUPLICATE_RQST;
+					return;
+				}
+				if(changeres != CHANGE_PERMIT)
+				{
+					res->retcode = ERR_WT_DB_STATEERR;
+					return;
+				}
+				int now =Timer::GetTime();
+				if(now < detail.info.show_endtime)//show period
+				{
+					res->retcode = ERR_WT_DB_STATEERR;
+					return;
+				}
+	
+				detail.buyer_roleid = arg->buyer_roleid;// maybe modified
+				detail.buyer_userid = arg->buyer_userid;
+				detail.orderid = arg->orderid;
+				detail.largest_web_timestamp = arg->timestamp;
+				detail.buyer_name = buyer_base.name;
+				detail.info.state=DSTATE_SOLD;
+				pconsign->insert(Marshal::OctetsStream()<<arg->sn, Marshal::OctetsStream()<<detail, txn);
+				res->buyer_roleid = arg->buyer_roleid;
+				res->retcode = ERR_SUCCESS;
+				Log::formatlog("webtradesold","roleid=%d:sn=%lld:buyer_roleid=%d:type=%d:itemid=%d:item_count=%d:money=%d:role=0:petid=0:pet_count=0", arg->roleid,arg->sn,arg->buyer_roleid,detail.info.consign_type,detail.info.item_id,detail.info.item_cnt,detail.info.money/10000);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignSold, what=%s\n",e.what() );
+			if(e.get_errno() == DB_VERIFY_BAD)
+                                res->retcode = ERR_WT_BUYER_NOT_EXIST;
+			else
+				res->retcode = ERR_WT_DB_FAILURE;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		// DBConsignSoldRes *res = (DBConsignSoldRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

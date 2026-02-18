@@ -1,0 +1,59 @@
+#ifndef __GNET_DBCONSIGNTABLELOADARG_RPCDATA
+#define __GNET_DBCONSIGNTABLELOADARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignTableLoadArg : public GNET::Rpc::Data
+	{
+	public:
+		Octets beginkey;
+
+	public:
+		DBConsignTableLoadArg (const Octets& l_beginkey = Octets())
+			: beginkey(l_beginkey)
+		{
+		}
+
+		DBConsignTableLoadArg(const DBConsignTableLoadArg &rhs)
+			: beginkey(rhs.beginkey) { }
+
+		Rpc::Data *Clone() const { return new DBConsignTableLoadArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignTableLoadArg *r = dynamic_cast<const DBConsignTableLoadArg *>(&rhs);
+			if (r && r != this)
+			{
+				beginkey = r->beginkey;
+			}
+			return *this;
+		}
+
+		DBConsignTableLoadArg& operator = (const DBConsignTableLoadArg &rhs)
+		{
+			const DBConsignTableLoadArg *r = &rhs;
+			if (r && r != this)
+			{
+				beginkey = r->beginkey;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << beginkey;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> beginkey;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,684 @@
+
+#ifndef __GNET_DBCONSIGNSOLDROLE_HPP
+#define __GNET_DBCONSIGNSOLDROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include <string>
+#include "dbconsignsoldarg"
+#include "dbconsignsoldres"
+#include "grolestatus"
+#include "grolepocket"
+#include "grolebase2"
+#include "groleaward"
+#include "gconsigndb"
+#include "gsect"
+#include "gconsigngsroleinfo"
+#include "grolestorehouse"
+#include "gamedbmanager.h"
+#include "itemowner.h"
+#include "consigntool.h"
+#include "dbdeleterole.hrp"
+namespace GNET
+{
+
+class DBConsignSoldRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignsoldrole"
+#undef	RPC_BASECLASS
+	static int LoadItemid();
+	void CheckItemOwner(const std::string &container, int oldroleid, int newroleid, GRoleInventoryVector &items,Octets & newrolename);
+	void ModifyStatus(GRoleStatus &buy, GRoleStatus &sell, GRoleStatus &newseller)
+	{
+//		buy.version           =  sell.version
+//		buy.id                =  sell.id
+		buy.occupation        =  sell.occupation;
+		buy.level             =  sell.level;
+//?		buy.cur_title         =  sell.cur_title
+		buy.exp               =  sell.exp;
+		buy.pp                =  sell.pp;
+		buy.hp                =  sell.hp;
+		buy.mp                =  sell.mp;
+		buy.posx              =  sell.posx;
+		buy.posy              =  sell.posy;
+		buy.posz              =  sell.posz;
+//		buy.pkvalue           =  sell.pkvalue
+		buy.worldtag          =  sell.worldtag;
+//		buy.time_used         =  sell.time_used;
+		buy.reputation        =  sell.reputation;
+		buy.produceskill      =  sell.produceskill;
+		buy.produceexp        =  sell.produceexp;
+//		buy.custom_status     =  sell.custom_status
+//		buy.filter_data       =  sell.filter_data
+//		buy.charactermode     =  sell.charactermode
+//		buy.instancekeylist   =  sell.instancekeylist
+//?		buy.dbltime_data      =  sell.dbltime_data
+		buy.petcorral         =  sell.petcorral;
+//		buy.var_data          =  sell.var_data
+		buy.skills            =  sell.skills;
+//		buy.storehousepasswd  =  sell.storehousepasswd
+//		buy.coolingtime       =  sell.coolingtime
+		buy.recipes           =  sell.recipes;
+		buy.waypointlist      =  sell.waypointlist;
+		buy.credit            =  sell.credit;
+		buy.titlelist         =  sell.titlelist;
+		buy.contribution      =  sell.contribution;
+//?		buy.combatkills       =  sell.combatkills
+		buy.devotion          =  sell.devotion;
+		buy.talismanscore     =  sell.talismanscore;
+		buy.updatetime        =  Timer::GetTime();
+		buy.battlescore       =  sell.battlescore;
+		buy.petdata           =  sell.petdata;
+		buy.reborndata        =  sell.reborndata;
+		buy.cultivation       =  sell.cultivation;
+//		buy.reserved1         =  sell.reserved1
+//		buy.fashion_hotkey    =  sell.fashion_hotkey
+//		buy.raid_data         =  sell.raid_data
+//		buy.five_year         =  sell.five_year;
+//		buy.treasure_info     =  sell.treasure_info;
+		
+//		newseller.version           =  sell.version
+		newseller.id                =  sell.id;
+//		newseller.occupation        =  sell.occupation;
+//		newseller.level             =  1;
+//?		newseller.cur_title         =  sell.cur_title
+//?		newseller.exp               =  sell.exp;
+//		newseller.pp                =  sell.pp;
+//		newseller.hp                =  sell.hp;
+//		newseller.mp                =  sell.mp;
+//		newseller.posx              =  sell.posx;
+//		newseller.posy              =  sell.posy;
+//		newseller.posz              =  sell.posz;
+//		newseller.pkvalue           =  sell.pkvalue;
+//		newseller.worldtag          =  sell.worldtag;
+		newseller.time_used         =  sell.time_used;
+//		newseller.reputation        =  sell.reputation
+//		newseller.produceskill      =  sell.produceskill
+//		newseller.produceexp        =  sell.produceexp
+		newseller.custom_status     =  sell.custom_status;
+		newseller.filter_data       =  sell.filter_data;//?
+		newseller.charactermode     =  sell.charactermode;//?
+		newseller.instancekeylist   =  sell.instancekeylist;//?
+		newseller.dbltime_data      =  sell.dbltime_data;//?
+//		newseller.petcorral         =  sell.petcorral
+		newseller.var_data          =  sell.var_data;//?
+//		newseller.skills            =  sell.skills
+		newseller.storehousepasswd  =  sell.storehousepasswd;
+		newseller.coolingtime       =  sell.coolingtime;//?
+//		newseller.recipes           =  sell.recipes
+//		newseller.waypointlist      =  sell.waypointlist
+//		newseller.credit            =  sell.credit
+//		newseller.titlelist         =  sell.titlelist
+//		newseller.contribution      =  sell.contribution
+//		newseller.combatkills       =  sell.combatkills
+//		newseller.devotion          =  sell.devotion
+//		newseller.talismanscore     =  sell.talismanscore
+//		newseller.updatetime        =  sell.updatetime;//?
+//		newseller.battlescore       =  sell.battlescore
+//		newseller.petdata           =  sell.petdata
+//		newseller.reborndata        =  sell.reborndata
+//		newseller.cultivation       =  sell.cultivation
+//		newseller.reserved1         =  sell.reserved1
+		newseller.fashion_hotkey    =  sell.fashion_hotkey;//?
+//		newseller.raid_data         =  sell.raid_data
+		newseller.five_year         =  sell.five_year;
+		newseller.treasure_info     =  sell.treasure_info;
+		return;
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		DBConsignSoldRes *res = (DBConsignSoldRes *)result;
+
+		DEBUG_PRINT("DBConsignSoldRole: receive.sn=%lld",arg->sn);
+		int seller_cls=0;
+		int seller_gender=0;
+                if(arg->seller_userid == arg->buyer_userid)//check seller user is not buyer user
+                {
+                        res->retcode = ERR_WT_BUYER_SAMEUSER;
+                        return;
+                }			
+		try
+		{
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				if(arg->sn == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+				GConsignDB consigndetail;
+				Marshal::OctetsStream(pconsign->find(Marshal::OctetsStream()<<arg->sn, txn)) >> consigndetail;
+				GConsignGsRoleInfo rinfo;
+				Marshal::OctetsStream(consigndetail.gs_roleinfo) >> rinfo;
+				seller_gender=rinfo.rolebasicinfo.gender;
+				seller_cls=rinfo.rolebasicinfo.cls;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignSoldRole, what=%s\n",e.what() );
+			if(e.get_errno() == DB_VERIFY_BAD)
+                                res->retcode = ERR_WT_BUYER_NOT_EXIST;
+			else
+				res->retcode = ERR_WT_DB_FAILURE;
+			return;
+		}
+
+		//get occupation base information
+		GRoleStatus	raw_status;
+		GRoleBase2 	raw_base2;
+		{
+		GRoleBase	base;
+		GRolePocket	inventory;
+		GRoleStorehouse			storehouse;
+		int cls = seller_cls;
+		if (cls >= 33 && cls <= 38)
+			cls = 33;
+		else if (cls >= 39 && cls <= 44)
+			cls = 39;
+		else if (cls >= 45 && cls <= 50)
+			cls = 45;
+		else if (cls >= 51 && cls <= 55)
+			cls = 51;
+		else if (cls >= 56 && cls <= 60)
+			cls = 56;
+                else if (cls >= 96 && cls <= 101)
+			cls = 96;
+		else if (cls >= 102 && cls <= 106)
+			cls = 102;
+		else if (cls >= 108 && cls <= 112)
+			cls = 108;
+		else
+			cls = 0;
+		if( !GameDBManager::GetInstance()->GetClsDetail( cls,seller_gender,
+			base, raw_status, inventory, storehouse) )
+		{
+			res->retcode = ERR_WT_SOLD_ROLE_STATUS_ERR;
+			Log::log(LOG_ERR,"DBConsignSoldRole, GetClsDetail failed, roleid=%d, cls=%d, occupation=%d, gender=%d.",
+				arg->roleid, cls,seller_cls,seller_gender );
+			return;
+		}
+		}
+
+		Marshal::OctetsStream buyer_hisos,seller_hisos;
+		try
+		{
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::Storage * pconsignfin = StorageEnv::GetStorage("finished_consign");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+		//	StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage *pstatus,*pinventory,*pstorehouse;
+			pstatus = StorageEnv::GetStorage("status");
+			pinventory = StorageEnv::GetStorage("inventory");
+			pstorehouse = StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage * pachieve = StorageEnv::GetStorage("achievement");
+			StorageEnv::Storage * ptask = StorageEnv::GetStorage("task");
+			StorageEnv::Storage * paward = StorageEnv::GetStorage("award");
+			StorageEnv::Storage * psect = StorageEnv::GetStorage("sect");
+
+			StorageEnv::CommonTransaction txn;
+			Log::formatlog("consign","dbconsignsoldrole:role=%d:sn=%lld:buyer_roleid=%d:buyer_userid=%d:orderid=%lld", arg->roleid,arg->sn,arg->buyer_roleid,arg->buyer_userid,arg->orderid);
+			
+			Marshal::OctetsStream key_buyer, value_buyer_base;	
+			Marshal::OctetsStream key_seller, value_seller_base;	
+			try
+			{
+				if(arg->sn == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+				
+				//check seller
+				GRoleBase seller_base;
+				key_seller << arg->roleid;
+				if(pbase->find(key_seller,value_seller_base,txn))
+				{
+					value_seller_base >> seller_base;
+					if(seller_base.status != _ROLE_STATUS_SELLING)
+					{
+						res->retcode = ERR_WT_SOLD_ROLE_STATUS_ERR;
+						return;	
+					}
+					seller_base.status = _ROLE_STATUS_NORMAL;	
+				}
+				else
+				{
+					res->retcode = ERR_WT_SOLD_ROLE_SELLER_NOT_EXIST;
+					return;
+				}
+				//check seller role belongs to user
+				int dbseller_userid=0;
+				{
+					if(seller_base.userid) 
+						dbseller_userid = seller_base.userid;
+					else
+						dbseller_userid = LOGICUID(arg->roleid);
+
+				}
+				if(dbseller_userid == 0 || dbseller_userid != arg->seller_userid)
+				{
+					res->retcode = ERR_WT_SOLD_ROLE_SELLER_NOT_EXIST;
+					return;
+				}	
+				//check buyer
+				int db_userid = 0;
+				GRoleBase buyer_base;
+				key_buyer << arg->buyer_roleid;
+				if(pbase->find(key_buyer,value_buyer_base,txn))
+				{
+					value_buyer_base >> buyer_base;
+					if(buyer_base.status != _ROLE_STATUS_NORMAL)
+					{
+						res->retcode = ERR_WT_SOLD_ROLE_BUYER_COND;
+						return;	
+					}
+					if(buyer_base.userid) 
+						db_userid = buyer_base.userid;
+					else
+						db_userid = LOGICUID(arg->buyer_roleid);
+				}
+				else
+				{
+					res->retcode = ERR_WT_BUYER_NOT_EXIST;
+					return;
+				}
+				if(db_userid == 0 || db_userid != arg->buyer_userid)	
+				{
+					res->retcode = ERR_WT_BUYER_NOT_EXIST;
+					return;
+				/*	Marshal::OctetsStream value_buyer_user;
+					if(!puser->find(Marshal::OctetsStream()<<arg->buyer_userid,value_buyer_user,txn))				
+					{
+						DEBUG_PRINT("DBConsignSoldRole1 ");
+						throw DbException(DB_VERIFY_BAD);
+					}
+					User buyer_user;
+					value_buyer_user >> buyer_user;
+					if(buyer_user.logicuid == 0)
+					{
+						DEBUG_PRINT("DBConsignSoldRole2 ");
+						throw DbException(DB_VERIFY_BAD);
+					}
+					RoleList rolelist(buyer_user.rolelist);
+					int r = rolelist.GetNextRole();
+					if(r < 0)
+					{
+						DEBUG_PRINT("DBConsignSoldRole3 ");
+						throw DbException(DB_VERIFY_BAD);
+					}
+					key_buyer.clear();
+					value_buyer_base.clear();
+					arg->buyer_roleid = buyer_user.logicuid + r;	
+					key_buyer << arg->buyer_roleid;
+					if(!pbase->find(key_buyer,value_buyer_base,txn))
+					{
+						DEBUG_PRINT("DBConsignSoldRole4 ");
+						throw DbException(DB_VERIFY_BAD);
+					}
+					value_buyer_base >> buyer_base;*/
+				}
+		
+				GConsignDB detail;
+				Marshal::OctetsStream(pconsign->find(Marshal::OctetsStream()<<arg->sn, txn)) >> detail;
+				//check seller in sold msg, roleid/userid equals to db record
+				if(detail.seller_roleid != arg->roleid || detail.seller_userid != arg->seller_userid)
+                               	{
+					res->retcode = ERR_WT_SOLD_ROLE_SELLER_NOT_EXIST;
+					return;
+				}
+				//buyer roleid != seller assigned buyer roleid
+				if(detail.buyer_roleid && (detail.buyer_roleid != arg->buyer_roleid || detail.buyer_userid != arg->buyer_userid))
+				{
+					res->retcode = ERR_WT_BUYER_NOT_EXIST;
+					return;
+				}	
+		
+				int changeres =CheckStateChange(detail,DSTATE_SOLD);
+				if(changeres == CHANGE_REPEAT)
+				{
+					//check orderid
+					if(arg->orderid != detail.orderid || arg->timestamp!=detail.largest_web_timestamp)
+					{
+						Log::log( LOG_ERR, "DBConsignSold, orderid=%lld,timestamp=%lld unequal with old order=%lld timestamp=%lld in duplicated request\n",arg->orderid,arg->timestamp,detail.orderid,detail.largest_web_timestamp);
+						res->retcode = ERR_WT_DB_STATEERR;
+					}
+					res->buyer_roleid = arg->buyer_roleid;//maybe modified
+					res->retcode = ERR_WT_DB_DUPLICATE_RQST;
+					return;
+				}
+				if(changeres != CHANGE_PERMIT)
+				{
+					res->retcode = ERR_WT_DB_STATEERR;
+					return;
+				}
+				int now =Timer::GetTime();
+				if(now < detail.info.show_endtime)//show period
+				{
+					res->retcode = ERR_WT_DB_STATEERR;
+					return;
+				}
+				if(buyer_base.spouse != 0)
+				{
+					res->retcode = ERR_WT_SOLD_ROLE_BUYER_COND;
+					return;
+				}
+				if(buyer_base.sectid)
+				{
+					if(buyer_base.sectid != arg->buyer_roleid)
+					{
+						res->retcode = ERR_WT_SOLD_ROLE_BUYER_COND;
+						return;
+					}
+					else
+					{
+						GSect sect;
+						Marshal::OctetsStream  sectvalue;
+						if(psect->find(key_buyer,sectvalue,txn))
+						{
+							sectvalue >> sect;
+							if(sect.disciples.size()>0)
+							{
+								res->retcode = ERR_WT_SOLD_ROLE_BUYER_COND;
+								return;
+							}	
+						}
+						else
+						{
+							res->retcode = ERR_WT_SOLD_ROLE_BUYER_COND;
+							return;
+						}	
+					}
+				}
+
+	
+				detail.buyer_roleid = arg->buyer_roleid;// maybe modified
+				detail.buyer_userid = arg->buyer_userid;
+				detail.orderid = arg->orderid;
+				detail.largest_web_timestamp = arg->timestamp;
+				detail.buyer_name = buyer_base.name;
+				detail.info.state=DSTATE_SOLD;
+				//modify base
+				buyer_base.faceid = seller_base.faceid;
+				buyer_base.hairid = seller_base.hairid;
+				buyer_base.gender = seller_base.gender;
+				buyer_base.earid = seller_base.earid;
+				buyer_base.tailid = seller_base.tailid;
+				buyer_base.fashionid = seller_base.fashionid;
+				//sectid,initiallevel maybe modify
+				seller_base.fashionid = 0;
+				buyer_hisos = buyer_base.circletrack;
+				buyer_base.circletrack.clear();
+				seller_hisos = seller_base.circletrack;
+				seller_base.circletrack.clear();
+				seller_base.create_time = Timer::GetTime();//set create time to sold time
+				seller_base.sectid = 0;
+
+				//modify status
+				GRoleStatus buyerstatus,sellerstatus;	
+				Marshal::OctetsStream(pstatus->find(key_buyer,txn)) >> buyerstatus;
+				//check buyer condition
+				if(buyerstatus.level>=90 || buyerstatus.reborndata.size()>0)
+				{
+					res->retcode = ERR_WT_SOLD_ROLE_BUYER_COND;
+					return;
+				}
+				Marshal::OctetsStream(pstatus->find(key_seller,txn)) >> sellerstatus;
+				ModifyStatus(buyerstatus,sellerstatus,raw_status);
+				//modify base2
+				GRoleBase2 buyer_base2_data,seller_base2_data;
+				Marshal::OctetsStream (pbase2->find( key_seller, txn)) >> seller_base2_data;
+				Marshal::OctetsStream buyer_base2_value;
+				if(pbase2->find(key_buyer,buyer_base2_value,txn))
+					buyer_base2_value >> buyer_base2_data;
+				buyer_base2_data.composkills = seller_base2_data.composkills;//?
+				buyer_base2_data.tower_raid = seller_base2_data.tower_raid;
+				buyer_base2_data.deity_level = seller_base2_data.deity_level;
+				buyer_base2_data.deity_exp = seller_base2_data.deity_exp;
+				buyer_base2_data.dp = seller_base2_data.dp;
+				buyer_base2_data.littlepet = seller_base2_data.littlepet;
+				buyer_base2_data.flag_mask = seller_base2_data.flag_mask;
+				buyer_base2_data.ui_transfer = seller_base2_data.ui_transfer;
+				buyer_base2_data.collision_info = seller_base2_data.collision_info;
+				buyer_base2_data.runescore = seller_base2_data.runescore;
+				buyer_base2_data.comsumption = 0LL;
+				buyer_base2_data.astrology_info = seller_base2_data.astrology_info;
+				buyer_base2_data.liveness_info = seller_base2_data.liveness_info;
+				buyer_base2_data.sale_promotion_info = seller_base2_data.sale_promotion_info;
+				buyer_base2_data.propadd = seller_base2_data.propadd;
+				buyer_base2_data.multi_exp = seller_base2_data.multi_exp;
+				buyer_base2_data.fuwen_info = seller_base2_data.fuwen_info;
+				buyer_base2_data.phase = seller_base2_data.phase;
+				buyer_base2_data.award_info_6v6 = seller_base2_data.award_info_6v6;
+				buyer_base2_data.datagroup = seller_base2_data.datagroup;
+
+				seller_base2_data.composkills = Octets(0);
+				seller_base2_data.tower_raid = Octets(0);
+				seller_base2_data.deity_level = 0;
+				seller_base2_data.deity_exp = 0;
+				seller_base2_data.dp = 0;
+				seller_base2_data.littlepet.clear();
+				seller_base2_data.flag_mask = 0;
+				seller_base2_data.ui_transfer = Octets(0);
+				seller_base2_data.collision_info = Octets(0);
+				seller_base2_data.runescore = 0;
+				seller_base2_data.comsumption = 0LL;
+				seller_base2_data.astrology_info = Octets(0);
+				seller_base2_data.liveness_info = Octets(0);
+				seller_base2_data.sale_promotion_info = Octets(0);
+				seller_base2_data.propadd = Octets(0);
+				seller_base2_data.multi_exp = Octets(0);
+				seller_base2_data.fuwen_info = Octets(0);
+				seller_base2_data.phase = Octets(0);
+				seller_base2_data.award_info_6v6 = Octets(0);
+				seller_base2_data.datagroup.clear();
+				/*	
+				//modify pocket and storehouse
+				Marshal::OctetsStream newseller_pocket;
+				GRolePocket buyer_pocket_data,newseller_pocket_data;
+				Marshal::OctetsStream (pinventory->find( key_seller, txn)) >> buyer_pocket_data;
+				newseller_pocket_data.gifts.swap(buyer_pocket_data.gifts); //gifts 数据保留
+				newseller_pocket << newseller_pocket_data;//empty
+				*/
+				Marshal::OctetsStream newseller_pocket;
+				GRolePocket buyer_pocket_data,newseller_pocket_data, tmp_pocket_data;
+				Marshal::OctetsStream (pinventory->find( key_seller, txn)) >> newseller_pocket_data;
+				Marshal::OctetsStream (pinventory->find( key_buyer, txn)) >> tmp_pocket_data;
+
+				//gifts数据保留
+				buyer_pocket_data.gifts = tmp_pocket_data.gifts;
+				newseller_pocket_data.gifts.swap(buyer_pocket_data.gifts);
+
+				//手动 swap data
+				tmp_pocket_data = newseller_pocket_data;
+				newseller_pocket_data = buyer_pocket_data;
+				buyer_pocket_data = tmp_pocket_data;
+
+				newseller_pocket << newseller_pocket_data;
+
+				Marshal::OctetsStream newseller_store;
+				GRoleStorehouse buyer_store_data,newseller_store_data;
+				Marshal::OctetsStream (pstorehouse->find( key_seller, txn)) >> buyer_store_data;
+				newseller_store << newseller_store_data;//empty
+				//modify inventory item ownerid
+				CheckItemOwner("inventory", arg->roleid, arg->buyer_roleid, buyer_pocket_data.items,buyer_base.name);
+				CheckItemOwner("inventory", arg->roleid, arg->buyer_roleid, buyer_pocket_data.equipment,buyer_base.name);
+				CheckItemOwner("inventory", arg->roleid, arg->buyer_roleid, buyer_pocket_data.petbadge,buyer_base.name);
+				CheckItemOwner("inventory", arg->roleid, arg->buyer_roleid, buyer_pocket_data.petequip,buyer_base.name);
+				CheckItemOwner("inventory", arg->roleid, arg->buyer_roleid, buyer_pocket_data.fashion,buyer_base.name);
+				if(buyer_pocket_data.mountwing.size())
+				{
+					Marshal::OctetsStream os_mountwing(buyer_pocket_data.mountwing);//refer to gdbclient/db_if.cpp
+					try
+					{
+		                              	GRoleInventoryVector mountwing;
+		                               	short mountwingsize;
+						os_mountwing >> mountwingsize;
+		                               	os_mountwing >> mountwing;
+						CheckItemOwner("inventory", arg->roleid, arg->buyer_roleid, mountwing,buyer_base.name);
+						os_mountwing.clear();
+		                        	os_mountwing << mountwingsize;
+			                        os_mountwing << mountwing;
+			                        buyer_pocket_data.mountwing = os_mountwing;
+					}
+					catch(...)
+					{
+						Log::log(LOG_ERR, "dbconsignsoldrole, error unmarshal, roleid=%d\n", arg->roleid);
+					}
+				}
+
+				//modify storehouse item ownerid
+				CheckItemOwner("storehouse", arg->roleid, arg->buyer_roleid, buyer_store_data.items,buyer_base.name);
+				CheckItemOwner("storehouse", arg->roleid, arg->buyer_roleid, buyer_store_data.items2,buyer_base.name);
+				CheckItemOwner("storehouse", arg->roleid, arg->buyer_roleid, buyer_store_data.fuwen,buyer_base.name);
+				if(detail.item.id!=0 && detail.item.pos!=-1)
+				{
+					//寄售凭证	
+					if(detail.item.count <=0 )
+					{
+						Log::log( LOG_ERR, "DBConsignSoldRole ticket item count %d  err\n",detail.item.count);
+						res->retcode = ERR_WT_PREPOST_ARG_ERR;
+						//	throw DbException(DB_VERIFY_BAD);
+						return;
+					}
+					GRoleInventoryVector::iterator it,ie;
+					for(it=buyer_pocket_data.items.begin(),ie=buyer_pocket_data.items.end();it!=ie;++it)
+					{
+						if(it->pos == detail.item.pos)
+						{	
+							if(it->id != detail.item.id || it->count < detail.item.count)
+								it=ie;
+							else
+							{
+								it->count -= detail.item.count;
+								if(it->count==0)
+									buyer_pocket_data.items.erase(it);
+							}
+							break;
+						}
+					}
+				//	if(it == ie || it->proctype&MASK_ITEM_NOTRADE )
+					if(it==ie)
+					{
+						Log::log( LOG_ERR, "DBConsignSoldRole no ticket item\n");
+						res->retcode = ERR_WT_PREPOST_ARG_ERR;
+					//	throw DbException(DB_VERIFY_BAD);
+						return;
+					}
+				}
+
+				//modify achievement and task
+				GRoleTask buyer_task_data,newseller_task_data;
+				Marshal::OctetsStream newseller_task;
+				Marshal::OctetsStream (ptask->find( key_seller, txn)) >> buyer_task_data;
+				newseller_task << newseller_task_data;//empty
+
+				GRoleAchievement buyer_achieve_data,newseller_achieve_data;
+				Marshal::OctetsStream newseller_achieve;
+				Marshal::OctetsStream (pachieve->find( key_seller, txn)) >> buyer_achieve_data;
+				newseller_achieve << newseller_achieve_data;//empty
+				//modify award
+				GRoleAward buyer_award_data,newseller_award_data,seller_award_data;
+				Marshal::OctetsStream newseller_award;
+				Marshal::OctetsStream seller_award_value;
+				if(paward->find(key_seller, seller_award_value,txn))
+					seller_award_value >> seller_award_data; 
+				buyer_award_data.onlineaward = seller_award_data.onlineaward;
+				newseller_award << newseller_award_data;//empty
+
+				pconsign->insert(Marshal::OctetsStream()<<arg->sn, Marshal::OctetsStream()<<detail, txn);
+				pbase->insert(key_buyer, Marshal::OctetsStream()<<buyer_base, txn);
+				pbase->insert(key_seller, Marshal::OctetsStream()<<seller_base, txn);
+				pstatus->insert(key_buyer,Marshal::OctetsStream()<<buyerstatus, txn);
+				pstatus->insert(key_seller,Marshal::OctetsStream()<<raw_status, txn);
+				pbase2->insert(key_buyer,Marshal::OctetsStream()<<buyer_base2_data,txn);
+				pbase2->insert(key_seller,Marshal::OctetsStream()<<seller_base2_data,txn);
+	
+				pinventory->insert(key_buyer,Marshal::OctetsStream()<<buyer_pocket_data,txn);
+				pinventory->insert(key_seller,newseller_pocket,txn);
+				pstorehouse->insert(key_buyer,Marshal::OctetsStream()<<buyer_store_data,txn);
+				pstorehouse->insert(key_seller,newseller_store,txn);
+				ptask->insert(key_buyer,Marshal::OctetsStream()<<buyer_task_data,txn);
+				ptask->insert(key_seller,newseller_task,txn);
+				pachieve->insert(key_buyer,Marshal::OctetsStream()<<buyer_achieve_data,txn);
+				pachieve->insert(key_seller,newseller_achieve,txn);
+				paward->insert(key_buyer,Marshal::OctetsStream()<<buyer_award_data,txn);
+				paward->insert(key_seller,newseller_award,txn);
+
+				res->buyer_roleid = arg->buyer_roleid;
+				res->retcode = ERR_SUCCESS;
+				//delete finished consign and move to backup
+				pconsignfin->insert(Marshal::OctetsStream()<<arg->sn, Marshal::OctetsStream()<<detail, txn);
+				pconsign->del(Marshal::OctetsStream()<<arg->sn,txn);
+				Log::formatlog("webtradesoldrole","roleid=%d:sn=%lld:buyer_roleid=%d:type=%d:itemid=%d:item_count=%d:money=%d:role=0:petid=0:pet_count=0", arg->roleid,arg->sn,arg->buyer_roleid,detail.info.consign_type,detail.info.item_id,detail.info.item_cnt,detail.info.money/10000);
+
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignSoldRole, what=%s\n",e.what() );
+			if(e.get_errno() == DB_VERIFY_BAD)
+                                res->retcode = ERR_WT_BUYER_NOT_EXIST;
+			else
+				res->retcode = ERR_WT_DB_FAILURE;
+		}
+
+		//modify circle table in db
+		if(seller_hisos.size()>0)
+		{
+			std::vector<GCircleHistoryDB> hislist;
+			seller_hisos >> hislist;
+			if(hislist.size()>0)
+			{
+				DBDeleteRole::UpdateCircle(hislist.back().circleid, arg->roleid);
+			}
+		}
+		if(buyer_hisos.size()>0)
+		{
+			std::vector<GCircleHistoryDB> hislist;
+			buyer_hisos >> hislist;
+			if(hislist.size()>0)
+			{
+				DBDeleteRole::UpdateCircle(hislist.back().circleid, arg->buyer_roleid);
+			}
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		// DBConsignSoldRes *res = (DBConsignSoldRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,141 @@
+
+#ifndef __GNET_DBQUERYROLENAME_HPP
+#define __GNET_DBQUERYROLENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbqueryrolenamearg"
+#include "dbqueryrolenameres"
+
+namespace GNET
+{
+
+class DBQueryRoleName : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbqueryrolename"
+#undef	RPC_BASECLASS
+
+	bool QueryItem(Octets & name, StorageEnv::Storage * prolename, StorageEnv::Storage * pbase,
+StorageEnv::Storage * pstatus, StorageEnv::Storage * prolenamehis, StorageEnv::CommonTransaction & txn, NameHistory & out_item)
+	{
+		Octets name_l;
+		CharsetConverter::conv_charset_u2l(name, name_l);
+		LOG_TRACE( "QueryItem name=%.*s)", name_l.size(),(char*)name_l.begin());
+		try
+		{
+			int roleid = 0;
+			Marshal::OctetsStream value, krole;
+			if (!prolename->find(name, value, txn))
+				return false;
+			value >> roleid;
+			krole << roleid;
+			value.clear();
+			GRoleBase base;
+			if (pbase->find(krole, value, txn))
+				value >> base;
+			else
+				return false;
+			GRoleStatus status;
+			value.clear();
+			if (pstatus->find(krole, value, txn))
+				value >> status;
+			NameHistory item(roleid, status.occupation, status.level, status.reborndata.size()/sizeof(int), base.gender);
+			value.clear();
+			item.namelist.push_back(base.name);
+			if (prolenamehis->find(krole, value, txn))
+			{
+				GRoleNameHisVector rolenamehis_vec;
+				value >> rolenamehis_vec;
+				std::vector<GRoleNameHis>::const_reverse_iterator it, ite = rolenamehis_vec.GetVector().rend();
+				for (it = rolenamehis_vec.GetVector().rbegin(); it != ite; ++it)
+					item.namelist.push_back(it->name);
+			}
+			out_item = item;
+			return true;
+		}
+		catch (DbException)
+		{
+			Log::log(LOG_ERR, "DBQueryRoleName db exception");
+			return false;
+		}
+		catch (...)
+		{
+			Log::log(LOG_ERR, "DBQueryRoleName unmarshal exception");
+			return false;
+		}
+	}
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBQueryRoleNameArg *arg = (DBQueryRoleNameArg *)argument;
+		DBQueryRoleNameRes *res = (DBQueryRoleNameRes *)result;
+		LOG_TRACE("DBQueryRoleName namesize=%d", arg->name.size());
+		try
+		{
+			StorageEnv::Storage * prolename = StorageEnv::GetStorage("rolename");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * prolenamehis = StorageEnv::GetStorage("rolenamehis");
+			StorageEnv::CommonTransaction txn;
+
+			{
+				NameHistory item;
+				std::set<int> roleid_set;
+				if (QueryItem(arg->name, prolename, pbase, pstatus, prolenamehis, txn, item))
+				{
+					if (roleid_set.insert(item.roleid).second == true)
+						res->list.push_back(item);
+				}
+				char * suffix = "*";
+				Octets suffix_l(suffix, strlen(suffix)), suffix_u;
+				CharsetConverter::conv_charset_l2u(suffix_l, suffix_u);
+				arg->name.insert(arg->name.end(), suffix_u.begin(), suffix_u.size());
+				if (QueryItem(arg->name, prolename, pbase, pstatus, prolenamehis, txn, item))
+				{
+					if (roleid_set.insert(item.roleid).second == true)
+					res->list.push_back(item);
+				}
+				int i = 'a';
+				while(i < 'c') 
+				{
+					Octets testname = arg->name;
+					char buffer[64];
+					sprintf(buffer, "%c", i);
+					Octets sub_suffix_l(buffer,strlen(buffer)), sub_suffix_u;
+					CharsetConverter::conv_charset_l2u(sub_suffix_l, sub_suffix_u);
+					testname.insert(testname.end(), sub_suffix_u.begin(), sub_suffix_u.size());
+					if (QueryItem(testname, prolename, pbase, pstatus, prolenamehis, txn, item))
+					{
+						if (roleid_set.insert(item.roleid).second == true)
+							res->list.push_back(item);
+					}
+					i++;
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+		}
+		catch(...)
+		{
+			Log::log(LOG_ERR, "DBQueryRoleName outer exception");
+			res->retcode = ERR_DATANOTFIND;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBQueryRoleNameArg *arg = (DBQueryRoleNameArg *)argument;
+		// DBQueryRoleNameRes *res = (DBQueryRoleNameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,306 @@
+
+#ifndef __GNET_DBCREATEROLE_HPP
+#define __GNET_DBCREATEROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbbuffer.h"
+
+#include "log.h"
+
+#include "groleinventory"
+#include "userid"
+#include "user"
+#include "roleid"
+#include "groleforbid"
+
+#include "grolebase"
+#include "grolebase2"
+#include "grolestatus"
+#include "grolepocket"
+#include "groledetail"
+#include "groletask"
+#include "dbcreaterolearg"
+#include "dbcreateroleres"
+
+
+#include "gamedbmanager.h"
+namespace GNET
+{
+class DBCreateRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcreaterole"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCreateRoleArg *arg = (DBCreateRoleArg *)argument;
+		DBCreateRoleRes *res = (DBCreateRoleRes *)result;
+		Marshal::OctetsStream key_userid, key_roleid, value, value_base, value_status, value_base2;
+		Marshal::OctetsStream value_inventory, value_storehouse, value_task;
+
+		LOG_TRACE( "DBCreateRole, roleid=%d, occupation=%d, gender=%d.", arg->roleid, arg->roleinfo.occupation, arg->roleinfo.gender );
+
+		//get occupation base information
+		GRoleBase	base;
+		GRoleStatus	status;
+		GRolePocket	inventory;
+		GRoleStorehouse			storehouse;
+		GRoleBase2 	base2;
+		if( !GameDBManager::GetInstance()->GetClsDetail( arg->roleinfo.occupation,arg->roleinfo.gender,
+			base, status, inventory, storehouse) )
+		{
+			res->retcode = ERR_CREATEROLE;
+			Log::log(LOG_ERR,"DBCreateRole, GetClsDetail failed, roleid=%d, occupation=%d, gender=%d.",
+				arg->roleid, arg->roleinfo.occupation,arg->roleinfo.gender );
+			return;
+		}
+		
+		try
+		{
+			StorageEnv::Storage * prolename = StorageEnv::GetStorage("rolename");
+			//StorageEnv::Storage * plogicuid = StorageEnv::GetStorage("logicuid");
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * pstorehouse = StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage * ptask = StorageEnv::GetStorage("task");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key_userid << UserID(arg->userid);
+				key_roleid << arg->roleid;
+
+				//check whether the role name is duplicated
+				if ( prolename->find( arg->roleinfo.name, value, txn ) )
+				{
+					res->retcode=ERR_DUPLICATRECORD;
+					return;
+				}
+
+				//get old rolelist
+				User user;
+				value.clear();
+				RoleList rolelist;
+				rolelist.InitialRoleList();
+				if( puser->find( key_userid, value, txn ) )
+				{       
+					value >> user;
+					RoleList t(user.rolelist);
+					rolelist = t;
+				}
+
+				if(user.logicuid && user.logicuid != arg->logicuid)
+				{       
+					if((int)user.logicuid!=arg->userid || rolelist.GetRoleCount())
+					{       
+						Log::log( LOG_ERR, "FATAL: DBCreateRole, invalid logicuid,userid=%d,local=%d,uniquenamed use %d",
+								arg->userid, user.logicuid, arg->logicuid);
+						res->retcode = ERR_DUPLICATRECORD;
+						return;
+					}
+					user.logicuid = arg->logicuid;
+				}
+				/*
+				Marshal::OctetsStream k_logic, v_logic;
+				k_logic << arg->logicuid;
+				if (plogicuid->find(k_logic, v_logic, txn))
+				{
+					int userid;
+					v_logic >> userid;
+					if (userid != arg->userid)
+					{
+						Log::log( LOG_ERR, "FATAL: DBCreateRole, logicuid has been used by user=%d,userid=%d,local=%d,uniquenamed use %d",
+								userid, arg->userid, arg->logicuid);
+						res->retcode = ERR_DUPLICATRECORD;
+						return;
+					}
+				}
+				else
+				{
+					plogicuid->insert(k_logic, Marshal::OctetsStream() << userid, txn);
+				}
+				*/
+
+				//使用gdelivery传递来的roleid(old version)
+				if( rolelist.IsRoleExist(arg->roleid) )
+				{
+					Log::log( LOG_ERR, "DBCreateRole, roleid %d was used.\n", arg->roleid);
+					res->retcode = ERR_DUPLICATE_ROLEID;
+					if( pbase->find( key_roleid, value_base, txn ) )
+					{
+						try { value_base >> base; res->roleinfo.name = base.name; }
+						catch( Marshal::Exception e ) { }
+					}
+					return;
+				}
+				//开始判断该角色是否有上线
+				if (arg->real_referrer > 0)
+				{
+					user.referrer = arg->real_referrer;
+					res->real_referrer = arg->real_referrer;
+				}
+				else 
+				{
+					if (arg->au_suggest_referrer > 0)
+					{
+						if (pbase->find(Marshal::OctetsStream()<<arg->au_suggest_referrer, Marshal::OctetsStream(), txn))
+						{
+							user.referrer = arg->au_suggest_referrer;
+							res->real_referrer = arg->au_suggest_referrer;
+						}
+						else
+						{
+							res->refretcode = REF_ERR_REFERRERNOTINSERVER;
+						}
+					}
+					else if (arg->au_suggest_referrer == -1)	//AU发过来的推广人所在区不是本区
+					{
+						res->refretcode = REF_ERR_REFERRERNOTINDISTRICT;
+					}
+					else				//该玩家没有在网页上绑定过上线
+					{
+						if (arg->player_suggest_referrer)//用户输入了格式正确的推广码
+						{
+							Marshal::OctetsStream os_ref_base;
+							if (pbase->find(Marshal::OctetsStream()<<arg->player_suggest_referrer, os_ref_base, txn))
+							{
+								GRoleBase ref_base;
+								os_ref_base >> ref_base;
+								if (ref_base.create_time > 1345737600) //20120824 0:00 以后创建的上线绑定时需要判断等级
+								{
+									GRoleStatus ref_status;
+									Marshal::OctetsStream(pstatus->find(Marshal::OctetsStream() << arg->player_suggest_referrer, txn)) >> ref_status;
+									if (ref_status.reborndata.size()/sizeof(int)==0 && ref_status.level<REF_LIMIT_REFERRERLEVEL)
+									{
+										res->retcode = REF_ERR_INVALIDSPREADCODE;
+										return;
+									}
+								}
+								user.referrer = arg->player_suggest_referrer;
+								res->real_referrer = arg->player_suggest_referrer;
+							}
+							else
+							{
+								//用户输入的推广码不对，创建角色失败
+								res->retcode = REF_ERR_REFERRERNOTINSERVER;
+								return;
+							}
+						}
+					}
+				}
+				int advice_roleid=arg->roleid; rolelist.AddRole(arg->roleid % MAX_ROLE_COUNT);
+			
+				//fill custom information, and write to db
+				base.id		= advice_roleid;
+				base.userid	= arg->userid;
+				base.faceid     = arg->roleinfo.faceid;
+				base.hairid     = arg->roleinfo.hairid;
+				base.gender	= arg->roleinfo.gender;
+				base.name	= arg->roleinfo.name;
+				base.earid = arg->roleinfo.earid;
+				base.tailid = arg->roleinfo.tailid;
+				base.status	= _ROLE_STATUS_NORMAL;
+				base.create_time= Timer::GetTime();
+				base.lastlogin_time = Timer::GetTime();
+				base.fashionid 	= arg->roleinfo.fashionid;
+
+				base2.id 	= advice_roleid;
+
+				status.id = advice_roleid;
+				status.updatetime = base.create_time;
+				status.time_used = 0;
+		
+				value_base << base;
+				value_base2 << base2;
+				value_status << status;
+				value_inventory << inventory;
+				value_storehouse << storehouse;
+				
+				pbase->insert( key_roleid,value_base, txn , DB_NOOVERWRITE);
+				//之前创建的角色 默认没有加base2数据
+				pbase2->insert( key_roleid,value_base2, txn);
+				pstatus->insert( key_roleid, value_status, txn );
+				pinventory->insert( key_roleid, value_inventory, txn );
+				pstorehouse->insert( key_roleid, value_storehouse, txn );
+				value_task << GRoleTask();
+				ptask->insert( key_roleid, value_task, txn );
+
+				prolename->insert( base.name, key_roleid, txn );	/* rolename表以base.name为key */
+
+				//update "user" table's rolelist 
+				user.rolelist = rolelist.GetRoleList();
+				user.logicuid = arg->logicuid;
+				puser->insert( key_userid, Marshal::OctetsStream() << user, txn );
+				//因为需要打印账号名所以移到gdeliveryd打印
+				//Log::formatlog("createrole","roleid=%d:occupation=%d:gender=%d:userid=%d", arg->roleid, 
+				//		arg->roleinfo.occupation, arg->roleinfo.gender, arg->userid);
+				res->retcode=ERR_SUCCESS;
+
+				res->roleinfo.id = base.id;
+				res->roleinfo.name = base.name;
+				res->roleinfo.gender = base.gender;
+				res->roleinfo.faceid = base.faceid;
+				res->roleinfo.hairid = base.hairid;
+				res->roleinfo.earid = base.earid;
+				res->roleinfo.tailid = base.tailid;
+				res->roleinfo.delete_flag = base.status;
+				res->roleinfo.create_time = base.create_time;
+				res->roleinfo.delete_time = base.delete_time;
+				res->roleinfo.lastlogin_time = base.lastlogin_time;
+				res->roleinfo.familyid = base.familyid;
+				res->roleinfo.title = base.title;
+				res->roleinfo.config_data = base.config_data;
+				res->roleinfo.help_states = base.help_states;
+				res->roleinfo.occupation = status.occupation;
+				res->roleinfo.level = status.level;
+				res->roleinfo.posx = status.posx;
+				res->roleinfo.posy = status.posy;
+				res->roleinfo.posz = status.posz;
+				res->roleinfo.worldtag = status.worldtag;
+				res->roleinfo.custom_status.swap(status.custom_status);
+				res->roleinfo.charactermode.swap(status.charactermode);
+				res->roleinfo.equipment.swap(inventory.equipment);
+				res->roleinfo.fashionid = base.fashionid;
+
+				res->roleid	= base.id;
+				res->rolelist	= rolelist.GetRoleList();
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCreateRole, roleid=%d, what=%s\n", base.id, e.what() );
+			res->retcode=ERR_CREATEROLE;
+		}
+		if (res->retcode == ERR_SUCCESS)
+			GameDBManager::GetInstance()->OnCreateRole();
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCreateRoleArg *arg = (DBCreateRoleArg *)argument;
+		// DBCreateRoleRes *res = (DBCreateRoleRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

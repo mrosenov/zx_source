@@ -1,0 +1,105 @@
+#ifndef __GNET_GTABLETOPFLOWERDATA_RPCDATA
+#define __GNET_GTABLETOPFLOWERDATA_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GTableTopFlowerData : public GNET::Rpc::Data
+	{
+	public:
+		int userid;
+		Octets rolename;
+		int gender;
+		int recv_count;
+		int recv_stamp;
+		char recv_isGiftTake;
+		int send_count;
+		int send_stamp;
+		char send_isGiftTake;
+
+	public:
+		GTableTopFlowerData (int l_userid = 0,const Octets& l_rolename = Octets(),int l_gender = 0
+			,int l_recv_count = 0,int l_recv_stamp = 0,char l_recv_isGiftTake = 0
+			,int l_send_count = 0,int l_send_stamp = 0,char l_send_isGiftTake = 0)
+			: userid(l_userid),rolename(l_rolename),gender(l_gender)
+			,recv_count(l_recv_count),recv_stamp(l_recv_stamp),recv_isGiftTake(l_recv_isGiftTake)
+			,send_count(l_send_count),send_stamp(l_send_stamp),send_isGiftTake(l_send_isGiftTake)
+		{
+		}
+
+		GTableTopFlowerData(const GTableTopFlowerData &rhs)
+			: userid(rhs.userid),rolename(rhs.rolename),gender(rhs.gender),
+			recv_count(rhs.recv_count),recv_stamp(rhs.recv_stamp),recv_isGiftTake(rhs.recv_isGiftTake),
+			send_count(rhs.send_count),send_stamp(rhs.send_stamp),send_isGiftTake(rhs.send_isGiftTake) { }
+
+		Rpc::Data *Clone() const { return new GTableTopFlowerData(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GTableTopFlowerData *r = dynamic_cast<const GTableTopFlowerData *>(&rhs);
+			if (r && r != this)
+			{
+				userid = r->userid;
+				rolename = r->rolename;
+				gender = r->gender;
+				recv_count = r->recv_count;
+				recv_stamp = r->recv_stamp;
+				recv_isGiftTake = r->recv_isGiftTake;
+				send_count = r->send_count;
+				send_stamp = r->send_stamp;
+				send_isGiftTake = r->send_isGiftTake;
+			}
+			return *this;
+		}
+
+		GTableTopFlowerData& operator = (const GTableTopFlowerData &rhs)
+		{
+			const GTableTopFlowerData *r = &rhs;
+			if (r && r != this)
+			{
+				userid = r->userid;
+				rolename = r->rolename;
+				gender = r->gender;
+				recv_count = r->recv_count;
+				recv_stamp = r->recv_stamp;
+				recv_isGiftTake = r->recv_isGiftTake;
+				send_count = r->send_count;
+				send_stamp = r->send_stamp;
+				send_isGiftTake = r->send_isGiftTake;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			os << rolename;
+			os << gender;
+			os << recv_count;
+			os << recv_stamp;
+			os << recv_isGiftTake;
+			os << send_count;
+			os << send_stamp;
+			os << send_isGiftTake;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			os >> rolename;
+			os >> gender;
+			os >> recv_count;
+			os >> recv_stamp;
+			os >> recv_isGiftTake;
+			os >> send_count;
+			os >> send_stamp;
+			os >> send_isGiftTake;
+			return os;
+		}
+
+	};
+};
+#endif

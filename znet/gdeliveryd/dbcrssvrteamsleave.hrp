@@ -1,0 +1,103 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSLEAVE_HPP
+#define __GNET_DBCRSSVRTEAMSLEAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsleavearg"
+#include "dbcrssvrteamsleaveres"
+
+#include "crssvrteamsmanager.h"
+#include "crssvrteamsnotify_re.hpp"
+#include "synccrosscrssvrteamsdel.hrp"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsLeave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsleave"
+#undef	RPC_BASECLASS
+	
+	int linksid;// 离开者
+	int localsid;// 离开者
+	Octets name;// 离开者
+	bool iskick; // 是否被踢
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsLeaveArg *arg = (DBCrssvrTeamsLeaveArg *)argument;
+		// DBCrssvrTeamsLeaveRes *res = (DBCrssvrTeamsLeaveRes *)result;
+	}
+
+	void NotifyCentral(int zoneid, int teamid, int roleid)
+	{
+		//if(!CrssvrTeamsManager::Instance()->IsRoleCrossOnline(teamid))
+		//	return;
+
+		SyncCrossCrssvrTeamsDel* rpc = (SyncCrossCrssvrTeamsDel*) Rpc::Call(RPC_SYNCCROSSCRSSVRTEAMSDEL, SyncCrossCrssvrTeamsDelArg(zoneid, teamid, roleid));
+		CentralDeliveryClient::GetInstance()->SendProtocol(rpc);
+	}
+
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsLeaveArg *arg = (DBCrssvrTeamsLeaveArg *)argument;
+		DBCrssvrTeamsLeaveRes *res = (DBCrssvrTeamsLeaveRes *)result;
+		
+		LOG_TRACE("DBCrssvrTeamsLeave, retcode=%d, teamid=%d, roleid=%d,captain_roleid=%d", res->retcode, arg->teamid, arg->roleid, res->captain_roleid);
+		if(res->retcode==ERR_SUCCESS)
+		{
+	                int ret = CrssvrTeamsManager::Instance()->OnDeleteRole(arg->teamid, arg->roleid);
+			if(ret != ERR_SUCCESS)
+				GDeliveryServer::GetInstance()->Send(linksid, CrssvrTeamsNotify_Re(ret, arg->roleid, arg->teamid, localsid));
+			else
+			{
+				int zoneid = GDeliveryServer::GetInstance()->zoneid;
+				NotifyCentral(zoneid, arg->teamid, arg->roleid);
+
+				if(iskick)// 如果是被踢的，要通知被踢者
+				{
+					PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+					if (NULL==pinfo)
+					{
+						LOG_TRACE("CrssvrTeamsLeave, teamid=%d, roleid=%d is not online", arg->teamid, arg->roleid);
+						return;
+					}
+
+					GDeliveryServer::GetInstance()->Send(pinfo->linksid, CrssvrTeamsNotify_Re(ERR_CRSSVRTEAMS_KICK_TEAM, arg->roleid, arg->teamid, pinfo->localsid));
+				}
+				else
+				{
+					// 通知队长
+					PlayerInfo * pinfo_captain = UserContainer::GetInstance().FindRoleOnline(res->captain_roleid);
+					if (NULL==pinfo_captain)
+					{
+						LOG_TRACE("DBCrssvrTeamsLeave, teamid=%d, captain_roleid=%d is not online", arg->teamid, res->captain_roleid);
+						return;
+					}
+
+					GDeliveryServer::GetInstance()->Send(pinfo_captain->linksid, CrssvrTeamsNotify_Re(ERR_CRSSVRTEAMS_QUIT_TEAM, arg->roleid, arg->teamid, pinfo_captain->localsid, name));
+				}
+			}
+		}
+		else
+		{
+			GDeliveryServer::GetInstance()->Send(linksid, CrssvrTeamsNotify_Re(res->retcode, arg->roleid, arg->teamid, localsid));
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		DBCrssvrTeamsLeaveArg *arg = (DBCrssvrTeamsLeaveArg *)argument;
+		Log::log( LOG_ERR,"DBCrssvrTeamsLeave: timeout. roleid=%d,teamid=%d", arg->roleid, arg->teamid);
+		GDeliveryServer::GetInstance()->Send(linksid,CrssvrTeamsNotify_Re(ERR_CRSSVRTEAMS_DB_TIMEOUT,arg->roleid,arg->teamid,localsid));
+	}
+
+};
+
+};
+#endif

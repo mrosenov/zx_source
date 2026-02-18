@@ -1,0 +1,69 @@
+#ifndef __GNET_DBGATEGETUSERRES_RPCDATA
+#define __GNET_DBGATEGETUSERRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBGateGetUserRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		unsigned int rolelist;
+		unsigned int logicuid;
+
+	public:
+		DBGateGetUserRes (int l_retcode = -1,unsigned int l_rolelist = 0,unsigned int l_logicuid = 0)
+			: retcode(l_retcode),rolelist(l_rolelist),logicuid(l_logicuid)
+		{
+		}
+
+		DBGateGetUserRes(const DBGateGetUserRes &rhs)
+			: retcode(rhs.retcode),rolelist(rhs.rolelist),logicuid(rhs.logicuid) { }
+
+		Rpc::Data *Clone() const { return new DBGateGetUserRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGateGetUserRes *r = dynamic_cast<const DBGateGetUserRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				rolelist = r->rolelist;
+				logicuid = r->logicuid;
+			}
+			return *this;
+		}
+
+		DBGateGetUserRes& operator = (const DBGateGetUserRes &rhs)
+		{
+			const DBGateGetUserRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				rolelist = r->rolelist;
+				logicuid = r->logicuid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << rolelist;
+			os << logicuid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> rolelist;
+			os >> logicuid;
+			return os;
+		}
+
+	};
+};
+#endif

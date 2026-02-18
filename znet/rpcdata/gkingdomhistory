@@ -1,0 +1,82 @@
+#ifndef __GNET_GKINGDOMHISTORY_RPCDATA
+#define __GNET_GKINGDOMHISTORY_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GKingdomHistory : public GNET::Rpc::Data
+	{
+	public:
+		int faction;
+		int points;
+		int win_times;
+		int reserved3;
+		int reserved4;
+
+	public:
+		GKingdomHistory (int l_faction = 0,int l_points = 0,int l_win_times = 0
+			,int l_reserved3 = 0,int l_reserved4 = 0)
+			: faction(l_faction),points(l_points),win_times(l_win_times)
+			,reserved3(l_reserved3),reserved4(l_reserved4)
+		{
+		}
+
+		GKingdomHistory(const GKingdomHistory &rhs)
+			: faction(rhs.faction),points(rhs.points),win_times(rhs.win_times),
+			reserved3(rhs.reserved3),reserved4(rhs.reserved4) { }
+
+		Rpc::Data *Clone() const { return new GKingdomHistory(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GKingdomHistory *r = dynamic_cast<const GKingdomHistory *>(&rhs);
+			if (r && r != this)
+			{
+				faction = r->faction;
+				points = r->points;
+				win_times = r->win_times;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+			}
+			return *this;
+		}
+
+		GKingdomHistory& operator = (const GKingdomHistory &rhs)
+		{
+			const GKingdomHistory *r = &rhs;
+			if (r && r != this)
+			{
+				faction = r->faction;
+				points = r->points;
+				win_times = r->win_times;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << faction;
+			os << points;
+			os << win_times;
+			os << reserved3;
+			os << reserved4;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> faction;
+			os >> points;
+			os >> win_times;
+			os >> reserved3;
+			os >> reserved4;
+			return os;
+		}
+
+	};
+};
+#endif

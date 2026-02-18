@@ -1,0 +1,59 @@
+#ifndef __GNET_GETFRIENDNUMBERARG_RPCDATA
+#define __GNET_GETFRIENDNUMBERARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GetFriendNumberArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+
+	public:
+		GetFriendNumberArg (int l_roleid = 0)
+			: roleid(l_roleid)
+		{
+		}
+
+		GetFriendNumberArg(const GetFriendNumberArg &rhs)
+			: roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new GetFriendNumberArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GetFriendNumberArg *r = dynamic_cast<const GetFriendNumberArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		GetFriendNumberArg& operator = (const GetFriendNumberArg &rhs)
+		{
+			const GetFriendNumberArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

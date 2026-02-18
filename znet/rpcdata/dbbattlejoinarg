@@ -1,0 +1,88 @@
+#ifndef __GNET_DBBATTLEJOINARG_RPCDATA
+#define __GNET_DBBATTLEJOINARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBBattleJoinArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int gs_id;
+		int map_id;
+		int itemid;
+		int item_pos;
+		GMailSyncData syncdata;
+
+	public:
+		DBBattleJoinArg (int l_roleid = 0,int l_gs_id = 0,int l_map_id = 0
+			,int l_itemid = 0,int l_item_pos = -1,const GMailSyncData& l_syncdata = GMailSyncData())
+			: roleid(l_roleid),gs_id(l_gs_id),map_id(l_map_id)
+			,itemid(l_itemid),item_pos(l_item_pos),syncdata(l_syncdata)
+		{
+		}
+
+		DBBattleJoinArg(const DBBattleJoinArg &rhs)
+			: roleid(rhs.roleid),gs_id(rhs.gs_id),map_id(rhs.map_id),
+			itemid(rhs.itemid),item_pos(rhs.item_pos),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBBattleJoinArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBBattleJoinArg *r = dynamic_cast<const DBBattleJoinArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				gs_id = r->gs_id;
+				map_id = r->map_id;
+				itemid = r->itemid;
+				item_pos = r->item_pos;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBBattleJoinArg& operator = (const DBBattleJoinArg &rhs)
+		{
+			const DBBattleJoinArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				gs_id = r->gs_id;
+				map_id = r->map_id;
+				itemid = r->itemid;
+				item_pos = r->item_pos;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << gs_id;
+			os << map_id;
+			os << itemid;
+			os << item_pos;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> gs_id;
+			os >> map_id;
+			os >> itemid;
+			os >> item_pos;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

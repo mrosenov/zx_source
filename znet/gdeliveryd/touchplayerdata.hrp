@@ -1,0 +1,94 @@
+
+#ifndef __GNET_TOUCHPLAYERDATA_HPP
+#define __GNET_TOUCHPLAYERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "touchplayerdataarg"
+#include "touchplayerdatares"
+#include "playerlogin_re.hpp"
+#include "crossbattlemanager.hpp"
+
+namespace GNET
+{
+
+class TouchPlayerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "touchplayerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TouchPlayerDataArg *arg = (TouchPlayerDataArg *)argument;
+		// TouchPlayerDataRes *res = (TouchPlayerDataRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		TouchPlayerDataArg *arg = (TouchPlayerDataArg *)argument;
+		TouchPlayerDataRes *res = (TouchPlayerDataRes *)result;
+		LOG_TRACE("Recv TouchPlayerData roleid %d userid %d, retcode %d", arg->roleid, arg->userid, res->retcode);
+		UserInfo * pinfo = UserContainer::GetInstance().FindUser(arg->userid);
+		if (pinfo == NULL || pinfo->status != _STATUS_REMOTE_LOGINQUERY)
+		{
+			Log::log(LOG_ERR, "TouchPlayerData userid %d status %d invalid",
+					arg->userid, pinfo==NULL?0:pinfo->status);
+			return;
+		}
+		PlayerLogin_Re re;
+		try
+		{
+			Marshal::OctetsStream(pinfo->playerlogin_re_pack) >> re;
+			pinfo->playerlogin_re_pack.clear();
+		}
+		catch(...)
+		{
+			Log::log(LOG_ERR, "TouchPlayerData userid %d roleid %d unpack error", arg->userid, arg->roleid);
+			return;
+		}
+		re.result = res->retcode;
+		if (res->retcode == ERR_SUCCESS)
+		{
+			PlayerLogin_Re::RealLogin(arg->roleid, pinfo, re);
+			pinfo->status = _STATUS_READYGAME;
+			GRoleInfo* info = RoleInfoCache::Instance().Get(arg->roleid);
+			if (info)
+			{
+				GRoleInfo roleinfo_chop = RoleInfoCache::ChopRoleInfo(*info);
+				RoleInfo roleinfo;
+				RoleInfoCache::ConvertRoleInfo(roleinfo_chop, roleinfo);
+				// 如果需要进入战场，修改返回给客户端的地图号
+				const FightingTag *tag = CrossBattleManager::GetInstance()->GetFightingTag(arg->roleid);
+				if(tag != NULL && tag->_isactive == true)
+				{
+					roleinfo.worldtag = tag->_tag;
+				}
+				re.roleinfo_pack.swap(Marshal::OctetsStream()<<roleinfo);
+			}
+			else
+				Log::log(LOG_ERR, "RemoteLoginQuery_Re, %d roleinfo not in cache", arg->roleid);
+		}
+		else
+		{
+			UserContainer::GetInstance().UserLogout(pinfo);
+		}
+		re.src_provider_id = pinfo->gameid;
+		GDeliveryServer* dsm=GDeliveryServer::GetInstance();
+		dsm->Send(pinfo->linksid, re);
+		dsm->BroadcastStatus();
+		LOG_TRACE("Send PlayerLogin_Re to glink, userid %d roleid %d ret %d worldtag %d",
+				arg->userid, arg->roleid, re.result, re.worldtag);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

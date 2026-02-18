@@ -1,0 +1,56 @@
+
+#ifndef __GNET_PASSPORTGETROLELIST_HPP
+#define __GNET_PASSPORTGETROLELIST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "passportgetrolelistarg"
+#include "passportgetrolelistres"
+#include "gamedbclient.hpp"
+
+namespace GNET
+{
+
+class PassportGetRoleList : public ProxyRpc
+{
+#define	RPC_BASECLASS	ProxyRpc
+	#include "passportgetrolelist"
+#undef	RPC_BASECLASS
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		PassportGetRoleListArg arg;
+		osArg >> arg;
+		LOG_TRACE("passportgetrolelist userid %d", arg.userid);
+		if( GameDBClient::GetInstance()->SendProtocol( *this ) )
+		{
+			return true;
+		}
+		else
+		{
+			SetResult(PassportGetRoleListRes(ERR_DELIVER_SEND));
+			SendToSponsor();
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		PassportGetRoleListArg arg;
+		osArg >> arg;
+		PassportGetRoleListRes res;
+		osRes >> res;
+		LOG_TRACE("passportgetrolelist ret %d userid %d rolelist.size %d", res.retcode, arg.userid, res.rolelist.size());
+		// SetResult( &res ); // if you modified res, do not forget to call this. 
+	}
+
+	void OnTimeout( )
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

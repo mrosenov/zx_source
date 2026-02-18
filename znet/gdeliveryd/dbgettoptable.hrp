@@ -1,0 +1,54 @@
+
+#ifndef __GNET_DBGETTOPTABLE_HPP
+#define __GNET_DBGETTOPTABLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "integer"
+#include "toptableres"
+#include "topmanager.h"
+#include "gamedbclient.hpp"
+namespace GNET
+{
+
+class DBGetTopTable : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgettoptable"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// Integer *arg = (Integer *)argument;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		Integer *arg = (Integer *)argument;
+		TopTableRes *res = (TopTableRes *)result;
+		DEBUG_PRINT("dbgettoptable: received, tableid=%d, retcode=%d\n", res->daily.id, res->retcode);
+
+		if(res->retcode==ERR_SUCCESS)
+		{
+			int nextid = TopManager::Instance()->OnTableLoad(res->daily, res->weekly);
+			if(nextid>0)
+				manager->Send(sid,Rpc::Call(RPC_DBGETTOPTABLE,Integer(nextid)));
+		}
+		else if(res->retcode==ERR_AGAIN)
+			GameDBClient::GetInstance()->SendProtocol(Rpc::Call(RPC_DBGETTOPTABLE,arg)); 
+
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		Integer *arg = (Integer *)argument;
+		Log::log(LOG_WARNING,"dbgettoptable: rpc timeout %d.\n", arg->value);
+		GameDBClient::GetInstance()->SendProtocol( Rpc::Call(RPC_DBGETTOPTABLE,arg) ); 
+	}
+
+};
+
+};
+#endif

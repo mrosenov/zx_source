@@ -1,0 +1,43 @@
+
+#ifndef __GNET_CIRCLEGETASYNCDATA_HPP
+#define __GNET_CIRCLEGETASYNCDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "circleasyncdata"
+#include "circleasyncdata"
+
+void recv_circle_async_data(int uid, int result, const void * buf, size_t size);
+
+namespace GNET
+{
+
+class CircleGetAsyncData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "circlegetasyncdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// CircleAsyncData *arg = (CircleAsyncData *)argument;
+		// CircleAsyncData *res = (CircleAsyncData *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		CircleAsyncData *res = (CircleAsyncData *)result;
+		recv_circle_async_data(res->roleid, res->result, res->data.begin(), res->data.size());
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

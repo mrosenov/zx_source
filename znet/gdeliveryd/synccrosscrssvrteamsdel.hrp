@@ -1,0 +1,52 @@
+
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSDEL_HPP
+#define __GNET_SYNCCROSSCRSSVRTEAMSDEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrosscrssvrteamsdelarg"
+#include "synccrosscrssvrteamsdelres"
+#include "crosscrssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class SyncCrossCrssvrTeamsDel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrosscrssvrteamsdel"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsDelArg *arg = (SyncCrossCrssvrTeamsDelArg *)argument;
+		SyncCrossCrssvrTeamsDelRes *res = (SyncCrossCrssvrTeamsDelRes *)result;
+
+		int ret = CrossCrssvrTeamsManager::Instance()->OnDelRole(arg->teamid, arg->roleid, arg->zoneid);
+
+		LOG_TRACE("SyncCrossCrssvrTeamsDel, zoneid=%d, retcode=%d, teamid=%d, roleid=%d, ret=%d", arg->zoneid, res->retcode, arg->teamid, arg->roleid, ret);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsDelArg *arg = (SyncCrossCrssvrTeamsDelArg *)argument;
+		SyncCrossCrssvrTeamsDelRes *res = (SyncCrossCrssvrTeamsDelRes *)result;
+
+		//GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		LOG_TRACE("SyncCrossCrssvrTeamsDel, zoneid=%d, retcode=%d, teamid=%d", arg->zoneid, res->retcode, res->teamid);
+
+	}
+
+	void OnTimeout()
+	{
+		SyncCrossCrssvrTeamsDelArg *arg = (SyncCrossCrssvrTeamsDelArg *)argument;
+		Log::log( LOG_ERR,"SyncCrossCrssvrTeamsDel: timeout,teamid=%d", arg->teamid);
+
+	}
+
+};
+
+};
+#endif

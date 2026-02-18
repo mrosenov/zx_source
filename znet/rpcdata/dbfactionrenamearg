@@ -1,0 +1,64 @@
+#ifndef __GNET_DBFACTIONRENAMEARG_RPCDATA
+#define __GNET_DBFACTIONRENAMEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFactionRenameArg : public GNET::Rpc::Data
+	{
+	public:
+		Octets oldname;
+		Octets newname;
+
+	public:
+		DBFactionRenameArg (const Octets& l_oldname = Octets(0),const Octets& l_newname = Octets(0))
+			: oldname(l_oldname),newname(l_newname)
+		{
+		}
+
+		DBFactionRenameArg(const DBFactionRenameArg &rhs)
+			: oldname(rhs.oldname),newname(rhs.newname) { }
+
+		Rpc::Data *Clone() const { return new DBFactionRenameArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFactionRenameArg *r = dynamic_cast<const DBFactionRenameArg *>(&rhs);
+			if (r && r != this)
+			{
+				oldname = r->oldname;
+				newname = r->newname;
+			}
+			return *this;
+		}
+
+		DBFactionRenameArg& operator = (const DBFactionRenameArg &rhs)
+		{
+			const DBFactionRenameArg *r = &rhs;
+			if (r && r != this)
+			{
+				oldname = r->oldname;
+				newname = r->newname;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << oldname;
+			os << newname;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> oldname;
+			os >> newname;
+			return os;
+		}
+
+	};
+};
+#endif

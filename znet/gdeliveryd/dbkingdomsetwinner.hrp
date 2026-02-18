@@ -1,0 +1,49 @@
+
+#ifndef __GNET_DBKINGDOMSETWINNER_HPP
+#define __GNET_DBKINGDOMSETWINNER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomsetwinnerarg"
+#include "dbkingdomsetwinnerres"
+#include "kingdommanager.h"
+
+namespace GNET
+{
+
+class DBKingdomSetWinner : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomsetwinner"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomSetWinnerArg *arg = (DBKingdomSetWinnerArg *)argument;
+		// DBKingdomSetWinnerRes *res = (DBKingdomSetWinnerRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingdomSetWinnerArg *arg = (DBKingdomSetWinnerArg *)argument;
+		DBKingdomSetWinnerRes *res = (DBKingdomSetWinnerRes *)result;
+		if (res->retcode == ERR_SUCCESS)
+			KingdomManager::GetInstance()->OnSetWinner(arg->result, res->newinfo);
+		else
+			Log::log(LOG_ERR, "dbkingdomsetwinner err %d, res %d win_fac %d task_points %d",
+					res->retcode, arg->result, arg->win_faction, arg->task_points);
+	}
+
+	void OnTimeout()
+	{
+		DBKingdomSetWinnerArg *arg = (DBKingdomSetWinnerArg *)argument;
+		Log::log(LOG_ERR, "dbkingdomsetwinner timeout, res %d win_fac %d task_points %d",
+				arg->result, arg->win_faction, arg->task_points);
+	}
+
+};
+
+};
+#endif

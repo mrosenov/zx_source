@@ -1,0 +1,38 @@
+	public:
+		int retcode;
+		int roleid;
+		Octets newname;
+		enum { PROTOCOL_TYPE = PROTOCOL_GCHANGEROLENAME_RE };
+	public:
+		GChangeRolename_Re() { type = PROTOCOL_GCHANGEROLENAME_RE; }
+		GChangeRolename_Re(void*) : Protocol(PROTOCOL_GCHANGEROLENAME_RE) { }
+		GChangeRolename_Re (int l_retcode,int l_roleid,const Octets& l_newname)
+			 : retcode(l_retcode),roleid(l_roleid),newname(l_newname)
+		{
+			type = PROTOCOL_GCHANGEROLENAME_RE;
+		}
+
+		GChangeRolename_Re(const GChangeRolename_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),roleid(rhs.roleid),newname(rhs.newname) { }
+
+		GNET::Protocol *Clone() const { return new GChangeRolename_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << roleid;
+			os << newname;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> roleid;
+			os >> newname;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

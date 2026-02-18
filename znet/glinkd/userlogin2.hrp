@@ -1,0 +1,54 @@
+
+#ifndef __GNET_USERLOGIN2_HPP
+#define __GNET_USERLOGIN2_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "userloginarg2"
+#include "userloginres2"
+
+namespace GNET
+{
+
+class UserLogin2 : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "userlogin2"
+#undef	RPC_BASECLASS
+
+	Manager::Session::ID localsid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// UserLoginArg2 *arg = (UserLoginArg2 *)argument;
+		// UserLoginRes2 *res = (UserLoginRes2 *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		UserLoginArg2 *arg = (UserLoginArg2 *)argument;
+		UserLoginRes2 *res = (UserLoginRes2 *)result;
+
+		GLinkServer *lsm = GLinkServer::GetInstance();
+		if(!lsm->ValidUser(localsid, arg->userid))
+			return;
+		if(res->retcode)
+		{
+			lsm->SessionError(localsid, res->retcode, "Server2 error.");
+			return;
+		}
+	}
+
+	void OnTimeout()
+	{
+		GLinkServer *lsm = GLinkServer::GetInstance();
+		if(!lsm->ValidSid(localsid))
+			return;
+		lsm->SessionError(localsid, ERR_TIMEOUT, "Login2 Timeout.");
+	}
+};
+
+};
+#endif

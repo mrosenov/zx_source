@@ -1,0 +1,77 @@
+#ifndef __GNET_DBFRIENDCALLBACKMAILRES_RPCDATA
+#define __GNET_DBFRIENDCALLBACKMAILRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFriendCallbackMailRes : public GNET::Rpc::Data
+	{
+	public:
+		unsigned char retcode;
+		int roleid;
+		int receiver_userid;
+		Octets receiver_name;
+
+	public:
+		DBFriendCallbackMailRes (unsigned char l_retcode = 0,int l_roleid = 0,int l_receiver_userid = 0
+			,Octets l_receiver_name = Octets())
+			: retcode(l_retcode),roleid(l_roleid),receiver_userid(l_receiver_userid)
+			,receiver_name(l_receiver_name)
+		{
+		}
+
+		DBFriendCallbackMailRes(const DBFriendCallbackMailRes &rhs)
+			: retcode(rhs.retcode),roleid(rhs.roleid),receiver_userid(rhs.receiver_userid),
+			receiver_name(rhs.receiver_name) { }
+
+		Rpc::Data *Clone() const { return new DBFriendCallbackMailRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFriendCallbackMailRes *r = dynamic_cast<const DBFriendCallbackMailRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				roleid = r->roleid;
+				receiver_userid = r->receiver_userid;
+				receiver_name = r->receiver_name;
+			}
+			return *this;
+		}
+
+		DBFriendCallbackMailRes& operator = (const DBFriendCallbackMailRes &rhs)
+		{
+			const DBFriendCallbackMailRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				roleid = r->roleid;
+				receiver_userid = r->receiver_userid;
+				receiver_name = r->receiver_name;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << roleid;
+			os << receiver_userid;
+			os << receiver_name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> roleid;
+			os >> receiver_userid;
+			os >> receiver_name;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,104 @@
+
+#ifndef __GNET_DBFAMILYGET_HPP
+#define __GNET_DBFAMILYGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "familyid"
+#include "familygetres"
+
+namespace GNET
+{
+
+class DBFamilyGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FamilyId *arg = (FamilyId *)argument;
+		FamilyGetRes *res = (FamilyGetRes *)result;
+
+		LOG_TRACE( "DBFamilyGet, familyid=%d.\n", arg->fid );
+
+		try
+		{
+			GFamily info;
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+			Marshal::OctetsStream key, value;
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << arg->fid;
+				Marshal::OctetsStream(pfamily->find( key, txn )) >> res->value;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFamilyGet, familyid=%d, what=%s\n", arg->fid, e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_DATANOTFIND;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FamilyId *arg = (FamilyId *)argument;
+		FamilyGetRes *res = (FamilyGetRes *)result;
+		if(res->retcode != ERR_SUCCESS)
+		{
+			Log::log( LOG_ERR, "[NOK] DBFamilyGet, familyid=%d, retcode=%d", arg->fid, res->retcode);
+			return;
+		}
+
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("family");
+			StorageEnv::Storage * pname = StorageEnv::GetStorage("familyname");
+			Marshal::OctetsStream key, value;
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << *arg;
+				res->value.deletetime = 0;
+				value << res->value;
+				pfaction->insert( key, value, txn );
+				pname->insert(Marshal::OctetsStream()<<res->value.name, key, txn, DB_NOOVERWRITE);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+			Log::log( LOG_ERR, "[OK] DBFamilyGet, familyid=%d", arg->fid);
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "[NOK] DBFamilyGet, familyid=%d, what=%s\n", arg->fid, e.what() );
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

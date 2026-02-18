@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFACTIONAPPOINT_HPP
+#define __GNET_DBFACTIONAPPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionappointarg"
+#include "dbfactionappointres"
+
+namespace GNET
+{
+
+class DBFactionAppoint : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionappoint"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFactionAppointArg *arg = (DBFactionAppointArg *)argument;
+		// DBFactionAppointRes *res = (DBFactionAppointRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFactionAppointArg *arg = (DBFactionAppointArg *)argument;
+		// DBFactionAppointRes *res = (DBFactionAppointRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

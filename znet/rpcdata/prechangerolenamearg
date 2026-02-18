@@ -1,0 +1,77 @@
+#ifndef __GNET_PRECHANGEROLENAMEARG_RPCDATA
+#define __GNET_PRECHANGEROLENAMEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class PreChangeRolenameArg : public GNET::Rpc::Data
+	{
+	public:
+		int zoneid;
+		int userid;
+		int roleid;
+		Octets newname;
+
+	public:
+		PreChangeRolenameArg (int l_zoneid = -1,int l_userid = -1,int l_roleid = 0
+			,const Octets& l_newname = Octets(0))
+			: zoneid(l_zoneid),userid(l_userid),roleid(l_roleid)
+			,newname(l_newname)
+		{
+		}
+
+		PreChangeRolenameArg(const PreChangeRolenameArg &rhs)
+			: zoneid(rhs.zoneid),userid(rhs.userid),roleid(rhs.roleid),
+			newname(rhs.newname) { }
+
+		Rpc::Data *Clone() const { return new PreChangeRolenameArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PreChangeRolenameArg *r = dynamic_cast<const PreChangeRolenameArg *>(&rhs);
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				userid = r->userid;
+				roleid = r->roleid;
+				newname = r->newname;
+			}
+			return *this;
+		}
+
+		PreChangeRolenameArg& operator = (const PreChangeRolenameArg &rhs)
+		{
+			const PreChangeRolenameArg *r = &rhs;
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				userid = r->userid;
+				roleid = r->roleid;
+				newname = r->newname;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << zoneid;
+			os << userid;
+			os << roleid;
+			os << newname;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> zoneid;
+			os >> userid;
+			os >> roleid;
+			os >> newname;
+			return os;
+		}
+
+	};
+};
+#endif

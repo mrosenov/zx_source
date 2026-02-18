@@ -1,0 +1,44 @@
+	public:
+		std::vector<int> roles;
+		int flagid;
+		int worldtag;
+		int remaintime;
+		enum { PROTOCOL_TYPE = PROTOCOL_BATTLEFLAGBUFFSCOPE };
+	public:
+		BattleFlagBuffScope() { type = PROTOCOL_BATTLEFLAGBUFFSCOPE; }
+		BattleFlagBuffScope(void*) : Protocol(PROTOCOL_BATTLEFLAGBUFFSCOPE) { }
+		BattleFlagBuffScope (const std::vector<int>& l_roles,int l_flagid,int l_worldtag = 0,
+			int l_remaintime = 0)
+			 : roles(l_roles),flagid(l_flagid),worldtag(l_worldtag)
+			,remaintime(l_remaintime)
+		{
+			type = PROTOCOL_BATTLEFLAGBUFFSCOPE;
+		}
+
+		BattleFlagBuffScope(const BattleFlagBuffScope &rhs)
+			: Protocol(rhs),roles(rhs.roles),flagid(rhs.flagid),worldtag(rhs.worldtag)
+			,remaintime(rhs.remaintime) { }
+
+		GNET::Protocol *Clone() const { return new BattleFlagBuffScope(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roles;
+			os << flagid;
+			os << worldtag;
+			os << remaintime;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roles;
+			os >> flagid;
+			os >> worldtag;
+			os >> remaintime;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2400; }

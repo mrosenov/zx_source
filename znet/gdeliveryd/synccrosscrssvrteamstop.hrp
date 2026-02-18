@@ -1,0 +1,55 @@
+
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSTOP_HPP
+#define __GNET_SYNCCROSSCRSSVRTEAMSTOP_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrosscrssvrteamstoparg"
+#include "synccrosscrssvrteamstopres"
+#include "topmanager.h"
+#include "crosscrssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class SyncCrossCrssvrTeamsTop : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrosscrssvrteamstop"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsTopArg *arg = (SyncCrossCrssvrTeamsTopArg *)argument;
+		//SyncCrossCrssvrTeamsTopRes *res = (SyncCrossCrssvrTeamsTopRes *)result;
+
+		Log::formatlog("SyncCrossCrssvrTeamsTop","updatetop:tableid=%d:size=%d:time=%d:top_type=%d",
+			arg->table.id,arg->table.items.size(),arg->table.time,arg->top_type);
+
+		TopManager::Instance()->UpdateTopFromCentral(arg->top_type, arg->table);
+
+		LOG_TRACE("SyncCrossCrssvrTeamsTop updatetop:tableid=%d:size=%d:time=%d:top_type=%d",
+			arg->table.id,arg->table.items.size(),arg->table.time,arg->top_type);
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//SyncCrossCrssvrTeamsTopArg *arg = (SyncCrossCrssvrTeamsTopArg *)argument;
+		SyncCrossCrssvrTeamsTopRes *res = (SyncCrossCrssvrTeamsTopRes *)result;
+		LOG_TRACE("SyncCrossCrssvrTeamsTop Client retcode=%d, SetRewardFlag=%d", res->retcode, true);
+	}
+
+	void OnTimeout()
+	{
+		SyncCrossCrssvrTeamsTopRes *res = (SyncCrossCrssvrTeamsTopRes *)result;
+		LOG_TRACE("SyncCrossCrssvrTeamsTop OnTimeout retcode=%d", res->retcode);
+		//CentralDeliveryServer::GetInstance()->BroadcastProtocol(this);
+	}
+
+};
+
+};
+#endif

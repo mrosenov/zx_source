@@ -1,0 +1,97 @@
+#ifndef __GNET_GROLEDATA_RPCDATA
+#define __GNET_GROLEDATA_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "grolebase"
+#include "grolestatus"
+#include "grolepocket"
+#include "grolestorehouse"
+#include "groletask"
+#include "grolebase2"
+#include "groleachievement"
+
+namespace GNET
+{
+	class GRoleData : public GNET::Rpc::Data
+	{
+	public:
+		GRoleBase base;
+		GRoleStatus status;
+		GRolePocket pocket;
+		GRoleStorehouse storehouse;
+		GRoleTask task;
+		GRoleBase2 base2;
+		GRoleAchievement achievement;
+
+	public:
+		GRoleData ()
+		{
+		}
+
+		GRoleData(const GRoleData &rhs)
+			: base(rhs.base),status(rhs.status),pocket(rhs.pocket),
+			storehouse(rhs.storehouse),task(rhs.task),base2(rhs.base2),
+			achievement(rhs.achievement) { }
+
+		Rpc::Data *Clone() const { return new GRoleData(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GRoleData *r = dynamic_cast<const GRoleData *>(&rhs);
+			if (r && r != this)
+			{
+				base = r->base;
+				status = r->status;
+				pocket = r->pocket;
+				storehouse = r->storehouse;
+				task = r->task;
+				base2 = r->base2;
+				achievement = r->achievement;
+			}
+			return *this;
+		}
+
+		GRoleData& operator = (const GRoleData &rhs)
+		{
+			const GRoleData *r = &rhs;
+			if (r && r != this)
+			{
+				base = r->base;
+				status = r->status;
+				pocket = r->pocket;
+				storehouse = r->storehouse;
+				task = r->task;
+				base2 = r->base2;
+				achievement = r->achievement;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << base;
+			os << status;
+			os << pocket;
+			os << storehouse;
+			os << task;
+			os << base2;
+			os << achievement;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> base;
+			os >> status;
+			os >> pocket;
+			os >> storehouse;
+			os >> task;
+			os >> base2;
+			os >> achievement;
+			return os;
+		}
+
+	};
+};
+#endif

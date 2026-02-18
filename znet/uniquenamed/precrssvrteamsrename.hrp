@@ -1,0 +1,119 @@
+
+#ifndef __GNET_PRECRSSVRTEAMSRENAME_HPP
+#define __GNET_PRECRSSVRTEAMSRENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#ifdef USE_DB
+#include "dbbuffer.h"
+#endif
+#include "precrssvrteamsrenamearg"
+#include "precrssvrteamsrenameres"
+
+namespace GNET
+{
+
+class PreCrssvrTeamsRename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "precrssvrteamsrename"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PreCrssvrTeamsRenameArg *arg = (PreCrssvrTeamsRenameArg *)argument;
+		PreCrssvrTeamsRenameRes *res = (PreCrssvrTeamsRenameRes *)result;
+
+		if(arg->new_teamsname.size() <= 0)
+		{
+			LOG_TRACE( "PreCrssvrTeamsRename teamid=%d, newname size=%d", arg->teamid, arg->new_teamsname.size());
+			res->retcode = ERR_DUPLICATRECORD;
+			return;
+		}
+
+		Octets name;
+		CharsetConverter::conv_charset_u2l(arg->new_teamsname, name);
+		LOG_TRACE( "PreCrssvrTeamsRename(zoneid=%d, teamid=%d, newname=%.*s)", arg->zoneid, arg->teamid, name.size(),(char*)name.begin());
+
+		UniqueNameServer::GetInstance()->TransformName(arg->new_teamsname);
+
+		try
+		{
+			StorageEnv::Storage * puname = NULL;
+			puname = StorageEnv::GetStorage("unamecrssvrteams");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				Marshal::OctetsStream key_nextid, value_uname, value_nextid;   
+				int nextid_forkey = 0;
+				key_nextid << nextid_forkey;
+				if (key_nextid == arg->new_teamsname)
+				{
+					res->retcode = ERR_DUPLICATRECORD;
+					Log::log(LOG_ERR, "PreCrssvrTeamsRename(zoneid=%d,teamid=%d,name=%.*s), duplicate, equals to next_id",
+							arg->zoneid, arg->teamid, name.size(), (char*)name.begin() );
+					return;
+				}
+				if (puname->find(arg->new_teamsname, value_uname, txn))
+				{
+					int zoneid, teamid, status, time;
+					value_uname >> zoneid >> teamid >> status >> time;
+					if (!(UNIQUENAME_ENGAGED == status && Timer::GetTime() - time > 300))
+					{
+						res->retcode = ERR_DUPLICATRECORD;
+						LOG_TRACE("PreCrssvrTeamsRename(zoneid=%d,teamid=%d,name=%.*s),duplicate,old:zoneid=%d,teamid=%d,status=%d,time=%d.",
+								arg->zoneid,arg->teamid,name.size(),(char*)name.begin(),zoneid,teamid,status,time);
+						return;
+					}
+					else
+					{
+						res->retcode = ERR_DUPLICATRECORD;
+						LOG_TRACE("PreCrssvrTeamsRename(zoneid=%d,teamid=%d,name=%.*s), duplicate2, old:zoneid=%d,teamid=%d,status=%d,time=%d.",
+								arg->zoneid,arg->teamid,name.size(),(char*)name.begin(),zoneid,teamid,status,time);
+						return;
+					}
+				}
+				int status = UNIQUENAME_ENGAGED;
+				value_uname.clear();
+				value_uname<< arg->zoneid << arg->teamid << status << (int)Timer::GetTime();
+				puname->insert(arg->new_teamsname, value_uname, txn);
+
+				res->retcode  = ERR_SUCCESS;
+
+				LOG_TRACE("PreCrssvrTeamsRename(zoneid=%d,teamid=%d,name=%.*s), ok",
+						arg->zoneid, arg->teamid, name.size(),(char*)name.begin());
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PreCrssvrTeamsRename, zoneid=%d, teamid=%d, what=%s\n", arg->zoneid, arg->teamid, e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PreCrssvrTeamsRenameArg *arg = (PreCrssvrTeamsRenameArg *)argument;
+		// PreCrssvrTeamsRenameRes *res = (PreCrssvrTeamsRenameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

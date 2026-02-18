@@ -1,0 +1,38 @@
+	public:
+		int roleid;
+		int userid;
+		GGateRoleInfo roledata;
+		enum { PROTOCOL_TYPE = PROTOCOL_GATEROLECREATE };
+	public:
+		GateRoleCreate() { type = PROTOCOL_GATEROLECREATE; }
+		GateRoleCreate(void*) : Protocol(PROTOCOL_GATEROLECREATE) { }
+		GateRoleCreate (int l_roleid,int l_userid,const GGateRoleInfo& l_roledata)
+			 : roleid(l_roleid),userid(l_userid),roledata(l_roledata)
+		{
+			type = PROTOCOL_GATEROLECREATE;
+		}
+
+		GateRoleCreate(const GateRoleCreate &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),userid(rhs.userid),roledata(rhs.roledata) { }
+
+		GNET::Protocol *Clone() const { return new GateRoleCreate(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << userid;
+			os << roledata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> userid;
+			os >> roledata;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 256; }

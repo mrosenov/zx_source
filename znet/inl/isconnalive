@@ -1,0 +1,30 @@
+	public:
+		int counter;
+		enum { PROTOCOL_TYPE = PROTOCOL_ISCONNALIVE };
+	public:
+		IsConnAlive() { type = PROTOCOL_ISCONNALIVE; }
+		IsConnAlive(void*) : Protocol(PROTOCOL_ISCONNALIVE) { }
+		IsConnAlive (int l_counter)
+			 : counter(l_counter)
+		{
+			type = PROTOCOL_ISCONNALIVE;
+		}
+
+		IsConnAlive(const IsConnAlive &rhs)
+			: Protocol(rhs),counter(rhs.counter) { }
+
+		GNET::Protocol *Clone() const { return new IsConnAlive(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << counter;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> counter;
+			return os;
+		}
+
+		bool SizePolicy(size_t size) const { return size <= 16; }

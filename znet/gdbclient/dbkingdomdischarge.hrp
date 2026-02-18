@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBKINGDOMDISCHARGE_HPP
+#define __GNET_DBKINGDOMDISCHARGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomdischargearg"
+#include "dbkingdomdischargeres"
+
+namespace GNET
+{
+
+class DBKingdomDischarge : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomdischarge"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomDischargeArg *arg = (DBKingdomDischargeArg *)argument;
+		// DBKingdomDischargeRes *res = (DBKingdomDischargeRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomDischargeArg *arg = (DBKingdomDischargeArg *)argument;
+		// DBKingdomDischargeRes *res = (DBKingdomDischargeRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

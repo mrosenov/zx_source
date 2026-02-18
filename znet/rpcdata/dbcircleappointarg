@@ -1,0 +1,69 @@
+#ifndef __GNET_DBCIRCLEAPPOINTARG_RPCDATA
+#define __GNET_DBCIRCLEAPPOINTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCircleAppointArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int circleid;
+		unsigned int roleid;
+		int title;
+
+	public:
+		DBCircleAppointArg (unsigned int l_circleid = 0,unsigned int l_roleid = 0,int l_title = 0)
+			: circleid(l_circleid),roleid(l_roleid),title(l_title)
+		{
+		}
+
+		DBCircleAppointArg(const DBCircleAppointArg &rhs)
+			: circleid(rhs.circleid),roleid(rhs.roleid),title(rhs.title) { }
+
+		Rpc::Data *Clone() const { return new DBCircleAppointArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCircleAppointArg *r = dynamic_cast<const DBCircleAppointArg *>(&rhs);
+			if (r && r != this)
+			{
+				circleid = r->circleid;
+				roleid = r->roleid;
+				title = r->title;
+			}
+			return *this;
+		}
+
+		DBCircleAppointArg& operator = (const DBCircleAppointArg &rhs)
+		{
+			const DBCircleAppointArg *r = &rhs;
+			if (r && r != this)
+			{
+				circleid = r->circleid;
+				roleid = r->roleid;
+				title = r->title;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << circleid;
+			os << roleid;
+			os << title;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> circleid;
+			os >> roleid;
+			os >> title;
+			return os;
+		}
+
+	};
+};
+#endif

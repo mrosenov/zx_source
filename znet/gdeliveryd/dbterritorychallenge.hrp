@@ -1,0 +1,62 @@
+
+#ifndef __GNET_DBTERRITORYCHALLENGE_HPP
+#define __GNET_DBTERRITORYCHALLENGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbterritorychallengearg"
+#include "dbterritorychallengeres"
+#include "territorymanager.h"
+#include "territorychallenge_re.hpp"
+#include "mapuser.h"
+#include "gdeliveryserver.hpp"
+#include "gproviderserver.hpp"
+#include "gmailendsync.hpp"
+
+namespace GNET
+{
+
+class DBTerritoryChallenge : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbterritorychallenge"
+#undef	RPC_BASECLASS
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBTerritoryChallengeArg *arg = (DBTerritoryChallengeArg *)argument;
+		// DBTerritoryChallengeRes *res = (DBTerritoryChallengeRes *)result;
+	}
+	void HandleRes(DBTerritoryChallengeArg *arg, DBTerritoryChallengeRes *res)
+	{
+		if (res->retcode != ERR_SUCCESS)
+			Log::log(LOG_ERR, "dbterritorychallenge retcode %d roleid %d tid %d", res->retcode, arg->roleid, arg->territoryid);
+		int itemtotal = 0;
+		TerritoryManager::GetInstance()->OnChallenge(res->retcode, arg, itemtotal);
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if (pinfo!=NULL)
+		{
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, TerritoryChallenge_Re(res->retcode, arg->roleid, arg->territoryid, itemtotal, pinfo->localsid));
+			GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, GMailEndSync(0, res->retcode, arg->roleid, res->syncdata));
+		}
+	}
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBTerritoryChallengeArg *arg = (DBTerritoryChallengeArg *)argument;
+		DBTerritoryChallengeRes *res = (DBTerritoryChallengeRes *)result;
+		HandleRes(arg, res);
+	}
+
+	void OnTimeout(Rpc::Data * argument)
+	{
+		DBTerritoryChallengeArg *arg = (DBTerritoryChallengeArg *)argument;
+		DBTerritoryChallengeRes *res = (DBTerritoryChallengeRes *)result;
+		res->retcode = ERR_TIMEOUT;
+		HandleRes(arg, res);
+	}
+
+};
+
+};
+#endif

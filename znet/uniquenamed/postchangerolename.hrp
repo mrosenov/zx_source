@@ -1,0 +1,92 @@
+
+#ifndef __GNET_POSTCHANGEROLENAME_HPP
+#define __GNET_POSTCHANGEROLENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "postchangerolenamearg"
+#include "postchangerolenameres"
+
+namespace GNET
+{
+
+class PostChangeRolename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "postchangerolename"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PostChangeRolenameArg *arg = (PostChangeRolenameArg *)argument;
+		PostChangeRolenameRes *res = (PostChangeRolenameRes *)result;
+
+		UniqueNameServer::GetInstance()->TransformName(arg->newname);
+		UniqueNameServer::GetInstance()->TransformName(arg->oldname);
+		LOG_TRACE("PostChagneRolename(success=%d, zoneid=%d roleid=%d", arg->success, arg->zoneid,
+				arg->roleid);
+		try
+		{
+			StorageEnv::Storage * punamerole = StorageEnv::GetStorage("unamerole");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				if (arg->success)
+				{
+					Marshal::OctetsStream value_unamerole, value_old;
+					if (punamerole->find(arg->oldname, value_old, txn))
+					{
+						int old_zoneid, old_roleid, old_status, old_time;
+						value_old >> old_zoneid >> old_roleid >> old_status >> old_time;
+						if (old_roleid == arg->roleid)
+						{
+							old_status = UNIQUENAME_OBSOLETE;
+							value_old.clear();
+							value_old << old_zoneid << old_roleid << old_status << old_time;
+							punamerole->insert(arg->oldname, value_old, txn);
+						}
+						else
+							Log::log(LOG_ERR, "PostChangeRolename oldroleid %d newroleid %d not equal", old_roleid, arg->roleid);
+					}
+					int status = UNIQUENAME_USED;
+					value_unamerole << arg->zoneid << arg->roleid << status << (int)Timer::GetTime();
+					punamerole->insert(arg->newname, value_unamerole, txn);
+
+				}
+				else
+					punamerole->del(arg->newname, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PostChangeRolename, zoneid=%d, roleid=%d, what=%s\n", arg->zoneid, arg->roleid, e.what() );
+			res->retcode = -1;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PostChangeRolenameArg *arg = (PostChangeRolenameArg *)argument;
+		// PostChangeRolenameRes *res = (PostChangeRolenameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

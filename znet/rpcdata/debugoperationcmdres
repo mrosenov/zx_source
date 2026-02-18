@@ -1,0 +1,59 @@
+#ifndef __GNET_DEBUGOPERATIONCMDRES_RPCDATA
+#define __GNET_DEBUGOPERATIONCMDRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DebugOperationCmdRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DebugOperationCmdRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DebugOperationCmdRes(const DebugOperationCmdRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DebugOperationCmdRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DebugOperationCmdRes *r = dynamic_cast<const DebugOperationCmdRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DebugOperationCmdRes& operator = (const DebugOperationCmdRes &rhs)
+		{
+			const DebugOperationCmdRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,174 @@
+#ifndef __GNET_GFACTIONINFO_RPCDATA
+#define __GNET_GFACTIONINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "familyid"
+#include "hostileinfo"
+
+namespace GNET
+{
+	class GFactionInfo : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int fid;
+		Octets name;
+		Octets announce;
+		char level;
+		std::vector<FamilyId> member;
+		unsigned int master;
+		unsigned int prosperity;
+		int createtime;
+		int deletetime;
+		int population;
+		int contribution;
+		unsigned char status;
+		int nimbus;
+		std::vector<HostileInfo> hostileinfo;
+		int charm;
+		int changenametime;
+		Octets namehis;
+		unsigned int pk_bonus;
+		std::vector<Octets> dynamic;
+		std::map<int, int> datagroup;
+
+	public:
+		GFactionInfo (unsigned int l_fid = 0,const Octets& l_name = Octets(0),char l_level = 0
+			,const std::vector<FamilyId>& l_member = std::vector<FamilyId>(),unsigned int l_master = 0,unsigned int l_prosperity = 0
+			,int l_createtime = 0,int l_deletetime = 0,int l_population = 0
+			,int l_contribution = 0,unsigned char l_status = 0,int l_nimbus = 0
+			,const std::vector<HostileInfo>& l_hostileinfo = std::vector<HostileInfo>(),int l_charm = 0,int l_changenametime = 0
+			,const Octets& l_namehis = Octets(0),unsigned int l_pk_bonus = 0,const std::vector<Octets>& l_dynamic = std::vector<Octets>()
+			)
+			: fid(l_fid),name(l_name),level(l_level)
+			,member(l_member),master(l_master),prosperity(l_prosperity)
+			,createtime(l_createtime),deletetime(l_deletetime),population(l_population)
+			,contribution(l_contribution),status(l_status),nimbus(l_nimbus)
+			,hostileinfo(l_hostileinfo),charm(l_charm),changenametime(l_changenametime)
+			,namehis(l_namehis),pk_bonus(l_pk_bonus),dynamic(l_dynamic)
+			
+		{
+		}
+
+		GFactionInfo(const GFactionInfo &rhs)
+			: fid(rhs.fid),name(rhs.name),announce(rhs.announce),
+			level(rhs.level),member(rhs.member),master(rhs.master),
+			prosperity(rhs.prosperity),createtime(rhs.createtime),deletetime(rhs.deletetime),
+			population(rhs.population),contribution(rhs.contribution),status(rhs.status),
+			nimbus(rhs.nimbus),hostileinfo(rhs.hostileinfo),charm(rhs.charm),
+			changenametime(rhs.changenametime),namehis(rhs.namehis),pk_bonus(rhs.pk_bonus),
+			dynamic(rhs.dynamic),datagroup(rhs.datagroup) { }
+
+		Rpc::Data *Clone() const { return new GFactionInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFactionInfo *r = dynamic_cast<const GFactionInfo *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				name = r->name;
+				announce = r->announce;
+				level = r->level;
+				member = r->member;
+				master = r->master;
+				prosperity = r->prosperity;
+				createtime = r->createtime;
+				deletetime = r->deletetime;
+				population = r->population;
+				contribution = r->contribution;
+				status = r->status;
+				nimbus = r->nimbus;
+				hostileinfo = r->hostileinfo;
+				charm = r->charm;
+				changenametime = r->changenametime;
+				namehis = r->namehis;
+				pk_bonus = r->pk_bonus;
+				dynamic = r->dynamic;
+				datagroup = r->datagroup;
+			}
+			return *this;
+		}
+
+		GFactionInfo& operator = (const GFactionInfo &rhs)
+		{
+			const GFactionInfo *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				name = r->name;
+				announce = r->announce;
+				level = r->level;
+				member = r->member;
+				master = r->master;
+				prosperity = r->prosperity;
+				createtime = r->createtime;
+				deletetime = r->deletetime;
+				population = r->population;
+				contribution = r->contribution;
+				status = r->status;
+				nimbus = r->nimbus;
+				hostileinfo = r->hostileinfo;
+				charm = r->charm;
+				changenametime = r->changenametime;
+				namehis = r->namehis;
+				pk_bonus = r->pk_bonus;
+				dynamic = r->dynamic;
+				datagroup = r->datagroup;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << name;
+			os << announce;
+			os << level;
+			os << member;
+			os << master;
+			os << prosperity;
+			os << createtime;
+			os << deletetime;
+			os << population;
+			os << contribution;
+			os << status;
+			os << nimbus;
+			os << hostileinfo;
+			os << charm;
+			os << changenametime;
+			os << namehis;
+			os << pk_bonus;
+			os << dynamic;
+			os << datagroup;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> name;
+			os >> announce;
+			os >> level;
+			os >> member;
+			os >> master;
+			os >> prosperity;
+			os >> createtime;
+			os >> deletetime;
+			os >> population;
+			os >> contribution;
+			os >> status;
+			os >> nimbus;
+			os >> hostileinfo;
+			os >> charm;
+			os >> changenametime;
+			os >> namehis;
+			os >> pk_bonus;
+			os >> dynamic;
+			os >> datagroup;
+			return os;
+		}
+
+	};
+};
+#endif

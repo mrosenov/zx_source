@@ -1,0 +1,65 @@
+#ifndef __GNET_DBFUNGAMEPUTINFOARG_RPCDATA
+#define __GNET_DBFUNGAMEPUTINFOARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfungameinfo"
+
+namespace GNET
+{
+	class DBFunGamePutInfoArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		GFunGameInfo fungame_info;
+
+	public:
+		DBFunGamePutInfoArg (int l_roleid = 0,const GFunGameInfo& l_fungame_info = GFunGameInfo())
+			: roleid(l_roleid),fungame_info(l_fungame_info)
+		{
+		}
+
+		DBFunGamePutInfoArg(const DBFunGamePutInfoArg &rhs)
+			: roleid(rhs.roleid),fungame_info(rhs.fungame_info) { }
+
+		Rpc::Data *Clone() const { return new DBFunGamePutInfoArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFunGamePutInfoArg *r = dynamic_cast<const DBFunGamePutInfoArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				fungame_info = r->fungame_info;
+			}
+			return *this;
+		}
+
+		DBFunGamePutInfoArg& operator = (const DBFunGamePutInfoArg &rhs)
+		{
+			const DBFunGamePutInfoArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				fungame_info = r->fungame_info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << fungame_info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> fungame_info;
+			return os;
+		}
+
+	};
+};
+#endif

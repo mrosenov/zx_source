@@ -1,0 +1,56 @@
+	public:
+		int map_id;
+		int raidroom_id;
+		RaidGroupInfo group1_list;
+		int raid_type;
+		Octets raid_data;
+		char can_vote;
+		char difficulty;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDRAIDSTART };
+	public:
+		SendRaidStart() { type = PROTOCOL_SENDRAIDSTART; }
+		SendRaidStart(void*) : Protocol(PROTOCOL_SENDRAIDSTART) { }
+		SendRaidStart (int l_map_id,int l_raidroom_id = 0,const RaidGroupInfo& l_group1_list = RaidGroupInfo(),
+			int l_raid_type = 0,const Octets& l_raid_data = Octets(),char l_can_vote = 0,
+			char l_difficulty = 0)
+			 : map_id(l_map_id),raidroom_id(l_raidroom_id),group1_list(l_group1_list)
+			,raid_type(l_raid_type),raid_data(l_raid_data),can_vote(l_can_vote)
+			,difficulty(l_difficulty)
+		{
+			type = PROTOCOL_SENDRAIDSTART;
+		}
+
+		SendRaidStart(const SendRaidStart &rhs)
+			: Protocol(rhs),map_id(rhs.map_id),raidroom_id(rhs.raidroom_id),group1_list(rhs.group1_list)
+			,raid_type(rhs.raid_type),raid_data(rhs.raid_data),can_vote(rhs.can_vote)
+			,difficulty(rhs.difficulty) { }
+
+		GNET::Protocol *Clone() const { return new SendRaidStart(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << map_id;
+			os << raidroom_id;
+			os << group1_list;
+			os << raid_type;
+			os << raid_data;
+			os << can_vote;
+			os << difficulty;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> map_id;
+			os >> raidroom_id;
+			os >> group1_list;
+			os >> raid_type;
+			os >> raid_data;
+			os >> can_vote;
+			os >> difficulty;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 4096; }

@@ -1,0 +1,65 @@
+#ifndef __GNET_DBSNSUPDATEROLEINFOARG_RPCDATA
+#define __GNET_DBSNSUPDATEROLEINFOARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gsnsroleinfo"
+
+namespace GNET
+{
+	class DBSNSUpdateRoleInfoArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		GSNSRoleInfo info;
+
+	public:
+		DBSNSUpdateRoleInfoArg (int l_roleid = 0,const GSNSRoleInfo& l_info = GSNSRoleInfo())
+			: roleid(l_roleid),info(l_info)
+		{
+		}
+
+		DBSNSUpdateRoleInfoArg(const DBSNSUpdateRoleInfoArg &rhs)
+			: roleid(rhs.roleid),info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBSNSUpdateRoleInfoArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSNSUpdateRoleInfoArg *r = dynamic_cast<const DBSNSUpdateRoleInfoArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBSNSUpdateRoleInfoArg& operator = (const DBSNSUpdateRoleInfoArg &rhs)
+		{
+			const DBSNSUpdateRoleInfoArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

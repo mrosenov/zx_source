@@ -1,0 +1,63 @@
+
+#ifndef __GNET_PRECHANGEROLENAME_HPP
+#define __GNET_PRECHANGEROLENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "prechangerolenamearg"
+#include "prechangerolenameres"
+
+namespace GNET
+{
+
+class PreChangeRolename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "prechangerolename"
+#undef	RPC_BASECLASS
+
+        GMailSyncData syncdata;
+	int itemid;
+	int item_pos;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// PreChangeRolenameArg *arg = (PreChangeRolenameArg *)argument;
+		// PreChangeRolenameRes *res = (PreChangeRolenameRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PreChangeRolenameArg *arg = (PreChangeRolenameArg *)argument;
+		PreChangeRolenameRes *res = (PreChangeRolenameRes *)result;
+                DEBUG_PRINT("PreChangeRolename, retcode=%d, roleid=%d", res->retcode, arg->roleid);
+		if (res->retcode == ERR_SUCCESS)
+		{
+                        DBChangeRolenameArg rpcarg(arg->roleid, arg->newname, itemid, item_pos);
+                        Utility::SwapSyncData(rpcarg.syncdata, syncdata);
+
+                        DBChangeRolename * rpc = (DBChangeRolename * )Rpc::Call( RPC_DBCHANGEROLENAME, rpcarg);
+                        GameDBClient::GetInstance()->SendProtocol(rpc);
+                }
+                else
+                {
+			PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+			if (NULL == pinfo )
+				return;
+			GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, GMailEndSync(0, res->retcode, arg->roleid));
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, ChangeRolename_Re(res->retcode, arg->roleid, arg->newname, pinfo->localsid));
+		}
+	}
+
+	void OnTimeout()
+	{
+		PreChangeRolenameArg *arg = (PreChangeRolenameArg *)argument;
+		Log::log(LOG_ERR, "PreChangeRolename timeout, roleid=%d", arg->roleid);
+	}
+
+};
+
+};
+#endif

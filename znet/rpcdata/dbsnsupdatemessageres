@@ -1,0 +1,69 @@
+#ifndef __GNET_DBSNSUPDATEMESSAGERES_RPCDATA
+#define __GNET_DBSNSUPDATEMESSAGERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSNSUpdateMessageRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		char message_type;
+		int message_id;
+
+	public:
+		DBSNSUpdateMessageRes (char l_message_type = 0,int l_message_id = 0)
+			: message_type(l_message_type),message_id(l_message_id)
+		{
+		}
+
+		DBSNSUpdateMessageRes(const DBSNSUpdateMessageRes &rhs)
+			: retcode(rhs.retcode),message_type(rhs.message_type),message_id(rhs.message_id) { }
+
+		Rpc::Data *Clone() const { return new DBSNSUpdateMessageRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSNSUpdateMessageRes *r = dynamic_cast<const DBSNSUpdateMessageRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				message_type = r->message_type;
+				message_id = r->message_id;
+			}
+			return *this;
+		}
+
+		DBSNSUpdateMessageRes& operator = (const DBSNSUpdateMessageRes &rhs)
+		{
+			const DBSNSUpdateMessageRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				message_type = r->message_type;
+				message_id = r->message_id;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << message_type;
+			os << message_id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> message_type;
+			os >> message_id;
+			return os;
+		}
+
+	};
+};
+#endif

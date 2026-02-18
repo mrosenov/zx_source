@@ -1,0 +1,64 @@
+#ifndef __GNET_DBFAMILYJOINRES_RPCDATA
+#define __GNET_DBFAMILYJOINRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFamilyJoinRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		Octets name;
+
+	public:
+		DBFamilyJoinRes (int l_retcode = -1,const Octets& l_name = Octets(0))
+			: retcode(l_retcode),name(l_name)
+		{
+		}
+
+		DBFamilyJoinRes(const DBFamilyJoinRes &rhs)
+			: retcode(rhs.retcode),name(rhs.name) { }
+
+		Rpc::Data *Clone() const { return new DBFamilyJoinRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFamilyJoinRes *r = dynamic_cast<const DBFamilyJoinRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		DBFamilyJoinRes& operator = (const DBFamilyJoinRes &rhs)
+		{
+			const DBFamilyJoinRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> name;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,35 @@
+	public:
+		unsigned int circleid;
+		unsigned int point_delta;
+		enum { PROTOCOL_TYPE = PROTOCOL_ADDCIRCLEPOINT };
+	public:
+		AddCirclePoint() { type = PROTOCOL_ADDCIRCLEPOINT; }
+		AddCirclePoint(void*) : Protocol(PROTOCOL_ADDCIRCLEPOINT) { }
+		AddCirclePoint (unsigned int l_circleid,unsigned int l_point_delta)
+			 : circleid(l_circleid),point_delta(l_point_delta)
+		{
+			type = PROTOCOL_ADDCIRCLEPOINT;
+		}
+
+		AddCirclePoint(const AddCirclePoint &rhs)
+			: Protocol(rhs),circleid(rhs.circleid),point_delta(rhs.point_delta) { }
+
+		GNET::Protocol *Clone() const { return new AddCirclePoint(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << circleid;
+			os << point_delta;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> circleid;
+			os >> point_delta;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

@@ -1,0 +1,117 @@
+
+#ifndef __GNET_COMMONDATAQUERY_HPP
+#define __GNET_COMMONDATAQUERY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "commondataqueryarg"
+#include "commondataqueryres"
+#include "commondata.h"
+
+namespace GNET
+{
+
+class CommonDataQuery : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "commondataquery"
+#undef	RPC_BASECLASS
+
+	/*
+	static int Query(int key, int & value)
+	{
+		LOG_TRACE("CommonDataQuery key %d", key);
+		if (key < 30001 || key > 40000)
+			return -4;
+		CommonDataMan * pmanager = CommonDataMan::Instance();
+		if (pmanager->GetStatus() != CommonDataMan::STATUS_OPEN)
+		{
+			return -1;
+		}
+		CommonData * pcd = pmanager->Get(0);
+		if (pcd == NULL)
+		{
+			return -2;
+		}
+		else
+		{
+			RWLock::RDScoped l(pcd->_lock);
+			Value v;
+			if (!pcd->GetValue(key, v))
+			{
+				return -2;
+			}
+			if (v.GetType() != Value::TYPE_INT)
+			{
+				return -3;
+			}
+			value = v.ToInteger();
+			return ERR_SUCCESS;
+		}
+	}
+	*/
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		CommonDataQueryArg *arg = (CommonDataQueryArg *)argument;
+		CommonDataQueryRes *res = (CommonDataQueryRes *)result;
+		LOG_TRACE("CommonDataQuery key %d", arg->key);
+		if ((arg->key < 30001 || arg->key > 40000) && arg->key != 10051 && arg->key != 10052)
+		{
+			res->retcode = -4;
+			LOG_TRACE("CommonDataQuery key %d ret %d", arg->key, res->retcode);
+			return;
+		}
+		CommonDataMan * pmanager = CommonDataMan::Instance();
+		if (pmanager->GetStatus() != CommonDataMan::STATUS_OPEN)
+		{
+			res->retcode = -1;
+			LOG_TRACE("CommonDataQuery key %d ret %d", arg->key, res->retcode);
+			return;
+		}
+		CommonData * pcd = pmanager->Get(0);
+		if (pcd == NULL)
+		{
+			res->retcode = -2;
+			LOG_TRACE("CommonDataQuery key %d ret %d", arg->key, res->retcode);
+			return;
+		}
+		else
+		{
+			RWLock::RDScoped l(pcd->_lock);
+			Value v;
+			if (!pcd->GetValue(arg->key, v))
+			{
+				res->retcode = -2;
+				LOG_TRACE("CommonDataQuery key %d ret %d", arg->key, res->retcode);
+				return;
+			}
+			if (v.GetType() != Value::TYPE_INT)
+			{
+				res->retcode = -3;
+				LOG_TRACE("CommonDataQuery key %d ret %d", arg->key, res->retcode);
+				return;
+			}
+			res->value = v.ToInteger();
+			res->retcode = ERR_SUCCESS;
+		}
+		LOG_TRACE("CommonDataQuery key %d ret %d value %d", arg->key, res->retcode, res->value);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// CommonDataQueryArg *arg = (CommonDataQueryArg *)argument;
+		// CommonDataQueryRes *res = (CommonDataQueryRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

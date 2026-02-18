@@ -1,0 +1,47 @@
+
+#ifndef __GNET_DBFACTIONLEAVE_HPP
+#define __GNET_DBFACTIONLEAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionleavearg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBFactionLeave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionleave"
+#undef	RPC_BASECLASS
+	unsigned int master;
+	bool sendclient;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionLeaveArg *arg = (DBFactionLeaveArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+		DEBUG_PRINT("DBFactionLeave, retcode=%d, familyid=%d, factionid=%d", res->retcode, arg->familyid, arg->fid);
+		if (!sendclient)
+			return;
+		if(res->retcode==ERR_SUCCESS)
+		{
+			FactionManager::Instance()->OnLeave(arg->fid, arg->familyid, master, arg->contribution);
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

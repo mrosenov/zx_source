@@ -1,0 +1,55 @@
+
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSDISMISS_HPP
+#define __GNET_SYNCCROSSCRSSVRTEAMSDISMISS_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrosscrssvrteamsdismissarg"
+#include "synccrosscrssvrteamsdismissres"
+#include "crosscrssvrteamsmanager.h"
+#include "dbcrosscrssvrteamsdismiss.hrp"
+namespace GNET
+{
+
+class SyncCrossCrssvrTeamsDismiss : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrosscrssvrteamsdismiss"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsDismissArg *arg = (SyncCrossCrssvrTeamsDismissArg *)argument;
+		SyncCrossCrssvrTeamsDismissRes *res = (SyncCrossCrssvrTeamsDismissRes *)result;
+		
+		int ret = CrossCrssvrTeamsManager::Instance()->OnDismiss(arg->teamid, arg->zoneid);
+
+		DBCrossCrssvrTeamsDismiss* rpc = (DBCrossCrssvrTeamsDismiss*) Rpc::Call( RPC_DBCROSSCRSSVRTEAMSDISMISS,	DBCrossCrssvrTeamsDismissArg(arg->zoneid, arg->teamid, arg->createtime)); 
+		GameDBClient::GetInstance()->SendProtocol(rpc);
+		LOG_TRACE("SyncCrossCrssvrTeamsDismiss, zoneid=%d, retcode=%d, teamid=%d, createtime=%d, ret=%d", arg->zoneid, res->retcode, arg->teamid, arg->createtime, ret);
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsDismissArg *arg = (SyncCrossCrssvrTeamsDismissArg *)argument;
+		SyncCrossCrssvrTeamsDismissRes *res = (SyncCrossCrssvrTeamsDismissRes *)result;
+
+		//GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		LOG_TRACE("SyncCrossCrssvrTeamsDismiss, zoneid=%d, retcode=%d, teamid=%d", arg->zoneid, res->retcode, arg->teamid);
+
+	}
+
+	void OnTimeout()
+	{
+		SyncCrossCrssvrTeamsDismissArg *arg = (SyncCrossCrssvrTeamsDismissArg *)argument;
+		Log::log( LOG_ERR,"SyncCrossCrssvrTeamsDismiss: timeout,teamid=%d", arg->teamid);
+
+	}
+
+};
+
+};
+#endif

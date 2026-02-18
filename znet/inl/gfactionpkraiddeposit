@@ -1,0 +1,38 @@
+	public:
+		int mapid;
+		int index;
+		unsigned int money;
+		enum { PROTOCOL_TYPE = PROTOCOL_GFACTIONPKRAIDDEPOSIT };
+	public:
+		GFactionPkRaidDeposit() { type = PROTOCOL_GFACTIONPKRAIDDEPOSIT; }
+		GFactionPkRaidDeposit(void*) : Protocol(PROTOCOL_GFACTIONPKRAIDDEPOSIT) { }
+		GFactionPkRaidDeposit (int l_mapid,int l_index = 0,unsigned int l_money = 0)
+			 : mapid(l_mapid),index(l_index),money(l_money)
+		{
+			type = PROTOCOL_GFACTIONPKRAIDDEPOSIT;
+		}
+
+		GFactionPkRaidDeposit(const GFactionPkRaidDeposit &rhs)
+			: Protocol(rhs),mapid(rhs.mapid),index(rhs.index),money(rhs.money) { }
+
+		GNET::Protocol *Clone() const { return new GFactionPkRaidDeposit(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << mapid;
+			os << index;
+			os << money;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> mapid;
+			os >> index;
+			os >> money;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

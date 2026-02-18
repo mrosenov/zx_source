@@ -1,0 +1,94 @@
+
+#ifndef __GNET_DBSECTQUIT_HPP
+#define __GNET_DBSECTQUIT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gsect"
+#include "gdisciple"
+#include "dbsectquitarg"
+#include "dbsectquitres"
+
+namespace GNET
+{
+
+class DBSectQuit : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsectquit"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSectQuitArg *arg = (DBSectQuitArg *)argument;
+		DBSectQuitRes *res = (DBSectQuitRes *)result;
+		try
+		{
+			StorageEnv::Storage * psect = StorageEnv::GetStorage("sect");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, vsect, vbase, krole;
+			try{
+				GSect sect;
+				GRoleBase base;
+				Log::formatlog("sectquit","master=%d:disciple=%d", arg->master, arg->disciple);
+
+				key << arg->master;
+				if(psect->find(key,vsect,txn))
+				{
+					vsect >> sect;
+					std::vector<GDisciple>::iterator it;
+					for(it=sect.disciples.begin();it!=sect.disciples.end();++it)
+					{
+						if(it->roleid==arg->disciple)
+						{
+							sect.disciples.erase(it);
+							psect->insert( key, Marshal::OctetsStream()<<sect, txn );
+							break;
+						}
+					}
+				}
+
+				krole << arg->disciple;
+				if(pbase->find(krole, vbase, txn ))
+				{
+					vbase >> base;
+					if(base.sectid==arg->master)
+					{
+						base.sectid = 0;
+						pbase->insert( krole, Marshal::OctetsStream()<<base, txn );
+					}
+					res->name = base.name;
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSectQuit, master=%d, disciple=%d what=%s.",arg->master,arg->disciple,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCRSSVRTEAMSCHGCAPTAINARG_RPCDATA
+#define __GNET_DBCRSSVRTEAMSCHGCAPTAINARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCrssvrTeamsChgCaptainArg : public GNET::Rpc::Data
+	{
+	public:
+		int caption_roleid;
+		int teamid;
+
+	public:
+		DBCrssvrTeamsChgCaptainArg (int l_caption_roleid = -1,int l_teamid = -1)
+			: caption_roleid(l_caption_roleid),teamid(l_teamid)
+		{
+		}
+
+		DBCrssvrTeamsChgCaptainArg(const DBCrssvrTeamsChgCaptainArg &rhs)
+			: caption_roleid(rhs.caption_roleid),teamid(rhs.teamid) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsChgCaptainArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsChgCaptainArg *r = dynamic_cast<const DBCrssvrTeamsChgCaptainArg *>(&rhs);
+			if (r && r != this)
+			{
+				caption_roleid = r->caption_roleid;
+				teamid = r->teamid;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsChgCaptainArg& operator = (const DBCrssvrTeamsChgCaptainArg &rhs)
+		{
+			const DBCrssvrTeamsChgCaptainArg *r = &rhs;
+			if (r && r != this)
+			{
+				caption_roleid = r->caption_roleid;
+				teamid = r->teamid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << caption_roleid;
+			os << teamid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> caption_roleid;
+			os >> teamid;
+			return os;
+		}
+
+	};
+};
+#endif

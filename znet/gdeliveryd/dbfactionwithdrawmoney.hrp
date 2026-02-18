@@ -1,0 +1,53 @@
+
+#ifndef __GNET_DBFACTIONWITHDRAWMONEY_HPP
+#define __GNET_DBFACTIONWITHDRAWMONEY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionwithdrawmoneyarg"
+#include "dbfactionwithdrawmoneyres"
+#include "factionmanager.h"
+#include "factionwithdrawbonus_re.hpp"
+namespace GNET
+{
+
+class DBFactionWithDrawMoney : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionwithdrawmoney"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFactionWithDrawMoneyArg *arg = (DBFactionWithDrawMoneyArg *)argument;
+		// DBFactionWithDrawMoneyRes *res = (DBFactionWithDrawMoneyRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionWithDrawMoneyArg *arg = (DBFactionWithDrawMoneyArg *)argument;
+		DBFactionWithDrawMoneyRes *res = (DBFactionWithDrawMoneyRes *)result;
+		DEBUG_PRINT("DBFactionWithDrawMoney, retcode=%d, factionid=%d money=%d", res->retcode, arg->factionid,res->new_money);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			FactionManager::Instance()->OnDBFactionWithDrawMoney(arg->factionid,res->new_money);
+		}
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if(pinfo)
+		{
+			FactionWithDrawBonus_Re re(res->retcode,pinfo->localsid);
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, re);
+		}
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

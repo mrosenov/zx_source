@@ -1,0 +1,38 @@
+	public:
+		int roleid;
+		int amount;
+		GMailSyncData syncdata;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDHOMETOWNEXCHGMONEY };
+	public:
+		SendHometownExchgMoney() { type = PROTOCOL_SENDHOMETOWNEXCHGMONEY; }
+		SendHometownExchgMoney(void*) : Protocol(PROTOCOL_SENDHOMETOWNEXCHGMONEY) { }
+		SendHometownExchgMoney (int l_roleid,int l_amount = 0,const GMailSyncData& l_syncdata = GMailSyncData())
+			 : roleid(l_roleid),amount(l_amount),syncdata(l_syncdata)
+		{
+			type = PROTOCOL_SENDHOMETOWNEXCHGMONEY;
+		}
+
+		SendHometownExchgMoney(const SendHometownExchgMoney &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),amount(rhs.amount),syncdata(rhs.syncdata) { }
+
+		GNET::Protocol *Clone() const { return new SendHometownExchgMoney(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << amount;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> amount;
+			os >> syncdata;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2097152; }

@@ -1,0 +1,59 @@
+#ifndef __GNET_DBCONSIGNSHELFCANCELRES_RPCDATA
+#define __GNET_DBCONSIGNSHELFCANCELRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignShelfCancelRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DBConsignShelfCancelRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBConsignShelfCancelRes(const DBConsignShelfCancelRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBConsignShelfCancelRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignShelfCancelRes *r = dynamic_cast<const DBConsignShelfCancelRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBConsignShelfCancelRes& operator = (const DBConsignShelfCancelRes &rhs)
+		{
+			const DBConsignShelfCancelRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

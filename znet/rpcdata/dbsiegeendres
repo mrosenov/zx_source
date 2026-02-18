@@ -1,0 +1,59 @@
+#ifndef __GNET_DBSIEGEENDRES_RPCDATA
+#define __GNET_DBSIEGEENDRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSiegeEndRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DBSiegeEndRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBSiegeEndRes(const DBSiegeEndRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBSiegeEndRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegeEndRes *r = dynamic_cast<const DBSiegeEndRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBSiegeEndRes& operator = (const DBSiegeEndRes &rhs)
+		{
+			const DBSiegeEndRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

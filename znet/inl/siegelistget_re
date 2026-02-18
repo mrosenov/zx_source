@@ -1,0 +1,38 @@
+	public:
+		int retcode;
+		std::vector<int> cities;
+		unsigned int localsid;
+		enum { PROTOCOL_TYPE = PROTOCOL_SIEGELISTGET_RE };
+	public:
+		SiegeListGet_Re() { type = PROTOCOL_SIEGELISTGET_RE; }
+		SiegeListGet_Re(void*) : Protocol(PROTOCOL_SIEGELISTGET_RE) { }
+		SiegeListGet_Re (int l_retcode,const std::vector<int>& l_cities = std::vector<int>(),unsigned int l_localsid = 0)
+			 : retcode(l_retcode),cities(l_cities),localsid(l_localsid)
+		{
+			type = PROTOCOL_SIEGELISTGET_RE;
+		}
+
+		SiegeListGet_Re(const SiegeListGet_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),cities(rhs.cities),localsid(rhs.localsid) { }
+
+		GNET::Protocol *Clone() const { return new SiegeListGet_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << cities;
+			os << localsid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> cities;
+			os >> localsid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2048; }

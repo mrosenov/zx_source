@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		int task_type;
+		enum { PROTOCOL_TYPE = PROTOCOL_GKINGISSUETASK };
+	public:
+		GKingIssueTask() { type = PROTOCOL_GKINGISSUETASK; }
+		GKingIssueTask(void*) : Protocol(PROTOCOL_GKINGISSUETASK) { }
+		GKingIssueTask (int l_roleid,int l_task_type = 0)
+			 : roleid(l_roleid),task_type(l_task_type)
+		{
+			type = PROTOCOL_GKINGISSUETASK;
+		}
+
+		GKingIssueTask(const GKingIssueTask &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),task_type(rhs.task_type) { }
+
+		GNET::Protocol *Clone() const { return new GKingIssueTask(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << task_type;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> task_type;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

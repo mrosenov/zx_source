@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBKINGDOMLOAD_HPP
+#define __GNET_DBKINGDOMLOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomloadarg"
+#include "dbkingdomloadres"
+
+namespace GNET
+{
+
+class DBKingdomLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomLoadArg *arg = (DBKingdomLoadArg *)argument;
+		// DBKingdomLoadRes *res = (DBKingdomLoadRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomLoadArg *arg = (DBKingdomLoadArg *)argument;
+		// DBKingdomLoadRes *res = (DBKingdomLoadRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

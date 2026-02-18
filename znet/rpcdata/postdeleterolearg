@@ -1,0 +1,77 @@
+#ifndef __GNET_POSTDELETEROLEARG_RPCDATA
+#define __GNET_POSTDELETEROLEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class PostDeleteRoleArg : public GNET::Rpc::Data
+	{
+	public:
+		int userid;
+		int zoneid;
+		int roleid;
+		std::vector<Octets> namelist;
+
+	public:
+		PostDeleteRoleArg (int l_userid = -1,int l_zoneid = -1,int l_roleid = -1
+			,const std::vector<Octets>& l_namelist = std::vector<Octets>())
+			: userid(l_userid),zoneid(l_zoneid),roleid(l_roleid)
+			,namelist(l_namelist)
+		{
+		}
+
+		PostDeleteRoleArg(const PostDeleteRoleArg &rhs)
+			: userid(rhs.userid),zoneid(rhs.zoneid),roleid(rhs.roleid),
+			namelist(rhs.namelist) { }
+
+		Rpc::Data *Clone() const { return new PostDeleteRoleArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PostDeleteRoleArg *r = dynamic_cast<const PostDeleteRoleArg *>(&rhs);
+			if (r && r != this)
+			{
+				userid = r->userid;
+				zoneid = r->zoneid;
+				roleid = r->roleid;
+				namelist = r->namelist;
+			}
+			return *this;
+		}
+
+		PostDeleteRoleArg& operator = (const PostDeleteRoleArg &rhs)
+		{
+			const PostDeleteRoleArg *r = &rhs;
+			if (r && r != this)
+			{
+				userid = r->userid;
+				zoneid = r->zoneid;
+				roleid = r->roleid;
+				namelist = r->namelist;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			os << zoneid;
+			os << roleid;
+			os << namelist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			os >> zoneid;
+			os >> roleid;
+			os >> namelist;
+			return os;
+		}
+
+	};
+};
+#endif

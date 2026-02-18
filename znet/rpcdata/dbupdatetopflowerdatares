@@ -1,0 +1,58 @@
+#ifndef __GNET_DBUPDATETOPFLOWERDATARES_RPCDATA
+#define __GNET_DBUPDATETOPFLOWERDATARES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBUpdateTopFlowerDataRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DBUpdateTopFlowerDataRes ()
+		{
+		}
+
+		DBUpdateTopFlowerDataRes(const DBUpdateTopFlowerDataRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBUpdateTopFlowerDataRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBUpdateTopFlowerDataRes *r = dynamic_cast<const DBUpdateTopFlowerDataRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBUpdateTopFlowerDataRes& operator = (const DBUpdateTopFlowerDataRes &rhs)
+		{
+			const DBUpdateTopFlowerDataRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

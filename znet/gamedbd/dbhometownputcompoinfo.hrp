@@ -1,0 +1,68 @@
+
+#ifndef __GNET_DBHOMETOWNPUTCOMPOINFO_HPP
+#define __GNET_DBHOMETOWNPUTCOMPOINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhometownputcompoinfoarg"
+
+
+namespace GNET
+{
+
+class DBHometownPutCompoInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhometownputcompoinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHometownPutCompoInfoArg *arg = (DBHometownPutCompoInfoArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+
+		try     
+		{       
+			StorageEnv::Storage *pdb = StorageEnv::GetStorage("hometown");
+			StorageEnv::CommonTransaction txn;
+
+			try     
+			{       
+				int64_t key = ((int64_t)arg->roleid<<32)+(int64_t)arg->compo_id;
+				LOG_TRACE("gamedbd: DBHometownPutCompoInfo, put compo %d for role %d with key %lld\n", arg->compo_id, arg->roleid, key);
+				pdb->insert(Marshal::OctetsStream()<<key, arg->info, txn);
+				res->retcode = ERR_SUCCESS;
+			}       
+			catch (DbException &e) { throw e; }
+			catch ( ... ) 
+			{       
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}       
+		}       
+		catch (DbException &e)
+		{       
+			Log::log(LOG_ERR, "gamedbd: DBHometownPutCompoInfo failed, roleid=%d, compo_id=%d, what=%s\n", arg->roleid, arg->compo_id, e.what());
+			res->retcode = ERR_FAILED;
+		}   
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBHometownPutCompoInfoArg *arg = (DBHometownPutCompoInfoArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

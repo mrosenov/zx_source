@@ -1,0 +1,47 @@
+
+#ifndef __GNET_DBCREATEFACBASE_HPP
+#define __GNET_DBCREATEFACBASE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcreatefacbasearg"
+#include "dbcreatefacbaseres"
+
+namespace GNET
+{
+
+class DBCreateFacBase : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcreatefacbase"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCreateFacBaseArg *arg = (DBCreateFacBaseArg *)argument;
+		// DBCreateFacBaseRes *res = (DBCreateFacBaseRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCreateFacBaseArg *arg = (DBCreateFacBaseArg *)argument;
+		DBCreateFacBaseRes *res = (DBCreateFacBaseRes *)result;
+		LOG_TRACE("dbcreatefacbase fid %d ret %d", arg->fid, res->retcode);
+		if (res->retcode != ERR_SUCCESS)
+			Log::log(LOG_ERR, "dbcreatefacbase fid %d err %d", arg->fid, res->retcode);
+		FactionManager::Instance()->OnBaseCreate(arg->fid, arg->roleid, res->retcode);
+	}
+
+	void OnTimeout()
+	{
+		DBCreateFacBaseArg *arg = (DBCreateFacBaseArg *)argument;
+		Log::log(LOG_ERR, "dbcreatefacbase fid %d timeout", arg->fid);
+		FactionManager::Instance()->OnBaseCreate(arg->fid, arg->roleid, ERR_TIMEOUT);
+	}
+
+};
+
+};
+#endif

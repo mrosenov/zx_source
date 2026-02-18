@@ -1,0 +1,95 @@
+#ifndef __GNET_DBCIRCLEJOINARG_RPCDATA
+#define __GNET_DBCIRCLEJOINARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCircleJoinArg : public GNET::Rpc::Data
+	{
+	public:
+		int newgrade;
+		unsigned int oldcircleid;
+		unsigned int roleid;
+		unsigned char level;
+		unsigned char occupation;
+		unsigned char reborn_cnt;
+		unsigned int jointype;
+
+	public:
+		DBCircleJoinArg (int l_newgrade = 0,unsigned int l_oldcircleid = 0,unsigned int l_roleid = 0
+			,unsigned char l_level = 0,unsigned char l_occupation = 0,unsigned char l_reborn_cnt = 0
+			,unsigned int l_jointype = 0)
+			: newgrade(l_newgrade),oldcircleid(l_oldcircleid),roleid(l_roleid)
+			,level(l_level),occupation(l_occupation),reborn_cnt(l_reborn_cnt)
+			,jointype(l_jointype)
+		{
+		}
+
+		DBCircleJoinArg(const DBCircleJoinArg &rhs)
+			: newgrade(rhs.newgrade),oldcircleid(rhs.oldcircleid),roleid(rhs.roleid),
+			level(rhs.level),occupation(rhs.occupation),reborn_cnt(rhs.reborn_cnt),
+			jointype(rhs.jointype) { }
+
+		Rpc::Data *Clone() const { return new DBCircleJoinArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCircleJoinArg *r = dynamic_cast<const DBCircleJoinArg *>(&rhs);
+			if (r && r != this)
+			{
+				newgrade = r->newgrade;
+				oldcircleid = r->oldcircleid;
+				roleid = r->roleid;
+				level = r->level;
+				occupation = r->occupation;
+				reborn_cnt = r->reborn_cnt;
+				jointype = r->jointype;
+			}
+			return *this;
+		}
+
+		DBCircleJoinArg& operator = (const DBCircleJoinArg &rhs)
+		{
+			const DBCircleJoinArg *r = &rhs;
+			if (r && r != this)
+			{
+				newgrade = r->newgrade;
+				oldcircleid = r->oldcircleid;
+				roleid = r->roleid;
+				level = r->level;
+				occupation = r->occupation;
+				reborn_cnt = r->reborn_cnt;
+				jointype = r->jointype;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << newgrade;
+			os << oldcircleid;
+			os << roleid;
+			os << level;
+			os << occupation;
+			os << reborn_cnt;
+			os << jointype;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> newgrade;
+			os >> oldcircleid;
+			os >> roleid;
+			os >> level;
+			os >> occupation;
+			os >> reborn_cnt;
+			os >> jointype;
+			return os;
+		}
+
+	};
+};
+#endif

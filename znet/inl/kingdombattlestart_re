@@ -1,0 +1,50 @@
+	public:
+		int retcode;
+		char fieldtype;
+		int tagid;
+		int defender;
+		std::vector<int> attackers;
+		Octets def_name;
+		enum { PROTOCOL_TYPE = PROTOCOL_KINGDOMBATTLESTART_RE };
+	public:
+		KingdomBattleStart_Re() { type = PROTOCOL_KINGDOMBATTLESTART_RE; }
+		KingdomBattleStart_Re(void*) : Protocol(PROTOCOL_KINGDOMBATTLESTART_RE) { }
+		KingdomBattleStart_Re (int l_retcode,char l_fieldtype,int l_tagid = 0,
+			int l_defender = 0,const std::vector<int>& l_attackers = std::vector<int>(),Octets l_def_name = Octets())
+			 : retcode(l_retcode),fieldtype(l_fieldtype),tagid(l_tagid)
+			,defender(l_defender),attackers(l_attackers),def_name(l_def_name)
+		{
+			type = PROTOCOL_KINGDOMBATTLESTART_RE;
+		}
+
+		KingdomBattleStart_Re(const KingdomBattleStart_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),fieldtype(rhs.fieldtype),tagid(rhs.tagid)
+			,defender(rhs.defender),attackers(rhs.attackers),def_name(rhs.def_name) { }
+
+		GNET::Protocol *Clone() const { return new KingdomBattleStart_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << fieldtype;
+			os << tagid;
+			os << defender;
+			os << attackers;
+			os << def_name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> fieldtype;
+			os >> tagid;
+			os >> defender;
+			os >> attackers;
+			os >> def_name;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 256; }

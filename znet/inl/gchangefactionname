@@ -1,0 +1,56 @@
+	public:
+		int roleid;
+		int fid;
+		Octets newname;
+		char scale;
+		int itemid;
+		int item_pos;
+		GMailSyncData syncdata;
+		enum { PROTOCOL_TYPE = PROTOCOL_GCHANGEFACTIONNAME };
+	public:
+		GChangeFactionName() { type = PROTOCOL_GCHANGEFACTIONNAME; }
+		GChangeFactionName(void*) : Protocol(PROTOCOL_GCHANGEFACTIONNAME) { }
+		GChangeFactionName (int l_roleid,int l_fid,const Octets& l_newname,
+			char l_scale = 0,int l_itemid = 0,int l_item_pos = -1,
+			const GMailSyncData& l_syncdata = GMailSyncData())
+			 : roleid(l_roleid),fid(l_fid),newname(l_newname)
+			,scale(l_scale),itemid(l_itemid),item_pos(l_item_pos)
+			,syncdata(l_syncdata)
+		{
+			type = PROTOCOL_GCHANGEFACTIONNAME;
+		}
+
+		GChangeFactionName(const GChangeFactionName &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),fid(rhs.fid),newname(rhs.newname)
+			,scale(rhs.scale),itemid(rhs.itemid),item_pos(rhs.item_pos)
+			,syncdata(rhs.syncdata) { }
+
+		GNET::Protocol *Clone() const { return new GChangeFactionName(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << fid;
+			os << newname;
+			os << scale;
+			os << itemid;
+			os << item_pos;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> fid;
+			os >> newname;
+			os >> scale;
+			os >> itemid;
+			os >> item_pos;
+			os >> syncdata;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2097152; }

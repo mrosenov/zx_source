@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCONSIGNTABLELOAD_HPP
+#define __GNET_DBCONSIGNTABLELOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsigntableloadarg"
+#include "dbconsigntableloadres"
+
+namespace GNET
+{
+
+class DBConsignTableLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsigntableload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignTableLoadArg *arg = (DBConsignTableLoadArg *)argument;
+		// DBConsignTableLoadRes *res = (DBConsignTableLoadRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignTableLoadArg *arg = (DBConsignTableLoadArg *)argument;
+		// DBConsignTableLoadRes *res = (DBConsignTableLoadRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

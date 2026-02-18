@@ -1,0 +1,46 @@
+
+#ifndef __GNET_GETLINEPLAYERLIMIT_HPP
+#define __GNET_GETLINEPLAYERLIMIT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "getlineplayerlimitarg"
+#include "lineplayerlimit"
+#include "lineplayernumberlimits"
+
+#include "gproviderserver.hpp"
+
+namespace GNET
+{
+
+class GetLinePlayerLimit : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getlineplayerlimit"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GetLinePlayerLimitArg *arg = (GetLinePlayerLimitArg *)argument;
+		// LinePlayerNumberLimits *res = (LinePlayerNumberLimits *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//GetLinePlayerLimitArg *arg = (GetLinePlayerLimitArg *)argument;
+		LinePlayerNumberLimits *res = (LinePlayerNumberLimits *)result;
+
+		GProviderServer::GetInstance()->SetLineLimits(res->limits);
+	}
+
+	void OnTimeout()
+	{
+		GProviderServer::GetInstance()->ClearLineLimits();
+	}
+
+};
+
+};
+#endif

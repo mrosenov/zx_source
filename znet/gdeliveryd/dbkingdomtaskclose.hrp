@@ -1,0 +1,45 @@
+
+#ifndef __GNET_DBKINGDOMTASKCLOSE_HPP
+#define __GNET_DBKINGDOMTASKCLOSE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomtaskclosearg"
+#include "dbkingdomtaskcloseres"
+
+namespace GNET
+{
+
+class DBKingdomTaskClose : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomtaskclose"
+#undef	RPC_BASECLASS
+	int type;
+	int time;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomTaskCloseArg *arg = (DBKingdomTaskCloseArg *)argument;
+		// DBKingdomTaskCloseRes *res = (DBKingdomTaskCloseRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomTaskCloseArg *arg = (DBKingdomTaskCloseArg *)argument;
+		DBKingdomTaskCloseRes *res = (DBKingdomTaskCloseRes *)result;
+		if (res->retcode)
+			Log::log(LOG_ERR, "dbkingdomtaskclose err %d, type %d time %d", res->retcode, type, time);
+	}
+
+	void OnTimeout()
+	{
+		Log::log(LOG_ERR, "dbkingdomtaskclose err timeout, type %d time %d", type, time);
+	}
+
+};
+
+};
+#endif

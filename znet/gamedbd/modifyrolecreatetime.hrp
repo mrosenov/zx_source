@@ -1,0 +1,78 @@
+
+#ifndef __GNET_MODIFYROLECREATETIME_HPP
+#define __GNET_MODIFYROLECREATETIME_HPP
+
+#include <time.h>
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "modifyrolecreatetimearg"
+#include "modifyrolecreatetimeres"
+
+namespace GNET
+{
+
+class ModifyRoleCreateTime : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "modifyrolecreatetime"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		ModifyRoleCreateTimeArg *arg = (ModifyRoleCreateTimeArg *)argument;
+		ModifyRoleCreateTimeRes *res = (ModifyRoleCreateTimeRes *)result;
+
+		Marshal::OctetsStream key;
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				GRoleBase base;
+
+				DEBUG_PRINT("ModifyRoleCreateTime roleid=%d:dec_year=%d", arg->roleid, arg->dec_year);
+                               	
+				key << arg->roleid;
+				Marshal::OctetsStream(pbase->find(key, txn)) >> base;
+				struct tm dt;
+				time_t tmp = base.create_time;
+				localtime_r(&tmp,&dt);
+				dt.tm_year -= arg->dec_year;
+				base.create_time = mktime(&dt);
+				pbase->insert( key, Marshal::OctetsStream()<< base, txn );
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "ModifyRoleCreateTime, roleid=%d dec_year=%d what=%s.",arg->roleid,arg->dec_year,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// ModifyRoleCreateTimeArg *arg = (ModifyRoleCreateTimeArg *)argument;
+		// ModifyRoleCreateTimeRes *res = (ModifyRoleCreateTimeRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

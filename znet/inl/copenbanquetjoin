@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		char iscross;
+		enum { PROTOCOL_TYPE = PROTOCOL_COPENBANQUETJOIN };
+	public:
+		COpenBanquetJoin() { type = PROTOCOL_COPENBANQUETJOIN; }
+		COpenBanquetJoin(void*) : Protocol(PROTOCOL_COPENBANQUETJOIN) { }
+		COpenBanquetJoin (int l_roleid,char l_iscross = 0)
+			 : roleid(l_roleid),iscross(l_iscross)
+		{
+			type = PROTOCOL_COPENBANQUETJOIN;
+		}
+
+		COpenBanquetJoin(const COpenBanquetJoin &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),iscross(rhs.iscross) { }
+
+		GNET::Protocol *Clone() const { return new COpenBanquetJoin(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << iscross;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> iscross;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

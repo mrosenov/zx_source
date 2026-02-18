@@ -1,0 +1,65 @@
+#ifndef __GNET_DBCRSSVRTEAMSGETRES_RPCDATA
+#define __GNET_DBCRSSVRTEAMSGETRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcrssvrteamsdata"
+
+namespace GNET
+{
+	class DBCrssvrTeamsGetRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GCrssvrTeamsData info;
+
+	public:
+		DBCrssvrTeamsGetRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBCrssvrTeamsGetRes(const DBCrssvrTeamsGetRes &rhs)
+			: retcode(rhs.retcode),info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsGetRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsGetRes *r = dynamic_cast<const DBCrssvrTeamsGetRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsGetRes& operator = (const DBCrssvrTeamsGetRes &rhs)
+		{
+			const DBCrssvrTeamsGetRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

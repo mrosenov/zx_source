@@ -1,0 +1,74 @@
+	public:
+		int userid;
+		int aid;
+		int zoneid;
+		int currenttime;
+		int starttime;
+		int endtime;
+		int status;
+		int viplevel;
+		int totalcash;
+		int recenttotalcash;
+		int infolack;
+		int reserved1;
+		enum { PROTOCOL_TYPE = PROTOCOL_VIPANNOUNCE };
+	public:
+		VIPAnnounce() { type = PROTOCOL_VIPANNOUNCE; }
+		VIPAnnounce(void*) : Protocol(PROTOCOL_VIPANNOUNCE) { }
+		VIPAnnounce (int l_userid = 0,int l_aid = 0,int l_zoneid = 0,
+			int l_currenttime = 0,int l_starttime = 0,int l_endtime = 0,
+			int l_status = 0,int l_viplevel = 0,int l_totalcash = 0,
+			int l_recenttotalcash = 0,int l_infolack = 0,int l_reserved1 = 0)
+			 : userid(l_userid),aid(l_aid),zoneid(l_zoneid)
+			,currenttime(l_currenttime),starttime(l_starttime),endtime(l_endtime)
+			,status(l_status),viplevel(l_viplevel),totalcash(l_totalcash)
+			,recenttotalcash(l_recenttotalcash),infolack(l_infolack),reserved1(l_reserved1)
+		{
+			type = PROTOCOL_VIPANNOUNCE;
+		}
+
+		VIPAnnounce(const VIPAnnounce &rhs)
+			: Protocol(rhs),userid(rhs.userid),aid(rhs.aid),zoneid(rhs.zoneid)
+			,currenttime(rhs.currenttime),starttime(rhs.starttime),endtime(rhs.endtime)
+			,status(rhs.status),viplevel(rhs.viplevel),totalcash(rhs.totalcash)
+			,recenttotalcash(rhs.recenttotalcash),infolack(rhs.infolack),reserved1(rhs.reserved1) { }
+
+		GNET::Protocol *Clone() const { return new VIPAnnounce(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			os << aid;
+			os << zoneid;
+			os << currenttime;
+			os << starttime;
+			os << endtime;
+			os << status;
+			os << viplevel;
+			os << totalcash;
+			os << recenttotalcash;
+			os << infolack;
+			os << reserved1;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			os >> aid;
+			os >> zoneid;
+			os >> currenttime;
+			os >> starttime;
+			os >> endtime;
+			os >> status;
+			os >> viplevel;
+			os >> totalcash;
+			os >> recenttotalcash;
+			os >> infolack;
+			os >> reserved1;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 2; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

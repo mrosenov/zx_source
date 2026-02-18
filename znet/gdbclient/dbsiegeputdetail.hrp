@@ -1,0 +1,46 @@
+
+#ifndef __GNET_DBSIEGEPUTDETAIL_HPP
+#define __GNET_DBSIEGEPUTDETAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegeputdetailarg"
+#include "dbsiegeputdetailres"
+
+namespace GNET
+{
+
+class DBSiegePutDetail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegeputdetail"
+#undef	RPC_BASECLASS
+
+	GDB::City_Op_Result* _callback;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSiegePutDetailArg *arg = (DBSiegePutDetailArg *)argument;
+		// DBSiegePutDetailRes *res = (DBSiegePutDetailRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSiegePutDetailArg *arg = (DBSiegePutDetailArg *)argument;
+		DBSiegePutDetailRes *res = (DBSiegePutDetailRes *)result;
+		if(_callback)
+		{
+			_callback->OnPutCity(arg->battle_id,res->retcode);
+		}
+	}
+
+	void OnTimeout()
+	{
+		if(_callback) _callback->OnTimeOut();
+	}
+
+};
+
+};
+#endif

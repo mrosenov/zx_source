@@ -1,0 +1,65 @@
+#ifndef __GNET_DBFRIENDCALLBACKMAILARG_RPCDATA
+#define __GNET_DBFRIENDCALLBACKMAILARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmail"
+
+namespace GNET
+{
+	class DBFriendCallbackMailArg : public GNET::Rpc::Data
+	{
+	public:
+		GMail mail;
+		int sender_userid;
+
+	public:
+		DBFriendCallbackMailArg (const GMail& l_mail = GMail(),int l_sender_userid = 0)
+			: mail(l_mail),sender_userid(l_sender_userid)
+		{
+		}
+
+		DBFriendCallbackMailArg(const DBFriendCallbackMailArg &rhs)
+			: mail(rhs.mail),sender_userid(rhs.sender_userid) { }
+
+		Rpc::Data *Clone() const { return new DBFriendCallbackMailArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFriendCallbackMailArg *r = dynamic_cast<const DBFriendCallbackMailArg *>(&rhs);
+			if (r && r != this)
+			{
+				mail = r->mail;
+				sender_userid = r->sender_userid;
+			}
+			return *this;
+		}
+
+		DBFriendCallbackMailArg& operator = (const DBFriendCallbackMailArg &rhs)
+		{
+			const DBFriendCallbackMailArg *r = &rhs;
+			if (r && r != this)
+			{
+				mail = r->mail;
+				sender_userid = r->sender_userid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << mail;
+			os << sender_userid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> mail;
+			os >> sender_userid;
+			return os;
+		}
+
+	};
+};
+#endif

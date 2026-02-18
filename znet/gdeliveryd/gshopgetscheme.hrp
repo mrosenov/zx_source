@@ -1,0 +1,45 @@
+
+#ifndef __GNET_GSHOPGETSCHEME_HPP
+#define __GNET_GSHOPGETSCHEME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "integer"
+#include "gshopscheme"
+#include "gdeliveryserver.hpp"
+
+namespace GNET
+{
+
+class GShopGetScheme : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "gshopgetscheme"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// Integer *arg = (Integer *)argument;
+		GShopScheme *res = (GShopScheme *)result;
+		*res = GDeliveryServer::GetInstance()->gshop_scheme;
+		LOG_TRACE("GShopGetScheme: discount=0x%x, sale=0x%x\n", res->discount, res->sale);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// Integer *arg = (Integer *)argument;
+		// GShopScheme *res = (GShopScheme *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

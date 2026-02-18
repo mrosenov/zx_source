@@ -1,0 +1,64 @@
+#ifndef __GNET_DBFUNGAMEGETSCOREARG_RPCDATA
+#define __GNET_DBFUNGAMEGETSCOREARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFunGameGetScoreArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int gametype;
+
+	public:
+		DBFunGameGetScoreArg (int l_roleid = 0,int l_gametype = 0)
+			: roleid(l_roleid),gametype(l_gametype)
+		{
+		}
+
+		DBFunGameGetScoreArg(const DBFunGameGetScoreArg &rhs)
+			: roleid(rhs.roleid),gametype(rhs.gametype) { }
+
+		Rpc::Data *Clone() const { return new DBFunGameGetScoreArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFunGameGetScoreArg *r = dynamic_cast<const DBFunGameGetScoreArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				gametype = r->gametype;
+			}
+			return *this;
+		}
+
+		DBFunGameGetScoreArg& operator = (const DBFunGameGetScoreArg &rhs)
+		{
+			const DBFunGameGetScoreArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				gametype = r->gametype;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << gametype;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> gametype;
+			return os;
+		}
+
+	};
+};
+#endif

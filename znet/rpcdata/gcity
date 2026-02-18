@@ -1,0 +1,89 @@
+#ifndef __GNET_GCITY_RPCDATA
+#define __GNET_GCITY_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcityinfo"
+#include "gchallenger"
+
+namespace GNET
+{
+	class GCity : public GNET::Rpc::Data
+	{
+	public:
+		GCityInfo info;
+		std::vector<GChallenger> challengers;
+		Octets detail;
+		int timestamp;
+		int reserve2;
+		int reserve4;
+
+	public:
+		GCity (const GCityInfo& l_info = GCityInfo(),const std::vector<GChallenger>& l_challengers = std::vector<GChallenger>(),const Octets& l_detail = Octets(0)
+			,int l_timestamp = 0,int l_reserve2 = 0,int l_reserve4 = 0)
+			: info(l_info),challengers(l_challengers),detail(l_detail)
+			,timestamp(l_timestamp),reserve2(l_reserve2),reserve4(l_reserve4)
+		{
+		}
+
+		GCity(const GCity &rhs)
+			: info(rhs.info),challengers(rhs.challengers),detail(rhs.detail),
+			timestamp(rhs.timestamp),reserve2(rhs.reserve2),reserve4(rhs.reserve4) { }
+
+		Rpc::Data *Clone() const { return new GCity(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GCity *r = dynamic_cast<const GCity *>(&rhs);
+			if (r && r != this)
+			{
+				info = r->info;
+				challengers = r->challengers;
+				detail = r->detail;
+				timestamp = r->timestamp;
+				reserve2 = r->reserve2;
+				reserve4 = r->reserve4;
+			}
+			return *this;
+		}
+
+		GCity& operator = (const GCity &rhs)
+		{
+			const GCity *r = &rhs;
+			if (r && r != this)
+			{
+				info = r->info;
+				challengers = r->challengers;
+				detail = r->detail;
+				timestamp = r->timestamp;
+				reserve2 = r->reserve2;
+				reserve4 = r->reserve4;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << info;
+			os << challengers;
+			os << detail;
+			os << timestamp;
+			os << reserve2;
+			os << reserve4;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> info;
+			os >> challengers;
+			os >> detail;
+			os >> timestamp;
+			os >> reserve2;
+			os >> reserve4;
+			return os;
+		}
+
+	};
+};
+#endif

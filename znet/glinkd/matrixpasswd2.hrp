@@ -1,0 +1,164 @@
+
+#ifndef __GNET_MATRIXPASSWD2_HPP
+#define __GNET_MATRIXPASSWD2_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "matrixpasswdarg2"
+#include "matrixpasswdres2"
+#include "matrixchallenge.hpp"
+#include "localmacro.h"
+#include "cardchecker.h"
+#include "mobilechecker.h"
+#include "phonetokenchecker.h"
+#include "glog.h"
+#include "usbkey.hpp"
+
+namespace GNET
+{
+
+class MatrixPasswd2 : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "matrixpasswd2"
+#undef	RPC_BASECLASS
+
+	Manager::Session::ID save_sid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// MatrixPasswdArg2 *arg = (MatrixPasswdArg2 *)argument;
+		// MatrixPasswdRes2 *res = (MatrixPasswdRes2 *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		MatrixPasswdArg2 *arg = (MatrixPasswdArg2 *)argument;
+		MatrixPasswdRes2 *res = (MatrixPasswdRes2 *)result;
+
+		Log::trace("glinkd::User(%.*s, id=%d) receive matrixpasswd2. retcode=%d, algorithm=%d", arg->account.size(), (char *)arg->account.begin(), res->userid, res->retcode, res->algorithm);
+
+		GLinkServer *lnkServer = GLinkServer::GetInstance();
+		SessionInfo *sinfo = NULL;
+		sinfo = lnkServer->GetSessionInfo(save_sid);
+		if(!sinfo)
+			return;
+
+		if(res->retcode)
+		{
+			if(ERR_INVALID_ACCOUNT == res->retcode)
+				res->retcode = ERR_INVALID_PASSWORD;
+			lnkServer->SessionError(save_sid, res->retcode, "Server error.");
+			return;
+		}
+
+		int algorithm = res->algorithm & ALGORITHM_MASK_HIGH;
+		if(res->response != sinfo->response)
+		{
+			//if(ALGORITHM_USBKEY2 == algorithm) //开放MartixPasswd2协议 但屏蔽二代ukey逻辑 二代ukey可以当一代ukey正常使用 20120629 liuyue
+			if (false)
+			{
+				Log::trace("glinkd::CheckElecNumber, currenttime=%d, rtime=%d, seed=%.*s, pin=%.*s, last_used_elec_number=%.*s", res->currenttime, res->rtime, res->seed.size(), (char *)res->seed.begin(), res->pin.size(), (char *)res->pin.begin(), res->last_used_elec_number.size(), (char *)res->last_used_elec_number.begin());
+				Octets elec_number;
+				if(!CheckUsbPasswd(sinfo->response, arg, res, elec_number))
+				{
+					lnkServer->SessionError(save_sid, ERR_INVALID_PASSWORD, "Invalid Elecnumber.");
+					return;
+				}
+				//au 会再次验证电子码是否重复 
+				/*
+				if(res->last_used_elec_number.size() == 0)
+				{ 						
+					lnkServer->GetUsedElecNumber(res->userid, res->last_used_elec_number);
+				}
+				if(elec_number == res->last_used_elec_number)
+				{
+					lnkServer->SessionError(save_sid, ERR_ELEC_NUMBER_USED, "Elecnumber Used.");
+					return;
+				}
+				else
+				{
+					lnkServer->SetUsedElecNumber(res->userid, elec_number);
+					sinfo->login_method = SessionInfo::USE_ELECNUMBER;
+				}
+				*/
+				sinfo->elec_num = elec_number;
+			}
+			else
+			{
+				lnkServer->SessionError(save_sid, ERR_INVALID_PASSWORD, "Invalid Passwd.");
+				return;
+			}
+		}
+
+		sinfo->userid = res->userid;
+		sinfo->login_time = time(NULL);
+		sinfo->algorithm = res->algorithm;
+
+		switch(algorithm)
+		{
+		case ALGORITHM_CARD:
+		case ALGORITHM_HANDSET:
+		case ALGORITHM_PHONETOKEN:
+			SendMatrixChallenge(lnkServer, algorithm, res, sinfo);
+			break;
+		default:
+			SendKeyExchange(lnkServer, res, sinfo);
+			break;
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+	bool CheckUsbPasswd(const Octets &response, MatrixPasswdArg2 *arg, MatrixPasswdRes2 *res, Octets &elec_number)
+	{
+		int rtime = (res->currenttime - res->rtime) / 32;
+		UsbKey usb(res->seed, res->pin, rtime);
+		return usb.CheckPasswd(arg->account, arg->challenge, response, elec_number);
+	}
+
+	void SendMatrixChallenge(GLinkServer *lsm, int algo, MatrixPasswdRes2 *res, SessionInfo *sinfo)
+	{
+		lsm->ChangeState(save_sid, &state_GVerifyMatrix);
+		Thread::RWLock::WRScoped l(lsm->locker_map);
+
+		MatrixChecker *checker = NULL;
+		if(ALGORITHM_CARD == algo)
+		{
+			checker = new CardChecker(res->userid, byteorder_32(sinfo->GetPeerAddr().s_addr), (unsigned char *)res->matrix.begin());
+		}
+		else if(ALGORITHM_HANDSET == algo)
+		{
+			checker = MobileCheckerFactory::Instance().Create(res->userid, byteorder_32(sinfo->GetPeerAddr().s_addr), res->algorithm, res->matrix); 
+		}
+		else if (ALGORITHM_PHONETOKEN == algo)
+		{
+			checker = new PhoneTokenChecker(res->userid, byteorder_32(sinfo->GetPeerAddr().s_addr), res->seed, (res->currenttime-res->rtime)/32 );
+		}
+
+		MatrixChallenge mc(res->algorithm, checker->Challenge());
+		lsm->Send(save_sid, mc);
+		lsm->AddChecker(save_sid, checker);
+	}
+
+	void SendKeyExchange(GLinkServer *lsm, MatrixPasswdRes2 *res, SessionInfo *sinfo)
+	{
+		lsm->ChangeState(save_sid, &state_GKeyExchgSend);
+		Thread::RWLock::RDScoped l(lsm->locker_map);
+		
+		KeyExchange keyexchange(PROTOCOL_KEYEXCHANGE);
+		keyexchange.Setup(sinfo->identity, sinfo->response, lsm, save_sid);
+		lsm->Send(save_sid, keyexchange);
+
+		Octets &username = sinfo->identity;
+		Log::login(username, res->userid, save_sid, inet_ntoa(sinfo->GetPeerAddr()), sinfo->mid);
+		GLog::action("userlogin, acc=%.*s:uid=%d:ip=%s", username.size(), (char *)username.begin(), res->userid, inet_ntoa(sinfo->GetPeerAddr()));
+	}
+};
+
+};
+#endif

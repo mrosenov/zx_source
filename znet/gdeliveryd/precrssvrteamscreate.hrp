@@ -1,0 +1,87 @@
+
+#ifndef __GNET_PRECRSSVRTEAMSCREATE_HPP
+#define __GNET_PRECRSSVRTEAMSCREATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#ifdef USE_DB
+#include "dbbuffer.h"
+#endif
+#include "precrssvrteamscreatearg"
+#include "precrssvrteamscreateres"
+
+namespace GNET
+{
+
+class PreCrssvrTeamsCreate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "precrssvrteamscreate"
+#undef	RPC_BASECLASS
+
+	int roleid, gamesid, linksid, localsid;
+	GMailSyncData syncdata;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+	
+	void SendError(int errcode)
+	{
+		CrssvrTeamsNotify_Re res;
+		res.retcode = errcode;
+		res.localsid = localsid;
+		GDeliveryServer::GetInstance()->Send(linksid, res);
+
+		GMailEndSync sync(0,errcode,roleid);
+		GProviderServer::GetInstance()->Send( gamesid, sync);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PreCrssvrTeamsCreateArg *arg = (PreCrssvrTeamsCreateArg *)argument;
+		PreCrssvrTeamsCreateRes *res = (PreCrssvrTeamsCreateRes *)result;
+		LOG_TRACE("PreCrssvrTeamsCreate, retcode=%d, teamid=%d, zoneid=%d, gamesid=%d", res->retcode, res->teamid, arg->zoneid, gamesid);
+
+		if(res->retcode == ERR_SUCCESS)
+		{
+			GCrssvrTeamsRole roleinfo;
+			int role_gameid;
+			unsigned int role_linksid;
+			unsigned int role_localsid;
+
+			if(!SerialCrssvrTeamsRole(roleid, roleinfo, role_gameid, role_linksid, role_localsid))
+			{
+				return;
+			}
+
+			DBCrssvrTeamsCreateArg rpcarg(roleid, arg->zoneid, res->teamid, arg->teamname, roleinfo);
+			Utility::SwapSyncData(rpcarg.syncdata, syncdata);
+
+			DBCrssvrTeamsCreate* rpc = (DBCrssvrTeamsCreate*) Rpc::Call( RPC_DBCRSSVRTEAMSCREATE,rpcarg);
+			rpc->gamesid = gamesid;
+			rpc->linksid = role_linksid;
+			rpc->localsid = role_localsid;
+			GameDBClient::GetInstance()->SendProtocol(rpc);
+		}
+		else
+		{
+			if(res->retcode==ERR_DUPLICATRECORD)
+				SendError(ERR_CRSSVRTEAMS_CREATE_DUP);
+			else
+				SendError(ERR_CRSSVRTEAMS_DBFAILURE);
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		Log::log( LOG_ERR,"PreCrssvrTeamsCreate : timeout. roleid=%d", roleid);
+		SendError(ERR_CRSSVRTEAMS_DB_TIMEOUT);
+
+	}
+
+};
+
+};
+#endif

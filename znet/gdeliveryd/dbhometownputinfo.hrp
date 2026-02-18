@@ -1,0 +1,45 @@
+
+#ifndef __GNET_DBHOMETOWNPUTINFO_HPP
+#define __GNET_DBHOMETOWNPUTINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhometownputinfoarg"
+#include "hometownmanager.h"
+
+
+namespace GNET
+{
+
+class DBHometownPutInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhometownputinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBHometownPutInfoArg *arg = (DBHometownPutInfoArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHometownPutInfoArg *arg = (DBHometownPutInfoArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		HometownManager::GetInstance()->OnSyncHometown(res->retcode, arg->roleid);
+	}
+
+	void OnTimeout()
+	{
+		DBHometownPutInfoArg *arg = (DBHometownPutInfoArg *)argument;
+		HometownManager::GetInstance()->OnSyncHometown(ERR_TIMEOUT, arg->roleid);
+		Log::log(LOG_ERR, "gdeliveryd: DBHometownPutInfo timeout, role %d", arg->roleid);
+	}
+
+};
+
+};
+#endif

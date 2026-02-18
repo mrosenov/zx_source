@@ -1,0 +1,51 @@
+
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMS_HPP
+#define __GNET_SYNCCROSSCRSSVRTEAMS_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrosscrssvrteamsarg"
+#include "synccrosscrssvrteamsres"
+#include "crosscrssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class SyncCrossCrssvrTeams : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrosscrssvrteams"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsArg *arg = (SyncCrossCrssvrTeamsArg *)argument;
+		SyncCrossCrssvrTeamsRes *res = (SyncCrossCrssvrTeamsRes *)result;
+	
+		LOG_TRACE("SyncCrossCrssvrTeams, zoneid=%d, retcode=%d, teamid=%d", arg->zoneid, res->retcode, arg->info.info.teamid);
+		CrossCrssvrTeamsManager::Instance()->OnCreate(arg->info, arg->zoneid);
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsArg *arg = (SyncCrossCrssvrTeamsArg *)argument;
+		SyncCrossCrssvrTeamsRes *res = (SyncCrossCrssvrTeamsRes *)result;
+
+		//GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		LOG_TRACE("SyncCrossCrssvrTeams, zoneid=%d, retcode=%d, teamid=%d", arg->zoneid, res->retcode, res->teamid);
+
+	}
+
+	void OnTimeout()
+	{
+		SyncCrossCrssvrTeamsArg *arg = (SyncCrossCrssvrTeamsArg *)argument;
+		Log::log( LOG_ERR,"SyncCrossCrssvrTeams: timeout,teamid=%d", arg->teamid);
+	}
+
+};
+
+};
+#endif

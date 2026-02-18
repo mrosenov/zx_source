@@ -1,0 +1,77 @@
+#ifndef __GNET_GUSERFACTION_RPCDATA
+#define __GNET_GUSERFACTION_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GUserFaction : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int rid;
+		unsigned int factionid;
+		unsigned int familyid;
+		unsigned char title;
+
+	public:
+		GUserFaction (unsigned int l_rid = 0,unsigned int l_factionid = 0,unsigned int l_familyid = 0
+			,unsigned char l_title = 0)
+			: rid(l_rid),factionid(l_factionid),familyid(l_familyid)
+			,title(l_title)
+		{
+		}
+
+		GUserFaction(const GUserFaction &rhs)
+			: rid(rhs.rid),factionid(rhs.factionid),familyid(rhs.familyid),
+			title(rhs.title) { }
+
+		Rpc::Data *Clone() const { return new GUserFaction(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GUserFaction *r = dynamic_cast<const GUserFaction *>(&rhs);
+			if (r && r != this)
+			{
+				rid = r->rid;
+				factionid = r->factionid;
+				familyid = r->familyid;
+				title = r->title;
+			}
+			return *this;
+		}
+
+		GUserFaction& operator = (const GUserFaction &rhs)
+		{
+			const GUserFaction *r = &rhs;
+			if (r && r != this)
+			{
+				rid = r->rid;
+				factionid = r->factionid;
+				familyid = r->familyid;
+				title = r->title;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << rid;
+			os << factionid;
+			os << familyid;
+			os << title;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> rid;
+			os >> factionid;
+			os >> familyid;
+			os >> title;
+			return os;
+		}
+
+	};
+};
+#endif

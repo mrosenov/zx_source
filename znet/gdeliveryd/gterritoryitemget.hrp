@@ -1,0 +1,45 @@
+
+#ifndef __GNET_GTERRITORYITEMGET_HPP
+#define __GNET_GTERRITORYITEMGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gterritoryitemgetarg"
+#include "gterritoryitemgetres"
+#include "territorymanager.h"
+
+namespace GNET
+{
+
+class GTerritoryItemGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "gterritoryitemget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GTerritoryItemGetArg *arg = (GTerritoryItemGetArg *)argument;
+		GTerritoryItemGetRes *res = (GTerritoryItemGetRes *)result;
+		TerritoryManager::GetInstance()->ItemGet(arg, res);
+		Log::formatlog("GTerritoryItemGet", "role %d factionid %d itemtype %d itemid %d item_count %d money %d ---> retcode %d itemid %d item_count %d", arg->roleid, arg->factionid, arg->itemtype, arg->itemid, arg->item_count, arg->money, res->retcode, res->itemid, res->item_count);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GTerritoryItemGetArg *arg = (GTerritoryItemGetArg *)argument;
+		// GTerritoryItemGetRes *res = (GTerritoryItemGetRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

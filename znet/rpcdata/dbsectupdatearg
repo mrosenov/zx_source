@@ -1,0 +1,65 @@
+#ifndef __GNET_DBSECTUPDATEARG_RPCDATA
+#define __GNET_DBSECTUPDATEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gsect"
+
+namespace GNET
+{
+	class DBSectUpdateArg : public GNET::Rpc::Data
+	{
+	public:
+		int sectid;
+		GSect sect;
+
+	public:
+		DBSectUpdateArg (int l_sectid = 0)
+			: sectid(l_sectid)
+		{
+		}
+
+		DBSectUpdateArg(const DBSectUpdateArg &rhs)
+			: sectid(rhs.sectid),sect(rhs.sect) { }
+
+		Rpc::Data *Clone() const { return new DBSectUpdateArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSectUpdateArg *r = dynamic_cast<const DBSectUpdateArg *>(&rhs);
+			if (r && r != this)
+			{
+				sectid = r->sectid;
+				sect = r->sect;
+			}
+			return *this;
+		}
+
+		DBSectUpdateArg& operator = (const DBSectUpdateArg &rhs)
+		{
+			const DBSectUpdateArg *r = &rhs;
+			if (r && r != this)
+			{
+				sectid = r->sectid;
+				sect = r->sect;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << sectid;
+			os << sect;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> sectid;
+			os >> sect;
+			return os;
+		}
+
+	};
+};
+#endif

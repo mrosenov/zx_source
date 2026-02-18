@@ -1,0 +1,63 @@
+
+#ifndef __GNET_GATEGETROLERELATION_HPP
+#define __GNET_GATEGETROLERELATION_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "dbgaterolerelationres"
+#include "gtmanager.h"
+#include "gamedbclient.hpp"
+#include "dbgaterolerelation.hrp"
+
+namespace GNET
+{
+
+class GateGetRoleRelation : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "gategetrolerelation"
+#undef	RPC_BASECLASS
+	int userid;
+	int pt_type;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleId *arg = (RoleId *)argument;
+		// DBGateRoleRelationRes *res = (DBGateRoleRelationRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBGateRoleRelationRes *res = (DBGateRoleRelationRes *)result;
+		DEBUG_PRINT("GateGetRoleRelation: retcode=%d roleid=%d userid=%d pt_type=%d",res->retcode,arg->id,userid,pt_type);
+		if(userid!=res->userid)
+			DEBUG_PRINT("GateGetRoleRelation: userid unmatch roleid=%d userid=%d dbuserid=%d",arg->id,userid,res->userid);
+		if(res->retcode == ERR_SUCCESS)
+		{
+			RoleRelationResp re;
+			if(GTManager::Instance()->OnDBGateRoleRelation(re,res,pt_type))
+				DEBUG_PRINT("GateGetRoleRelation:OnDBGateRoleRelation error");
+		}
+		else
+			DEBUG_PRINT("GateGetRoleRelation err: retcode=%d",res->retcode);
+
+	}
+
+	void OnTimeout()
+	{
+		//query db instead 
+		RoleId *arg = (RoleId *)argument;
+		DEBUG_PRINT("GateGetRoleRelation: timeout. roleid=%d userid=%d pt_type",arg->id,userid,pt_type);
+		DBGateRoleRelation * rpc=(DBGateRoleRelation*)Rpc::Call(RPC_DBGATEROLERELATION,arg);
+		rpc->userid =userid;
+		rpc->pt_type = pt_type;
+		GameDBClient::GetInstance()->SendProtocol(rpc);
+	}
+
+};
+
+};
+#endif

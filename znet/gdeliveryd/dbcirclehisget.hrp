@@ -1,0 +1,50 @@
+
+#ifndef __GNET_DBCIRCLEHISGET_HPP
+#define __GNET_DBCIRCLEHISGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "dbcirclehisgetres"
+#include "circlemanager.h"
+#include "mapuser.h"
+namespace GNET
+{
+
+class DBCircleHisGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcirclehisget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleID *arg = (RoleID *)argument;
+		// DBCircleHisGetRes *res = (DBCircleHisGetRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		RoleId *arg = (RoleId *)argument;
+		DBCircleHisGetRes *res = (DBCircleHisGetRes *)result;
+		LOG_TRACE("DBCircleHisGet, retcode=%d, roleid=%d", res->retcode, arg->id); 
+		if (res->retcode==ERR_SUCCESS)
+		{
+			PlayerInfo * pinfo = UserContainer::GetInstance().FindRole(arg->id);
+			if(pinfo)
+				pinfo->InitCircleHis(res->circlelist);	
+		}	
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

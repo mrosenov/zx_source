@@ -1,0 +1,338 @@
+
+#ifndef __GNET_DBCONSIGNMAIL_HPP
+#define __GNET_DBCONSIGNMAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignmailarg"
+#include "dbconsignmailres"
+#include "gconsignmailinfo"
+namespace GNET
+{
+
+class DBConsignMail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignmail"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignMailArg *arg = (DBConsignMailArg *)argument;
+		DBConsignMailRes *res = (DBConsignMailRes *)result;
+		Marshal::OctetsStream key, title;
+		try
+		{
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::Storage * pconsignfin = StorageEnv::GetStorage("finished_consign");
+			StorageEnv::Storage * pmailbox = StorageEnv::GetStorage("mailbox");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key_buyer, value_buyer_base; 
+			Marshal::OctetsStream key_seller, value_seller_base;
+
+			
+			try
+			{
+				if(arg->sn == 0) 
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+
+				GConsignDB detail;
+				key << arg->sn;
+				Marshal::OctetsStream(pconsign->find(key,txn)) >> detail;
+				Log::formatlog("consign","dbconsignmail:seller=%d,buyer=%d,sn=%lld,state=%d", detail.seller_roleid,\
+						detail.buyer_roleid,arg->sn,arg->cur_state);
+				if(detail.seller_roleid != arg->roleid)
+					 Log::formatlog("consign","dbconsignmail:seller roleid unequal,deliver=%d,db=%d,sn=%lld",\
+							 arg->roleid,detail.seller_roleid,arg->sn);
+				if(detail.info.state != arg->cur_state)
+				{
+			       		Log::formatlog("consign","dbconsignmail:state inconsistent,deliver=%d,db=%d,sn=%lld",\
+							 arg->cur_state,detail.info.state,arg->sn);
+					res->retcode = ERR_WT_DB_STATEERR;
+					return;
+				}
+
+				bool seller_exist=true;
+				bool buyer_exist=true;
+				//check buyer
+				int db_userid = 0;
+				GRoleBase buyer_base;
+			try
+			{
+				if(arg->cur_state==DSTATE_SOLD)
+				{
+					key_buyer << detail.buyer_roleid;
+					if(pbase->find(key_buyer,value_buyer_base,txn))
+					{
+						value_buyer_base >> buyer_base;
+						if(buyer_base.userid) 
+							db_userid = buyer_base.userid;
+						else
+							db_userid = LOGICUID(detail.buyer_roleid);
+					}
+					if(db_userid == 0 || db_userid != detail.buyer_userid)	//买家roleid或与买家userid不匹配，以userid为准
+					{
+					Marshal::OctetsStream value_buyer_user;
+					if(!puser->find(Marshal::OctetsStream()<<detail.buyer_userid,value_buyer_user,txn))				
+						throw DbException(DB_VERIFY_BAD);
+					User buyer_user;
+					value_buyer_user >> buyer_user;
+					if(buyer_user.logicuid == 0)
+						throw DbException(DB_VERIFY_BAD);
+					RoleList rolelist(buyer_user.rolelist);
+					int r = rolelist.GetNextRole();
+					if(r < 0)
+						throw DbException(DB_VERIFY_BAD);
+					key_buyer.clear();
+					value_buyer_base.clear();
+					detail.buyer_roleid = buyer_user.logicuid + r;	
+					key_buyer << detail.buyer_roleid;
+					if(!pbase->find(key_buyer,value_buyer_base,txn))
+						throw DbException(DB_VERIFY_BAD);
+					value_buyer_base >> buyer_base;
+					}
+				}//if
+			}//try
+			catch ( DbException e )
+			{
+			//	res->retcode = ERR_WT_DB_FAILURE;
+			//	return;
+				buyer_exist=false;
+			}
+
+			//check seller
+			int db_userid_seller = 0;
+			GRoleBase seller_base;
+
+			try
+			{
+				key_seller << detail.seller_roleid;
+				if(pbase->find(key_seller,value_seller_base,txn))
+				{
+					value_seller_base >> seller_base;
+					if(seller_base.userid) 
+						db_userid_seller = seller_base.userid;
+					else
+						db_userid_seller = LOGICUID(detail.seller_roleid);
+				}
+				if(db_userid_seller == 0 || db_userid_seller != detail.seller_userid)	//卖家roleid或与卖家userid不匹配，以userid为准
+				{
+					Marshal::OctetsStream value_seller_user;
+					if(!puser->find(Marshal::OctetsStream()<<detail.seller_userid,value_seller_user,txn))				
+						throw DbException(DB_VERIFY_BAD);
+					User seller_user;
+					value_seller_user >> seller_user;
+					if(seller_user.logicuid == 0)
+						throw DbException(DB_VERIFY_BAD);
+					RoleList rolelist(seller_user.rolelist);
+					int r = rolelist.GetNextRole();
+					if(r < 0)
+						throw DbException(DB_VERIFY_BAD);
+					key_seller.clear();
+					value_seller_base.clear();
+					detail.seller_roleid = seller_user.logicuid + r;	
+					key_seller << detail.seller_roleid;
+					if(!pbase->find(key_seller,value_seller_base,txn))
+						throw DbException(DB_VERIFY_BAD);
+					value_seller_base >> seller_base;
+				}
+
+			}//try
+			catch ( DbException e )
+			{
+			//	res->retcode = ERR_WT_DB_FAILURE;
+			//	return;
+				seller_exist=false;
+			}
+
+				GConsignMailInfo mail;
+				mail.consign_type = detail.info.consign_type;
+				mail.margin = detail.margin;
+//				if(detail.info.consign_type == CONSIGNTYPE_MONEY)
+					mail.money=detail.info.money;
+				mail.item_id = detail.info.item_id;
+				mail.item_cnt = detail.info.item_cnt;
+				mail.sell_to_rolename = buyer_base.name;//detail.buyer_name;
+				
+				title << mail;
+
+				int seller_money=0;
+				switch(arg->cur_state)
+				{
+				case DSTATE_SOLD:
+					seller_money+=detail.margin;
+					break;
+				case DSTATE_POST_FORCE_CANCEL:
+				case DSTATE_POST_FAIL:
+					seller_money+=detail.margin;
+				case DSTATE_EXPIRE:
+				case DSTATE_POST_WEB_CANCEL:
+				case DSTATE_POST_GAME_CANCEL:
+					if(detail.info.consign_type == CONSIGNTYPE_MONEY)
+						seller_money+=detail.info.money;
+					break;	
+				default:
+					res->retcode = ERR_WT_DB_STATEERR;
+					return;
+				}
+
+				res->seller_header.receiver = detail.seller_roleid;
+				res->seller_header.sndr_type = _MST_LOCAL_CONSIGN;
+				res->seller_header.title = title;
+				switch(arg->cur_state)
+				{
+				case DSTATE_SOLD:
+					res->seller_header.sender = _CONSIGN_SOLD;
+					res->buyer_header.sender = _CONSIGN_BUY;
+					res->buyer_header.receiver = detail.buyer_roleid;
+					res->buyer_header.sndr_type = _MST_LOCAL_CONSIGN;
+					res->buyer_header.title = title;
+					break;
+				case DSTATE_POST_FORCE_CANCEL:
+					res->seller_header.sender = _CONSIGN_FORCED_CANCEL;
+					break;
+				case DSTATE_POST_FAIL:
+					res->seller_header.sender = _CONSIGN_FAIL;
+					break;
+				case DSTATE_EXPIRE:
+					res->seller_header.sender = _CONSIGN_EXPIRE;
+					break;
+				case DSTATE_POST_WEB_CANCEL:
+					res->seller_header.sender = _CONSIGN_CANCEL;
+					break;
+				case DSTATE_POST_GAME_CANCEL:
+					res->seller_header.sender = _CONSIGN_CANCEL;	
+					break;
+				}
+				
+				int ret1=0;
+				int ret2=0;
+				if(arg->cur_state == DSTATE_SOLD)
+				{
+					if(detail.info.consign_type == CONSIGNTYPE_MONEY)
+					{
+						if(detail.mail_status == NOT_SEND || detail.mail_status == BUYER_SENDED)
+						{
+							if(seller_exist)
+								ret1=MailSender::Send(pmailbox,res->seller_header, seller_money, txn);
+							else
+								ret1=-1;
+						}
+						if(detail.mail_status == NOT_SEND || detail.mail_status == SELLER_SENDED)
+						{
+							if(buyer_exist)
+								ret2=MailSender::Send(pmailbox,res->buyer_header, detail.info.money, txn);
+							else
+								ret2=-1;
+						}
+					}
+					else if(detail.info.consign_type == CONSIGNTYPE_ITEM)
+					{
+						if(detail.mail_status == NOT_SEND || detail.mail_status == BUYER_SENDED)
+						{
+							if(seller_exist)
+								ret1=MailSender::Send(pmailbox,res->seller_header, seller_money, txn);
+							else
+								ret1=-1;
+						}
+						if(detail.mail_status == NOT_SEND || detail.mail_status == SELLER_SENDED)
+						{
+							if(buyer_exist)
+								ret2=MailSender::Send(pmailbox,res->buyer_header, detail.item, 0, txn);
+							else
+								ret2=-1;
+						}
+					}
+				}
+				else 
+				{
+					if(seller_exist)
+					{
+						if(detail.info.consign_type == CONSIGNTYPE_MONEY)
+							ret1=MailSender::Send(pmailbox,res->seller_header, seller_money, txn);
+						else if(detail.info.consign_type == CONSIGNTYPE_ITEM)
+							ret1=MailSender::Send(pmailbox,res->seller_header, detail.item, seller_money, txn); 
+					}
+					else
+						ret1=-1;
+				}
+
+				if(ret1==0 && ret2 ==0)
+				{
+					pconsign->del(key, txn);
+					detail.mail_status = ALL_SENDED;
+					if(arg->cur_state!=DSTATE_POST_FAIL)//post failed consign dont exist on web
+						pconsignfin->insert(key, Marshal::OctetsStream()<<detail, txn);
+					res->retcode = ERR_SUCCESS;
+					res->mail_status = ALL_SENDED;
+					return;
+				}
+				res->retcode = ERR_WT_MAILBOX_FULL;
+				if(arg->cur_state != DSTATE_SOLD)
+				{
+					res->mail_status = NOT_SEND;
+				}
+				else if(ret1!=0 && ret2==0)//seller fail
+				{
+					res->mail_status = NOT_SEND;
+					if(detail.mail_status !=BUYER_SENDED)//no duplicated mail notice
+					{
+						res->mail_status =BUYER_SENDED;
+						detail.mail_status =BUYER_SENDED;
+						pconsign->insert(key, Marshal::OctetsStream()<<detail, txn);
+					}
+				}
+				else if(ret1==0 && ret2!=0)//buyer fail
+				{
+					res->mail_status = NOT_SEND;
+					if(detail.mail_status !=SELLER_SENDED)//no duplicated mail notice
+					{
+						res->mail_status =SELLER_SENDED;
+						detail.mail_status =SELLER_SENDED;
+						pconsign->insert(key, Marshal::OctetsStream()<<detail, txn);
+					}
+				}
+				else //both fail
+				{
+					res->mail_status = NOT_SEND;
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignMail, seller=%d sn=%lld, what=%s.\n",
+				arg->roleid, arg->sn, e.what());
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignMailArg *arg = (DBConsignMailArg *)argument;
+		// DBConsignMailRes *res = (DBConsignMailRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

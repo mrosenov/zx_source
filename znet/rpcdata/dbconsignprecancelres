@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCONSIGNPRECANCELRES_RPCDATA
+#define __GNET_DBCONSIGNPRECANCELRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignPreCancelRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int timestamp;
+
+	public:
+		DBConsignPreCancelRes (int l_retcode = 0,int l_timestamp = 0)
+			: retcode(l_retcode),timestamp(l_timestamp)
+		{
+		}
+
+		DBConsignPreCancelRes(const DBConsignPreCancelRes &rhs)
+			: retcode(rhs.retcode),timestamp(rhs.timestamp) { }
+
+		Rpc::Data *Clone() const { return new DBConsignPreCancelRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignPreCancelRes *r = dynamic_cast<const DBConsignPreCancelRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				timestamp = r->timestamp;
+			}
+			return *this;
+		}
+
+		DBConsignPreCancelRes& operator = (const DBConsignPreCancelRes &rhs)
+		{
+			const DBConsignPreCancelRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				timestamp = r->timestamp;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << timestamp;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> timestamp;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,70 @@
+#ifndef __GNET_DBGETCOMMONDATARES_RPCDATA
+#define __GNET_DBGETCOMMONDATARES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcommondata"
+
+namespace GNET
+{
+	class DBGetCommonDataRes : public GNET::Rpc::Data
+	{
+	public:
+		short retcode;
+		std::vector<GCommonData> data;
+		Octets handle;
+
+	public:
+		DBGetCommonDataRes (const Octets& l_handle = Octets())
+			: handle(l_handle)
+		{
+		}
+
+		DBGetCommonDataRes(const DBGetCommonDataRes &rhs)
+			: retcode(rhs.retcode),data(rhs.data),handle(rhs.handle) { }
+
+		Rpc::Data *Clone() const { return new DBGetCommonDataRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGetCommonDataRes *r = dynamic_cast<const DBGetCommonDataRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				data = r->data;
+				handle = r->handle;
+			}
+			return *this;
+		}
+
+		DBGetCommonDataRes& operator = (const DBGetCommonDataRes &rhs)
+		{
+			const DBGetCommonDataRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				data = r->data;
+				handle = r->handle;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << data;
+			os << handle;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> data;
+			os >> handle;
+			return os;
+		}
+
+	};
+};
+#endif

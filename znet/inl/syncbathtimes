@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		int times;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYNCBATHTIMES };
+	public:
+		SyncBathTimes() { type = PROTOCOL_SYNCBATHTIMES; }
+		SyncBathTimes(void*) : Protocol(PROTOCOL_SYNCBATHTIMES) { }
+		SyncBathTimes (int l_roleid,int l_times = 0)
+			 : roleid(l_roleid),times(l_times)
+		{
+			type = PROTOCOL_SYNCBATHTIMES;
+		}
+
+		SyncBathTimes(const SyncBathTimes &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),times(rhs.times) { }
+
+		GNET::Protocol *Clone() const { return new SyncBathTimes(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << times;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> times;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

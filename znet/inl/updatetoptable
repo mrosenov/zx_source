@@ -1,0 +1,35 @@
+	public:
+		int weekly;
+		GTopTable table;
+		enum { PROTOCOL_TYPE = PROTOCOL_UPDATETOPTABLE };
+	public:
+		UpdateTopTable() { type = PROTOCOL_UPDATETOPTABLE; }
+		UpdateTopTable(void*) : Protocol(PROTOCOL_UPDATETOPTABLE) { }
+		UpdateTopTable (int l_weekly,GTopTable l_table)
+			 : weekly(l_weekly),table(l_table)
+		{
+			type = PROTOCOL_UPDATETOPTABLE;
+		}
+
+		UpdateTopTable(const UpdateTopTable &rhs)
+			: Protocol(rhs),weekly(rhs.weekly),table(rhs.table) { }
+
+		GNET::Protocol *Clone() const { return new UpdateTopTable(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << weekly;
+			os << table;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> weekly;
+			os >> table;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 1048576; }

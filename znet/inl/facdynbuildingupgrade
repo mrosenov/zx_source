@@ -1,0 +1,59 @@
+	public:
+		int fid;
+		Octets rolename;
+		int tid;
+		int level;
+		int cost_grass;
+		int cost_mine;
+		int cost_monster_food;
+		int cost_monster_core;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACDYNBUILDINGUPGRADE };
+	public:
+		FacDynBuildingUpgrade() { type = PROTOCOL_FACDYNBUILDINGUPGRADE; }
+		FacDynBuildingUpgrade(void*) : Protocol(PROTOCOL_FACDYNBUILDINGUPGRADE) { }
+		FacDynBuildingUpgrade (int l_fid,const Octets& l_rolename = Octets(),int l_tid = 0,
+			int l_level = 0,int l_cost_grass = 0,int l_cost_mine = 0,
+			int l_cost_monster_food = 0,int l_cost_monster_core = 0)
+			 : fid(l_fid),rolename(l_rolename),tid(l_tid)
+			,level(l_level),cost_grass(l_cost_grass),cost_mine(l_cost_mine)
+			,cost_monster_food(l_cost_monster_food),cost_monster_core(l_cost_monster_core)
+		{
+			type = PROTOCOL_FACDYNBUILDINGUPGRADE;
+		}
+
+		FacDynBuildingUpgrade(const FacDynBuildingUpgrade &rhs)
+			: Protocol(rhs),fid(rhs.fid),rolename(rhs.rolename),tid(rhs.tid)
+			,level(rhs.level),cost_grass(rhs.cost_grass),cost_mine(rhs.cost_mine)
+			,cost_monster_food(rhs.cost_monster_food),cost_monster_core(rhs.cost_monster_core) { }
+
+		GNET::Protocol *Clone() const { return new FacDynBuildingUpgrade(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << rolename;
+			os << tid;
+			os << level;
+			os << cost_grass;
+			os << cost_mine;
+			os << cost_monster_food;
+			os << cost_monster_core;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> rolename;
+			os >> tid;
+			os >> level;
+			os >> cost_grass;
+			os >> cost_mine;
+			os >> cost_monster_food;
+			os >> cost_monster_core;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

@@ -1,0 +1,35 @@
+	public:
+		int gsid;
+		TerritoryServerVector fields;
+		enum { PROTOCOL_TYPE = PROTOCOL_TERRITORYSERVERREGISTER };
+	public:
+		TerritoryServerRegister() { type = PROTOCOL_TERRITORYSERVERREGISTER; }
+		TerritoryServerRegister(void*) : Protocol(PROTOCOL_TERRITORYSERVERREGISTER) { }
+		TerritoryServerRegister (int l_gsid,const TerritoryServerVector& l_fields)
+			 : gsid(l_gsid),fields(l_fields)
+		{
+			type = PROTOCOL_TERRITORYSERVERREGISTER;
+		}
+
+		TerritoryServerRegister(const TerritoryServerRegister &rhs)
+			: Protocol(rhs),gsid(rhs.gsid),fields(rhs.fields) { }
+
+		GNET::Protocol *Clone() const { return new TerritoryServerRegister(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gsid;
+			os << fields;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gsid;
+			os >> fields;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2048; }

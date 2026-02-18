@@ -1,0 +1,47 @@
+	public:
+		int userid;
+		int toaid;
+		int tozoneid;
+		int roleid;
+		std::vector<int> itemids;
+		enum { PROTOCOL_TYPE = PROTOCOL_GETCOUPONSREQ };
+	public:
+		GetCouponsReq() { type = PROTOCOL_GETCOUPONSREQ; }
+		GetCouponsReq(void*) : Protocol(PROTOCOL_GETCOUPONSREQ) { }
+		GetCouponsReq (int l_userid,int l_toaid,int l_tozoneid,
+			int l_roleid,std::vector<int> l_itemids)
+			 : userid(l_userid),toaid(l_toaid),tozoneid(l_tozoneid)
+			,roleid(l_roleid),itemids(l_itemids)
+		{
+			type = PROTOCOL_GETCOUPONSREQ;
+		}
+
+		GetCouponsReq(const GetCouponsReq &rhs)
+			: Protocol(rhs),userid(rhs.userid),toaid(rhs.toaid),tozoneid(rhs.tozoneid)
+			,roleid(rhs.roleid),itemids(rhs.itemids) { }
+
+		GNET::Protocol *Clone() const { return new GetCouponsReq(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			os << toaid;
+			os << tozoneid;
+			os << roleid;
+			os << itemids;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			os >> toaid;
+			os >> tozoneid;
+			os >> roleid;
+			os >> itemids;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 65535; }

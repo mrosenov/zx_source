@@ -1,0 +1,59 @@
+#ifndef __GNET_PASSPORTGETROLELISTARG_RPCDATA
+#define __GNET_PASSPORTGETROLELISTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class PassportGetRoleListArg : public GNET::Rpc::Data
+	{
+	public:
+		int userid;
+
+	public:
+		PassportGetRoleListArg (int l_userid = 0)
+			: userid(l_userid)
+		{
+		}
+
+		PassportGetRoleListArg(const PassportGetRoleListArg &rhs)
+			: userid(rhs.userid) { }
+
+		Rpc::Data *Clone() const { return new PassportGetRoleListArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PassportGetRoleListArg *r = dynamic_cast<const PassportGetRoleListArg *>(&rhs);
+			if (r && r != this)
+			{
+				userid = r->userid;
+			}
+			return *this;
+		}
+
+		PassportGetRoleListArg& operator = (const PassportGetRoleListArg &rhs)
+		{
+			const PassportGetRoleListArg *r = &rhs;
+			if (r && r != this)
+			{
+				userid = r->userid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,72 @@
+
+#ifndef __GNET_DBKINGDOMTASKEND_HPP
+#define __GNET_DBKINGDOMTASKEND_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomtaskendarg"
+#include "dbkingdomtaskendres"
+
+namespace GNET
+{
+
+class DBKingdomTaskEnd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomtaskend"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBKingdomTaskEndArg *arg = (DBKingdomTaskEndArg *)argument;
+		DBKingdomTaskEndRes *res = (DBKingdomTaskEndRes *)result;
+		try
+		{
+			StorageEnv::Storage * pkingdom = StorageEnv::GetStorage("kingdom");
+			StorageEnv::AtomTransaction txn;
+			try{
+				Marshal::OctetsStream key;
+				key << 0;
+				GKingdomInfo data;
+				Marshal::OctetsStream(pkingdom->find(key, txn)) >> data;
+				Log::formatlog("kingdom", "end task, oldtasktype %d oldissuetime %d", data.tasktype, data.taskissuetime);
+				data.taskstatus = KINGDOM_TASK_NONE;
+				data.taskpoints = 0;
+				pkingdom->insert(key, Marshal::OctetsStream()<<data, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBKingdomTaskEnd, what=%s\n", e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomTaskEndArg *arg = (DBKingdomTaskEndArg *)argument;
+		// DBKingdomTaskEndRes *res = (DBKingdomTaskEndRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

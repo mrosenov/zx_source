@@ -1,0 +1,161 @@
+
+#ifndef __GNET_PUTSPOUSE_HPP
+#define __GNET_PUTSPOUSE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "putspousearg"
+#include "gkingdominfo"
+#include "gamedbserver.hpp"
+#include "updatequeen.hpp"
+
+
+namespace GNET
+{
+
+class PutSpouse : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "putspouse"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PutSpouseArg *arg = (PutSpouseArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		Log::formatlog("putspouse","rid1=%d,rid2=%d,oper=%d",arg->rid1, arg->rid2, arg->oper);
+		Octets name1, name2;
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key1,key2;
+			try
+			{
+				GRoleBase	base;
+				key1 << arg->rid1;
+				key2 << arg->rid2;
+				Marshal::OctetsStream(pbase->find( key1, txn )) >> base;
+				name1 = base.name;
+				base.spouse = arg->oper?arg->rid2:0;
+				pbase->insert( key1, Marshal::OctetsStream() << base, txn );
+
+				Marshal::OctetsStream(pbase->find( key2, txn )) >> base;
+				name2 = base.name;
+				base.spouse = arg->oper?arg->rid1:0;
+				pbase->insert( key2, Marshal::OctetsStream() << base, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PutSpouse, rid1=%d, rid2=%d, what=%s\n", arg->rid1, arg->rid2, e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_FAILED;
+		}
+
+		if (res->retcode != ERR_SUCCESS)
+			return;
+
+		try
+		{
+			StorageEnv::Storage * pkingdom = StorageEnv::GetStorage("kingdom");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, value;
+			try
+			{
+				key << 0;
+				if (!pkingdom->find(key, value, txn))
+					return;
+				GKingdomInfo kingdom;
+				value >> kingdom;
+				bool dirty = false;
+				if (arg->oper)
+				{//结婚
+					if (arg->rid1 == kingdom.king.roleid)
+					{
+						kingdom.queen = GKingdomFunctionary(arg->rid2, KINGDOM_TITLE_QUEEN, name2, QUEEN_PRIVILEGE_INIT);
+
+						//如果之前担任了其他职位则去掉
+						std::vector<GKingdomFunctionary>::iterator it;
+						for (it = kingdom.functionaries.begin(); it != kingdom.functionaries.end(); ++it)
+						{
+							if (it->roleid == arg->rid2)
+							{
+								it = kingdom.functionaries.erase(it);
+								break;
+							}
+						}
+						dirty = true;
+					}
+					else if (arg->rid2 == kingdom.king.roleid)
+					{
+						kingdom.queen = GKingdomFunctionary(arg->rid1, KINGDOM_TITLE_QUEEN, name1, QUEEN_PRIVILEGE_INIT);
+
+						//如果之前担任了其他职位则去掉
+						std::vector<GKingdomFunctionary>::iterator it;
+						for (it = kingdom.functionaries.begin(); it != kingdom.functionaries.end(); ++it)
+						{
+							if (it->roleid == arg->rid1)
+							{
+								it = kingdom.functionaries.erase(it);
+								break;
+							}
+						}
+
+						dirty = true;
+					}
+				}
+				else if (arg->rid1 == kingdom.king.roleid || arg->rid2 == kingdom.king.roleid)
+				{
+					kingdom.queen = GKingdomFunctionary();
+					dirty = true;
+				}
+				if (dirty)
+				{
+					Log::formatlog("updatequeen", "new queen %d", kingdom.queen.roleid);
+					pkingdom->insert(key, Marshal::OctetsStream()<<kingdom, txn);
+					UpdateQueen update;
+					update.queen = kingdom.queen;
+					GameDBServer::GetInstance()->Send2Delivery(update);
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PutQueen, rid1=%d, rid2=%d, what=%s\n", arg->rid1, arg->rid2, e.what() );
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// PutSpouseArg *arg = (PutSpouseArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

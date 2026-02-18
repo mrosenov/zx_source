@@ -1,0 +1,47 @@
+	public:
+		int retcode;
+		int roleid;
+		int fid;
+		Octets newname;
+		char scale;
+		enum { PROTOCOL_TYPE = PROTOCOL_GCHANGEFACTIONNAME_RE };
+	public:
+		GChangeFactionName_Re() { type = PROTOCOL_GCHANGEFACTIONNAME_RE; }
+		GChangeFactionName_Re(void*) : Protocol(PROTOCOL_GCHANGEFACTIONNAME_RE) { }
+		GChangeFactionName_Re (int l_retcode,int l_roleid,int l_fid,
+			const Octets& l_newname,char l_scale = 0)
+			 : retcode(l_retcode),roleid(l_roleid),fid(l_fid)
+			,newname(l_newname),scale(l_scale)
+		{
+			type = PROTOCOL_GCHANGEFACTIONNAME_RE;
+		}
+
+		GChangeFactionName_Re(const GChangeFactionName_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),roleid(rhs.roleid),fid(rhs.fid)
+			,newname(rhs.newname),scale(rhs.scale) { }
+
+		GNET::Protocol *Clone() const { return new GChangeFactionName_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << roleid;
+			os << fid;
+			os << newname;
+			os << scale;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> roleid;
+			os >> fid;
+			os >> newname;
+			os >> scale;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

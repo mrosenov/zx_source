@@ -1,0 +1,77 @@
+
+#ifndef __GNET_ACTIVATEPLAYERDATA_HPP
+#define __GNET_ACTIVATEPLAYERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "activateplayerdataarg"
+#include "activateplayerdatares"
+
+namespace GNET
+{
+
+class ActivatePlayerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "activateplayerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		ActivatePlayerDataArg *arg = (ActivatePlayerDataArg *)argument;
+		ActivatePlayerDataRes *res = (ActivatePlayerDataRes *)result;
+		LOG_TRACE("ActivatePlayerData roleid %d", arg->roleid);
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream role_key;
+			GRoleBase base;
+			try
+			{
+				role_key << arg->roleid;
+				Marshal::OctetsStream(pbase->find(role_key, txn)) >> base;
+				if (base.status != _ROLE_STATUS_FROZEN)
+				{
+					Log::log(LOG_ERR, "ActivatePlayerData roleid %d status %d invalid", arg->roleid, base.status);
+					res->retcode = -1;
+					return;
+				}
+				base.status = _ROLE_STATUS_NORMAL;
+				Log::formatlog("ActivatePlayerData", "role %d ", arg->roleid);
+				pbase->insert(role_key, Marshal::OctetsStream() << base, txn);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException e)
+		{
+			Log::log(LOG_ERR, "ActivatePlayerData, roleid %d what=%s", arg->roleid, e.what());
+			res->retcode = ERR_DATANOTFIND;
+			return;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// ActivatePlayerDataArg *arg = (ActivatePlayerDataArg *)argument;
+		// ActivatePlayerDataRes *res = (ActivatePlayerDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,88 @@
+
+#ifndef __GNET_DBTERRITORYLISTLOAD_HPP
+#define __GNET_DBTERRITORYLISTLOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbterritorylistloadarg"
+#include "dbterritorylistloadres"
+
+namespace GNET
+{
+
+class DBTerritoryListLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbterritorylistload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBTerritoryListLoadArg *arg = (DBTerritoryListLoadArg *)argument;
+		DBTerritoryListLoadRes *res = (DBTerritoryListLoadRes *)result;
+		try
+		{
+			StorageEnv::Storage * pcity = StorageEnv::GetStorage("citystore");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream key, value;
+			GTerritoryStore store;
+			try{
+				key << 1;
+				if(pcity->find(key, value, txn))
+					value >> store;
+				if (arg->default_ids.size() > store.tlist.size())
+				{
+					std::vector<int>::const_iterator mit, mite;
+					for (mit=arg->default_ids.begin(),mite=arg->default_ids.end(); mit!=mite; ++mit)
+					{
+						GTerritoryInfoVector::iterator tit, tite;
+						for (tit=store.tlist.begin(),tite=store.tlist.end(); tit!=tite; tit++)
+						{
+							if (tit->id == *mit)
+								break;
+						}
+						if (tit == tite)
+							store.tlist.push_back(GTerritoryInfo(*mit));
+					}
+					pcity->insert(key, Marshal::OctetsStream()<<store, txn);
+				}
+				res->store = store;
+				res->retcode = ERR_SUCCESS;
+				LOG_TRACE("DBTerritoryListLoad, count=%d.", res->store.tlist.size());
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBTerritoryListLoad, what=%s\n", e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBTerritoryListLoadArg *arg = (DBTerritoryListLoadArg *)argument;
+		// DBTerritoryListLoadRes *res = (DBTerritoryListLoadRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,78 @@
+#ifndef __GNET_LINEPLAYERLIMIT_RPCDATA
+#define __GNET_LINEPLAYERLIMIT_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class LinePlayerLimit : public GNET::Rpc::Data
+	{
+	public:
+		int line_id;
+		int cur_num;
+		int max_num;
+		unsigned int attr;
+
+	public:
+		LinePlayerLimit (int l_line_id = 0,int l_cur_num = 0,int l_max_num = 1
+			,unsigned int l_attr = 0)
+			: line_id(l_line_id),cur_num(l_cur_num),max_num(l_max_num)
+			,attr(l_attr)
+		{
+		}
+
+		LinePlayerLimit(const LinePlayerLimit &rhs)
+			: line_id(rhs.line_id),cur_num(rhs.cur_num),max_num(rhs.max_num),
+			attr(rhs.attr) { }
+
+		Rpc::Data *Clone() const { return new LinePlayerLimit(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const LinePlayerLimit *r = dynamic_cast<const LinePlayerLimit *>(&rhs);
+			if (r && r != this)
+			{
+				line_id = r->line_id;
+				cur_num = r->cur_num;
+				max_num = r->max_num;
+				attr = r->attr;
+			}
+			return *this;
+		}
+
+		LinePlayerLimit& operator = (const LinePlayerLimit &rhs)
+		{
+			const LinePlayerLimit *r = &rhs;
+			if (r && r != this)
+			{
+				line_id = r->line_id;
+				cur_num = r->cur_num;
+				max_num = r->max_num;
+				attr = r->attr;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << line_id;
+			os << cur_num;
+			os << max_num;
+			os << attr;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> line_id;
+			os >> cur_num;
+			os >> max_num;
+			os >> attr;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<LinePlayerLimit>	LinePlayerLimitVector;
+};
+#endif

@@ -1,0 +1,35 @@
+	public:
+		int retcode;
+		int territoryid;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDTERRITORYSTART_RE };
+	public:
+		SendTerritoryStart_Re() { type = PROTOCOL_SENDTERRITORYSTART_RE; }
+		SendTerritoryStart_Re(void*) : Protocol(PROTOCOL_SENDTERRITORYSTART_RE) { }
+		SendTerritoryStart_Re (int l_retcode,int l_territoryid = 0)
+			 : retcode(l_retcode),territoryid(l_territoryid)
+		{
+			type = PROTOCOL_SENDTERRITORYSTART_RE;
+		}
+
+		SendTerritoryStart_Re(const SendTerritoryStart_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),territoryid(rhs.territoryid) { }
+
+		GNET::Protocol *Clone() const { return new SendTerritoryStart_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << territoryid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> territoryid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

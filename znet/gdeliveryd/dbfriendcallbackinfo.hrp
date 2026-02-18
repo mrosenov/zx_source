@@ -1,0 +1,64 @@
+
+#ifndef __GNET_DBFRIENDCALLBACKINFO_HPP
+#define __GNET_DBFRIENDCALLBACKINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfriendcallbackinfoarg"
+#include "dbfriendcallbackinfores"
+#include "friendcallbackmanager.hpp"
+
+namespace GNET
+{
+
+class DBFriendCallbackInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfriendcallbackinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFriendCallbackInfoArg *arg = (DBFriendCallbackInfoArg *)argument;
+		// DBFriendCallbackInfoRes *res = (DBFriendCallbackInfoRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFriendCallbackInfoArg *arg = (DBFriendCallbackInfoArg *)argument;
+		DBFriendCallbackInfoRes *res = (DBFriendCallbackInfoRes *)result;
+		FriendCallbackManager *fcbmanager = FriendCallbackManager::GetInstance();
+		PlayerInfo *playerinfo = NULL;
+
+		if(!fcbmanager->IsPlayerOnLine(arg->roleid, playerinfo))
+			return;
+
+		LOG_TRACE("GDelivery::DBFriendCallbackInfo, retcode=%d, roleid=%d, mailnum=%d, timestamp=%d, is_subscribe=%d, cooldown_list.size=%d\n",
+				res->retcode, arg->roleid, res->callback_info.mailnum, res->callback_info.timestamp, res->callback_info.is_subscribe,
+				res->callback_info.cooldown_list.size());
+
+		if(ERR_CALLBACK_SUCCESS == res->retcode)
+		{
+			fcbmanager->LoadCallbackInfo(arg->roleid, res->callback_info);
+		}
+		fcbmanager->ReplyCallbackInfo(res->retcode, arg->roleid, playerinfo->localsid, playerinfo->linksid);
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBFriendCallbackInfoArg *arg = (DBFriendCallbackInfoArg *)argument;
+		FriendCallbackManager *fcbmanager = FriendCallbackManager::GetInstance();
+		PlayerInfo *playerinfo = NULL;
+
+		if(!fcbmanager->IsPlayerOnLine(arg->roleid, playerinfo))
+			return;
+		LOG_TRACE("GDelivery::DBFriendCallbackInfo::OnTimeout, roleid=%d\n", arg->roleid);
+		fcbmanager->ReplyCallbackInfo(ERR_CALLBACK_TIMEOUT, arg->roleid, playerinfo->localsid, playerinfo->linksid);
+	}
+
+};
+
+};
+#endif

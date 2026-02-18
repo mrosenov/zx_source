@@ -1,0 +1,78 @@
+#ifndef __GNET_GCITYSTORE_RPCDATA
+#define __GNET_GCITYSTORE_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcity"
+
+namespace GNET
+{
+	class GCityStore : public GNET::Rpc::Data
+	{
+	public:
+		std::vector<GCity> cities;
+		int reserve1;
+		int reserve2;
+		int reserve3;
+
+	public:
+		GCityStore (const std::vector<GCity>& l_cities = std::vector<GCity>(),int l_reserve1 = 0,int l_reserve2 = 0
+			,int l_reserve3 = 0)
+			: cities(l_cities),reserve1(l_reserve1),reserve2(l_reserve2)
+			,reserve3(l_reserve3)
+		{
+		}
+
+		GCityStore(const GCityStore &rhs)
+			: cities(rhs.cities),reserve1(rhs.reserve1),reserve2(rhs.reserve2),
+			reserve3(rhs.reserve3) { }
+
+		Rpc::Data *Clone() const { return new GCityStore(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GCityStore *r = dynamic_cast<const GCityStore *>(&rhs);
+			if (r && r != this)
+			{
+				cities = r->cities;
+				reserve1 = r->reserve1;
+				reserve2 = r->reserve2;
+				reserve3 = r->reserve3;
+			}
+			return *this;
+		}
+
+		GCityStore& operator = (const GCityStore &rhs)
+		{
+			const GCityStore *r = &rhs;
+			if (r && r != this)
+			{
+				cities = r->cities;
+				reserve1 = r->reserve1;
+				reserve2 = r->reserve2;
+				reserve3 = r->reserve3;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << cities;
+			os << reserve1;
+			os << reserve2;
+			os << reserve3;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> cities;
+			os >> reserve1;
+			os >> reserve2;
+			os >> reserve3;
+			return os;
+		}
+
+	};
+};
+#endif

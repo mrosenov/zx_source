@@ -1,0 +1,44 @@
+	public:
+		unsigned int roleid;
+		unsigned char level;
+		unsigned char occupation;
+		int battlescore;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYNCROLEDATA };
+	public:
+		SyncRoleData() { type = PROTOCOL_SYNCROLEDATA; }
+		SyncRoleData(void*) : Protocol(PROTOCOL_SYNCROLEDATA) { }
+		SyncRoleData (unsigned int l_roleid,unsigned char l_level,unsigned char l_occupation,
+			int l_battlescore = 0)
+			 : roleid(l_roleid),level(l_level),occupation(l_occupation)
+			,battlescore(l_battlescore)
+		{
+			type = PROTOCOL_SYNCROLEDATA;
+		}
+
+		SyncRoleData(const SyncRoleData &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),level(rhs.level),occupation(rhs.occupation)
+			,battlescore(rhs.battlescore) { }
+
+		GNET::Protocol *Clone() const { return new SyncRoleData(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << level;
+			os << occupation;
+			os << battlescore;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> level;
+			os >> occupation;
+			os >> battlescore;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 16384; }

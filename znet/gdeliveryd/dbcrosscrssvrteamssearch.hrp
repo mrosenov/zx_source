@@ -1,0 +1,100 @@
+
+#ifndef __GNET_DBCROSSCRSSVRTEAMSSEARCH_HPP
+#define __GNET_DBCROSSCRSSVRTEAMSSEARCH_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrosscrssvrteamssearcharg"
+#include "dbcrosscrssvrteamssearchres"
+#include "gdeliveryserver.hpp"
+#include "gettoptable_re.hpp"
+
+#include "centraldeliveryserver.hpp"
+#include "crssvrteamssearch_re.hpp"
+
+namespace GNET
+{
+
+class DBCrossCrssvrTeamsSearch : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrosscrssvrteamssearch"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrossCrssvrTeamsSearchArg *arg = (DBCrossCrssvrTeamsSearchArg *)argument;
+		// DBCrossCrssvrTeamsSearchRes *res = (DBCrossCrssvrTeamsSearchRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrossCrssvrTeamsSearchArg *arg = (DBCrossCrssvrTeamsSearchArg *)argument;
+		DBCrossCrssvrTeamsSearchRes *res = (DBCrossCrssvrTeamsSearchRes *)result;
+
+		LOG_TRACE("DBCrossCrssvrTeamsSearch roleid=%d, retcode=%d, teamid=%d, zoneid=%d", arg->roleid, res->retcode, res->info.info.teamid, arg->zoneid);
+
+		GetTopTable_Re re; // 应客户端要求，战队搜索返回以TopTable形式
+		if(res->retcode == ERR_SUCCESS)
+		{
+			re.tableid = TOP_CRSSVRTEAMS_SCORE;
+			re.pageid = 0;
+			re.maxsize = 1;
+			re.roleid = arg->roleid;
+			GTopItem topitem;
+			topitem.id = res->info.info.teamid;
+			topitem.name = res->info.info.name;
+			topitem.value = res->info.info.score;
+			re.items.push_back(topitem);
+
+			GTopDetail topdetail;
+			topdetail.id = res->info.info.teamid;
+			Marshal::OctetsStream top_os;
+			top_os << res->info.roles;
+			topdetail.content = top_os;
+			topdetail.value1 = res->info.info.battle_wins;
+			topdetail.value2 = res->info.info.battle_losses;
+			topdetail.value3 = res->info.info.battle_draws;
+			re.details.push_back(topdetail);
+			
+			re.selfrank = CrossCrssvrTeamsManager::Instance()->GetDailyTopPos(arg->roleid, topitem.id);
+
+		}
+		else
+		{
+			re.tableid = TOP_CRSSVRTEAMS_SCORE;
+			re.pageid = 0;
+			re.maxsize = 0;
+			re.roleid = arg->roleid;
+			re.selfrank = -1;
+		}
+		
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if ( NULL == pinfo )// 跨服开启但是报名者不在跨服，通知原服
+		{
+			LOG_TRACE("DBCrossCrssvrTeamsSearch roleid=%d send msg to src server=%d", arg->roleid, arg->zoneid);
+			CentralDeliveryServer::GetInstance()->DispatchProtocol(arg->zoneid, re);
+			
+		}
+		else if(pinfo != NULL && pinfo->ingame) // 在跨服
+		{
+			LOG_TRACE("DBCrossCrssvrTeamsSearch roleid=%d in central, localsid=%d", arg->roleid,  pinfo->localsid);
+			GDeliveryServer * dsm = GDeliveryServer::GetInstance();
+			re.localsid = pinfo->localsid;
+			dsm->Send(pinfo->linksid, re);
+		}
+
+
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

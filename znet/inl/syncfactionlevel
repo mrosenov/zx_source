@@ -1,0 +1,32 @@
+	public:
+		std::vector<FactionLevel> list;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYNCFACTIONLEVEL };
+	public:
+		SyncFactionLevel() { type = PROTOCOL_SYNCFACTIONLEVEL; }
+		SyncFactionLevel(void*) : Protocol(PROTOCOL_SYNCFACTIONLEVEL) { }
+		SyncFactionLevel (const std::vector<FactionLevel>& l_list)
+			 : list(l_list)
+		{
+			type = PROTOCOL_SYNCFACTIONLEVEL;
+		}
+
+		SyncFactionLevel(const SyncFactionLevel &rhs)
+			: Protocol(rhs),list(rhs.list) { }
+
+		GNET::Protocol *Clone() const { return new SyncFactionLevel(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << list;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> list;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 131072; }

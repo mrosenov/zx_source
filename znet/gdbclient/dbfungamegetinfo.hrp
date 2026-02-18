@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFUNGAMEGETINFO_HPP
+#define __GNET_DBFUNGAMEGETINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfungamegetinfoarg"
+#include "dbfungamegetinfores"
+
+namespace GNET
+{
+
+class DBFunGameGetInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfungamegetinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFunGameGetInfoArg *arg = (DBFunGameGetInfoArg *)argument;
+		// DBFunGameGetInfoRes *res = (DBFunGameGetInfoRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFunGameGetInfoArg *arg = (DBFunGameGetInfoArg *)argument;
+		// DBFunGameGetInfoRes *res = (DBFunGameGetInfoRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

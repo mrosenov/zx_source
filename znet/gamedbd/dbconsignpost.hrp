@@ -1,0 +1,120 @@
+
+#ifndef __GNET_DBCONSIGNPOST_HPP
+#define __GNET_DBCONSIGNPOST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignpostarg"
+#include "dbconsignpostres"
+#include "consigntool.h"
+namespace GNET
+{
+
+class DBConsignPost : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignpost"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignPostArg *arg = (DBConsignPostArg *)argument;
+		DBConsignPostRes *res = (DBConsignPostRes *)result;
+		try
+		{
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				Log::formatlog("consign","DBConsignPost roleid=%d,sn=%lld",arg->roleid,arg->sn);
+				if(arg->sn == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}	
+				GConsignDB detail;
+				Marshal::OctetsStream(pconsign->find(Marshal::OctetsStream()<<arg->sn, txn)) >> detail;
+			
+				int target_state;
+				if(arg->post_reason == POST_RESTORE)
+					target_state=DSTATE_POST;
+				else
+					target_state=DSTATE_SELL;
+				int changeres= CheckStateChange(detail,ConsignState(target_state));
+				if(changeres == CHANGE_REPEAT)
+				{
+					res->retcode = ERR_WT_DB_DUPLICATE_RQST;
+					res->item = detail.info;
+					return;
+				}
+				if(arg->post_reason == POST_RESTORE)
+				{
+				/*	if(detail.info.state!=DSTATE_PRE_CANCEL_POST)
+					{
+						res->retcode = ERR_WT_DB_STATEERR;
+						return;
+					}*/
+					if(changeres != CHANGE_FORCED )
+					{
+						res->retcode = ERR_WT_DB_STATEERR;
+						return;
+					}
+
+				}
+				else  //normal
+				{
+					if(changeres != CHANGE_PERMIT )
+					{
+						res->retcode = ERR_WT_DB_STATEERR;
+						return;
+					}
+					int start = detail.post_time;
+					detail.info.post_endtime = start + arg->post_period*60;
+					detail.info.show_endtime = start + arg->show_period*60;
+					if(arg->shelf_period != detail.info.sell_endtime)
+						DEBUG_PRINT("dbconsignpost: shelf time inconsist,db=%d,web=%d",\
+								detail.info.sell_endtime,arg->shelf_period);
+					detail.info.sell_endtime = start + arg->show_period*60+arg->shelf_period*60;
+					detail.commodityid = arg->commodity_id;		
+				}
+				detail.info.state=DSTATE_SELL;
+				UpdateState(detail);
+				pconsign->insert(Marshal::OctetsStream()<<arg->sn, Marshal::OctetsStream()<<detail, txn);
+				res->retcode = ERR_SUCCESS;
+				res->item = detail.info;
+				Log::formatlog("webtradepost","roleid=%d:sn=%lld:type=%d:itemid=%d:item_count=%d:money=%d:role=0:petid=0:pet_count=0",arg->roleid,arg->sn,detail.info.consign_type,detail.info.item_id,detail.info.item_cnt,detail.info.money/10000);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignPost, what=%s\n",e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignPostArg *arg = (DBConsignPostArg *)argument;
+		// DBConsignPostRes *res = (DBConsignPostRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

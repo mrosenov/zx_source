@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSIEGELOAD_HPP
+#define __GNET_DBSIEGELOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegeloadarg"
+#include "dbsiegeloadres"
+
+namespace GNET
+{
+
+class DBSiegeLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegeload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSiegeLoadArg *arg = (DBSiegeLoadArg *)argument;
+		// DBSiegeLoadRes *res = (DBSiegeLoadRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSiegeLoadArg *arg = (DBSiegeLoadArg *)argument;
+		// DBSiegeLoadRes *res = (DBSiegeLoadRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

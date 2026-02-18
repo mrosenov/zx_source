@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int gsid;
+		int worldtag;
+		FactionIDBean factionid;
+		enum { PROTOCOL_TYPE = PROTOCOL_QUERYBATTLEFLAGBUFF };
+	public:
+		QueryBattleFlagBuff() { type = PROTOCOL_QUERYBATTLEFLAGBUFF; }
+		QueryBattleFlagBuff(void*) : Protocol(PROTOCOL_QUERYBATTLEFLAGBUFF) { }
+		QueryBattleFlagBuff (int l_roleid,int l_gsid = 0,int l_worldtag = 0,
+			const FactionIDBean& l_factionid = FactionIDBean())
+			 : roleid(l_roleid),gsid(l_gsid),worldtag(l_worldtag)
+			,factionid(l_factionid)
+		{
+			type = PROTOCOL_QUERYBATTLEFLAGBUFF;
+		}
+
+		QueryBattleFlagBuff(const QueryBattleFlagBuff &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),gsid(rhs.gsid),worldtag(rhs.worldtag)
+			,factionid(rhs.factionid) { }
+
+		GNET::Protocol *Clone() const { return new QueryBattleFlagBuff(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << gsid;
+			os << worldtag;
+			os << factionid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> gsid;
+			os >> worldtag;
+			os >> factionid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

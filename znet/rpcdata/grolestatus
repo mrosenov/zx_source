@@ -1,0 +1,317 @@
+#ifndef __GNET_GROLESTATUS_RPCDATA
+#define __GNET_GROLESTATUS_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GRoleStatus : public GNET::Rpc::Data
+	{
+	public:
+		char version;
+		unsigned int id;
+		unsigned char occupation;
+		short level;
+		short cur_title;
+		int64_t exp;
+		int pp;
+		int hp;
+		int mp;
+		float posx;
+		float posy;
+		float posz;
+		int pkvalue;
+		int worldtag;
+		int time_used;
+		int reputation;
+		int produceskill;
+		int produceexp;
+		Octets custom_status;
+		Octets filter_data;
+		Octets charactermode;
+		Octets instancekeylist;
+		Octets dbltime_data;
+		Octets petcorral;
+		Octets var_data;
+		Octets skills;
+		Octets storehousepasswd;
+		Octets coolingtime;
+		Octets recipes;
+		Octets waypointlist;
+		Octets credit;
+		Octets titlelist;
+		int contribution;
+		int combatkills;
+		int devotion;
+		int talismanscore;
+		int updatetime;
+		int battlescore;
+		Octets petdata;
+		Octets reborndata;
+		short cultivation;
+		int reserved1;
+		Octets fashion_hotkey;
+		Octets raid_data;
+		Octets five_year;
+		Octets treasure_info;
+
+	public:
+		GRoleStatus (char l_version = 1,unsigned int l_id = 0,unsigned char l_occupation = 0
+			,short l_level = 0,short l_cur_title = 0,int64_t l_exp = 0
+			,int l_pp = 0,int l_hp = 0,int l_mp = 0
+			,float l_posx = 0,float l_posy = 0,float l_posz = 0
+			,int l_pkvalue = 0,int l_worldtag = 0,int l_time_used = 0
+			,int l_reputation = 0,int l_produceskill = 0,int l_produceexp = 0
+			,int l_contribution = 0,int l_combatkills = 0,int l_devotion = 0
+			,int l_talismanscore = 0,int l_updatetime = 0,int l_battlescore = 0
+			,Octets l_reborndata = Octets(0),short l_cultivation = 0,int l_reserved1 = 0
+			,const Octets& l_five_year = Octets(0),const Octets& l_treasure_info = Octets(0))
+			: version(l_version),id(l_id),occupation(l_occupation)
+			,level(l_level),cur_title(l_cur_title),exp(l_exp)
+			,pp(l_pp),hp(l_hp),mp(l_mp)
+			,posx(l_posx),posy(l_posy),posz(l_posz)
+			,pkvalue(l_pkvalue),worldtag(l_worldtag),time_used(l_time_used)
+			,reputation(l_reputation),produceskill(l_produceskill),produceexp(l_produceexp)
+			,contribution(l_contribution),combatkills(l_combatkills),devotion(l_devotion)
+			,talismanscore(l_talismanscore),updatetime(l_updatetime),battlescore(l_battlescore)
+			,reborndata(l_reborndata),cultivation(l_cultivation),reserved1(l_reserved1)
+			,five_year(l_five_year),treasure_info(l_treasure_info)
+		{
+		}
+
+		GRoleStatus(const GRoleStatus &rhs)
+			: version(rhs.version),id(rhs.id),occupation(rhs.occupation),
+			level(rhs.level),cur_title(rhs.cur_title),exp(rhs.exp),
+			pp(rhs.pp),hp(rhs.hp),mp(rhs.mp),
+			posx(rhs.posx),posy(rhs.posy),posz(rhs.posz),
+			pkvalue(rhs.pkvalue),worldtag(rhs.worldtag),time_used(rhs.time_used),
+			reputation(rhs.reputation),produceskill(rhs.produceskill),produceexp(rhs.produceexp),
+			custom_status(rhs.custom_status),filter_data(rhs.filter_data),charactermode(rhs.charactermode),
+			instancekeylist(rhs.instancekeylist),dbltime_data(rhs.dbltime_data),petcorral(rhs.petcorral),
+			var_data(rhs.var_data),skills(rhs.skills),storehousepasswd(rhs.storehousepasswd),
+			coolingtime(rhs.coolingtime),recipes(rhs.recipes),waypointlist(rhs.waypointlist),
+			credit(rhs.credit),titlelist(rhs.titlelist),contribution(rhs.contribution),
+			combatkills(rhs.combatkills),devotion(rhs.devotion),talismanscore(rhs.talismanscore),
+			updatetime(rhs.updatetime),battlescore(rhs.battlescore),petdata(rhs.petdata),
+			reborndata(rhs.reborndata),cultivation(rhs.cultivation),reserved1(rhs.reserved1),
+			fashion_hotkey(rhs.fashion_hotkey),raid_data(rhs.raid_data),five_year(rhs.five_year),
+			treasure_info(rhs.treasure_info) { }
+
+		Rpc::Data *Clone() const { return new GRoleStatus(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GRoleStatus *r = dynamic_cast<const GRoleStatus *>(&rhs);
+			if (r && r != this)
+			{
+				version = r->version;
+				id = r->id;
+				occupation = r->occupation;
+				level = r->level;
+				cur_title = r->cur_title;
+				exp = r->exp;
+				pp = r->pp;
+				hp = r->hp;
+				mp = r->mp;
+				posx = r->posx;
+				posy = r->posy;
+				posz = r->posz;
+				pkvalue = r->pkvalue;
+				worldtag = r->worldtag;
+				time_used = r->time_used;
+				reputation = r->reputation;
+				produceskill = r->produceskill;
+				produceexp = r->produceexp;
+				custom_status = r->custom_status;
+				filter_data = r->filter_data;
+				charactermode = r->charactermode;
+				instancekeylist = r->instancekeylist;
+				dbltime_data = r->dbltime_data;
+				petcorral = r->petcorral;
+				var_data = r->var_data;
+				skills = r->skills;
+				storehousepasswd = r->storehousepasswd;
+				coolingtime = r->coolingtime;
+				recipes = r->recipes;
+				waypointlist = r->waypointlist;
+				credit = r->credit;
+				titlelist = r->titlelist;
+				contribution = r->contribution;
+				combatkills = r->combatkills;
+				devotion = r->devotion;
+				talismanscore = r->talismanscore;
+				updatetime = r->updatetime;
+				battlescore = r->battlescore;
+				petdata = r->petdata;
+				reborndata = r->reborndata;
+				cultivation = r->cultivation;
+				reserved1 = r->reserved1;
+				fashion_hotkey = r->fashion_hotkey;
+				raid_data = r->raid_data;
+				five_year = r->five_year;
+				treasure_info = r->treasure_info;
+			}
+			return *this;
+		}
+
+		GRoleStatus& operator = (const GRoleStatus &rhs)
+		{
+			const GRoleStatus *r = &rhs;
+			if (r && r != this)
+			{
+				version = r->version;
+				id = r->id;
+				occupation = r->occupation;
+				level = r->level;
+				cur_title = r->cur_title;
+				exp = r->exp;
+				pp = r->pp;
+				hp = r->hp;
+				mp = r->mp;
+				posx = r->posx;
+				posy = r->posy;
+				posz = r->posz;
+				pkvalue = r->pkvalue;
+				worldtag = r->worldtag;
+				time_used = r->time_used;
+				reputation = r->reputation;
+				produceskill = r->produceskill;
+				produceexp = r->produceexp;
+				custom_status = r->custom_status;
+				filter_data = r->filter_data;
+				charactermode = r->charactermode;
+				instancekeylist = r->instancekeylist;
+				dbltime_data = r->dbltime_data;
+				petcorral = r->petcorral;
+				var_data = r->var_data;
+				skills = r->skills;
+				storehousepasswd = r->storehousepasswd;
+				coolingtime = r->coolingtime;
+				recipes = r->recipes;
+				waypointlist = r->waypointlist;
+				credit = r->credit;
+				titlelist = r->titlelist;
+				contribution = r->contribution;
+				combatkills = r->combatkills;
+				devotion = r->devotion;
+				talismanscore = r->talismanscore;
+				updatetime = r->updatetime;
+				battlescore = r->battlescore;
+				petdata = r->petdata;
+				reborndata = r->reborndata;
+				cultivation = r->cultivation;
+				reserved1 = r->reserved1;
+				fashion_hotkey = r->fashion_hotkey;
+				raid_data = r->raid_data;
+				five_year = r->five_year;
+				treasure_info = r->treasure_info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << version;
+			os << id;
+			os << occupation;
+			os << level;
+			os << cur_title;
+			os << exp;
+			os << pp;
+			os << hp;
+			os << mp;
+			os << posx;
+			os << posy;
+			os << posz;
+			os << pkvalue;
+			os << worldtag;
+			os << time_used;
+			os << reputation;
+			os << produceskill;
+			os << produceexp;
+			os << custom_status;
+			os << filter_data;
+			os << charactermode;
+			os << instancekeylist;
+			os << dbltime_data;
+			os << petcorral;
+			os << var_data;
+			os << skills;
+			os << storehousepasswd;
+			os << coolingtime;
+			os << recipes;
+			os << waypointlist;
+			os << credit;
+			os << titlelist;
+			os << contribution;
+			os << combatkills;
+			os << devotion;
+			os << talismanscore;
+			os << updatetime;
+			os << battlescore;
+			os << petdata;
+			os << reborndata;
+			os << cultivation;
+			os << reserved1;
+			os << fashion_hotkey;
+			os << raid_data;
+			os << five_year;
+			os << treasure_info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> version;
+			os >> id;
+			os >> occupation;
+			os >> level;
+			os >> cur_title;
+			os >> exp;
+			os >> pp;
+			os >> hp;
+			os >> mp;
+			os >> posx;
+			os >> posy;
+			os >> posz;
+			os >> pkvalue;
+			os >> worldtag;
+			os >> time_used;
+			os >> reputation;
+			os >> produceskill;
+			os >> produceexp;
+			os >> custom_status;
+			os >> filter_data;
+			os >> charactermode;
+			os >> instancekeylist;
+			os >> dbltime_data;
+			os >> petcorral;
+			os >> var_data;
+			os >> skills;
+			os >> storehousepasswd;
+			os >> coolingtime;
+			os >> recipes;
+			os >> waypointlist;
+			os >> credit;
+			os >> titlelist;
+			os >> contribution;
+			os >> combatkills;
+			os >> devotion;
+			os >> talismanscore;
+			os >> updatetime;
+			os >> battlescore;
+			os >> petdata;
+			os >> reborndata;
+			os >> cultivation;
+			os >> reserved1;
+			os >> fashion_hotkey;
+			os >> raid_data;
+			os >> five_year;
+			os >> treasure_info;
+			return os;
+		}
+
+	};
+};
+#endif

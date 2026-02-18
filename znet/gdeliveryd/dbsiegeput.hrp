@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSIEGEPUT_HPP
+#define __GNET_DBSIEGEPUT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegeputarg"
+#include "dbsiegeputres"
+
+namespace GNET
+{
+
+class DBSiegePut : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegeput"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSiegePutArg *arg = (DBSiegePutArg *)argument;
+		// DBSiegePutRes *res = (DBSiegePutRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSiegePutArg *arg = (DBSiegePutArg *)argument;
+		// DBSiegePutRes *res = (DBSiegePutRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

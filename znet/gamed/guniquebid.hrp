@@ -1,0 +1,44 @@
+
+#ifndef __GNET_GUNIQUEBID_HPP
+#define __GNET_GUNIQUEBID_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "guniquebidarg"
+#include "guniquebidres"
+
+void unique_bid_result(int retcode, int roleid, int money_upperbound, int money_lowerbound);
+
+namespace GNET
+{
+
+class GUniqueBid : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "guniquebid"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GUniqueBidArg *arg = (GUniqueBidArg *)argument;
+		// GUniqueBidRes *res = (GUniqueBidRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		 GUniqueBidArg *arg = (GUniqueBidArg *)argument;
+		 GUniqueBidRes *res = (GUniqueBidRes *)result;
+		 unique_bid_result(res->retcode, arg->roleid, arg->upper_bound_money, arg->lower_bound_money); 
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

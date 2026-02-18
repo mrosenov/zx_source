@@ -1,0 +1,58 @@
+
+#ifndef __GNET_DBGETCOMMONDATA_HPP
+#define __GNET_DBGETCOMMONDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbgetcommondataarg"
+#include "dbgetcommondatares"
+
+#include "commondata.h"
+
+namespace GNET
+{
+
+class DBGetCommonData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgetcommondata"
+#undef	RPC_BASECLASS
+
+	Octets save_handle;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBGetCommonDataArg *arg = (DBGetCommonDataArg *)argument;
+		// DBGetCommonDataRes *res = (DBGetCommonDataRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBGetCommonDataRes *res = (DBGetCommonDataRes *)result;
+		DEBUG_PRINT("DBCommonDataLoad: retcode=%d, size=%d, handle=%d", res->retcode,res->data.size(),res->handle.size());
+		bool load_success = true;
+		if(res->retcode==ERR_SUCCESS) 
+			load_success = CommonDataMan::Instance()->OnLoad(res->data);
+                if(res->retcode==ERR_AGAIN || (res->handle.size()!=0&&load_success) )
+		{
+			DBGetCommonData * rpc = (DBGetCommonData *)Rpc::Call(RPC_DBGETCOMMONDATA,DBGetCommonDataArg(res->handle));
+			rpc->save_handle = res->handle;
+                        manager->Send(sid, rpc);
+		}	
+                if(res->handle.size()==0)
+			CommonDataMan::Instance()->Open();
+	}
+
+	void OnTimeout()
+	{
+		Log::log(LOG_ERR, "DBGetCommonData timeout handle.size %d", save_handle.size());
+		DBGetCommonData * rpc = (DBGetCommonData*)Rpc::Call(RPC_DBGETCOMMONDATA, DBGetCommonDataArg(save_handle));
+		rpc->save_handle = save_handle;
+		GameDBClient::GetInstance()->SendProtocol(rpc);
+	}
+
+};
+
+};
+#endif

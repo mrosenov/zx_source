@@ -1,0 +1,65 @@
+#ifndef __GNET_DBCIRCLESYNCARG_RPCDATA
+#define __GNET_DBCIRCLESYNCARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcircledb"
+
+namespace GNET
+{
+	class DBCircleSyncArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int circleid;
+		GCircleDB info;
+
+	public:
+		DBCircleSyncArg (unsigned int l_circleid = 0)
+			: circleid(l_circleid)
+		{
+		}
+
+		DBCircleSyncArg(const DBCircleSyncArg &rhs)
+			: circleid(rhs.circleid),info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBCircleSyncArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCircleSyncArg *r = dynamic_cast<const DBCircleSyncArg *>(&rhs);
+			if (r && r != this)
+			{
+				circleid = r->circleid;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBCircleSyncArg& operator = (const DBCircleSyncArg &rhs)
+		{
+			const DBCircleSyncArg *r = &rhs;
+			if (r && r != this)
+			{
+				circleid = r->circleid;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << circleid;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> circleid;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

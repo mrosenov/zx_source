@@ -1,0 +1,65 @@
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSTOPARG_RPCDATA
+#define __GNET_SYNCCROSSCRSSVRTEAMSTOPARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gtoptable"
+
+namespace GNET
+{
+	class SyncCrossCrssvrTeamsTopArg : public GNET::Rpc::Data
+	{
+	public:
+		int top_type;
+		GTopTable table;
+
+	public:
+		SyncCrossCrssvrTeamsTopArg (int l_top_type = 0,const GTopTable& l_table = GTopTable())
+			: top_type(l_top_type),table(l_table)
+		{
+		}
+
+		SyncCrossCrssvrTeamsTopArg(const SyncCrossCrssvrTeamsTopArg &rhs)
+			: top_type(rhs.top_type),table(rhs.table) { }
+
+		Rpc::Data *Clone() const { return new SyncCrossCrssvrTeamsTopArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SyncCrossCrssvrTeamsTopArg *r = dynamic_cast<const SyncCrossCrssvrTeamsTopArg *>(&rhs);
+			if (r && r != this)
+			{
+				top_type = r->top_type;
+				table = r->table;
+			}
+			return *this;
+		}
+
+		SyncCrossCrssvrTeamsTopArg& operator = (const SyncCrossCrssvrTeamsTopArg &rhs)
+		{
+			const SyncCrossCrssvrTeamsTopArg *r = &rhs;
+			if (r && r != this)
+			{
+				top_type = r->top_type;
+				table = r->table;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << top_type;
+			os << table;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> top_type;
+			os >> table;
+			return os;
+		}
+
+	};
+};
+#endif

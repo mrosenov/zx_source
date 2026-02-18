@@ -1,0 +1,56 @@
+	public:
+		int roleid;
+		int gs_id;
+		int map_id;
+		int itemid;
+		int item_pos;
+		GMailSyncData syncdata;
+		unsigned int localsid;
+		enum { PROTOCOL_TYPE = PROTOCOL_GBATTLEJOIN };
+	public:
+		GBattleJoin() { type = PROTOCOL_GBATTLEJOIN; }
+		GBattleJoin(void*) : Protocol(PROTOCOL_GBATTLEJOIN) { }
+		GBattleJoin (int l_roleid,int l_gs_id = 0,int l_map_id = 0,
+			int l_itemid = 0,int l_item_pos = -1,const GMailSyncData& l_syncdata = GMailSyncData(),
+			unsigned int l_localsid = 0)
+			 : roleid(l_roleid),gs_id(l_gs_id),map_id(l_map_id)
+			,itemid(l_itemid),item_pos(l_item_pos),syncdata(l_syncdata)
+			,localsid(l_localsid)
+		{
+			type = PROTOCOL_GBATTLEJOIN;
+		}
+
+		GBattleJoin(const GBattleJoin &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),gs_id(rhs.gs_id),map_id(rhs.map_id)
+			,itemid(rhs.itemid),item_pos(rhs.item_pos),syncdata(rhs.syncdata)
+			,localsid(rhs.localsid) { }
+
+		GNET::Protocol *Clone() const { return new GBattleJoin(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << gs_id;
+			os << map_id;
+			os << itemid;
+			os << item_pos;
+			os << syncdata;
+			os << localsid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> gs_id;
+			os >> map_id;
+			os >> itemid;
+			os >> item_pos;
+			os >> syncdata;
+			os >> localsid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2097152; }

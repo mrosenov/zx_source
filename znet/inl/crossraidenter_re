@@ -1,0 +1,59 @@
+	public:
+		int retcode;
+		unsigned int localsid;
+		int roleid;
+		int gs_id;
+		int map_id;
+		int templateid;
+		int index;
+		int raid_type;
+		enum { PROTOCOL_TYPE = PROTOCOL_CROSSRAIDENTER_RE };
+	public:
+		CrossRaidEnter_Re() { type = PROTOCOL_CROSSRAIDENTER_RE; }
+		CrossRaidEnter_Re(void*) : Protocol(PROTOCOL_CROSSRAIDENTER_RE) { }
+		CrossRaidEnter_Re (int l_retcode,unsigned int l_localsid = 0,int l_roleid = 0,
+			int l_gs_id = 0,int l_map_id = 0,int l_templateid = 0,
+			int l_index = 0,int l_raid_type = 0)
+			 : retcode(l_retcode),localsid(l_localsid),roleid(l_roleid)
+			,gs_id(l_gs_id),map_id(l_map_id),templateid(l_templateid)
+			,index(l_index),raid_type(l_raid_type)
+		{
+			type = PROTOCOL_CROSSRAIDENTER_RE;
+		}
+
+		CrossRaidEnter_Re(const CrossRaidEnter_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),localsid(rhs.localsid),roleid(rhs.roleid)
+			,gs_id(rhs.gs_id),map_id(rhs.map_id),templateid(rhs.templateid)
+			,index(rhs.index),raid_type(rhs.raid_type) { }
+
+		GNET::Protocol *Clone() const { return new CrossRaidEnter_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << localsid;
+			os << roleid;
+			os << gs_id;
+			os << map_id;
+			os << templateid;
+			os << index;
+			os << raid_type;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> localsid;
+			os >> roleid;
+			os >> gs_id;
+			os >> map_id;
+			os >> templateid;
+			os >> index;
+			os >> raid_type;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

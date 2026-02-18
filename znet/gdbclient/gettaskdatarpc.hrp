@@ -1,0 +1,42 @@
+
+#ifndef __GNET_GETTASKDATARPC_HPP
+#define __GNET_GETTASKDATARPC_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gtaskdata"
+#include "gtaskdata"
+
+namespace GNET
+{
+
+class GetTaskDataRpc : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "gettaskdatarpc"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GTaskData *arg = (GTaskData *)argument;
+		// GTaskData *res = (GTaskData *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GTaskData *arg = (GTaskData *)argument;
+		// GTaskData *res = (GTaskData *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,67 @@
+
+#ifndef __GNET_DBCIRCLEAPPOINT_HPP
+#define __GNET_DBCIRCLEAPPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcircleappointarg"
+#include "dbcircleappointres"
+#include "circlemanager.h"
+#include "circlenotifylink.hpp"
+namespace GNET
+{
+
+class DBCircleAppoint : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcircleappoint"
+#undef	RPC_BASECLASS
+
+	int roleid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCircleAppointArg *arg = (DBCircleAppointArg *)argument;
+		// DefCircleRes *res = (DefCircleRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		DBCircleAppointArg *arg = (DBCircleAppointArg *)argument;
+		DBCircleAppointRes *res = (DBCircleAppointRes *)result;
+		LOG_TRACE("DBCircleAppoint, retcode=%d, roleid=%d, circleid=%d", res->retcode, arg->roleid, arg->circleid);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			CircleTitle title = CircleTitle(arg->title);
+			CircleManager::Instance()->OnAppoint(arg->roleid,arg->circleid,title,res->titlemask);
+	/*		//notify gs and client
+			CircleManager::Instance()->NotifyGSNewCircle(arg->roleid,arg->circleid,res->titlemask);
+
+			CircleInfo * pcircle = CircleManager::Instance()->Find(arg->circleid);
+			if (NULL != pcircle)
+			{
+				CircleNotifyLink msg;
+				msg.msgtype = CIRCLE_APPOINT_MASTER;
+				msg.roleid = arg->roleid;
+				msg.circleid = arg->circleid;
+				pcircle->Broadcast(msg);
+			}*/
+		}
+                else
+		{
+                        DEBUG_PRINT("DBCircleAppoint not success, retcode=%d, roleid=%d",\
+	                                res->retcode, arg->roleid);
+                }	
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

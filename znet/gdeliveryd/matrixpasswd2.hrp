@@ -1,0 +1,244 @@
+
+#ifndef __GNET_MATRIXPASSWD2_HPP
+#define __GNET_MATRIXPASSWD2_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "matrixpasswdarg2"
+#include "matrixpasswdres2"
+#include "gauthclient.hpp"
+#include "mapusbkey.hpp"
+#include "forbid.hxx"
+#include "mapforbid.h"
+#include "gmshutup.hpp"
+#include "mapphonetoken.h"
+
+namespace GNET
+{
+
+class MatrixPasswd2 : public ProxyRpc
+{
+
+	GNET::Protocol *Clone() const {  return new MatrixPasswd2(*this); }
+public:
+	enum { PROTOCOL_TYPE = RPC_MATRIXPASSWD2 };
+	MatrixPasswd2(Type type, Rpc::Data *argument, Rpc::Data *result)
+		: ProxyRpc(type, argument, result ) { }
+	MatrixPasswd2(const MatrixPasswd2 &rhs) : ProxyRpc(rhs) { }
+	int PriorPolicy( ) const { return 101; }
+	bool SizePolicy(size_t size) const { return size <= 1024; }
+	bool TimePolicy(int timeout) const { return timeout <= 20; }
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		MatrixPasswdArg2 arg;
+		osArg >> arg;
+		GDeliveryServer *dliServer = GDeliveryServer::GetInstance();
+		if(dliServer->IsCentralDS())
+		{
+			Log::log(LOG_ERR, "User(%.*s) Try to Login Central Delivery Server directly, Refuse him!", arg.account.size(), (char *)arg.account.begin());
+			SendResponse(-1);
+			return false;
+		}
+
+		if(dliServer->GetAuthVersion() != 1)
+		{
+			Log::log(LOG_ERR, "gdelivery::not support matrixpasswd2 query. User(%.*s)", arg.account.size(), (char *)arg.account.begin());
+			SendResponse(-1);
+			return false;
+		}
+
+		if(dliServer->ChallengeAlgo() != ALGO_MD5)
+		{
+			Log::log(LOG_ERR, "gdelivery::algo is ALGO_PLAINTEXT cannot deal with matrixpasswd2. User(%.*s)", arg.account.size(), (char *)arg.account.begin());
+			SendResponse(-1);
+			return false;
+		}
+
+		if(UserContainer::GetInstance().Size() >= UserContainer::GetInstance().GetPlayerLimit())
+		{
+			SendResponse(ERR_SERVEROVERLOAD);
+			return false;
+		}
+
+		LOG_TRACE("gdelivery::Matrixpasswd2 query, user=%.*s", arg.account.size(), (char *)arg.account.begin());
+		if(GAuthClient::GetInstance()->SendProtocol(*this))
+		{
+			return true;
+		}
+		else
+		{
+			TryResponse(arg);
+			return false;
+		}
+	}
+
+	void SendResponse(int retcode)
+	{
+		MatrixPasswdRes2 res;
+		res.retcode = retcode;
+		SetResult(res);
+		SendToSponsor();
+	}
+
+	void TryResponse(MatrixPasswdArg2 &arg)
+	{
+		MatrixPasswdRes2 res;
+//		res.retcode = ERR_SUCCESS;//Î£ÏÕ!
+		res.retcode = ERR_COMMUNICATION;
+
+		std::string account_str((char*)arg.account.begin(), arg.account.size());
+		if (account_str.rfind("@sso") != std::string::npos)
+		{
+			LOG_TRACE("gdelivery::matrixpasswd2 sso login failed, user=%.*s",arg.account.size(),(char*)arg.account.begin());  
+		}
+		else
+		{
+			if(Passwd::GetInstance().GetPasswd(arg.account, res.userid, res.response, res.matrix, res.algorithm))
+			{
+				CalcResponse(arg, res);
+				switch(res.algorithm & ALGORITHM_MASK_HIGH)
+				{
+					case ALGORITHM_USBKEY2:
+					{
+						if(UsbKeyCache::GetInstance().GetUsbKeyInfo(res.userid, res.seed, res.pin, res.rtime, res.currenttime))
+							res.retcode = ERR_SUCCESS;
+						else
+							LOG_TRACE("gdelivery::matrixpasswd2 UsbkeyInfo missing, user=%.*s", arg.account.size(), (char *)arg.account.begin());
+					}
+					break;
+					case ALGORITHM_PHONETOKEN:
+					{
+						if(PhoneTokenCache::GetInstance()->GetPhoneTokenInfo(res.userid, res.seed, res.rtime, res.currenttime))
+							res.retcode = ERR_SUCCESS;
+						else
+							LOG_TRACE("gdelivery::matrixpasswd2 phonetoken missing, user=%.*s", arg.account.size(), (char *)arg.account.begin());
+					}
+					break;
+					default:
+					{
+						res.retcode = ERR_SUCCESS;
+					}
+					break;
+				}
+			}
+			else
+			{
+				LOG_TRACE("gdelivery::matrixpasswd2 Passwd cache missing, user=%.*s", arg.account.size(), (char *)arg.account.begin());
+			}
+		}
+		LOG_TRACE("gdelivery::matrixpasswd2 try response, user=%.*s, retcode=%d", arg.account.size(), (char *)arg.account.begin(), res.retcode);
+		SetResult(res);
+		SendToSponsor();
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		MatrixPasswdArg2 arg;
+		osArg >> arg;
+		MatrixPasswdRes2 res;
+		osRes >> res;
+
+		LOG_TRACE("gdelivery::User(%.*s, id=%d) receive matrixpasswd2 from au, algorithm=%d, retcode=%d", arg.account.size(), (char *)arg.account.begin(), res.userid, res.algorithm, res.retcode);
+
+		if(ERR_SUCCESS == res.retcode)
+		{
+			Passwd::GetInstance().CacheAlgo(res.userid, res.algorithm);
+			if (res.algorithm & ALGORITHM_OPT_STUDIO_USER)
+				ForbidStudioUser::GetInstance()->RecordUser(res.userid);
+			if(0 == (res.algorithm & ALGORITHM_OPT_NOCACHE))
+			{
+				Passwd::GetInstance().SetPasswd(arg.account, res.userid, res.response, res.matrix, res.algorithm);
+				switch(res.algorithm & ALGORITHM_MASK_HIGH)
+				{
+					case ALGORITHM_USBKEY2:
+					{
+						UsbKeyCache::GetInstance().SetUsbKeyInfo(res.userid, res.seed, res.pin, res.rtime, res.currenttime);
+					}
+					break;
+					case ALGORITHM_PHONETOKEN:
+					{
+						PhoneTokenCache::GetInstance()->SetPhoneTokenInfo(res.userid, res.seed, res.rtime, res.currenttime);
+//						PhoneTokenCache::GetInstance()->SetUsedElecNumber(res.userid, res.last_used_elec_number);
+					}
+					break;
+					default:
+					break;
+				}
+			}
+			else if(0 == (res.algorithm & ALGORITHM_SINGLE_SING_ON))
+			{
+				Passwd::GetInstance().ClearPasswd(arg.account);
+			}
+
+			CalcResponse(arg, res);
+		}
+		ProcessForbid(res);
+
+		SetResult(&res);
+	}
+
+	void ProcessForbid(MatrixPasswdRes2 &res)
+	{
+		GRoleForbidVector &forbid = res.forbid;
+		int userid = res.userid;
+		int time_left = 0;
+		bool blForbidLogin = false;
+		
+		for(size_t i = 0; i < forbid.size(); i++)
+		{
+			time_left = forbid[i].time;
+			switch(forbid[i].type)
+			{
+			case Forbid::FBD_FORBID_TALK:
+				if(time_left > 1)
+				{
+					LinkServer::GetInstance().BroadcastProtocol(GMShutup(_ROLE_INVALID, _SID_INVALID, userid, time_left, forbid[i].reason));
+					ForbidUserTalk::GetInstance().SetForbidUserTalk(userid, forbid[i]);
+				}
+				break;
+			case Forbid::FBD_FORBID_LOGIN:
+				blForbidLogin = true;
+				if(time_left <= 1)
+				{
+					ForbidLogin::GetInstance().RmvForbidLogin(userid);
+				}
+				else
+				{
+					ForbidLogin::GetInstance().SetForbidLogin(userid, forbid[i]);
+				}
+				break;
+			case Forbid::FBD_FORBID_TRADE: 
+				break;
+			case Forbid::FBD_FORBID_SELL:
+				break;
+			}
+		}
+
+		if(!blForbidLogin)
+		{
+			ForbidLogin::GetInstance().RmvForbidLogin(userid);
+		}
+	}
+	
+	void CalcResponse(MatrixPasswdArg2 &arg, MatrixPasswdRes2 &res)
+	{
+		HMAC_MD5Hash hash;
+		hash.SetParameter(res.response);
+		hash.Update(arg.challenge);
+		hash.Final(res.response);
+	}
+
+	void OnTimeout(const OctetsStream &osArg)
+	{
+		MatrixPasswdArg2 arg;
+		osArg >> arg;
+		LOG_TRACE("gdelivery::passwd2timeout. user=%.*s", arg.account.size(), (char *)arg.account.begin());
+		STAT_MIN5("Password2Timeout", 1);
+		TryResponse(arg);
+	}
+};
+
+};
+#endif

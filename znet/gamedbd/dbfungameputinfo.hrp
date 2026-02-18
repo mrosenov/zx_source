@@ -1,0 +1,70 @@
+
+#ifndef __GNET_DBFUNGAMEPUTINFO_HPP
+#define __GNET_DBFUNGAMEPUTINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfungameputinfoarg"
+
+
+namespace GNET
+{
+
+class DBFunGamePutInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfungameputinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+//		DBFunGamePutInfoArg *arg = (DBFunGamePutInfoArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+//		LOG_TRACE("gamedbd: DBFunGamePutInfo, roleid=%d, money=%lld", arg->roleid, arg->fungame_info.money);
+		res->retcode = ERR_SUCCESS;
+#if 0
+		try     
+		{       
+			StorageEnv::Storage *pdb = StorageEnv::GetStorage("fungame");
+			StorageEnv::CommonTransaction txn;
+
+			try     
+			{       
+				int64_t key = (int64_t)arg->roleid<<32;
+				pdb->insert(Marshal::OctetsStream()<<key, Marshal::OctetsStream()<<arg->fungame_info, txn);
+				res->retcode = ERR_SUCCESS;
+			}       
+			catch (DbException &e) { throw e; }
+			catch ( ... ) 
+			{       
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}       
+		}       
+		catch (DbException &e)
+		{       
+			Log::log(LOG_ERR, "gamedbd: DBFunGamePutInfo failed, roleid=%d, what=%s\n", arg->roleid, e.what());
+			res->retcode = ERR_FAILED;
+		}   
+#endif 
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFunGamePutInfoArg *arg = (DBFunGamePutInfoArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,92 @@
+
+#ifndef __GNET_DBTRANSPOINTDEAL_HPP
+#define __GNET_DBTRANSPOINTDEAL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "dbtranspointdealres"
+#include "playerlogin.hpp"
+//#include "syssendmail.hpp"
+#include "putmessage.hrp"
+#include "gamedbclient.hpp"
+#include "conv_charset.h"
+#include "cardmarket.h"
+namespace GNET
+{
+
+class DBTransPointDeal : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbtranspointdeal"
+#undef	RPC_BASECLASS
+	unsigned int save_linksid;
+	unsigned int save_localsid;
+	int provider_link_id;
+	int save_lineid;
+	void AnnouncePlayer(int retcode,int roleid,int money) //send offline message
+	{
+		Message arg;
+		arg.channel = CHANNEL_NORMAL;
+		arg.srcroleid = 0;
+		arg.dstroleid = roleid;
+		arg.src_name=Octets(sellsys,12);
+		char context[256];
+		Octets cntx_gbk,cntx_ucs2;
+		memset( &context[0],0,256 );
+		if ( retcode==ERR_SP_MONEYEXCEED )
+			snprintf(context,255,"由于您挂售游戏点获得的%d完美金币移动到包裹中后将超过包裹2亿金钱上限，\r\n"\
+					"请您将包裹金钱转移到仓库后重新登陆，以接收挂售游戏点的收入。",money);
+		else if ( retcode==ERR_SUCCESS )
+			snprintf(context,255,"您挂售游戏点获得的完美金币(%d)已经转移到您的包裹中。",money);
+		else 
+			return;	
+		cntx_gbk.replace(&context[0],strlen(context));
+		CharsetConverter::conv_charset_g2u(cntx_gbk,cntx_ucs2);
+
+		arg.msg.swap(cntx_ucs2);
+		PutMessage* rpc = (PutMessage*) Rpc::Call(RPC_PUTMESSAGE, arg);
+		GameDBClient::GetInstance()->SendProtocol(rpc);
+	}
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleId *arg = (RoleId *)argument;
+		// DBTransPointDealRes *res = (DBTransPointDealRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBTransPointDealRes *res = (DBTransPointDealRes *)result;
+		PlayerLogin pl(arg->id,save_lineid,provider_link_id,save_localsid);
+		if ( res->retcode==ERR_SUCCESS && res->getmoney )
+		{
+			for ( size_t i=0;i<res->delsell.size();++i )
+				CardMarket::GetInstance().RmvSell( res->delsell[i] );
+			AnnouncePlayer( ERR_SUCCESS,arg->id,res->getmoney );
+		}
+		if ( res->retcode==ERR_SP_MONEYEXCEED )
+		{
+			AnnouncePlayer( ERR_SP_MONEYEXCEED,arg->id,res->getmoney );
+		}
+		pl.SetGMPrivilege( pl.roleid );
+		pl.DoLogin(save_linksid);
+
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		// TODO Client Only
+		RoleId *arg = (RoleId *)argument;
+		Log::log(LOG_ERR,"dbtranspointdeal. timeout. roleid=%d,linksid=%d,localsid=%d\n",
+				arg->id,save_linksid,save_localsid);
+		PlayerLogin pl(arg->id,save_lineid,provider_link_id,save_localsid);
+		pl.SendFailResult( GDeliveryServer::GetInstance(),save_linksid,ERR_TIMEOUT );
+	}
+
+};
+
+};
+#endif

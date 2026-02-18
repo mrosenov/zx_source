@@ -1,0 +1,50 @@
+
+#ifndef __GNET_DBAUTOLOCKSET_HPP
+#define __GNET_DBAUTOLOCKSET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbautolocksetarg"
+#include "integer"
+#include "autolockset_re.hpp"
+
+namespace GNET
+{
+
+class DBAutolockSet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbautolockset"
+#undef	RPC_BASECLASS
+	int timeout;
+	int save_sid;
+	int save_localsid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBAutolockSetArg *arg = (DBAutolockSetArg *)argument;
+		// Integer *res = (Integer *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBAutolockSetArg *arg = (DBAutolockSetArg *)argument;
+		Integer *res = (Integer *)result;
+		if(res->value==0)
+		{
+			GDeliveryServer* dsm=GDeliveryServer::GetInstance();
+			dsm->Send(save_sid, AutolockSet_Re(0,timeout,save_localsid));
+		}
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

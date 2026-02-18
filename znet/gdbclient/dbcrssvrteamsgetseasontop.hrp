@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSGETSEASONTOP_HPP
+#define __GNET_DBCRSSVRTEAMSGETSEASONTOP_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsgetseasontoparg"
+#include "dbcrssvrteamsgetseasontopres"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsGetSeasonTop : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsgetseasontop"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsGetSeasonTopArg *arg = (DBCrssvrTeamsGetSeasonTopArg *)argument;
+		// DBCrssvrTeamsGetSeasonTopRes *res = (DBCrssvrTeamsGetSeasonTopRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsGetSeasonTopArg *arg = (DBCrssvrTeamsGetSeasonTopArg *)argument;
+		// DBCrssvrTeamsGetSeasonTopRes *res = (DBCrssvrTeamsGetSeasonTopRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

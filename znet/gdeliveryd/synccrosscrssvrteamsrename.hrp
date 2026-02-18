@@ -1,0 +1,48 @@
+
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSRENAME_HPP
+#define __GNET_SYNCCROSSCRSSVRTEAMSRENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrosscrssvrteamsrenamearg"
+#include "synccrosscrssvrteamsrenameres"
+#include "crosscrssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class SyncCrossCrssvrTeamsRename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrosscrssvrteamsrename"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsRenameArg *arg = (SyncCrossCrssvrTeamsRenameArg *)argument;
+		SyncCrossCrssvrTeamsRenameRes *res = (SyncCrossCrssvrTeamsRenameRes *)result;
+		
+		int ret = CrossCrssvrTeamsManager::Instance()->OnNameChange(arg->teamid, arg->newname, arg->zoneid);
+
+		LOG_TRACE("SyncCrossCrssvrTeamsRename, zoneid=%d, retcode=%d, teamid=%d, ret=%d", arg->zoneid, res->retcode, arg->teamid, ret);
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// SyncCrossCrssvrTeamsRenameArg *arg = (SyncCrossCrssvrTeamsRenameArg *)argument;
+		// SyncCrossCrssvrTeamsRenameRes *res = (SyncCrossCrssvrTeamsRenameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

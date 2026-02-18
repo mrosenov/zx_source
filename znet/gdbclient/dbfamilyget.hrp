@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFAMILYGET_HPP
+#define __GNET_DBFAMILYGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "familyid"
+#include "familygetres"
+
+namespace GNET
+{
+
+class DBFamilyGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// FamilyId *arg = (FamilyId *)argument;
+		// FamilyGetRes *res = (FamilyGetRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// FamilyId *arg = (FamilyId *)argument;
+		// FamilyGetRes *res = (FamilyGetRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

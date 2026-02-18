@@ -1,0 +1,35 @@
+	public:
+		int userid;
+		int zoneid;
+		enum { PROTOCOL_TYPE = PROTOCOL_QUERYUSERPRIVILEGE2 };
+	public:
+		QueryUserPrivilege2() { type = PROTOCOL_QUERYUSERPRIVILEGE2; }
+		QueryUserPrivilege2(void*) : Protocol(PROTOCOL_QUERYUSERPRIVILEGE2) { }
+		QueryUserPrivilege2 (int l_userid,int l_zoneid)
+			 : userid(l_userid),zoneid(l_zoneid)
+		{
+			type = PROTOCOL_QUERYUSERPRIVILEGE2;
+		}
+
+		QueryUserPrivilege2(const QueryUserPrivilege2 &rhs)
+			: Protocol(rhs),userid(rhs.userid),zoneid(rhs.zoneid) { }
+
+		GNET::Protocol *Clone() const { return new QueryUserPrivilege2(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			os << zoneid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			os >> zoneid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 2; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

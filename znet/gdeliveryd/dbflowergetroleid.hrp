@@ -1,0 +1,190 @@
+
+#ifndef __GNET_DBFLOWERGETROLEID_HPP
+#define __GNET_DBFLOWERGETROLEID_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbflowergetroleidarg"
+#include "dbflowergetroleidres"
+#include "topflowermanager.h"
+#include "topflower_err.hpp"
+#include "topflowermsg_re.hpp"
+#include "open_controler.hpp"
+#include "mapuser.h"
+#include "maplinkserver.h"
+#include "gproviderserver.hpp"
+
+namespace GNET
+{
+
+class DBFlowerGetRoleId : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbflowergetroleid"
+#undef	RPC_BASECLASS
+	
+	int gameid;
+	int send_roleid;
+	int send_userid;
+	int send_gender;
+	Octets recv_rolename;
+	Octets send_rolename;
+	Octets lover_msg; // 爱情宣言
+	int add_count;
+	unsigned int localsid;
+	unsigned int linksid;
+	void SendResult( int retcode )
+	{
+		GDeliveryServer::GetInstance()->Send(
+				linksid,
+				TopFlower_Err(retcode, localsid)
+			);	
+	}
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFlowerGetRoleIdArg *arg = (DBFlowerGetRoleIdArg *)argument;
+		// DBFlowerGetRoleIdRes *res = (DBFlowerGetRoleIdRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBFlowerGetRoleIdArg *arg = (DBFlowerGetRoleIdArg *)argument;
+		DBFlowerGetRoleIdRes *res = (DBFlowerGetRoleIdRes *)result;
+		LOG_TRACE("recv DBFlowerGetRoleId, retcode=%d,roleid=%d", res->retcode, res->roleid);
+
+		if(res->retcode == TOPFLOWER_GETROLEID_ERR_OLDNAME)
+		{
+			// 告诉客户端,不能用老名字
+			LOG_TRACE("recv DBFlowerGetRoleId, TOPFLOWER_GETROLEID_ERR_OLDNAME");
+			//manager->Send(sid, TopFlower_Err(S2C_TOPFLOWER_NAME_ERR, localsid));
+			SendResult(S2C_TOPFLOWER_NAME_ERR);
+			return;
+		}
+		
+		if(res->retcode == TOPFLOWER_GETROLEID_SUCCESS)
+		{
+			// dest_roleid 得到
+			if(res->gender != 1)
+			{
+				// 性别不符
+				LOG_TRACE("recv DBFlowerGetRoleId, gender is err");
+				//manager->Send(sid, TopFlower_Err(S2C_TOPFLOWER_GENDER_ERR, localsid));
+				SendResult(S2C_TOPFLOWER_GENDER_ERR);
+				return;
+			}
+			
+			LOG_TRACE("DBFlowerGetRoleId recv_rolename:%s, size=%d.", recv_rolename.begin() ,recv_rolename.size());
+		
+			/*ETopFlowerStatus recv_status = TopFlowerManager::Instance()->UpdateTop(true, res->roleid, add_count, res->gender, recv_rolename);
+			ETopFlowerStatus send_status = TopFlowerManager::Instance()->UpdateTop(false, send_roleid, add_count, res->gender, send_rolename);
+			if(recv_status == TOPFLOWER_NOTREADY || send_status == TOPFLOWER_NOTREADY)
+			{
+				// 告诉客户端未榜单未准备好
+				LOG_TRACE("flowertakeoff Client, TOPFLOWER_NOTREADY");
+				SendResult(S2C_TOPFLOWER_TOP_NOTREADY);
+				return;
+			}
+			else
+			{
+				// 终于成功了
+				LOG_TRACE("flowertakeoff Client, TOPLOWER_SUCCESS");
+				
+				// 通知或广播
+				TopFlowerMsg_Re _msg_re;
+				_msg_re.district_id = GDeliveryServer::GetInstance()->district_id;
+				_msg_re.zoneid = GDeliveryServer::GetInstance()->zoneid;
+				_msg_re.recv_rolename = recv_rolename;
+				_msg_re.send_rolename = send_rolename;
+				_msg_re.msg = lover_msg;
+				_msg_re.count = add_count;
+				_msg_re.localsid = localsid;
+				
+				if(add_count>=1 && add_count<520)
+				{
+					PlayerInfo* _pinfo = UserContainer::GetInstance().FindRoleOnline(res->roleid);
+
+					if (_pinfo == NULL)
+					{
+						LOG_TRACE("_pinfo is NULL, recv_roleid:%d", res->roleid);
+						return;
+					}
+
+					_msg_re.myself_roleid = res->roleid;	
+					_msg_re.localsid = _pinfo->localsid;
+					GDeliveryServer::GetInstance()->Send(_pinfo->linksid, _msg_re);
+
+				}
+				else if(add_count>=520)
+				{
+					_msg_re.myself_roleid = res->roleid;
+					LinkServer::GetInstance().BroadcastProtocol(_msg_re);
+					
+					if(add_count>=9999)
+					{
+						PlayerInfo* _pinfo = UserContainer::GetInstance().FindRoleOnline(res->roleid);
+
+						if (_pinfo == NULL)
+						{
+							LOG_TRACE("_pinfo is NULL, recv_roleid:%d", res->roleid);
+							return;
+						}
+
+						// 花瓣雨
+						FlowerGiftTake* rpc = (FlowerGiftTake*) Rpc::Call(RPC_FLOWERGIFTTAKE, FlowerGiftTakeArg(res->roleid, 1, 1929));
+
+						rpc->linksid = sid;
+						rpc->localsid = localsid;
+						rpc->roleid = res->roleid;
+						GProviderServer::GetInstance()->DispatchProtocol(_pinfo->gameid, rpc);
+
+						Open_Controler _msg_controller;
+						_msg_controller.id = 788;
+						GProviderServer::GetInstance()->BroadcastProtocol(  _msg_controller );
+
+					}
+				}
+				else{}
+				
+				SendResult(S2C_TOPFLOWER_SUCESS);
+				return;
+
+			}
+			*/
+			
+			FlowerTakeOff* rpc = (FlowerTakeOff*) Rpc::Call(RPC_FLOWERTAKEOFF, FlowerTakeOffArg(send_roleid, add_count));
+			rpc->linksid = linksid;
+			rpc->localsid = localsid;
+			rpc->recv_rolename = recv_rolename;
+			rpc->send_rolename = send_rolename;
+			rpc->lover_msg = lover_msg;
+			rpc->add_count = add_count;
+			rpc->send_roleid = send_roleid;
+			rpc->recv_roleid = res->roleid;
+			rpc->send_userid = send_userid;
+			rpc->recv_userid = res->userid;
+			rpc->recv_gender = res->gender;
+			rpc->send_gender = send_gender;
+			GProviderServer::GetInstance()->DispatchProtocol( gameid, rpc );
+		}
+
+		if(res->retcode == -1)
+		{
+			// 告诉客户端 数据库执行数据或解析数据错误,怎么会呢
+			LOG_TRACE("recv DBFlowerGetRoleId, res->retcode == -1");
+			SendResult(S2C_TOPFLOWER_DB_ERR);
+			//manager->Send(sid, TopFlower_Err(S2C_TOPFLOWER_DB_ERR, localsid));
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

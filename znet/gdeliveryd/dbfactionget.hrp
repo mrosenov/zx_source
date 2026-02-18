@@ -1,0 +1,64 @@
+
+#ifndef __GNET_DBFACTIONGET_HPP
+#define __GNET_DBFACTIONGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gmember"
+#include "gfactioninfo"
+#include "factionid"
+#include "factioninfores"
+#include "getfactionbaseinfo_re.hpp"
+#include "gdeliveryserver.hpp"
+#include "gamedbclient.hpp"
+#include "mapuser.h"
+#include "factionmanager.h"
+
+namespace GNET
+{
+
+class DBFactionGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionget"
+#undef	RPC_BASECLASS
+	int roleid;
+	IFactionListener * listener;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FactionId *arg = (FactionId *)argument;
+		FactionInfoRes *res = (FactionInfoRes *)result;
+		DEBUG_PRINT("DBFactionGet, retcode=%d, factionid=%d, roleid=%d", res->retcode,arg->fid,roleid);
+		if(res->retcode!=ERR_SUCCESS)
+		{
+			if (listener)
+				delete listener;
+			return;
+		}
+		FactionManager::Instance()->OnLoad(res->value, res->activity, res->act_uptime, res->base_status);
+		FactionDetailInfo * faction = FactionManager::Instance()->Find(arg->fid);
+		if (listener)
+			faction->AddListener(listener);	
+	}
+
+	void OnTimeout()
+	{
+		FactionId *arg = (FactionId *)argument;
+                Log::log(LOG_ERR, "DBFactionGet, timeout, factionid=%d", arg->fid);
+
+                DBFactionGet* rpc = (DBFactionGet*)Rpc::Call( RPC_DBFACTIONGET, arg);
+                rpc->listener = listener;
+                GameDBClient::GetInstance()->SendProtocol(rpc);
+	}
+
+};
+
+};
+#endif

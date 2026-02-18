@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int64_t exp_cont;
+		int level;
+		int reborn_cnt;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDREFLEVELUP };
+	public:
+		SendRefLevelUp() { type = PROTOCOL_SENDREFLEVELUP; }
+		SendRefLevelUp(void*) : Protocol(PROTOCOL_SENDREFLEVELUP) { }
+		SendRefLevelUp (int l_roleid,int64_t l_exp_cont = 0,int l_level = 0,
+			int l_reborn_cnt = 0)
+			 : roleid(l_roleid),exp_cont(l_exp_cont),level(l_level)
+			,reborn_cnt(l_reborn_cnt)
+		{
+			type = PROTOCOL_SENDREFLEVELUP;
+		}
+
+		SendRefLevelUp(const SendRefLevelUp &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),exp_cont(rhs.exp_cont),level(rhs.level)
+			,reborn_cnt(rhs.reborn_cnt) { }
+
+		GNET::Protocol *Clone() const { return new SendRefLevelUp(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << exp_cont;
+			os << level;
+			os << reborn_cnt;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> exp_cont;
+			os >> level;
+			os >> reborn_cnt;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

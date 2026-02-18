@@ -1,0 +1,63 @@
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSRENAMERES_RPCDATA
+#define __GNET_SYNCCROSSCRSSVRTEAMSRENAMERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class SyncCrossCrssvrTeamsRenameRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int teamid;
+
+	public:
+		SyncCrossCrssvrTeamsRenameRes ()
+		{
+		}
+
+		SyncCrossCrssvrTeamsRenameRes(const SyncCrossCrssvrTeamsRenameRes &rhs)
+			: retcode(rhs.retcode),teamid(rhs.teamid) { }
+
+		Rpc::Data *Clone() const { return new SyncCrossCrssvrTeamsRenameRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SyncCrossCrssvrTeamsRenameRes *r = dynamic_cast<const SyncCrossCrssvrTeamsRenameRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				teamid = r->teamid;
+			}
+			return *this;
+		}
+
+		SyncCrossCrssvrTeamsRenameRes& operator = (const SyncCrossCrssvrTeamsRenameRes &rhs)
+		{
+			const SyncCrossCrssvrTeamsRenameRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				teamid = r->teamid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << teamid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> teamid;
+			return os;
+		}
+
+	};
+};
+#endif

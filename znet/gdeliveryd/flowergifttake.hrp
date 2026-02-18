@@ -1,0 +1,84 @@
+
+#ifndef __GNET_FLOWERGIFTTAKE_HPP
+#define __GNET_FLOWERGIFTTAKE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "localmacro.h"
+
+#include "flowergifttakearg"
+#include "flowergifttakeres"
+#include "topflower_err.hpp"
+#include "gdeliveryserver.hpp"
+#include "topflowermanager.h"
+#include "glog.h"
+
+namespace GNET
+{
+
+class FlowerGiftTake : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "flowergifttake"
+#undef	RPC_BASECLASS
+
+	int roleid;
+	int itemid;
+	bool isRecv;
+	unsigned int localsid;
+	unsigned int linksid;
+	void SendResult( int retcode )
+	{
+		GDeliveryServer::GetInstance()->Send(
+				linksid,
+				TopFlower_Err(retcode, localsid)
+			);	
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// FlowerGiftTakeArg *arg = (FlowerGiftTakeArg *)argument;
+		// FlowerGiftTakeRes *res = (FlowerGiftTakeRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FlowerGiftTakeArg *arg = (FlowerGiftTakeArg *)argument;
+		FlowerGiftTakeRes *res = (FlowerGiftTakeRes *)result;
+		
+		DEBUG_PRINT("FlowerGiftTake rpc: retcode=%d", res->retcode);
+		
+		if(res->retcode==TOPFLOWER_FLOWER_GIFT_TAKE_SUCCESS) 
+		{
+			LOG_TRACE("flowergifttake Client, TOPLOWER_SUCCESS");
+			SendResult(S2C_TOPFLOWER_GIFT_TAKE_SUCESS);
+			
+			if(arg->type == 0)// Àñ°ü
+			{
+				Log::formatlog("topflower","has take gift.roleid=%d, itemid:%d, isRecv:%d",roleid,itemid,isRecv);
+				Thread::RWLock::RDScoped l(TopFlowerManager::Instance()->GetLocker());
+				TopFlowerManager::Instance()->UpdateGiftTake(isRecv, roleid);
+			}
+
+			if(arg->type == 1) // buff
+			{}
+		}
+		if(res->retcode==TOPFLOWER_FLOWER_GIFT_TAKE_ERR)
+		{
+			LOG_TRACE("flowergifttake Client, TOPLOWER_ERR");
+			SendResult(S2C_TOPFLOWER_GIFT_TAKE_ERR);				
+
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

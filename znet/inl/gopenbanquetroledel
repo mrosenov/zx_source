@@ -1,0 +1,38 @@
+	public:
+		int map_id;
+		int roleid;
+		char faction;
+		enum { PROTOCOL_TYPE = PROTOCOL_GOPENBANQUETROLEDEL };
+	public:
+		GOpenBanquetRoleDel() { type = PROTOCOL_GOPENBANQUETROLEDEL; }
+		GOpenBanquetRoleDel(void*) : Protocol(PROTOCOL_GOPENBANQUETROLEDEL) { }
+		GOpenBanquetRoleDel (int l_map_id,int l_roleid,char l_faction = 0)
+			 : map_id(l_map_id),roleid(l_roleid),faction(l_faction)
+		{
+			type = PROTOCOL_GOPENBANQUETROLEDEL;
+		}
+
+		GOpenBanquetRoleDel(const GOpenBanquetRoleDel &rhs)
+			: Protocol(rhs),map_id(rhs.map_id),roleid(rhs.roleid),faction(rhs.faction) { }
+
+		GNET::Protocol *Clone() const { return new GOpenBanquetRoleDel(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << map_id;
+			os << roleid;
+			os << faction;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> map_id;
+			os >> roleid;
+			os >> faction;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 100; }

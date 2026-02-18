@@ -1,0 +1,46 @@
+
+#ifndef __GNET_COMMONDATACHANGE_HPP
+#define __GNET_COMMONDATACHANGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "commondataarg"
+#include "commondatares"
+
+#include "commondata.h"
+
+namespace GNET
+{
+
+class CommonDataChange : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "commondatachange"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		CommonDataArg *arg = (CommonDataArg *)argument;
+		CommonDataRes *res = (CommonDataRes *)result;
+		CommonDataMan::Instance()->DispatchRpcData(arg->session_key, arg->data_type,
+			arg->data, res->result, res->data);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// CommonDataArg *arg = (CommonDataArg *)argument;
+		// CommonDataRes *res = (CommonDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

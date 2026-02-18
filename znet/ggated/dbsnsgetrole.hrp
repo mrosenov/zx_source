@@ -1,0 +1,55 @@
+
+#ifndef __GNET_DBSNSGETROLE_HPP
+#define __GNET_DBSNSGETROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsgetrolearg"
+#include "dbsnsgetroleres"
+#include "gsnsgsroleinfo"
+#include "gsnsrole"
+#include "gamedataresp.hpp"
+#include "snsplatformclient.hpp"
+
+namespace GNET
+{
+
+class DBSNSGetRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsgetrole"
+#undef	RPC_BASECLASS
+
+	GSNSGsRoleInfo gsroleinfo;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSNSGetRoleArg *arg = (DBSNSGetRoleArg *)argument;
+		// DBSNSGetRoleRes *res = (DBSNSGetRoleRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSNSGetRoleArg *arg = (DBSNSGetRoleArg *)argument;
+		DBSNSGetRoleRes *res = (DBSNSGetRoleRes *)result;
+		if (res->retcode == ERR_SUCCESS)	
+		{
+			GSNSRole roleinfo(gsroleinfo, res->creditinfo, res->petinfo, res->pocketinfo);
+			Marshal::OctetsStream os_roleinfo;
+			os_roleinfo << roleinfo;
+			GameDataResp syncrole(0, arg->roleid, 0, os_roleinfo);
+			SNSPlatformClient::GetInstance()->SendProtocol(syncrole);
+		}
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

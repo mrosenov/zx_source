@@ -1,0 +1,35 @@
+	public:
+		int retcode;
+		PlayerFactionVector list;
+		enum { PROTOCOL_TYPE = PROTOCOL_GETPLAYERFACTION_RE };
+	public:
+		GetPlayerFaction_Re() { type = PROTOCOL_GETPLAYERFACTION_RE; }
+		GetPlayerFaction_Re(void*) : Protocol(PROTOCOL_GETPLAYERFACTION_RE) { }
+		GetPlayerFaction_Re (int l_retcode,PlayerFactionVector l_list)
+			 : retcode(l_retcode),list(l_list)
+		{
+			type = PROTOCOL_GETPLAYERFACTION_RE;
+		}
+
+		GetPlayerFaction_Re(const GetPlayerFaction_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),list(rhs.list) { }
+
+		GNET::Protocol *Clone() const { return new GetPlayerFaction_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << list;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> list;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 102400; }

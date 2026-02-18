@@ -1,0 +1,75 @@
+
+#ifndef __GNET_DBCONSIGNSHELFCANCEL_HPP
+#define __GNET_DBCONSIGNSHELFCANCEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignshelfcancelarg"
+#include "dbconsignshelfcancelres"
+#include "shelfcancel_re.hpp"
+namespace GNET
+{
+class DBConsignShelfCancel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignshelfcancel"
+#undef	RPC_BASECLASS
+	int64_t messageid;
+	int64_t timestamp;
+	int userid;
+	bool userid_mismatch;
+	bool roleid_mismatch;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignShelfCancelArg *arg = (DBConsignShelfCancelArg *)argument;
+		// DBConsignShelfCancelRes *res = (DBConsignShelfCancelRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignShelfCancelArg *arg = (DBConsignShelfCancelArg *)argument;
+		DBConsignShelfCancelRes *res = (DBConsignShelfCancelRes *)result;
+		DEBUG_PRINT("dbconsignshelfcancel: sn=%lld,roleid=%d,ret=%d", arg->sn,arg->roleid,res->retcode);
+		if(res->retcode == ERR_SUCCESS || res->retcode == ERR_WT_DB_DUPLICATE_RQST)
+		{
+			int ret=ConsignManager::GetInstance()->OnDBCancelShelf(arg->roleid, arg->sn, timestamp);
+			if(ret)
+			{
+		//		ConsignManager::GetInstance()->ClearBusy(arg->sn);
+				Log::log(LOG_ERR,"dbconsignshelfcancel: OnDBCancelShelf failed. sn=%lld,roleid=%d,ret=%d", arg->sn,arg->roleid,ret);
+			}
+			if(userid_mismatch)
+				GWebTradeClient::GetInstance()->SendProtocol(ShelfCancel_Re(userid,arg->roleid,arg->sn,7,messageid));
+			else if(roleid_mismatch)
+				GWebTradeClient::GetInstance()->SendProtocol(ShelfCancel_Re(userid,arg->roleid,arg->sn,8,messageid));
+			else
+				GWebTradeClient::GetInstance()->SendProtocol(ShelfCancel_Re(userid,arg->roleid,arg->sn,0,messageid));
+		}
+	/*	else if(res->retcode == ERR_WT_DB_DUPLICATE_RQST)
+		{
+			 ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			 DEBUG_PRINT("dbconsignshelfcancel: dup sn=%lld,roleid=%d,ret=%d", arg->sn,arg->roleid,res->retcode);
+			 GWebTradeClient::GetInstance()->SendProtocol(ShelfCancel_Re(userid,arg->roleid,arg->sn,2,messageid));
+		}*/
+		else
+		{
+			ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			Log::log(LOG_ERR,"dbconsignshelfcancel: failed. sn=%lld,roleid=%d,retcode=%d", arg->sn,arg->roleid,res->retcode);
+			GWebTradeClient::GetInstance()->SendProtocol(ShelfCancel_Re(userid,arg->roleid,arg->sn,-1,messageid));
+		}
+	}
+	void OnTimeout()
+	{
+		DBConsignShelfCancelArg *arg = (DBConsignShelfCancelArg *)argument;
+		Log::log(LOG_ERR,"dbconsignshelfcancel: timeout. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+		ConsignManager::GetInstance()->ClearBusy(arg->sn);
+		GWebTradeClient::GetInstance()->SendProtocol(ShelfCancel_Re(userid,arg->roleid,arg->sn,-1,messageid));
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,93 @@
+
+#ifndef __GNET_SYNCCRSSVRTEAMS_HPP
+#define __GNET_SYNCCRSSVRTEAMS_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrssvrteamsarg"
+#include "synccrssvrteamsres"
+
+namespace GNET
+{
+
+class SyncCrssvrTeams : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrssvrteams"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrssvrTeamsArg *arg = (SyncCrssvrTeamsArg *)argument;
+		SyncCrssvrTeamsRes *res = (SyncCrssvrTeamsRes *)result;
+
+		LOG_TRACE("SyncCrssvrTeams, teamid=%d, info.teamid=%d, zoneid=%d, master=%d, score=%d, battle_losses=%d, battle_draws=%d, battle_wins=%d, changenametime=%d", 
+				arg->teamid, arg->info.teamid, arg->info.zoneid, arg->info.master, arg->info.score, arg->info.battle_losses, arg->info.battle_draws, arg->info.battle_wins, arg->info.changenametime);
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kteamid;
+		try
+		{
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			StorageEnv::CommonTransaction txn;
+			try{
+				if(arg->teamid == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+
+				GCrssvrTeamsData crssvrteams;
+				kteamid << arg->teamid;
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> crssvrteams;
+				}
+
+				if(crssvrteams.info.teamid <= 0 || crssvrteams.info.teamid != arg->teamid )
+				{
+					Log::formatlog("SyncCrssvrTeams","teamid=%d NOT EXSIT", arg->teamid);
+					res->retcode = ERR_CRSSVRTEAMS_NOTEXIST;
+					return;
+				}
+				
+				crssvrteams.info = arg->info;
+
+				pcrssvrteams->insert( kteamid, Marshal::OctetsStream()<<crssvrteams, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "SyncCrssvrTeams, teamid=%d, what=%s.",arg->teamid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// SyncCrssvrTeamsArg *arg = (SyncCrssvrTeamsArg *)argument;
+		// SyncCrssvrTeamsRes *res = (SyncCrssvrTeamsRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

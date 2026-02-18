@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int familyid;
+		int level;
+		int64_t exp;
+		enum { PROTOCOL_TYPE = PROTOCOL_FAMILYEXPSHARE };
+	public:
+		FamilyExpShare() { type = PROTOCOL_FAMILYEXPSHARE; }
+		FamilyExpShare(void*) : Protocol(PROTOCOL_FAMILYEXPSHARE) { }
+		FamilyExpShare (int l_roleid,int l_familyid,int l_level,
+			int64_t l_exp)
+			 : roleid(l_roleid),familyid(l_familyid),level(l_level)
+			,exp(l_exp)
+		{
+			type = PROTOCOL_FAMILYEXPSHARE;
+		}
+
+		FamilyExpShare(const FamilyExpShare &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),familyid(rhs.familyid),level(rhs.level)
+			,exp(rhs.exp) { }
+
+		GNET::Protocol *Clone() const { return new FamilyExpShare(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << familyid;
+			os << level;
+			os << exp;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> familyid;
+			os >> level;
+			os >> exp;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

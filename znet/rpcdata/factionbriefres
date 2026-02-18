@@ -1,0 +1,65 @@
+#ifndef __GNET_FACTIONBRIEFRES_RPCDATA
+#define __GNET_FACTIONBRIEFRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfactionbrief"
+
+namespace GNET
+{
+	class FactionBriefRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GFactionBrief value;
+
+	public:
+		FactionBriefRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		FactionBriefRes(const FactionBriefRes &rhs)
+			: retcode(rhs.retcode),value(rhs.value) { }
+
+		Rpc::Data *Clone() const { return new FactionBriefRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FactionBriefRes *r = dynamic_cast<const FactionBriefRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		FactionBriefRes& operator = (const FactionBriefRes &rhs)
+		{
+			const FactionBriefRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << value;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> value;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBBATTLEJOIN_HPP
+#define __GNET_DBBATTLEJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbbattlejoinarg"
+#include "dbbattlejoinres"
+
+namespace GNET
+{
+
+class DBBattleJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbbattlejoin"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBBattleJoinArg *arg = (DBBattleJoinArg *)argument;
+		// DBBattleJoinRes *res = (DBBattleJoinRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBBattleJoinArg *arg = (DBBattleJoinArg *)argument;
+		// DBBattleJoinRes *res = (DBBattleJoinRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

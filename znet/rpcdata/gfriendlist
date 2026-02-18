@@ -1,0 +1,71 @@
+#ifndef __GNET_GFRIENDLIST_RPCDATA
+#define __GNET_GFRIENDLIST_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "ggroupinfo"
+#include "gfriendinfo"
+#include "genemyinfo"
+
+namespace GNET
+{
+	class GFriendList : public GNET::Rpc::Data
+	{
+	public:
+		GGroupInfoVector groups;
+		GFriendInfoVector friends;
+		GEnemyInfoVector enemies;
+
+	public:
+		GFriendList ()
+		{
+		}
+
+		GFriendList(const GFriendList &rhs)
+			: groups(rhs.groups),friends(rhs.friends),enemies(rhs.enemies) { }
+
+		Rpc::Data *Clone() const { return new GFriendList(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFriendList *r = dynamic_cast<const GFriendList *>(&rhs);
+			if (r && r != this)
+			{
+				groups = r->groups;
+				friends = r->friends;
+				enemies = r->enemies;
+			}
+			return *this;
+		}
+
+		GFriendList& operator = (const GFriendList &rhs)
+		{
+			const GFriendList *r = &rhs;
+			if (r && r != this)
+			{
+				groups = r->groups;
+				friends = r->friends;
+				enemies = r->enemies;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << groups;
+			os << friends;
+			os << enemies;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> groups;
+			os >> friends;
+			os >> enemies;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFUNGAMEPUTINFO_HPP
+#define __GNET_DBFUNGAMEPUTINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfungameputinfoarg"
+
+
+namespace GNET
+{
+
+class DBFunGamePutInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfungameputinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFunGamePutInfoArg *arg = (DBFunGamePutInfoArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFunGamePutInfoArg *arg = (DBFunGamePutInfoArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

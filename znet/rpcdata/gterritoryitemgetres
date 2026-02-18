@@ -1,0 +1,77 @@
+#ifndef __GNET_GTERRITORYITEMGETRES_RPCDATA
+#define __GNET_GTERRITORYITEMGETRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GTerritoryItemGetRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int itemid;
+		int item_count;
+		int money;
+
+	public:
+		GTerritoryItemGetRes (int l_retcode = 0,int l_itemid = -1,int l_item_count = 0
+			,int l_money = 0)
+			: retcode(l_retcode),itemid(l_itemid),item_count(l_item_count)
+			,money(l_money)
+		{
+		}
+
+		GTerritoryItemGetRes(const GTerritoryItemGetRes &rhs)
+			: retcode(rhs.retcode),itemid(rhs.itemid),item_count(rhs.item_count),
+			money(rhs.money) { }
+
+		Rpc::Data *Clone() const { return new GTerritoryItemGetRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GTerritoryItemGetRes *r = dynamic_cast<const GTerritoryItemGetRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				itemid = r->itemid;
+				item_count = r->item_count;
+				money = r->money;
+			}
+			return *this;
+		}
+
+		GTerritoryItemGetRes& operator = (const GTerritoryItemGetRes &rhs)
+		{
+			const GTerritoryItemGetRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				itemid = r->itemid;
+				item_count = r->item_count;
+				money = r->money;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << itemid;
+			os << item_count;
+			os << money;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> itemid;
+			os >> item_count;
+			os >> money;
+			return os;
+		}
+
+	};
+};
+#endif

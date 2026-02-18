@@ -1,0 +1,73 @@
+
+#ifndef __GNET_DBGATEGETUSER_HPP
+#define __GNET_DBGATEGETUSER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "userid"
+#include "dbgategetuserres"
+
+namespace GNET
+{
+
+class DBGateGetUser : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgategetuser"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		UserID *arg = (UserID *)argument;
+		DBGateGetUserRes *res = (DBGateGetUserRes *)result;
+		LOG_TRACE( "DBGateGetUser, userid=%d", arg->id );
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream value;
+			User user;
+			try
+			{
+				if(puser->find(Marshal::OctetsStream() << *arg, value, txn))
+				{
+					value >> user;
+				        res->rolelist = user.rolelist;
+					res->logicuid = user.logicuid;
+					res->retcode = ERR_SUCCESS;
+				}else
+					res->retcode = ERR_GT_DATANOTFIND;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBGateGetUser, userid=%d, what=%s\n", arg->id, e.what() );
+			res->retcode = ERR_GT_DB_FAILURE;
+		}
+}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// UserID *arg = (UserID *)argument;
+		// DBGateGetUserRes *res = (DBGateGetUserRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

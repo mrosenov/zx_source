@@ -1,0 +1,59 @@
+
+#ifndef __GNET_DELROLE_HPP
+#define __GNET_DELROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#ifdef USE_BDB
+#include "dbbuffer.h"
+#endif
+#include "roleid"
+
+#include "gdeliveryserver.hpp"
+#include "deleterole_re.hpp"
+#include "putuser.hrp"
+#include "mapuser.h"
+namespace GNET
+{
+
+class DelRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "delrole"
+#undef	RPC_BASECLASS
+	unsigned int save_link_sid;
+	unsigned int save_localsid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+#ifdef USE_BDB
+		RoleId *arg = (RoleId *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		Marshal::OctetsStream key;
+		key << *arg;
+		res->retcode = DBBuffer::buf_del( "Role", key );
+#endif
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		
+		GDeliveryServer* dsm=GDeliveryServer::GetInstance();
+
+		if(res->retcode != ERR_SUCCESS && res->retcode != ERR_PERMISSION_DENIED)
+			Log::log(LOG_ERR,"gdelivery:delrole: failed.retcode=%d,roleid=%d\n",res->retcode,arg->id);
+		dsm->Send(save_link_sid,DeleteRole_Re(res->retcode,arg->id,save_localsid));
+		if(res->retcode==ERR_SUCCESS)
+			RoleInfoCache::Instance().SetDelete(arg->id, true, Timer::GetTime());
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

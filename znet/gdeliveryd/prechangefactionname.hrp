@@ -1,0 +1,67 @@
+
+#ifndef __GNET_PRECHANGEFACTIONNAME_HPP
+#define __GNET_PRECHANGEFACTIONNAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "prechangefactionnamearg"
+#include "prechangefactionnameres"
+
+namespace GNET
+{
+
+class PreChangeFactionname : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "prechangefactionname"
+#undef	RPC_BASECLASS
+
+        GMailSyncData syncdata;
+	int itemid;
+	int item_pos;
+	int roleid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// PreChangeFactionnameArg *arg = (PreChangeFactionnameArg *)argument;
+		// PreChangeFactionnameRes *res = (PreChangeFactionnameRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PreChangeFactionnameArg *arg = (PreChangeFactionnameArg *)argument;
+		PreChangeFactionnameRes *res = (PreChangeFactionnameRes *)result;
+                LOG_TRACE("PreChangeFactionname, retcode=%d, roleid=%d fid=%d", res->retcode, roleid, arg->fid);
+		if (res->retcode == ERR_SUCCESS)
+		{
+                        DBChangeFactionnameArg rpcarg(roleid, arg->fid, arg->newname, itemid, item_pos, arg->scale);
+                        Utility::SwapSyncData(rpcarg.syncdata, syncdata);
+
+                        DBChangeFactionname * rpc = (DBChangeFactionname * )Rpc::Call( RPC_DBCHANGEFACTIONNAME, rpcarg);
+                        GameDBClient::GetInstance()->SendProtocol(rpc);
+                }
+                else
+                {
+			PlayerInfo * pinfo = UserContainer::GetInstance().FindRole(roleid);
+			if (NULL == pinfo )
+				return;
+			if (res->retcode == ERR_DUPLICATRECORD)
+				res->retcode = ERR_FC_CREATE_DUP;
+			else
+				res->retcode = ERR_FC_OUTOFSERVICE;
+			GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, GMailEndSync(0, res->retcode, roleid));
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, ChangeFactionName_Re(res->retcode, roleid, arg->fid, arg->newname, arg->scale, pinfo->localsid));
+		}
+	}
+
+	void OnTimeout()
+	{
+		Log::log(LOG_ERR, "PreChangeFactionname timeout, roleid=%d", roleid);
+	}
+
+};
+
+};
+#endif

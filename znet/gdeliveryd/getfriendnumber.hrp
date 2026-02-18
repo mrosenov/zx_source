@@ -1,0 +1,51 @@
+
+#ifndef __GNET_GETFRIENDNUMBER_HPP
+#define __GNET_GETFRIENDNUMBER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "getfriendnumberarg"
+#include "getfriendnumberres"
+
+namespace GNET
+{
+
+class GetFriendNumber : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getfriendnumber"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GetFriendNumberArg *arg = (GetFriendNumberArg *)argument;
+		GetFriendNumberRes *res = (GetFriendNumberRes *)result;
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+                if (NULL == pinfo)
+		{
+			res->retcode = ERR_FC_OFFLINE;
+                        return;
+		}
+		res->number = pinfo->friends.size();
+		res->retcode = ERR_SUCCESS;
+		LOG_TRACE("GetFriendNumber role %d friend_num %d", arg->roleid, res->number);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GetFriendNumberArg *arg = (GetFriendNumberArg *)argument;
+		// GetFriendNumberRes *res = (GetFriendNumberRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

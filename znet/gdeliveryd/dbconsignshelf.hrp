@@ -1,0 +1,74 @@
+
+#ifndef __GNET_DBCONSIGNSHELF_HPP
+#define __GNET_DBCONSIGNSHELF_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignshelfarg"
+#include "dbconsignshelfres"
+#include "shelf_re.hpp"
+#include "consignmanager.h"
+#include "gwebtradeclient.hpp"
+#include "gamedbclient.hpp"
+namespace GNET
+{
+
+class DBConsignShelf : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignshelf"
+#undef	RPC_BASECLASS
+	int64_t messageid;
+	int64_t timestamp;
+	int userid;
+	bool userid_mismatch;
+	bool roleid_mismatch;
+//	int shelf_time;
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignShelfArg *arg = (DBConsignShelfArg *)argument;
+		DBConsignShelfRes *res = (DBConsignShelfRes *)result;
+		if(res->retcode == ERR_SUCCESS || res->retcode == ERR_WT_DB_DUPLICATE_RQST)
+		{
+			DEBUG_PRINT("dbconsignshelf: sn=%lld,roleid=%d", arg->sn,arg->roleid);
+			int ret=ConsignManager::GetInstance()->OnDBShelf(arg->roleid, arg->sn, arg->buyer_roleid,res->buyer_userid,timestamp,res->item,arg->shelf_time);
+			if(ret)
+			{
+			//	ConsignManager::GetInstance()->ClearBusy(arg->sn);
+				Log::log(LOG_ERR,"dbconsignshelf: OnDBShelf failed. sn=%lld,roleid=%d,ret=%d", arg->sn,arg->roleid,ret);
+			}
+			if(userid_mismatch)
+				GWebTradeClient::GetInstance()->SendProtocol(Shelf_Re(userid,arg->roleid,arg->sn,7,messageid));
+			else if(roleid_mismatch)
+				GWebTradeClient::GetInstance()->SendProtocol(Shelf_Re(userid,arg->roleid,arg->sn,8,messageid));
+			else
+				GWebTradeClient::GetInstance()->SendProtocol(Shelf_Re(userid,arg->roleid,arg->sn,0,messageid));
+		}
+	/*	else if(res->retcode == ERR_WT_DB_DUPLICATE_RQST)
+		{
+			 ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			 DEBUG_PRINT("dbconsignshelf: dup sn=%lld,roleid=%d,ret=%d", arg->sn,arg->roleid,res->retcode);
+			 GWebTradeClient::GetInstance()->SendProtocol(Shelf_Re(userid,arg->roleid,arg->sn,2,messageid));
+		}*/
+		else
+		{
+			ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			Log::log(LOG_ERR,"dbconsignshelf: failed. sn=%lld,roleid=%d,ret=%d", arg->sn,arg->roleid,res->retcode);
+			GWebTradeClient::GetInstance()->SendProtocol(Shelf_Re(userid,arg->roleid,arg->sn,-1,messageid));
+		}
+	}
+	void OnTimeout()
+	{
+		DBConsignShelfArg *arg = (DBConsignShelfArg *)argument;
+		Log::log(LOG_ERR,"dbconsignshelf: timeout. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+		ConsignManager::GetInstance()->ClearBusy(arg->sn);
+		GWebTradeClient::GetInstance()->SendProtocol(Shelf_Re(userid,arg->roleid,arg->sn,-1,messageid));
+	}
+
+};
+
+};
+#endif

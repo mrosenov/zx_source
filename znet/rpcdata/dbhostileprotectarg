@@ -1,0 +1,86 @@
+#ifndef __GNET_DBHOSTILEPROTECTARG_RPCDATA
+#define __GNET_DBHOSTILEPROTECTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBHostileProtectArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int factionid;
+		int item_pos;
+		int item_id;
+		int item_num;
+		GMailSyncData syncdata;
+
+	public:
+		DBHostileProtectArg (const GMailSyncData& l_syncdata = GMailSyncData())
+			: syncdata(l_syncdata)
+		{
+		}
+
+		DBHostileProtectArg(const DBHostileProtectArg &rhs)
+			: roleid(rhs.roleid),factionid(rhs.factionid),item_pos(rhs.item_pos),
+			item_id(rhs.item_id),item_num(rhs.item_num),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBHostileProtectArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBHostileProtectArg *r = dynamic_cast<const DBHostileProtectArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				factionid = r->factionid;
+				item_pos = r->item_pos;
+				item_id = r->item_id;
+				item_num = r->item_num;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBHostileProtectArg& operator = (const DBHostileProtectArg &rhs)
+		{
+			const DBHostileProtectArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				factionid = r->factionid;
+				item_pos = r->item_pos;
+				item_id = r->item_id;
+				item_num = r->item_num;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << factionid;
+			os << item_pos;
+			os << item_id;
+			os << item_num;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> factionid;
+			os >> item_pos;
+			os >> item_id;
+			os >> item_num;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

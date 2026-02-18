@@ -1,0 +1,62 @@
+	public:
+		int roleid;
+		unsigned int tid;
+		int order_volume;
+		int ack_volume;
+		int ack_money;
+		int cash;
+		int money;
+		int cash_buy;
+		int cash_sell;
+		enum { PROTOCOL_TYPE = PROTOCOL_LOGSTOCKBALANCE };
+	public:
+		LogStockBalance() { type = PROTOCOL_LOGSTOCKBALANCE; }
+		LogStockBalance(void*) : Protocol(PROTOCOL_LOGSTOCKBALANCE) { }
+		LogStockBalance (int l_roleid = 0,unsigned int l_tid = 0,int l_order_volume = 0,
+			int l_ack_volume = 0,int l_ack_money = 0,int l_cash = 0,
+			int l_money = 0,int l_cash_buy = 0,int l_cash_sell = 0)
+			 : roleid(l_roleid),tid(l_tid),order_volume(l_order_volume)
+			,ack_volume(l_ack_volume),ack_money(l_ack_money),cash(l_cash)
+			,money(l_money),cash_buy(l_cash_buy),cash_sell(l_cash_sell)
+		{
+			type = PROTOCOL_LOGSTOCKBALANCE;
+		}
+
+		LogStockBalance(const LogStockBalance &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),tid(rhs.tid),order_volume(rhs.order_volume)
+			,ack_volume(rhs.ack_volume),ack_money(rhs.ack_money),cash(rhs.cash)
+			,money(rhs.money),cash_buy(rhs.cash_buy),cash_sell(rhs.cash_sell) { }
+
+		GNET::Protocol *Clone() const { return new LogStockBalance(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << tid;
+			os << order_volume;
+			os << ack_volume;
+			os << ack_money;
+			os << cash;
+			os << money;
+			os << cash_buy;
+			os << cash_sell;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> tid;
+			os >> order_volume;
+			os >> ack_volume;
+			os >> ack_money;
+			os >> cash;
+			os >> money;
+			os >> cash_buy;
+			os >> cash_sell;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 512; }

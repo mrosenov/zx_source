@@ -1,0 +1,79 @@
+
+#ifndef __GNET_PLAYERIDENTITYMATCH_HPP
+#define __GNET_PLAYERIDENTITYMATCH_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "playeridentitymatcharg"
+#include "playeridentitymatchres"
+
+namespace GNET
+{
+
+class PlayerIdentityMatch : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "playeridentitymatch"
+#undef	RPC_BASECLASS
+
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// PlayerIdentityMatchArg *arg = (PlayerIdentityMatchArg *)argument;
+		// PlayerIdentityMatchRes *res = (PlayerIdentityMatchRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PlayerIdentityMatchArg *arg = (PlayerIdentityMatchArg *)argument;
+		PlayerIdentityMatchRes *res = (PlayerIdentityMatchRes *)result;
+		Log::log(LOG_DEBUG, "Recv PlayerIdentityMatch res, retcode=%d user=%d role=%d ikey.size=%d okey.size=%d zoneid=%d district_id=%d", res->retcode, arg->userid, arg->roleid, res->iseckey.size(), res->oseckey.size(), res->zoneid, res->district_id);
+		GLinkServer *lsm=GLinkServer::GetInstance();
+		SessionInfo * sinfo = lsm->GetSessionInfo(arg->localsid);
+		if (!sinfo)
+			return;
+		if (res->retcode != ERR_SUCCESS)
+		{
+			Log::log(LOG_ERR, "PlayerIdentityMatch, errno %d userid %d roleid %d, close localsid=%d", res->retcode, arg->userid, arg->roleid, arg->localsid);
+			lsm->Close(arg->localsid);
+		//无法向客户端发送错误码，因为出错时res->oseckey可能是空
+		//	lsm->SessionError(save_sid, res->retcode, "Server error.");
+			return;
+		}
+		sinfo->userid = arg->userid;
+		sinfo->identity = res->account;
+		sinfo->login_time = time(NULL);
+		lsm->SetISecurity(arg->localsid, ARCFOURSECURITY, res->iseckey);
+		lsm->SetOSecurity(arg->localsid,COMPRESSARCFOURSECURITY, res->oseckey);
+		/*
+		char * str = "crosssrvlogin";
+		Octets username = Octets(str, strlen(str));
+		*/
+		Log::login(res->account, arg->userid, arg->localsid, inet_ntoa(sinfo->GetPeerAddr()), sinfo->mid);
+		GLog::action("userlogin, acc=%.*s:uid=%d:ip=%s", res->account.size(), (char*)res->account.begin(), 
+				arg->userid, inet_ntoa(sinfo->GetPeerAddr()));
+		LineList linelist;
+		GProviderServer::GetInstance()->GetLineList(linelist);
+		linelist.algorithm = sinfo->algorithm;
+		lsm->Send(arg->localsid, linelist);
+		lsm->Send(arg->localsid, OnlineAnnounce(arg->userid,arg->localsid,0,res->zoneid,0,-1, res->district_id));
+		LOG_TRACE("Send OnlineAnnounce to sid %d userid %d", arg->localsid, arg->userid);
+		lsm->ChangeState(arg->localsid, &state_GKeyReestablished);
+	}
+
+	void OnTimeout()
+	{
+		PlayerIdentityMatchArg *arg = (PlayerIdentityMatchArg *)argument;
+		Log::log(LOG_ERR, "PlayerIdentityMatch timeout, user%d roleid %d", arg->userid, arg->roleid);
+		GLinkServer *lsm=GLinkServer::GetInstance();
+		if (!lsm->ValidSid(arg->localsid))
+			return;
+		lsm->Close(arg->localsid);
+	}
+
+};
+
+};
+#endif

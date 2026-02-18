@@ -1,0 +1,99 @@
+
+#ifndef __GNET_DBFAMILYAPPOINT_HPP
+#define __GNET_DBFAMILYAPPOINT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfamilyappointarg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBFamilyAppoint : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyappoint"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilyAppointArg *arg = (DBFamilyAppointArg *)argument;
+                DefFactionRes *res = (DefFactionRes *)result;
+
+		Marshal::OctetsStream key, krole;
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+
+			Log::formatlog("familyappoint","familyid=%d:roleid=%d:title=%d",arg->familyid,arg->roleid,arg->title);
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GRoleBase base;
+				GFamily family;
+				GFolk user;
+
+				key << arg->familyid;
+				krole << arg->roleid;
+
+				Marshal::OctetsStream(pbase->find(krole, txn )) >> base;
+				Marshal::OctetsStream(pfamily->find(key, txn)) >> family;
+				base.title = arg->title;
+				pbase->insert( krole, Marshal::OctetsStream()<<base, txn );
+	
+				int sum = (arg->title == TITLE_HEADER)? 2:1;
+				int i = 0;
+				for (GFolkVector::iterator it=family.member.begin();it!=family.member.end()&&i<sum;++it)
+				{
+					if (it->rid == arg->roleid)
+					{
+						i++;
+						it->title = arg->title;
+					}
+					else if (arg->title == TITLE_HEADER && it->rid == family.master)
+					{
+						i++;
+						Marshal::OctetsStream keym;
+						keym << it->rid;
+						Marshal::OctetsStream(pbase->find(keym, txn)) >> base;
+						it->title = TITLE_MEMBER;
+						base.title = TITLE_MEMBER;
+						pbase->insert(keym, Marshal::OctetsStream() << base, txn);
+					}
+				}
+				family.master = arg->roleid;
+				pfamily->insert( key, Marshal::OctetsStream()<<family, txn );
+
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFamilyAppoint, roleid=%d, familyid=%d what=%s.", arg->roleid,arg->familyid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

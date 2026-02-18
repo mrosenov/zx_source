@@ -1,0 +1,72 @@
+
+#ifndef __GNET_GETROLE_HPP
+#define __GNET_GETROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#ifdef USE_BDB
+#include "dbbuffer.h"
+#endif
+
+#include "groleinventory"
+#include "groleforbid"
+#include "gshoplog"
+#include "groledetail"
+#include "roleid"
+#include "roleres"
+#include "rolearg"
+#include "db_if.h"
+#include "gpet"
+
+namespace GDB
+{
+bool Role2Info(GNET::GRoleDetail * pRole,base_info & info,vecdata & data, GRoleInventoryVector &mountwing, int data_mask);
+void ReleaseAllInventory(vecdata & data);
+}
+
+namespace GNET
+{
+class GetRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getrole"
+#undef	RPC_BASECLASS
+
+	GDB::Result *_callback;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+#ifdef USE_BDB
+#endif
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleArg *arg = (RoleArg *)argument;
+		RoleRes *res = (RoleRes *)result;
+
+		if(res->retcode) 
+		{
+			//printf("Ê§°ÜÁË%d\n",res->retcode);
+			_callback->OnFailed();
+			return;
+		}
+		GDB::base_info info;
+		GDB::vecdata data;
+		GRoleInventoryVector mountwing;
+		if(GDB::Role2Info(&(res->value),info,data,mountwing,res->data_mask))
+			_callback->OnGetRole(arg->key.id,&info,&data,&(res->value));
+		else
+			_callback->OnFailed();
+		GDB::ReleaseAllInventory(data);
+	}
+
+	void OnTimeout()
+	{
+		_callback->OnTimeOut();
+	}
+
+};
+
+};
+#endif

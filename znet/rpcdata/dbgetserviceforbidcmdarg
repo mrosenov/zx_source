@@ -1,0 +1,59 @@
+#ifndef __GNET_DBGETSERVICEFORBIDCMDARG_RPCDATA
+#define __GNET_DBGETSERVICEFORBIDCMDARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBGetServiceForbidCmdArg : public GNET::Rpc::Data
+	{
+	public:
+		int version;
+
+	public:
+		DBGetServiceForbidCmdArg (int l_version = 0)
+			: version(l_version)
+		{
+		}
+
+		DBGetServiceForbidCmdArg(const DBGetServiceForbidCmdArg &rhs)
+			: version(rhs.version) { }
+
+		Rpc::Data *Clone() const { return new DBGetServiceForbidCmdArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGetServiceForbidCmdArg *r = dynamic_cast<const DBGetServiceForbidCmdArg *>(&rhs);
+			if (r && r != this)
+			{
+				version = r->version;
+			}
+			return *this;
+		}
+
+		DBGetServiceForbidCmdArg& operator = (const DBGetServiceForbidCmdArg &rhs)
+		{
+			const DBGetServiceForbidCmdArg *r = &rhs;
+			if (r && r != this)
+			{
+				version = r->version;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << version;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> version;
+			return os;
+		}
+
+	};
+};
+#endif

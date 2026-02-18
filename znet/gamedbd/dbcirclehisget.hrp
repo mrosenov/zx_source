@@ -1,0 +1,88 @@
+
+#ifndef __GNET_DBCIRCLEHISGET_HPP
+#define __GNET_DBCIRCLEHISGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "dbcirclehisgetres"
+#include "circleusagedb.h"
+namespace GNET
+{
+
+class DBCircleHisGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcirclehisget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBCircleHisGetRes *res = (DBCircleHisGetRes *)result;
+		
+		Marshal::OctetsStream key, value;
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GRoleBase base;
+
+				LOG_TRACE("circlehisget rid=%d", arg->id);
+                               	
+				key << arg->id;
+				Marshal::OctetsStream(pbase->find(key, txn)) >> base;
+				Marshal::OctetsStream hisos = base.circletrack;
+				std::vector<GCircleHistoryDB> hislist;
+				if(hisos.size()>0)
+				{
+					hisos >> hislist;
+					GCircleHistory tmp;
+					res->circlelist.reserve(hislist.size());
+					for(unsigned int i =0;i<hislist.size();i++)
+					{
+						GCircleHisDB_to_GCircleHis(hislist[i],tmp);
+						res->circlelist.push_back(tmp);
+					}
+				}
+				res->retcode = ERR_SUCCESS;	
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCircleHisGet,roleid=%d what=%s.",arg->id,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	 	
+	}
+
+
+	
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// RoleID *arg = (RoleID *)argument;
+		// DBCircleHisGetRes *res = (DBCircleHisGetRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

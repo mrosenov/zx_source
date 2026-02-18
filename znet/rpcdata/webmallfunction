@@ -1,0 +1,102 @@
+#ifndef __GNET_WEBMALLFUNCTION_RPCDATA
+#define __GNET_WEBMALLFUNCTION_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "webmallgoods"
+
+namespace GNET
+{
+	class WebMallFunction : public GNET::Rpc::Data
+	{
+	public:
+		int function_id;
+		Octets name;
+		int count;
+		int price;
+		int price_before_discount;
+		WebMallGoodsVector goods;
+		int reserved1;
+		Octets reserved2;
+
+	public:
+		WebMallFunction (int l_function_id = 0,const Octets& l_name = Octets(),int l_count = 0
+			,int l_price = 0,int l_price_before_discount = 0,WebMallGoodsVector l_goods = WebMallGoodsVector()
+			,int l_reserved1 = 0,const Octets& l_reserved2 = Octets())
+			: function_id(l_function_id),name(l_name),count(l_count)
+			,price(l_price),price_before_discount(l_price_before_discount),goods(l_goods)
+			,reserved1(l_reserved1),reserved2(l_reserved2)
+		{
+		}
+
+		WebMallFunction(const WebMallFunction &rhs)
+			: function_id(rhs.function_id),name(rhs.name),count(rhs.count),
+			price(rhs.price),price_before_discount(rhs.price_before_discount),goods(rhs.goods),
+			reserved1(rhs.reserved1),reserved2(rhs.reserved2) { }
+
+		Rpc::Data *Clone() const { return new WebMallFunction(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const WebMallFunction *r = dynamic_cast<const WebMallFunction *>(&rhs);
+			if (r && r != this)
+			{
+				function_id = r->function_id;
+				name = r->name;
+				count = r->count;
+				price = r->price;
+				price_before_discount = r->price_before_discount;
+				goods = r->goods;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		WebMallFunction& operator = (const WebMallFunction &rhs)
+		{
+			const WebMallFunction *r = &rhs;
+			if (r && r != this)
+			{
+				function_id = r->function_id;
+				name = r->name;
+				count = r->count;
+				price = r->price;
+				price_before_discount = r->price_before_discount;
+				goods = r->goods;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << function_id;
+			os << name;
+			os << count;
+			os << price;
+			os << price_before_discount;
+			os << goods;
+			os << reserved1;
+			os << reserved2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> function_id;
+			os >> name;
+			os >> count;
+			os >> price;
+			os >> price_before_discount;
+			os >> goods;
+			os >> reserved1;
+			os >> reserved2;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<WebMallFunction>	WebMallFunctionVector;
+};
+#endif

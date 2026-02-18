@@ -1,0 +1,65 @@
+#ifndef __GNET_DBSNSGETPLAYERINFORES_RPCDATA
+#define __GNET_DBSNSGETPLAYERINFORES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gsnsplayerinfo"
+
+namespace GNET
+{
+	class DBSNSGetPlayerInfoRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GSNSPlayerInfo info;
+
+	public:
+		DBSNSGetPlayerInfoRes (const GSNSPlayerInfo& l_info = GSNSPlayerInfo())
+			: info(l_info)
+		{
+		}
+
+		DBSNSGetPlayerInfoRes(const DBSNSGetPlayerInfoRes &rhs)
+			: retcode(rhs.retcode),info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBSNSGetPlayerInfoRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSNSGetPlayerInfoRes *r = dynamic_cast<const DBSNSGetPlayerInfoRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBSNSGetPlayerInfoRes& operator = (const DBSNSGetPlayerInfoRes &rhs)
+		{
+			const DBSNSGetPlayerInfoRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

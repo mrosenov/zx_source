@@ -1,0 +1,96 @@
+
+#ifndef __GNET_DBPUTTOPTABLE_HPP
+#define __GNET_DBPUTTOPTABLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gtopitem"
+#include "gtoptable"
+#include "integer"
+#include "updatetoptable.hpp"
+#include "gamedbserver.hpp"
+
+namespace GNET
+{
+
+class DBPutTopTable : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbputtoptable"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GTopTable *arg = (GTopTable *)argument;
+		Integer *res = (Integer *)result;
+		LOG_TRACE( "DBPutTopTable, tableid=%d, weekly=%d, items=%d, detail=%d\n", arg->id, arg->weekly, arg->items.size(), arg->items_detail.size() );
+		int weekly = 0;
+		
+		try
+		{
+			StorageEnv::Storage * ptop = StorageEnv::GetStorage("top");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key;
+			try
+			{
+				time_t now = Timer::GetTime();
+				struct tm dt;
+				localtime_r(&now, &dt);
+				if(dt.tm_wday==2 || arg->weekly)
+					weekly = 1;
+				arg->time = now;
+				ptop->insert(Marshal::OctetsStream()<<arg->id,Marshal::OctetsStream()<<*arg,txn);
+
+				if(weekly)
+				{
+					key << arg->id+WEEKLYTOP_BEGIN;
+					ptop->insert(key,Marshal::OctetsStream()<<*arg,txn);
+				}
+				res->value = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBPutTopTable, tableid=%d, what=%s\n", arg->id, e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->value = ERR_AGAIN;
+			else
+				res->value = ERR_EXCEPTION;
+		}
+		if(res->value==ERR_SUCCESS)
+		{
+			UpdateTopTable ut;
+			ut.weekly = weekly;
+			ut.table.id = arg->id;
+			ut.table.maxsize = arg->maxsize;
+			ut.table.time = arg->time;
+			ut.table.items.swap(arg->items);
+			ut.table.items_detail.swap(arg->items_detail);
+
+			GameDBServer::GetInstance()->Send2Delivery(ut);
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GTopTable *arg = (GTopTable *)argument;
+		// Integer *res = (Integer *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,145 @@
+
+#ifndef __GNET_DBCONSIGNSOLDROLE_HPP
+#define __GNET_DBCONSIGNSOLDROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "blockedrole.h"
+
+#include "dbconsignsoldarg"
+#include "dbconsignsoldres"
+#include "sold_re.hpp"
+#include "kickoutuser.hpp"
+namespace GNET
+{
+
+class DBConsignSoldRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignsoldrole"
+#undef	RPC_BASECLASS
+	int taskid;
+	int zoneid;
+//	int64_t orderid;
+	int64_t timestamp;
+	int userid;
+	bool userid_mismatch;
+	bool roleid_mismatch;
+
+	void SendResult(int retcode,int roleid, int64_t sn, int buyer_roleid, int buyer_userid)
+	{
+		DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		GWebTradeClient::GetInstance()->SendProtocol(Sold_Re(zoneid,userid,roleid,buyer_userid,buyer_roleid,sn,retcode,arg->orderid));
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		// DBConsignSoldRes *res = (DBConsignSoldRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		DBConsignSoldRes *res = (DBConsignSoldRes *)result;
+		DEBUG_PRINT("DBConsignSoldRole: receive.sn=%lld,res=%d",arg->sn,res->retcode);
+		if(res->retcode == ERR_SUCCESS || res->retcode == ERR_WT_DB_DUPLICATE_RQST)
+		{
+//			if(ConsignManager::GetInstance()->OnDBSold(arg->roleid, arg->sn,timestamp)!=ERR_SUCCESS)
+			if(RoleTaskManager::GetInstance()->DBConsignSoldRoleResp(taskid,arg->roleid, arg->sn,timestamp)!=ERR_SUCCESS)
+			{
+		//		ConsignManager::GetInstance()->ClearBusy(arg->sn);
+				Log::log(LOG_ERR,"dbconsignsoldrole: OnDBSold failed. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+				//db modified, reload user
+				UserInfo * pinfo = UserContainer::GetInstance().FindUser(userid);
+				if(pinfo)
+				{
+					GDeliveryServer::GetInstance()->Send(pinfo->linksid,KickoutUser(userid, pinfo->localsid, ERR_KICKOUT));
+					UserContainer::GetInstance().UserLogout(pinfo);
+				}
+				pinfo = UserContainer::GetInstance().FindUser(arg->buyer_userid);
+				if(pinfo)
+				{
+					GDeliveryServer::GetInstance()->Send(pinfo->linksid,KickoutUser(arg->buyer_userid, pinfo->localsid, ERR_KICKOUT));
+					UserContainer::GetInstance().UserLogout(pinfo);
+				}
+			}
+			else
+			{
+				UserInfo * pinfo = UserContainer::GetInstance().FindUser(arg->buyer_userid);
+				if (NULL!=pinfo && pinfo->status == _STATUS_ONLINE)
+				{
+					GDeliveryServer::GetInstance()->Send(pinfo->linksid,KickoutUser(userid, pinfo->localsid, ERR_KICKOUT));
+					UserContainer::GetInstance().UserLogout(pinfo);
+				}
+			}
+			{
+			GRoleInfo* prole=RoleInfoCache::Instance().Get(arg->buyer_roleid);
+			if(prole)
+				RoleInfoCache::Instance().GetOnlogin(arg->buyer_roleid);
+			prole=RoleInfoCache::Instance().Get(arg->roleid);
+			if(prole)
+				RoleInfoCache::Instance().GetOnlogin(arg->roleid);
+			}
+			if(res->retcode == ERR_WT_DB_DUPLICATE_RQST)//timestamp equal, and orderid equal
+				SendResult(2,arg->roleid,arg->sn,res->buyer_roleid,arg->buyer_userid);
+			else if(arg->buyer_roleid != res->buyer_roleid)
+				SendResult(10,arg->roleid,arg->sn,res->buyer_roleid,arg->buyer_userid);	
+			else if(userid_mismatch)
+				SendResult(8,arg->roleid,arg->sn,res->buyer_roleid,arg->buyer_userid);
+			else if(roleid_mismatch)
+				SendResult(9,arg->roleid,arg->sn,res->buyer_roleid,arg->buyer_userid);
+			else
+				SendResult(0,arg->roleid,arg->sn,res->buyer_roleid,arg->buyer_userid);
+		}
+		else
+		{
+			int ret;
+			switch(res->retcode)
+			{
+				case ERR_WT_SOLD_ROLE_SELLER_NOT_EXIST:
+				case ERR_WT_SOLD_ROLE_STATUS_ERR:
+				case ERR_WT_PREPOST_ARG_ERR:
+					ret = 14;//角色交易卖的角色找不到
+					break;
+				case ERR_WT_BUYER_NOT_EXIST:
+					ret = 13;//通知web买家不存在
+					break;
+				case ERR_WT_SOLD_ROLE_BUYER_COND:
+				case ERR_WT_BUYER_SAMEUSER:
+					ret = 15;//不符合出售条件
+					break;	
+				case ERR_WT_DB_STATEERR:
+					ret = 3;//web 重发
+					break;
+				default:
+					ret = -1;//web 重发
+					break;
+			}
+			RoleTaskManager::GetInstance()->DBConsignSoldRoleFail(taskid);
+			ConsignManager::GetInstance()->ClearBusy(arg->sn);
+			Log::formatlog("dbconsignsoldrole","failed. sn=%lld,roleid=%d,retcode=%d", arg->sn,arg->roleid,res->retcode);
+			SendResult(ret,arg->roleid,arg->sn,arg->buyer_roleid,arg->buyer_userid);	
+		}
+	}
+
+	void OnTimeout()
+	{
+		DBConsignSoldArg *arg = (DBConsignSoldArg *)argument;
+		Log::log(LOG_ERR,"dbconsignsoldrole: timeout. sn=%lld,roleid=%d", arg->sn,arg->roleid);
+		//reload user
+		UserInfo * pinfo = UserContainer::GetInstance().FindUser(userid);
+		if(pinfo)
+			UserContainer::GetInstance().UserLogout(pinfo);
+		pinfo = UserContainer::GetInstance().FindUser(arg->buyer_userid);
+		if(pinfo)
+			UserContainer::GetInstance().UserLogout(pinfo);
+	//	ConsignManager::GetInstance()->ClearBusy(arg->sn);//task timeout will do it
+		SendResult(-1,arg->roleid,arg->sn,arg->buyer_roleid,arg->buyer_userid);	//重发
+	}
+
+};
+
+};
+#endif

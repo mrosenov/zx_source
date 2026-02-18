@@ -1,0 +1,50 @@
+	public:
+		int src;
+		unsigned char channel;
+		unsigned char emotion;
+		Octets msg;
+		Octets data;
+		int fid;
+		enum { PROTOCOL_TYPE = PROTOCOL_GATEFACTIONCHAT };
+	public:
+		GateFactionChat() { type = PROTOCOL_GATEFACTIONCHAT; }
+		GateFactionChat(void*) : Protocol(PROTOCOL_GATEFACTIONCHAT) { }
+		GateFactionChat (int l_src,unsigned char l_channel = 0,unsigned char l_emotion = 0,
+			const Octets& l_msg = Octets(),const Octets& l_data = Octets(),int l_fid = 0)
+			 : src(l_src),channel(l_channel),emotion(l_emotion)
+			,msg(l_msg),data(l_data),fid(l_fid)
+		{
+			type = PROTOCOL_GATEFACTIONCHAT;
+		}
+
+		GateFactionChat(const GateFactionChat &rhs)
+			: Protocol(rhs),src(rhs.src),channel(rhs.channel),emotion(rhs.emotion)
+			,msg(rhs.msg),data(rhs.data),fid(rhs.fid) { }
+
+		GNET::Protocol *Clone() const { return new GateFactionChat(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << src;
+			os << channel;
+			os << emotion;
+			os << msg;
+			os << data;
+			os << fid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> src;
+			os >> channel;
+			os >> emotion;
+			os >> msg;
+			os >> data;
+			os >> fid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

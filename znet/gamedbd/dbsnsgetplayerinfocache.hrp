@@ -1,0 +1,64 @@
+
+#ifndef __GNET_DBSNSGETPLAYERINFOCACHE_HPP
+#define __GNET_DBSNSGETPLAYERINFOCACHE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsgetplayerinfocachearg"
+#include "dbsnsgetplayerinfocacheres"
+
+namespace GNET
+{
+
+class DBSNSGetPlayerInfoCache : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsgetplayerinfocache"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSNSGetPlayerInfoCacheArg *arg = (DBSNSGetPlayerInfoCacheArg *)argument;
+		DBSNSGetPlayerInfoCacheRes *res = (DBSNSGetPlayerInfoCacheRes *)result;
+
+		try
+		{
+			StorageEnv::Storage *pinfo = StorageEnv::GetStorage("snsplayerinfo");
+			StorageEnv::AtomTransaction txn;
+
+			try
+			{
+				Marshal::OctetsStream(pinfo->find(Marshal::OctetsStream()<<arg->roleid, txn)) >> res->info;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+			res->retcode = ERR_FAILED;
+			Log::log(LOG_ERR, "gamedbd:DBSNSGetPlayerInfoCache error, what=%s\n", e.what());
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

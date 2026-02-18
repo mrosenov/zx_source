@@ -1,0 +1,104 @@
+
+#ifndef __GNET_DBTERRITORYLISTSAVE_HPP
+#define __GNET_DBTERRITORYLISTSAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbterritorylistsavearg"
+#include "dbterritorylistsaveres"
+
+namespace GNET
+{
+
+class DBTerritoryListSave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbterritorylistsave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBTerritoryListSaveArg *arg = (DBTerritoryListSaveArg *)argument;
+		DBTerritoryListSaveRes *res = (DBTerritoryListSaveRes *)result;
+		Log::formatlog("dbterritorylistsave", "reason=%d", arg->reason);
+		try
+		{
+			StorageEnv::Storage * pcity = StorageEnv::GetStorage("citystore");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream key, value;
+			GTerritoryStore store;
+			try{
+				key << 1;
+				Marshal::OctetsStream(pcity->find(key, txn)) >> store;
+				if(arg->store.tlist.size()!=store.tlist.size())
+				{
+					LOG_TRACE("dbterritorylistsave reason=%d savesize %d dbsize %d", arg->reason,
+										arg->store.tlist.size(), store.tlist.size());
+					throw DbException(DB_VERIFY_BAD);
+				}
+/*
+				if (arg->reason == _TERRITORY_SAVE_BIDBEGIN)
+				{
+					GTerritoryInfoVector::iterator it=store.begin(), ite=store.end();
+					for(;it!=ite;++it)
+					{
+						it->start_time = 0;
+						it->defender = 0;
+						it->success_challenge.factionid = 0;
+						it->success_challenge.itemcount = 0;
+						it->challengelist.clear();
+					}
+				}
+				else if (arg->reason == _BATTLE_SETTIME)
+				{
+					GTerritoryInfoVector::iterator i,it=store.begin();
+					GTerritoryInfoVector::iterator ie=store.end();
+					i = arg->tlist.begin();
+					for(;it!=ie;++it,++i)
+					{
+						if(i->id!=it->id)
+							throw DbException(DB_VERIFY_BAD);
+						it->start_time = i->start_time;
+					}
+				}
+*/
+				pcity->insert(key,Marshal::OctetsStream()<<arg->store,txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBTerritoryListSave, what=%s\n", e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBTerritoryListSaveArg *arg = (DBTerritoryListSaveArg *)argument;
+		// DBTerritoryListSaveRes *res = (DBTerritoryListSaveRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

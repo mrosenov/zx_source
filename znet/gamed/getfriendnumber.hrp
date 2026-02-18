@@ -1,0 +1,46 @@
+
+#ifndef __GNET_GETFRIENDNUMBER_HPP
+#define __GNET_GETFRIENDNUMBER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "getfriendnumberarg"
+#include "getfriendnumberres"
+
+void recv_friend_num(int roleid, int taskid, int number);
+
+namespace GNET
+{
+
+class GetFriendNumber : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getfriendnumber"
+#undef	RPC_BASECLASS
+	int taskid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GetFriendNumberArg *arg = (GetFriendNumberArg *)argument;
+		// GetFriendNumberRes *res = (GetFriendNumberRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		 GetFriendNumberArg *arg = (GetFriendNumberArg *)argument;
+		 GetFriendNumberRes *res = (GetFriendNumberRes *)result;
+		 if(res->retcode != 0) return;
+		 recv_friend_num(arg->roleid, taskid, res->number);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

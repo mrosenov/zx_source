@@ -1,0 +1,70 @@
+#ifndef __GNET_TERRITORYOWNER_RPCDATA
+#define __GNET_TERRITORYOWNER_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class TerritoryOwner : public GNET::Rpc::Data
+	{
+	public:
+		int territoryid;
+		int territorytype;
+		unsigned int owner;
+
+	public:
+		TerritoryOwner (int l_territoryid = 0,int l_territorytype = 0,unsigned int l_owner = 0)
+			: territoryid(l_territoryid),territorytype(l_territorytype),owner(l_owner)
+		{
+		}
+
+		TerritoryOwner(const TerritoryOwner &rhs)
+			: territoryid(rhs.territoryid),territorytype(rhs.territorytype),owner(rhs.owner) { }
+
+		Rpc::Data *Clone() const { return new TerritoryOwner(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const TerritoryOwner *r = dynamic_cast<const TerritoryOwner *>(&rhs);
+			if (r && r != this)
+			{
+				territoryid = r->territoryid;
+				territorytype = r->territorytype;
+				owner = r->owner;
+			}
+			return *this;
+		}
+
+		TerritoryOwner& operator = (const TerritoryOwner &rhs)
+		{
+			const TerritoryOwner *r = &rhs;
+			if (r && r != this)
+			{
+				territoryid = r->territoryid;
+				territorytype = r->territorytype;
+				owner = r->owner;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << territoryid;
+			os << territorytype;
+			os << owner;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> territoryid;
+			os >> territorytype;
+			os >> owner;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<TerritoryOwner>	TerritoryOwnerVector;
+};
+#endif

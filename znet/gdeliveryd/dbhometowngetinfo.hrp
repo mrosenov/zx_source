@@ -1,0 +1,50 @@
+
+#ifndef __GNET_DBHOMETOWNGETINFO_HPP
+#define __GNET_DBHOMETOWNGETINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhometowngetinfoarg"
+#include "dbhometowngetinfores"
+#include "hometownmanager.h"
+
+namespace GNET
+{
+
+class DBHometownGetInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhometowngetinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBHometownGetInfoArg *arg = (DBHometownGetInfoArg *)argument;
+		// DBHometownGetInfoRes *res = (DBHometownGetInfoRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHometownGetInfoArg *arg = (DBHometownGetInfoArg *)argument;
+		DBHometownGetInfoRes *res = (DBHometownGetInfoRes *)result;
+
+		HometownManager *hm = HometownManager::GetInstance();
+		if (res->retcode == ERR_SUCCESS)
+			hm->OnLoad(arg->sponsor, arg->roleid, res->name, res->hometown_info, res->friend_list, res->compo_info);
+		else
+			hm->OnLoadFail(arg->sponsor, arg->roleid);
+	}
+
+	void OnTimeout()
+	{
+		DBHometownGetInfoArg *arg = (DBHometownGetInfoArg *)argument;
+		HometownManager::GetInstance()->OnLoadFail(arg->sponsor, arg->roleid);
+		Log::log(LOG_ERR, "gdeliveryd: DBHometownGetInfo timeout, sponsor %d role %d", arg->sponsor, arg->roleid);
+	}
+
+};
+
+};
+#endif

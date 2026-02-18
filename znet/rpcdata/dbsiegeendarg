@@ -1,0 +1,77 @@
+#ifndef __GNET_DBSIEGEENDARG_RPCDATA
+#define __GNET_DBSIEGEENDARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSiegeEndArg : public GNET::Rpc::Data
+	{
+	public:
+		int battle_id;
+		int result;
+		int owner;
+		int attacker;
+
+	public:
+		DBSiegeEndArg (int l_battle_id = 0,int l_result = 0,int l_owner = 0
+			,int l_attacker = 0)
+			: battle_id(l_battle_id),result(l_result),owner(l_owner)
+			,attacker(l_attacker)
+		{
+		}
+
+		DBSiegeEndArg(const DBSiegeEndArg &rhs)
+			: battle_id(rhs.battle_id),result(rhs.result),owner(rhs.owner),
+			attacker(rhs.attacker) { }
+
+		Rpc::Data *Clone() const { return new DBSiegeEndArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegeEndArg *r = dynamic_cast<const DBSiegeEndArg *>(&rhs);
+			if (r && r != this)
+			{
+				battle_id = r->battle_id;
+				result = r->result;
+				owner = r->owner;
+				attacker = r->attacker;
+			}
+			return *this;
+		}
+
+		DBSiegeEndArg& operator = (const DBSiegeEndArg &rhs)
+		{
+			const DBSiegeEndArg *r = &rhs;
+			if (r && r != this)
+			{
+				battle_id = r->battle_id;
+				result = r->result;
+				owner = r->owner;
+				attacker = r->attacker;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << battle_id;
+			os << result;
+			os << owner;
+			os << attacker;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> battle_id;
+			os >> result;
+			os >> owner;
+			os >> attacker;
+			return os;
+		}
+
+	};
+};
+#endif

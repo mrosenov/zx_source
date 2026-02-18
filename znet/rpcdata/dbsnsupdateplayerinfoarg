@@ -1,0 +1,60 @@
+#ifndef __GNET_DBSNSUPDATEPLAYERINFOARG_RPCDATA
+#define __GNET_DBSNSUPDATEPLAYERINFOARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gsnsplayerinfo"
+
+namespace GNET
+{
+	class DBSNSUpdatePlayerInfoArg : public GNET::Rpc::Data
+	{
+	public:
+		GSNSPlayerInfo info;
+
+	public:
+		DBSNSUpdatePlayerInfoArg (const GSNSPlayerInfo& l_info = GSNSPlayerInfo())
+			: info(l_info)
+		{
+		}
+
+		DBSNSUpdatePlayerInfoArg(const DBSNSUpdatePlayerInfoArg &rhs)
+			: info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBSNSUpdatePlayerInfoArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSNSUpdatePlayerInfoArg *r = dynamic_cast<const DBSNSUpdatePlayerInfoArg *>(&rhs);
+			if (r && r != this)
+			{
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBSNSUpdatePlayerInfoArg& operator = (const DBSNSUpdatePlayerInfoArg &rhs)
+		{
+			const DBSNSUpdatePlayerInfoArg *r = &rhs;
+			if (r && r != this)
+			{
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,32 @@
+	public:
+		GGateRoleInfo roledata;
+		enum { PROTOCOL_TYPE = PROTOCOL_GATEROLELOGOUT };
+	public:
+		GateRoleLogout() { type = PROTOCOL_GATEROLELOGOUT; }
+		GateRoleLogout(void*) : Protocol(PROTOCOL_GATEROLELOGOUT) { }
+		GateRoleLogout (const GGateRoleInfo& l_roledata)
+			 : roledata(l_roledata)
+		{
+			type = PROTOCOL_GATEROLELOGOUT;
+		}
+
+		GateRoleLogout(const GateRoleLogout &rhs)
+			: Protocol(rhs),roledata(rhs.roledata) { }
+
+		GNET::Protocol *Clone() const { return new GateRoleLogout(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roledata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roledata;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

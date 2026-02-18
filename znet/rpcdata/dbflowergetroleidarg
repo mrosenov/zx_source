@@ -1,0 +1,59 @@
+#ifndef __GNET_DBFLOWERGETROLEIDARG_RPCDATA
+#define __GNET_DBFLOWERGETROLEIDARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFlowerGetRoleIdArg : public GNET::Rpc::Data
+	{
+	public:
+		Octets rolename;
+
+	public:
+		DBFlowerGetRoleIdArg (const Octets& l_rolename = Octets())
+			: rolename(l_rolename)
+		{
+		}
+
+		DBFlowerGetRoleIdArg(const DBFlowerGetRoleIdArg &rhs)
+			: rolename(rhs.rolename) { }
+
+		Rpc::Data *Clone() const { return new DBFlowerGetRoleIdArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFlowerGetRoleIdArg *r = dynamic_cast<const DBFlowerGetRoleIdArg *>(&rhs);
+			if (r && r != this)
+			{
+				rolename = r->rolename;
+			}
+			return *this;
+		}
+
+		DBFlowerGetRoleIdArg& operator = (const DBFlowerGetRoleIdArg &rhs)
+		{
+			const DBFlowerGetRoleIdArg *r = &rhs;
+			if (r && r != this)
+			{
+				rolename = r->rolename;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << rolename;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> rolename;
+			return os;
+		}
+
+	};
+};
+#endif

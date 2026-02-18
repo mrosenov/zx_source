@@ -1,0 +1,69 @@
+#ifndef __GNET_FLOWERGIFTTAKEARG_RPCDATA
+#define __GNET_FLOWERGIFTTAKEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class FlowerGiftTakeArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int type;
+		int id;
+
+	public:
+		FlowerGiftTakeArg (int l_roleid = 0,int l_type = 0,int l_id = 0)
+			: roleid(l_roleid),type(l_type),id(l_id)
+		{
+		}
+
+		FlowerGiftTakeArg(const FlowerGiftTakeArg &rhs)
+			: roleid(rhs.roleid),type(rhs.type),id(rhs.id) { }
+
+		Rpc::Data *Clone() const { return new FlowerGiftTakeArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FlowerGiftTakeArg *r = dynamic_cast<const FlowerGiftTakeArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				type = r->type;
+				id = r->id;
+			}
+			return *this;
+		}
+
+		FlowerGiftTakeArg& operator = (const FlowerGiftTakeArg &rhs)
+		{
+			const FlowerGiftTakeArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				type = r->type;
+				id = r->id;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << type;
+			os << id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> type;
+			os >> id;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,44 @@
+	public:
+		int mapid;
+		int raidroom_id;
+		int end_time;
+		char is_start;
+		enum { PROTOCOL_TYPE = PROTOCOL_GFACTIONPKRAIDFIGHTNOTIFY };
+	public:
+		GFactionPkRaidFightNotify() { type = PROTOCOL_GFACTIONPKRAIDFIGHTNOTIFY; }
+		GFactionPkRaidFightNotify(void*) : Protocol(PROTOCOL_GFACTIONPKRAIDFIGHTNOTIFY) { }
+		GFactionPkRaidFightNotify (int l_mapid,int l_raidroom_id = 0,int l_end_time = 0,
+			char l_is_start = 1)
+			 : mapid(l_mapid),raidroom_id(l_raidroom_id),end_time(l_end_time)
+			,is_start(l_is_start)
+		{
+			type = PROTOCOL_GFACTIONPKRAIDFIGHTNOTIFY;
+		}
+
+		GFactionPkRaidFightNotify(const GFactionPkRaidFightNotify &rhs)
+			: Protocol(rhs),mapid(rhs.mapid),raidroom_id(rhs.raidroom_id),end_time(rhs.end_time)
+			,is_start(rhs.is_start) { }
+
+		GNET::Protocol *Clone() const { return new GFactionPkRaidFightNotify(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << mapid;
+			os << raidroom_id;
+			os << end_time;
+			os << is_start;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> mapid;
+			os >> raidroom_id;
+			os >> end_time;
+			os >> is_start;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

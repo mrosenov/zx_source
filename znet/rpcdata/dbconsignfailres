@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCONSIGNFAILRES_RPCDATA
+#define __GNET_DBCONSIGNFAILRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignFailRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int statechange;
+
+	public:
+		DBConsignFailRes (int l_retcode = 0,int l_statechange = 0)
+			: retcode(l_retcode),statechange(l_statechange)
+		{
+		}
+
+		DBConsignFailRes(const DBConsignFailRes &rhs)
+			: retcode(rhs.retcode),statechange(rhs.statechange) { }
+
+		Rpc::Data *Clone() const { return new DBConsignFailRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignFailRes *r = dynamic_cast<const DBConsignFailRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				statechange = r->statechange;
+			}
+			return *this;
+		}
+
+		DBConsignFailRes& operator = (const DBConsignFailRes &rhs)
+		{
+			const DBConsignFailRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				statechange = r->statechange;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << statechange;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> statechange;
+			return os;
+		}
+
+	};
+};
+#endif

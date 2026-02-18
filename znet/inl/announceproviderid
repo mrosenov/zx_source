@@ -1,0 +1,47 @@
+	public:
+		int id;
+		unsigned int attr;
+		LineInfo lineinfo;
+		int serialno;
+		Octets edition;
+		enum { PROTOCOL_TYPE = PROTOCOL_ANNOUNCEPROVIDERID };
+	public:
+		AnnounceProviderID() { type = PROTOCOL_ANNOUNCEPROVIDERID; }
+		AnnounceProviderID(void*) : Protocol(PROTOCOL_ANNOUNCEPROVIDERID) { }
+		AnnounceProviderID (int l_id,unsigned int l_attr,LineInfo l_lineinfo = LineInfo(),
+			int l_serialno = 0,const Octets& l_edition = Octets())
+			 : id(l_id),attr(l_attr),lineinfo(l_lineinfo)
+			,serialno(l_serialno),edition(l_edition)
+		{
+			type = PROTOCOL_ANNOUNCEPROVIDERID;
+		}
+
+		AnnounceProviderID(const AnnounceProviderID &rhs)
+			: Protocol(rhs),id(rhs.id),attr(rhs.attr),lineinfo(rhs.lineinfo)
+			,serialno(rhs.serialno),edition(rhs.edition) { }
+
+		GNET::Protocol *Clone() const { return new AnnounceProviderID(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << attr;
+			os << lineinfo;
+			os << serialno;
+			os << edition;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> attr;
+			os >> lineinfo;
+			os >> serialno;
+			os >> edition;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 512; }

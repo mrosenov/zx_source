@@ -1,0 +1,38 @@
+	public:
+		char fieldtype;
+		int tagid;
+		int failer;
+		enum { PROTOCOL_TYPE = PROTOCOL_GKINGDOMATTACKERFAIL };
+	public:
+		GKingdomAttackerFail() { type = PROTOCOL_GKINGDOMATTACKERFAIL; }
+		GKingdomAttackerFail(void*) : Protocol(PROTOCOL_GKINGDOMATTACKERFAIL) { }
+		GKingdomAttackerFail (char l_fieldtype,int l_tagid,int l_failer = 0)
+			 : fieldtype(l_fieldtype),tagid(l_tagid),failer(l_failer)
+		{
+			type = PROTOCOL_GKINGDOMATTACKERFAIL;
+		}
+
+		GKingdomAttackerFail(const GKingdomAttackerFail &rhs)
+			: Protocol(rhs),fieldtype(rhs.fieldtype),tagid(rhs.tagid),failer(rhs.failer) { }
+
+		GNET::Protocol *Clone() const { return new GKingdomAttackerFail(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fieldtype;
+			os << tagid;
+			os << failer;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fieldtype;
+			os >> tagid;
+			os >> failer;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

@@ -1,0 +1,8 @@
+		GNET::Protocol *Clone() const {  return new DBSNSGetRoleInfo(*this); }
+	public:
+		enum { PROTOCOL_TYPE = RPC_DBSNSGETROLEINFO };
+		DBSNSGetRoleInfo(Type type, Rpc::Data *argument, Rpc::Data *result)
+			: RPC_BASECLASS(type, argument, result ) { }
+		DBSNSGetRoleInfo(const DBSNSGetRoleInfo &rhs) : RPC_BASECLASS(rhs) { }
+		int  PriorPolicy( ) const { return 1; }
+		bool SizePolicy(size_t size) const { return size <= 1024; }

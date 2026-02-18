@@ -1,0 +1,44 @@
+
+#ifndef __GNET_DBFAMILYJOIN_HPP
+#define __GNET_DBFAMILYJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfamilyjoinarg"
+#include "dbfamilyjoinres"
+#include "familymanager.h"
+
+namespace GNET
+{
+
+class DBFamilyJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyjoin"
+#undef	RPC_BASECLASS
+	int roleid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilyJoinArg *arg = (DBFamilyJoinArg *)argument;
+		DBFamilyJoinRes *res = (DBFamilyJoinRes *)result;
+                DEBUG_PRINT("DBFamilyJoin, retcode=%d, roleid=%d, familyid=%d", res->retcode, arg->rid, arg->fid);
+                if (res->retcode == ERR_SUCCESS)
+                {
+                        FamilyManager::Instance()->OnJoin(arg->fid,roleid, arg->rid,arg->level,arg->occupation,res->name);
+                }
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

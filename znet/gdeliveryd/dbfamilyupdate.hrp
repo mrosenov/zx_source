@@ -1,0 +1,43 @@
+
+#ifndef __GNET_DBFAMILYUPDATE_HPP
+#define __GNET_DBFAMILYUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfamilyupdatearg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBFamilyUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyupdate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilyUpdateArg *arg = (DBFamilyUpdateArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+                DEBUG_PRINT("DBFamilyUpdate, familyid=%d,roleid=%d",arg->familyid,arg->rid);
+                if(res->retcode==ERR_SUCCESS)
+                {
+			FamilyManager::Instance()->SetAnnounce(arg->familyid, arg->rid, arg->announce);
+                }
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

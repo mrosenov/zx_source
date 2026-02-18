@@ -1,0 +1,62 @@
+	public:
+		int result;
+		int roleid;
+		int userid;
+		int localsid;
+		int zoneid;
+		int district_id;
+		Octets iseckey;
+		Octets oseckey;
+		Octets account;
+		enum { PROTOCOL_TYPE = PROTOCOL_TRYRECONNECT_RE };
+	public:
+		TryReconnect_Re() { type = PROTOCOL_TRYRECONNECT_RE; }
+		TryReconnect_Re(void*) : Protocol(PROTOCOL_TRYRECONNECT_RE) { }
+		TryReconnect_Re (int l_result,int l_roleid = 0,int l_userid = 0,
+			int l_localsid = 0,int l_zoneid = 0,int l_district_id = 0,
+			const Octets& l_iseckey = Octets(),const Octets& l_oseckey = Octets(),const Octets& l_account = Octets())
+			 : result(l_result),roleid(l_roleid),userid(l_userid)
+			,localsid(l_localsid),zoneid(l_zoneid),district_id(l_district_id)
+			,iseckey(l_iseckey),oseckey(l_oseckey),account(l_account)
+		{
+			type = PROTOCOL_TRYRECONNECT_RE;
+		}
+
+		TryReconnect_Re(const TryReconnect_Re &rhs)
+			: Protocol(rhs),result(rhs.result),roleid(rhs.roleid),userid(rhs.userid)
+			,localsid(rhs.localsid),zoneid(rhs.zoneid),district_id(rhs.district_id)
+			,iseckey(rhs.iseckey),oseckey(rhs.oseckey),account(rhs.account) { }
+
+		GNET::Protocol *Clone() const { return new TryReconnect_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << result;
+			os << roleid;
+			os << userid;
+			os << localsid;
+			os << zoneid;
+			os << district_id;
+			os << iseckey;
+			os << oseckey;
+			os << account;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> result;
+			os >> roleid;
+			os >> userid;
+			os >> localsid;
+			os >> zoneid;
+			os >> district_id;
+			os >> iseckey;
+			os >> oseckey;
+			os >> account;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

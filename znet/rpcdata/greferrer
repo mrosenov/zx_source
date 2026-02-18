@@ -1,0 +1,77 @@
+#ifndef __GNET_GREFERRER_RPCDATA
+#define __GNET_GREFERRER_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GReferrer : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int bonus_withdraw;
+		int64_t exp_withdraw_today;
+		int exp_withdraw_time;
+
+	public:
+		GReferrer (int l_roleid = 0,int l_bonus_withdraw = 0,int64_t l_exp_withdraw_today = 0
+			,int l_exp_withdraw_time = 0)
+			: roleid(l_roleid),bonus_withdraw(l_bonus_withdraw),exp_withdraw_today(l_exp_withdraw_today)
+			,exp_withdraw_time(l_exp_withdraw_time)
+		{
+		}
+
+		GReferrer(const GReferrer &rhs)
+			: roleid(rhs.roleid),bonus_withdraw(rhs.bonus_withdraw),exp_withdraw_today(rhs.exp_withdraw_today),
+			exp_withdraw_time(rhs.exp_withdraw_time) { }
+
+		Rpc::Data *Clone() const { return new GReferrer(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GReferrer *r = dynamic_cast<const GReferrer *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				bonus_withdraw = r->bonus_withdraw;
+				exp_withdraw_today = r->exp_withdraw_today;
+				exp_withdraw_time = r->exp_withdraw_time;
+			}
+			return *this;
+		}
+
+		GReferrer& operator = (const GReferrer &rhs)
+		{
+			const GReferrer *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				bonus_withdraw = r->bonus_withdraw;
+				exp_withdraw_today = r->exp_withdraw_today;
+				exp_withdraw_time = r->exp_withdraw_time;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << bonus_withdraw;
+			os << exp_withdraw_today;
+			os << exp_withdraw_time;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> bonus_withdraw;
+			os >> exp_withdraw_today;
+			os >> exp_withdraw_time;
+			return os;
+		}
+
+	};
+};
+#endif

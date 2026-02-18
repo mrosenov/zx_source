@@ -1,0 +1,65 @@
+#ifndef __GNET_PUTFACBASEARG_RPCDATA
+#define __GNET_PUTFACBASEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfactionbase"
+
+namespace GNET
+{
+	class PutFacBaseArg : public GNET::Rpc::Data
+	{
+	public:
+		int fid;
+		GFactionBase value;
+
+	public:
+		PutFacBaseArg (int l_fid = 0)
+			: fid(l_fid)
+		{
+		}
+
+		PutFacBaseArg(const PutFacBaseArg &rhs)
+			: fid(rhs.fid),value(rhs.value) { }
+
+		Rpc::Data *Clone() const { return new PutFacBaseArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PutFacBaseArg *r = dynamic_cast<const PutFacBaseArg *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		PutFacBaseArg& operator = (const PutFacBaseArg &rhs)
+		{
+			const PutFacBaseArg *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << value;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> value;
+			return os;
+		}
+
+	};
+};
+#endif

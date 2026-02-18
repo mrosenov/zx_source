@@ -1,0 +1,80 @@
+	public:
+		int roleid;
+		int lineid;
+		int provider_link_id;
+		unsigned int localsid;
+		int worldtag;
+		ByteVector auth;
+		int usepos;
+		float x;
+		float y;
+		float z;
+		int loginip;
+		char territory_role;
+		char flag;
+		enum { PROTOCOL_TYPE = PROTOCOL_PLAYERLOGIN };
+	public:
+		PlayerLogin() { type = PROTOCOL_PLAYERLOGIN; }
+		PlayerLogin(void*) : Protocol(PROTOCOL_PLAYERLOGIN) { }
+		PlayerLogin (int l_roleid,int l_lineid,int l_provider_link_id = -1,
+			unsigned int l_localsid = 0,int l_worldtag = 0,ByteVector l_auth = ByteVector(),
+			int l_usepos = 0,float l_x = 0,float l_y = 0,
+			float l_z = 0,int l_loginip = 0,char l_territory_role = 0,
+			char l_flag = 0)
+			 : roleid(l_roleid),lineid(l_lineid),provider_link_id(l_provider_link_id)
+			,localsid(l_localsid),worldtag(l_worldtag),auth(l_auth)
+			,usepos(l_usepos),x(l_x),y(l_y)
+			,z(l_z),loginip(l_loginip),territory_role(l_territory_role)
+			,flag(l_flag)
+		{
+			type = PROTOCOL_PLAYERLOGIN;
+		}
+
+		PlayerLogin(const PlayerLogin &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),lineid(rhs.lineid),provider_link_id(rhs.provider_link_id)
+			,localsid(rhs.localsid),worldtag(rhs.worldtag),auth(rhs.auth)
+			,usepos(rhs.usepos),x(rhs.x),y(rhs.y)
+			,z(rhs.z),loginip(rhs.loginip),territory_role(rhs.territory_role)
+			,flag(rhs.flag) { }
+
+		GNET::Protocol *Clone() const { return new PlayerLogin(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << lineid;
+			os << provider_link_id;
+			os << localsid;
+			os << worldtag;
+			os << auth;
+			os << usepos;
+			os << x;
+			os << y;
+			os << z;
+			os << loginip;
+			os << territory_role;
+			os << flag;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> lineid;
+			os >> provider_link_id;
+			os >> localsid;
+			os >> worldtag;
+			os >> auth;
+			os >> usepos;
+			os >> x;
+			os >> y;
+			os >> z;
+			os >> loginip;
+			os >> territory_role;
+			os >> flag;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

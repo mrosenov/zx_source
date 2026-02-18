@@ -1,0 +1,58 @@
+
+#ifndef __GNET_GUNIQUEGETITEM_HPP
+#define __GNET_GUNIQUEGETITEM_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "guniquegetitemarg"
+#include "guniquegetitemres"
+#include "uniqueauctionmanager.h"
+#include "uniquegetitem_re.hpp"
+
+namespace GNET
+{
+
+class GUniqueGetItem : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "guniquegetitem"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GUniqueGetItemArg *arg = (GUniqueGetItemArg *)argument;
+		GUniqueGetItemRes *res = (GUniqueGetItemRes *)result;
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if (pinfo == NULL)
+		{
+			res->retcode = -1;
+			return;
+		}
+		res->retcode = UniqueAuctionManager::GetInstance()->GetWinItem(arg->roleid, res->itemid);
+		if (res->retcode != ERR_SUCCESS)
+		{
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, UniqueGetItem_Re(res->retcode, pinfo->localsid));
+		}
+		else
+			UniqueAuctionManager::GetInstance()->SendBidHistory(arg->roleid, pinfo->linksid, pinfo->localsid);
+		LOG_TRACE("GUniqueGetItem role %d get win item %d retcode %d", arg->roleid, res->itemid, res->retcode);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GUniqueGetItemArg *arg = (GUniqueGetItemArg *)argument;
+		// GUniqueGetItemRes *res = (GUniqueGetItemRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,119 @@
+
+#ifndef __GNET_DBCONSIGNSHELF_HPP
+#define __GNET_DBCONSIGNSHELF_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignshelfarg"
+#include "dbconsignshelfres"
+#include "consigntool.h"
+namespace GNET
+{
+
+class DBConsignShelf : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignshelf"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignShelfArg *arg = (DBConsignShelfArg *)argument;
+		DBConsignShelfRes *res = (DBConsignShelfRes *)result;
+		try
+		{
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				if(arg->sn == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+				Log::formatlog("consign","DBConsignShelf:role=%d:sn=%lld:state=%d:show_endtime=%d:sell_endtime=%d:price=%d:buyer_roleid=%d", arg->roleid,arg->sn,arg->state,arg->show_endtime,arg->sell_endtime,arg->price,arg->buyer_roleid);
+				GConsignDB detail;
+				Marshal::OctetsStream(pconsign->find(Marshal::OctetsStream()<<arg->sn, txn)) >> detail;
+
+				res->statechange = UpdateState(detail);
+				int changeres= CheckStateChange(detail,DSTATE_SELL);
+				if(changeres == CHANGE_REPEAT)
+				{
+					res->retcode = ERR_WT_DB_DUPLICATE_RQST;
+					res->item = detail.info;
+					res->buyer_userid = detail.buyer_userid;
+					Log::formatlog("consign","DBConsignShelf CHANGE_REPEAT");
+					return;
+				}
+				else if(changeres != CHANGE_PERMIT )
+				{
+					Log::formatlog("consign","DBConsignShelf notCHANGE_PERMIT");
+					res->retcode = ERR_WT_DB_STATEERR;
+					return;
+				}
+				detail.info.state=DSTATE_SELL;
+				//detail.info.state = arg->state;
+				detail.info.show_endtime = arg->show_endtime;
+				detail.info.price = arg->price;
+				detail.info.sell_endtime = arg->sell_endtime;
+				detail.buyer_roleid = arg->buyer_roleid;
+				detail.largest_web_timestamp = arg->timestamp;
+				detail.shelf_time = arg->shelf_time;
+				if(arg->buyer_roleid > 0)
+				{
+					Marshal::OctetsStream value_buyer_base;
+					if(pbase->find(Marshal::OctetsStream()<<arg->buyer_roleid, value_buyer_base, txn))
+					{
+						GRoleBase buyer_base;
+						value_buyer_base >> buyer_base;
+						if(buyer_base.userid)
+							detail.buyer_userid = buyer_base.userid;
+						else
+							detail.buyer_userid = LOGICUID(arg->buyer_roleid);
+						detail.buyer_name = buyer_base.name;
+						res->buyer_userid = detail.buyer_userid;
+						//res->buyer_name = detail.buyer_name;
+					}
+				}
+	
+				pconsign->insert(Marshal::OctetsStream()<<arg->sn, Marshal::OctetsStream()<<detail, txn);
+			//	Log::formatlog("consign","DBConsignShelf ERR_SUCCESS");
+				res->retcode = ERR_SUCCESS;
+				res->item = detail.info;
+			/*	Log::formatlog("webtrade","webtradeshelf:role=%d:sn=%lld:state=%d:show_endtime=%d:sell_endtime=%d:price=%d:buyer_roleid=%d:posttype=%d:money=%d:item=%d:count=%d", arg->roleid,arg->sn,arg->state,arg->show_endtime,arg->sell_endtime,arg->price,arg->buyer_roleid,detail.info.consign_type,detail.info.money/10000,detail.info.item_id,detail.info.item_cnt);*/
+				Log::formatlog("webtradeshelf","roleid=%d:sn=%lld:type=%d:itemid=%d:item_count=%d:money=%d:role=0:petid=0:pet_count=0", arg->roleid,arg->sn,detail.info.consign_type,detail.info.item_id,detail.info.item_cnt,detail.info.money/10000);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignShelf, what=%s\n",e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignShelfArg *arg = (DBConsignShelfArg *)argument;
+		// DBConsignShelfRes *res = (DBConsignShelfRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

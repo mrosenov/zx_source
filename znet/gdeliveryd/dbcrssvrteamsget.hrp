@@ -1,0 +1,102 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSGET_HPP
+#define __GNET_DBCRSSVRTEAMSGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "teamid"
+#include "dbcrssvrteamsgetres"
+#include "crssvrteamsmanager.h"
+#include "crssvrteamsnotify_re.hpp"
+#include "synccrosscrssvrteams.hrp"
+#include "centraldeliveryclient.hpp"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsget"
+#undef	RPC_BASECLASS
+
+	int roleid;
+	//int linksid, localsid;
+	bool isfromcentral;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// teamid *arg = (teamid *)argument;
+		// DBCrssvrTeamsGetRes *res = (DBCrssvrTeamsGetRes *)result;
+	}
+
+	void NotifyCentral(int roleid, int teamid, int zoneid)
+	{
+		//if(!CrssvrTeamsManager::Instance()->IsRoleCrossOnline(teamid))
+		//	return;
+
+
+		//if(!send2central)
+		//	return;
+
+		GCrssvrTeamsData info;
+		TTeamRaidRoleBrief rolebrief;
+		bool isget = CrssvrTeamsManager::Instance()->GetCrssvrTeamsData(teamid, info, rolebrief);
+		//DEBUG_PRINT("DBCrssvrTeamsGet, NotifyCentral zoneid=%d, teamid=%d, roleid=%d, role.size=%d", zoneid, teamid, roleid, info.roles.size());
+		if(isget)
+		{
+			SyncCrossCrssvrTeams* rpc = (SyncCrossCrssvrTeams*) Rpc::Call(RPC_SYNCCROSSCRSSVRTEAMS,	SyncCrossCrssvrTeamsArg(zoneid, teamid, info));
+			CentralDeliveryClient::GetInstance()->SendProtocol(rpc);
+			if(isfromcentral)
+				CrssvrTeamsManager::Instance()->UpdateRoleOnline(teamid, roleid, CRSSVRTEAMS_CROSS_ONLINE_STATUS);
+
+		}
+	}
+	
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		TeamId *arg = (TeamId *)argument;
+		DBCrssvrTeamsGetRes *res = (DBCrssvrTeamsGetRes *)result;
+		
+		DEBUG_PRINT("DBCrssvrTeamsGet, retcode=%d, teamid=%d, roleid=%d", res->retcode, arg->teamid, roleid);
+		if(res->retcode==ERR_SUCCESS)
+		{
+			if(roleid != 0)
+			{
+				CrssvrTeamsManager::Instance()->OnLoad(roleid, res->info);
+				//CrssvrTeamsManager::Instance()->CalcTeamPunish(roleid);
+			}
+			else
+			{
+				CrssvrTeamsManager::Instance()->OnLoad(roleid, res->info, false);
+
+			}
+
+			CrssvrTeamsManager::Instance()->OnLogin(roleid, arg->teamid);
+
+			int zoneid = GDeliveryServer::GetInstance()->zoneid;
+			NotifyCentral(roleid, arg->teamid, zoneid);
+		}
+		else
+		{
+			//GDeliveryServer::GetInstance()->Send(linksid,CrssvrTeamsNotify_Re(res->retcode,0,arg->teamid,localsid));
+		}
+	}
+
+	void OnTimeout()
+	{
+		TeamId *arg = (TeamId *)argument;
+
+		DBCrssvrTeamsGet* rpc = (DBCrssvrTeamsGet*) Rpc::Call( RPC_DBCRSSVRTEAMSGET,arg->teamid);
+		Log::log(LOG_ERR, "DBCrssvrTeamsGet, timeout, teamid=%d", arg->teamid);
+                rpc->roleid = roleid;
+		//rpc->send2central = send2central;
+		GameDBClient::GetInstance()->SendProtocol(rpc);
+
+	}
+
+};
+
+};
+#endif

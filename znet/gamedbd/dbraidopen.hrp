@@ -1,0 +1,125 @@
+
+#ifndef __GNET_DBRAIDOPEN_HPP
+#define __GNET_DBRAIDOPEN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbraidopenarg"
+#include "dbraidopenres"
+#include <functional>
+#include <algorithm>
+namespace GNET
+{
+static bool NeedRemove(GRoleInventory item,int itemid){
+	return item.id==static_cast<unsigned int>(itemid) && item.count==0;
+}
+
+class DBRaidOpen : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbraidopen"
+#undef	RPC_BASECLASS
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBRaidOpenArg *arg = (DBRaidOpenArg *)argument;
+		DBRaidOpenRes *res = (DBRaidOpenRes *)result;
+		LOG_TRACE("DBRaidOpen roleid %d itemid %d item_count %d", arg->roleid, arg->itemid, arg->item_count);
+		try
+		{
+
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream role_key;
+			try{
+				GRolePocket pocket;
+				role_key << arg->roleid;
+				Marshal::OctetsStream(pinventory->find(role_key, txn)) >> pocket;
+				if(arg->syncdata.inventory.timestamp-pocket.timestamp<=0)
+				{
+					Log::log(LOG_ERR,"DBRaidOpen, timestamp mismatch. %d<%d",
+						arg->syncdata.inventory.timestamp, pocket.timestamp);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				int count =0;
+				GRoleInventoryVector& v = arg->syncdata.inventory.items;
+				GRoleInventoryVector::iterator it = v.begin();
+				GRoleInventoryVector::iterator ie = v.end();
+				for (; it != ie; ++it)
+				{
+					if (it->id == (unsigned int)arg->itemid)
+					{
+						count +=it->count;
+					}
+				}
+				if (count < arg->item_count)
+				{
+					res->retcode = ERR_RAID_ITEMLIMIT;
+					return;
+				}
+				else
+				{
+					int remain = arg->item_count;
+					for(it = v.begin();remain>0 && it!=ie;++it)
+					{
+						if (it->id == (unsigned int)arg->itemid)
+						{
+		LOG_TRACE("DBRaidOpen before pos %d itemid %d item_count %d", it->pos, arg->itemid, it->count);
+							if(it->count >= remain)
+							{
+								it->count -= remain;
+								remain=0;
+							}
+							else
+							{
+								remain -= it->count;
+								it->count = 0;
+							}
+		LOG_TRACE("DBRaidOpen after pos %d itemid %d item_count %d", it->pos, arg->itemid, it->count);
+							res->syncdata.inventory.items.push_back(*it);
+						}
+					}
+					GRoleInventoryVector::iterator itd = std::remove_if(v.begin(),v.end(),std::bind2nd(std::ptr_fun(NeedRemove),arg->itemid));
+					int num = std::distance(v.begin(),itd);
+					v.resize(num);
+				}
+				pinventory->insert(role_key, Marshal::OctetsStream()<<arg->syncdata.inventory, txn);
+				res->retcode = ERR_SUCCESS;
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				res->syncdata.data_mask = arg->syncdata.data_mask;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBRaidOpen, roleid=%d, map_id=%d, what=%s.\n",
+				arg->roleid, arg->map_id, e.what() );
+			res->syncdata.inventory.money = arg->syncdata.inventory.money;
+			res->syncdata.data_mask = 0;
+			res->retcode = ERR_EXCEPTION;
+		}
+}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBRaidOpenArg *arg = (DBRaidOpenArg *)argument;
+		// DBRaidOpenRes *res = (DBRaidOpenRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

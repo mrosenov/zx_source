@@ -1,0 +1,86 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSCHGCAPTAIN_HPP
+#define __GNET_DBCRSSVRTEAMSCHGCAPTAIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrosscrssvrteamschgcaptain.hrp"
+#include "dbcrssvrteamschgcaptainarg"
+#include "dbcrssvrteamschgcaptainres"
+#include "crssvrteamsnotify_re.hpp"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsChgCaptain : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamschgcaptain"
+#undef	RPC_BASECLASS
+
+	int linksid, localsid;
+	int master_old;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsChgCaptainArg *arg = (DBCrssvrTeamsChgCaptainArg *)argument;
+		// DBCrssvrTeamsChgCaptainRes *res = (DBCrssvrTeamsChgCaptainRes *)result;
+	}
+
+	void NotifyCentral(int zoneid, int teamid, int roleid)
+	{
+		//if(!CrssvrTeamsManager::Instance()->IsRoleCrossOnline(teamid))
+		//	return;
+
+		SyncCrossCrssvrTeamsChgCaptain* rpc = (SyncCrossCrssvrTeamsChgCaptain*) Rpc::Call(RPC_SYNCCROSSCRSSVRTEAMSCHGCAPTAIN, SyncCrossCrssvrTeamsChgCaptainArg(zoneid, teamid, roleid));
+		CentralDeliveryClient::GetInstance()->SendProtocol(rpc);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsChgCaptainArg *arg = (DBCrssvrTeamsChgCaptainArg *)argument;
+		DBCrssvrTeamsChgCaptainRes *res = (DBCrssvrTeamsChgCaptainRes *)result;
+
+		LOG_TRACE("DBCrssvrTeamsChgCaptain, retcode=%d, teamid=%d, master_old=%d, master_new=%d", res->retcode, arg->teamid, master_old, arg->caption_roleid);
+		if(res->retcode==ERR_SUCCESS)
+		{
+	                int ret = CrssvrTeamsManager::Instance()->OnChgCaptain(arg->teamid, master_old, arg->caption_roleid);
+			if(ret != ERR_SUCCESS)
+				GDeliveryServer::GetInstance()->Send(linksid, CrssvrTeamsNotify_Re(ret, arg->caption_roleid, arg->teamid, localsid));
+			else
+			{
+				int zoneid = GDeliveryServer::GetInstance()->zoneid;
+				NotifyCentral(zoneid, arg->teamid, arg->caption_roleid);
+			
+				Thread::RWLock::WRScoped l(UserContainer::GetInstance().GetLocker());
+				PlayerInfo* pinfo = UserContainer::GetInstance().FindRoleOnline(arg->caption_roleid);
+				if (NULL==pinfo)
+				{
+					LOG_TRACE("DBCrssvrTeamsChgCaptain, NULL==pinfo, new captain=%d", arg->caption_roleid);
+					return;
+				}
+
+				// 提示被转移者
+				GDeliveryServer::GetInstance()->Send(pinfo->linksid, CrssvrTeamsNotify_Re(ERR_CRSSVRTEAMS_CHG_CAPTAIN, arg->caption_roleid, arg->teamid, pinfo->localsid, pinfo->name));
+			}
+
+		}
+		else
+		{
+			GDeliveryServer::GetInstance()->Send(linksid,CrssvrTeamsNotify_Re(res->retcode,master_old,arg->teamid,localsid));
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		DBCrssvrTeamsChgCaptainArg *arg = (DBCrssvrTeamsChgCaptainArg *)argument;
+		Log::log( LOG_ERR,"DBCrssvrTeamsChgCaptain: timeout. master_old=%d,teamid=%d", master_old, arg->teamid);
+		GDeliveryServer::GetInstance()->Send(linksid,CrssvrTeamsNotify_Re(ERR_CRSSVRTEAMS_DB_TIMEOUT,master_old,arg->teamid,localsid));
+	}
+
+};
+
+};
+#endif

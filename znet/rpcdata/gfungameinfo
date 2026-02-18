@@ -1,0 +1,105 @@
+#ifndef __GNET_GFUNGAMEINFO_RPCDATA
+#define __GNET_GFUNGAMEINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GFunGameInfo : public GNET::Rpc::Data
+	{
+	public:
+		int64_t money;
+		int reserved1;
+		int reserved2;
+		int reserved3;
+		int reserved4;
+		int reserved5;
+		int reserved6;
+		int reserved7;
+		int reserved8;
+
+	public:
+		GFunGameInfo (int64_t l_money = 0,int l_reserved1 = 0,int l_reserved2 = 0
+			,int l_reserved3 = 0,int l_reserved4 = 0,int l_reserved5 = 0
+			,int l_reserved6 = 0,int l_reserved7 = 0,int l_reserved8 = 0)
+			: money(l_money),reserved1(l_reserved1),reserved2(l_reserved2)
+			,reserved3(l_reserved3),reserved4(l_reserved4),reserved5(l_reserved5)
+			,reserved6(l_reserved6),reserved7(l_reserved7),reserved8(l_reserved8)
+		{
+		}
+
+		GFunGameInfo(const GFunGameInfo &rhs)
+			: money(rhs.money),reserved1(rhs.reserved1),reserved2(rhs.reserved2),
+			reserved3(rhs.reserved3),reserved4(rhs.reserved4),reserved5(rhs.reserved5),
+			reserved6(rhs.reserved6),reserved7(rhs.reserved7),reserved8(rhs.reserved8) { }
+
+		Rpc::Data *Clone() const { return new GFunGameInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFunGameInfo *r = dynamic_cast<const GFunGameInfo *>(&rhs);
+			if (r && r != this)
+			{
+				money = r->money;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+				reserved5 = r->reserved5;
+				reserved6 = r->reserved6;
+				reserved7 = r->reserved7;
+				reserved8 = r->reserved8;
+			}
+			return *this;
+		}
+
+		GFunGameInfo& operator = (const GFunGameInfo &rhs)
+		{
+			const GFunGameInfo *r = &rhs;
+			if (r && r != this)
+			{
+				money = r->money;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+				reserved5 = r->reserved5;
+				reserved6 = r->reserved6;
+				reserved7 = r->reserved7;
+				reserved8 = r->reserved8;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << money;
+			os << reserved1;
+			os << reserved2;
+			os << reserved3;
+			os << reserved4;
+			os << reserved5;
+			os << reserved6;
+			os << reserved7;
+			os << reserved8;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> money;
+			os >> reserved1;
+			os >> reserved2;
+			os >> reserved3;
+			os >> reserved4;
+			os >> reserved5;
+			os >> reserved6;
+			os >> reserved7;
+			os >> reserved8;
+			return os;
+		}
+
+	};
+};
+#endif

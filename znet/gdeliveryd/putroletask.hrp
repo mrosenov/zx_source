@@ -1,0 +1,42 @@
+
+#ifndef __GNET_PUTROLETASK_HPP
+#define __GNET_PUTROLETASK_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roletaskpair"
+
+
+namespace GNET
+{
+
+class PutRoleTask : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "putroletask"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleTaskPair *arg = (RoleTaskPair *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// RoleTaskPair *arg = (RoleTaskPair *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

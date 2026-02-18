@@ -1,0 +1,64 @@
+#ifndef __GNET_FACTIONHOSTILES_RPCDATA
+#define __GNET_FACTIONHOSTILES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class FactionHostiles : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int fid;
+		std::vector<unsigned int> hostiles;
+
+	public:
+		FactionHostiles (unsigned int l_fid = 0,const std::vector<unsigned int>& l_hostiles = std::vector<unsigned int>())
+			: fid(l_fid),hostiles(l_hostiles)
+		{
+		}
+
+		FactionHostiles(const FactionHostiles &rhs)
+			: fid(rhs.fid),hostiles(rhs.hostiles) { }
+
+		Rpc::Data *Clone() const { return new FactionHostiles(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FactionHostiles *r = dynamic_cast<const FactionHostiles *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				hostiles = r->hostiles;
+			}
+			return *this;
+		}
+
+		FactionHostiles& operator = (const FactionHostiles &rhs)
+		{
+			const FactionHostiles *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				hostiles = r->hostiles;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << hostiles;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> hostiles;
+			return os;
+		}
+
+	};
+};
+#endif

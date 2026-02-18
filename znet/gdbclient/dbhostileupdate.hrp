@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBHOSTILEUPDATE_HPP
+#define __GNET_DBHOSTILEUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhostileupdatearg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBHostileUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhostileupdate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBHostileUpdateArg *arg = (DBHostileUpdateArg *)argument;
+		// DefFactionRes *res = (DefFactionRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBHostileUpdateArg *arg = (DBHostileUpdateArg *)argument;
+		// DefFactionRes *res = (DefFactionRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

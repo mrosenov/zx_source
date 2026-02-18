@@ -1,0 +1,64 @@
+#ifndef __GNET_DBKINGDOMAPPOINTARG_RPCDATA
+#define __GNET_DBKINGDOMAPPOINTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBKingdomAppointArg : public GNET::Rpc::Data
+	{
+	public:
+		Octets candidate_name;
+		char title;
+
+	public:
+		DBKingdomAppointArg (Octets l_candidate_name = Octets(),char l_title = 0)
+			: candidate_name(l_candidate_name),title(l_title)
+		{
+		}
+
+		DBKingdomAppointArg(const DBKingdomAppointArg &rhs)
+			: candidate_name(rhs.candidate_name),title(rhs.title) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomAppointArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomAppointArg *r = dynamic_cast<const DBKingdomAppointArg *>(&rhs);
+			if (r && r != this)
+			{
+				candidate_name = r->candidate_name;
+				title = r->title;
+			}
+			return *this;
+		}
+
+		DBKingdomAppointArg& operator = (const DBKingdomAppointArg &rhs)
+		{
+			const DBKingdomAppointArg *r = &rhs;
+			if (r && r != this)
+			{
+				candidate_name = r->candidate_name;
+				title = r->title;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << candidate_name;
+			os << title;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> candidate_name;
+			os >> title;
+			return os;
+		}
+
+	};
+};
+#endif

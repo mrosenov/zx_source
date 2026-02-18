@@ -1,0 +1,64 @@
+#ifndef __GNET_GETCASHAVAILRES_RPCDATA
+#define __GNET_GETCASHAVAILRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GetCashAvailRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int cash_avail;
+
+	public:
+		GetCashAvailRes (int l_retcode = 0,int l_cash_avail = 0)
+			: retcode(l_retcode),cash_avail(l_cash_avail)
+		{
+		}
+
+		GetCashAvailRes(const GetCashAvailRes &rhs)
+			: retcode(rhs.retcode),cash_avail(rhs.cash_avail) { }
+
+		Rpc::Data *Clone() const { return new GetCashAvailRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GetCashAvailRes *r = dynamic_cast<const GetCashAvailRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				cash_avail = r->cash_avail;
+			}
+			return *this;
+		}
+
+		GetCashAvailRes& operator = (const GetCashAvailRes &rhs)
+		{
+			const GetCashAvailRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				cash_avail = r->cash_avail;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << cash_avail;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> cash_avail;
+			return os;
+		}
+
+	};
+};
+#endif

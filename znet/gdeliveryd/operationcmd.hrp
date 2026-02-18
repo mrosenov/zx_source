@@ -1,0 +1,108 @@
+
+#ifndef __GNET_OPERATIONCMD_HPP
+#define __GNET_OPERATIONCMD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "operationcmdarg"
+#include "operationcmdres"
+#include "gamedbclient.hpp"
+#include "iwebcmd.h"
+
+namespace GNET
+{
+
+class OperationCmd : public ProxyRpc
+{
+#define	RPC_BASECLASS	ProxyRpc
+	#include "operationcmd"
+#undef	RPC_BASECLASS
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		OperationCmdArg arg;
+		osArg >> arg;
+		LOG_TRACE("operationcmd operationtype %d code.size %d", arg.operationtype, arg.code.size());
+		if (arg.operationtype != 1)
+		{
+			Log::log(LOG_ERR, "operationcmd, invalid operation type %d", arg.operationtype);
+			SetResult(OperationCmdRes(ERR_IWEBCMD_INVALID_OP_TYPE));
+			SendToSponsor();
+			return false;
+		}
+		IwebCmd * control = IwebCmd::GetInstance();
+		if (!control->IsReady())
+		{
+			Log::log(LOG_ERR, "operationcmd, IwebCmd is not ready");
+			SetResult(OperationCmdRes(ERR_IWEBCMD_DATA_NOTREADY));
+			SendToSponsor();
+			return false;
+		}
+		std::vector<ServiceForbidCmd> cmdlist;
+		int timestamp = 0;
+		int ret = control->GetCmdList(arg.code, timestamp, cmdlist);
+		if (ret != ERR_SUCCESS)
+		{
+			Log::log(LOG_ERR, "operationcmd, parse code error, code.size %d", arg.code.size());
+			SetResult(OperationCmdRes(ret));
+			SendToSponsor();
+			return false;
+		}
+		if (std::abs(Timer::GetTime() - timestamp) > 3600)
+		{
+			Log::log(LOG_ERR, "operationcmd, code expire, code_timestamp %d now %d", timestamp, Timer::GetTime());
+			SetResult(OperationCmdRes(ERR_IWEBCMD_TIMESTAMP));
+			SendToSponsor();
+			return false;
+		}
+		Marshal::OctetsStream os;
+		os << cmdlist;
+		arg.code = os;
+		SetArgument(arg);
+		if( GameDBClient::GetInstance()->SendProtocol( *this ) )
+		{
+			LOG_TRACE("operationcmd, send to db, cmdlist.size %d", cmdlist.size());
+			return true;
+		}
+		else
+		{
+			SetResult(OperationCmdRes(ERR_IWEBCMD_COMMUNICATION));
+			SendToSponsor();
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		OperationCmdArg arg;
+		osArg >> arg;
+		OperationCmdRes res;
+		osRes >> res;
+		if (res.retcode == ERR_SUCCESS)
+		{
+			std::vector<ServiceForbidCmd> cmdlist;
+			try
+			{
+				Marshal::OctetsStream(arg.code) >> cmdlist;
+			}
+			catch(...)
+			{
+				Log::log(LOG_ERR, "operationcmd, return from db, code unmarshal error, code.size %d",
+						arg.code.size());
+				return;
+			}
+			IwebCmd::GetInstance()->HandleCmd(cmdlist);
+		}
+		// SetResult( &res ); // if you modified res, do not forget to call this. 
+	}
+
+	void OnTimeout( )
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

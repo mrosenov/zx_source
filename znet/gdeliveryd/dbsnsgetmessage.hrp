@@ -1,0 +1,80 @@
+
+#ifndef __GNET_DBSNSGETMESSAGE_HPP
+#define __GNET_DBSNSGETMESSAGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsgetmessagearg"
+#include "dbsnsgetmessageres"
+#include "snsmessagemanager.h"
+#include "snsplayerinfomanager.h"
+#include "gamedbclient.hpp"
+#include <vector>
+using std::vector;
+
+namespace GNET
+{
+
+class DBSNSGetMessage : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsgetmessage"
+#undef	RPC_BASECLASS
+
+	void LoadSNSPlayerList()
+	{
+		vector<int> roleid_list;
+		SNSMessageManager *mm = SNSMessageManager::GetInstance();
+
+		mm->SetFinishLoading(true);
+		mm->GetSNSPlayerList(roleid_list);
+
+		if (roleid_list.size() > 0)
+			SNSPlayerInfoManager::GetInstance()->LoadSNSPlayerList(roleid_list);
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSNSGetMessageArg *arg = (DBSNSGetMessageArg *)argument;
+		// DBSNSGetMessageRes *res = (DBSNSGetMessageRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBSNSGetMessageArg *arg = (DBSNSGetMessageArg *)argument;
+		DBSNSGetMessageRes *res = (DBSNSGetMessageRes *)result;
+
+		if (res->retcode == ERR_SUCCESS)
+		{
+			GSNSMessageVector::iterator it, ie = res->messages.end();
+			for (it = res->messages.begin(); it != ie; ++it)
+			{
+				SNSMessageManager::GetInstance()->OnLoad(*it);
+			}
+
+			if (res->message_id != -1)
+			{
+				DBSNSGetMessage *rpc = (DBSNSGetMessage *)Rpc::Call(RPC_DBSNSGETMESSAGE, DBSNSGetMessageArg(res->message_type, res->message_id));
+				GameDBClient::GetInstance()->SendProtocol(rpc);
+			}
+			else
+				LoadSNSPlayerList();
+		}
+		else
+		{
+			LoadSNSPlayerList();
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		Log::log(LOG_ERR, "gdeliveryd: DBSNSGetMessage timeout\n");
+		LoadSNSPlayerList();
+	}
+};
+
+};
+#endif

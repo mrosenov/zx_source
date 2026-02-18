@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBKINGGETREWARD_HPP
+#define __GNET_DBKINGGETREWARD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkinggetrewardarg"
+#include "dbkinggetrewardres"
+
+namespace GNET
+{
+
+class DBKingGetReward : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkinggetreward"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingGetRewardArg *arg = (DBKingGetRewardArg *)argument;
+		// DBKingGetRewardRes *res = (DBKingGetRewardRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingGetRewardArg *arg = (DBKingGetRewardArg *)argument;
+		// DBKingGetRewardRes *res = (DBKingGetRewardRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

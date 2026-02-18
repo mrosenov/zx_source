@@ -1,0 +1,226 @@
+
+#ifndef __GNET_DBCHANGEFACTIONNAME_HPP
+#define __GNET_DBCHANGEFACTIONNAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbchangefactionnamearg"
+#include "dbchangefactionnameres"
+
+namespace GNET
+{
+
+class DBChangeFactionname : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbchangefactionname"
+#undef	RPC_BASECLASS
+
+	void CheckKingFacName(int fid, const Octets & newname)
+	{
+		try
+		{
+			StorageEnv::Storage * pkingdom = StorageEnv::GetStorage("kingdom");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, value;
+			try
+			{
+				key << 0;
+				if (!pkingdom->find(key, value, txn))
+					return;
+				GKingdomInfo kingdom;
+				value >> kingdom;
+				if (kingdom.kingfaction == fid)
+				{
+					kingdom.kingfacname = newname;
+					pkingdom->insert(key, Marshal::OctetsStream()<<kingdom, txn);
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "CheckKingFacName what=%s\n", e.what() );
+		}
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBChangeFactionnameArg *arg = (DBChangeFactionnameArg *)argument;
+		DBChangeFactionnameRes *res = (DBChangeFactionnameRes *)result;
+		LOG_TRACE( "DBChangeFactionname, roleid=%d itemid=%d item_pos=%d scale=%d", arg->roleid, arg->itemid, arg->item_pos, arg->scale);
+
+		try
+		{
+			StorageEnv::Storage * pname = NULL;
+			StorageEnv::Storage * pdb = NULL;
+			if (arg->scale == 0)
+			{
+				pname = StorageEnv::GetStorage("factionname");
+				pdb = StorageEnv::GetStorage("faction");
+			}
+			else
+			{
+				pname = StorageEnv::GetStorage("familyname");
+				pdb = StorageEnv::GetStorage("family");
+			}
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * puser = (arg->syncdata.data_mask&SYNC_CASHUSED)?StorageEnv::GetStorage("user"):NULL;
+//			StorageEnv::Storage * pstore = (arg->syncdata.data_mask&SYNC_STOTEHOUSE)?StorageEnv::GetStorage("storehouse"):NULL;
+			StorageEnv::Storage * pstore = StorageEnv::GetStorage("storehouse");
+
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				Marshal::OctetsStream krole, os_name, kfac;
+				if (pname->find(Marshal::OctetsStream()<<arg->newname, os_name, txn))
+				{
+					res->retcode = ERR_FC_CREATE_DUP;
+					return;
+				}
+				krole << arg->roleid;
+				kfac << arg->fid;
+				GRolePocket pocket;
+				Marshal::OctetsStream(pinventory->find(krole, txn)) >> pocket;
+				if (arg->syncdata.inventory.timestamp - pocket.timestamp <= 0)
+				{
+					Log::log(LOG_ERR,"DBChangeFactionname, timestamp mismatch. roleid=%d (%d<%d)",
+							arg->roleid, arg->syncdata.inventory.timestamp, pocket.timestamp);
+					DbException ee(DB_VERIFY_BAD);
+					txn.abort(ee);
+					throw ee;
+				}
+				if (!DecPocketItemInPos(arg->syncdata.inventory.items, arg->item_pos, arg->itemid, 1, res->syncdata.inventory.items))
+				{
+					Log::log(LOG_ERR,"DBChangeFactionname, dec item fail. roleid=%d", arg->roleid);
+					DbException ee(DB_VERIFY_BAD);
+					txn.abort(ee);
+					throw ee;
+				}
+				pinventory->insert(krole, Marshal::OctetsStream()<<arg->syncdata.inventory, txn);
+
+				Octets oldname;
+				int now = Timer::GetTime();
+				if (arg->scale == 0)
+				{
+					GFactionInfo faction;
+					Marshal::OctetsStream(pdb->find(kfac, txn)) >> faction;
+					if (faction.master != (unsigned int)arg->roleid)
+					{
+						Log::log(LOG_ERR,"DBChangeFactionname, verify faction master failed. roleid=%d fid=%d", arg->roleid, arg->fid);
+						DbException ee(DB_VERIFY_BAD);
+						txn.abort(ee);
+						throw ee;
+					}
+					oldname = faction.name;
+					faction.name = arg->newname;
+					faction.changenametime = now;
+					std::vector<Octets> namelist;
+					if (faction.namehis.size())
+					{
+						try
+						{
+							Marshal::OctetsStream(faction.namehis) >> namelist;
+						}
+						catch(...)
+						{
+							Log::log(LOG_ERR, "DBChangeFactionname fid %d namehis unmarshal err", arg->fid);
+							namelist.clear();
+						}
+					}
+					namelist.push_back(oldname);
+					Marshal::OctetsStream namehis_os;
+					namehis_os << namelist;
+					faction.namehis = namehis_os;
+					pdb->insert(kfac, Marshal::OctetsStream() << faction, txn);
+				}
+				else
+				{
+					GFamily family;
+					Marshal::OctetsStream(pdb->find(kfac, txn)) >> family;
+					if (family.master != (unsigned int)arg->roleid)
+					{
+						Log::log(LOG_ERR,"DBChangeFactionname, verify family master failed. roleid=%d fid=%d", arg->roleid, arg->fid);
+						DbException ee(DB_VERIFY_BAD);
+						txn.abort(ee);
+						throw ee;
+					}
+					oldname = family.name;
+					family.name = arg->newname;
+					family.changenametime = now;
+					std::vector<Octets> namelist;
+					if (family.namehis.size())
+					{
+						try
+						{
+							Marshal::OctetsStream(family.namehis) >> namelist;
+						}
+						catch(...)
+						{
+							Log::log(LOG_ERR, "DBChangeFamilyname fid %d namehis unmarshal err", arg->fid);
+							namelist.clear();
+						}
+					}
+					namelist.push_back(oldname);
+					Marshal::OctetsStream namehis_os;
+					namehis_os << namelist;
+					family.namehis = namehis_os;
+					pdb->insert(kfac, Marshal::OctetsStream() << family, txn);
+
+				}
+				//pname->insert(old_name, Marshal::OctetsStream() << (int)-1, txn);//老名字仍可以映射到 fid
+				pname->insert(Marshal::OctetsStream()<<arg->newname, kfac, txn);
+
+				int money_delta = arg->syncdata.inventory.money - pocket.money;
+				::UpdateCash(puser, arg->syncdata, txn);
+				//::UpdateShoplog(plog, arg->syncdata, txn);
+				::UpdateStore(arg->roleid, pstore, arg->syncdata, txn, money_delta);
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				res->syncdata.data_mask = arg->syncdata.data_mask;
+				res->oldname = oldname;
+//				res->rolenamehis = rolenamehis_vec;
+				res->retcode = ERR_SUCCESS;
+				Log::formatlog("dbchangefactionname", "roleid=%d fid=%d scale=%d itemid=%d item_pos=%d",
+						arg->roleid, arg->fid, arg->scale, arg->itemid, arg->item_pos);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBChangeFactionname, roleid=%d, what=%s\n", arg->roleid, e.what() );
+			res->retcode = ERR_VERIFYFAILED;
+		}
+		if (arg->scale == 0 && res->retcode == ERR_SUCCESS)
+			CheckKingFacName(arg->fid, arg->newname);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBChangeFactionnameArg *arg = (DBChangeFactionnameArg *)argument;
+		// DBChangeFactionnameRes *res = (DBChangeFactionnameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

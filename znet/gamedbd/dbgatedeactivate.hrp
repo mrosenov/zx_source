@@ -1,0 +1,108 @@
+
+#ifndef __GNET_DBGATEDEACTIVATE_HPP
+#define __GNET_DBGATEDEACTIVATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gttool.h"
+#include "dbgateactivatearg"
+#include "dbgateactivateres"
+#include "ggtactivate"
+namespace GNET
+{
+
+class DBGateDeactivate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgatedeactivate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBGateActivateArg *arg = (DBGateActivateArg *)argument;
+		DBGateActivateRes *res = (DBGateActivateRes *)result;
+		Log::formatlog("GTactivate","DBGateDeactivate roleid = %d", arg->id);
+		try
+		{
+			StorageEnv::Storage * pgt = StorageEnv::GetStorage("gtactivate");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::AtomTransaction txn;
+			try
+			{
+				GGTActivate entry;
+				Marshal::OctetsStream key,entryos,baseos;
+				key << arg->id;
+				int operation =arg->operation;
+				if(!pbase->find(key,baseos,txn))
+				{
+					DEBUG_PRINT("DBGateDeactivate:role deleted roleid =%d ",arg->id);
+					res->retcode = ERR_ROLEREMOVED;
+					if(pgt->find(key, entryos,txn))
+						pgt->del(key,txn);
+					return;
+				}
+				if(pgt->find(key, entryos,txn)) 
+				{
+					entryos >> entry;
+					if(!IsActivate(entry.activatemask,operation))
+					{
+						DEBUG_PRINT("DBGateDeactivate:has not activate roleid =%d ",arg->id);
+						res->retcode = ERR_HASNOT_ACTIVATED;
+						return;
+					}
+					else
+					{
+						ClearActivate(entry.activatemask,operation);
+					}
+
+					if(IsMaskClean(entry.activatemask))
+					{
+						pgt->del(key,txn);
+					}
+					else
+					{
+						pgt->insert(key,Marshal::OctetsStream()<<entry,txn);
+					}
+					res->retcode = ERR_SUCCESS;
+					return;
+				}
+				else
+				{
+					DEBUG_PRINT("DBGateDeactivate:has not activate roleid =%d ",arg->id);
+					res->retcode = ERR_HASNOT_ACTIVATED;
+					return;
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			res->retcode = ERR_GT_DB_FAILURE;
+			return;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBGateActivateArg *arg = (DBGateActivateArg *)argument;
+		// DBGateActivateRes *res = (DBGateActivateRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

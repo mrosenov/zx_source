@@ -1,0 +1,44 @@
+
+#ifndef __GNET_DBFAMILYLEAVE_HPP
+#define __GNET_DBFAMILYLEAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfamilyleavearg"
+#include "delfactionres"
+#include "familymanager.h"
+
+namespace GNET
+{
+
+class DBFamilyLeave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyleave"
+#undef	RPC_BASECLASS
+	int master;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilyLeaveArg *arg = (DBFamilyLeaveArg *)argument;
+		DelFactionRes *res = (DelFactionRes *)result;
+		DEBUG_PRINT("DBFamilyLeave, retcode=%d, roleid=%d, familyid=%d", res->retcode, arg->rid, arg->familyid);
+                if(res->retcode==ERR_SUCCESS)
+                {
+                        FamilyManager::Instance()->OnLeave(arg->familyid, arg->rid, master);
+                }
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,56 @@
+
+#ifndef __GNET_FACTIONINVITEJOIN_HPP
+#define __GNET_FACTIONINVITEJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "factioninvitearg"
+#include "factioninviteres"
+#include "glinkserver.hpp"
+
+namespace GNET
+{
+
+class FactionInviteJoin : public ProxyRpc
+{
+#define	RPC_BASECLASS	ProxyRpc
+	#include "factioninvitejoin"
+#undef	RPC_BASECLASS
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		// TODO
+		// FactionInviteArg arg;
+		// osArg >> arg;
+		if( GLinkServer::GetInstance()->SendProtocol( *this ) )
+		{
+			return true;
+		}
+		else
+		{
+			SetResult(FactionInviteRes(ERR_DELIVER_SEND));
+			SendToSponsor();
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		// TODO
+		// FactionInviteArg arg;
+		// osArg >> arg;
+		// FactionInviteRes res;
+		// osRes >> res;
+		// SetResult( &res ); // if you modified res, do not forget to call this. 
+	}
+
+	void OnTimeout( )
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

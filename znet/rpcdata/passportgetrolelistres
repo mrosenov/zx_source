@@ -1,0 +1,65 @@
+#ifndef __GNET_PASSPORTGETROLELISTRES_RPCDATA
+#define __GNET_PASSPORTGETROLELISTRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "rolesimple"
+
+namespace GNET
+{
+	class PassportGetRoleListRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		RoleSimpleVector rolelist;
+
+	public:
+		PassportGetRoleListRes (int l_retcode = 0,const RoleSimpleVector& l_rolelist = RoleSimpleVector())
+			: retcode(l_retcode),rolelist(l_rolelist)
+		{
+		}
+
+		PassportGetRoleListRes(const PassportGetRoleListRes &rhs)
+			: retcode(rhs.retcode),rolelist(rhs.rolelist) { }
+
+		Rpc::Data *Clone() const { return new PassportGetRoleListRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PassportGetRoleListRes *r = dynamic_cast<const PassportGetRoleListRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				rolelist = r->rolelist;
+			}
+			return *this;
+		}
+
+		PassportGetRoleListRes& operator = (const PassportGetRoleListRes &rhs)
+		{
+			const PassportGetRoleListRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				rolelist = r->rolelist;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << rolelist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> rolelist;
+			return os;
+		}
+
+	};
+};
+#endif

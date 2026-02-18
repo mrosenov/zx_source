@@ -1,0 +1,78 @@
+#ifndef __GNET_TEAMRAIDAPPLYINGROLE_RPCDATA
+#define __GNET_TEAMRAIDAPPLYINGROLE_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "teamraidrolebrief"
+
+namespace GNET
+{
+	class TeamRaidApplyingRole : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int score;
+		unsigned char occupation;
+		TeamRaidRoleBrief rolebrief;
+
+	public:
+		TeamRaidApplyingRole (int l_roleid = 0,int l_score = 0,unsigned char l_occupation = 0
+			,const TeamRaidRoleBrief& l_rolebrief = TeamRaidRoleBrief())
+			: roleid(l_roleid),score(l_score),occupation(l_occupation)
+			,rolebrief(l_rolebrief)
+		{
+		}
+
+		TeamRaidApplyingRole(const TeamRaidApplyingRole &rhs)
+			: roleid(rhs.roleid),score(rhs.score),occupation(rhs.occupation),
+			rolebrief(rhs.rolebrief) { }
+
+		Rpc::Data *Clone() const { return new TeamRaidApplyingRole(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const TeamRaidApplyingRole *r = dynamic_cast<const TeamRaidApplyingRole *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				score = r->score;
+				occupation = r->occupation;
+				rolebrief = r->rolebrief;
+			}
+			return *this;
+		}
+
+		TeamRaidApplyingRole& operator = (const TeamRaidApplyingRole &rhs)
+		{
+			const TeamRaidApplyingRole *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				score = r->score;
+				occupation = r->occupation;
+				rolebrief = r->rolebrief;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << score;
+			os << occupation;
+			os << rolebrief;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> score;
+			os >> occupation;
+			os >> rolebrief;
+			return os;
+		}
+
+	};
+};
+#endif

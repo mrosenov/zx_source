@@ -1,0 +1,95 @@
+#ifndef __GNET_GROLEBRIEF_RPCDATA
+#define __GNET_GROLEBRIEF_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GRoleBrief : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		Octets name;
+		int level;
+		int64_t money;
+		int cashadd;
+		int cashused;
+		int itemnum;
+
+	public:
+		GRoleBrief (int l_roleid = 0,const Octets& l_name = Octets(0),int l_level = 0
+			,int64_t l_money = 0,int l_cashadd = 0,int l_cashused = 0
+			,int l_itemnum = 0)
+			: roleid(l_roleid),name(l_name),level(l_level)
+			,money(l_money),cashadd(l_cashadd),cashused(l_cashused)
+			,itemnum(l_itemnum)
+		{
+		}
+
+		GRoleBrief(const GRoleBrief &rhs)
+			: roleid(rhs.roleid),name(rhs.name),level(rhs.level),
+			money(rhs.money),cashadd(rhs.cashadd),cashused(rhs.cashused),
+			itemnum(rhs.itemnum) { }
+
+		Rpc::Data *Clone() const { return new GRoleBrief(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GRoleBrief *r = dynamic_cast<const GRoleBrief *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				name = r->name;
+				level = r->level;
+				money = r->money;
+				cashadd = r->cashadd;
+				cashused = r->cashused;
+				itemnum = r->itemnum;
+			}
+			return *this;
+		}
+
+		GRoleBrief& operator = (const GRoleBrief &rhs)
+		{
+			const GRoleBrief *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				name = r->name;
+				level = r->level;
+				money = r->money;
+				cashadd = r->cashadd;
+				cashused = r->cashused;
+				itemnum = r->itemnum;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << name;
+			os << level;
+			os << money;
+			os << cashadd;
+			os << cashused;
+			os << itemnum;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> name;
+			os >> level;
+			os >> money;
+			os >> cashadd;
+			os >> cashused;
+			os >> itemnum;
+			return os;
+		}
+
+	};
+};
+#endif

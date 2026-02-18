@@ -1,0 +1,360 @@
+
+#ifndef __GNET_DBCONSIGNPREPOSTROLE_HPP
+#define __GNET_DBCONSIGNPREPOSTROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignprepostrolearg"
+#include "dbconsignprepostroleres"
+#include "localmacro.h"
+#include "gamedbserver.hpp"
+
+namespace GNET
+{
+
+class DBConsignPrePostRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignprepostrole"
+#undef	RPC_BASECLASS
+
+	static const int64_t CONSIGNID_FOR_SN_STORAGE=0;// according to dbconsignprepost.hrp
+	static const int CONSIGN_MARGIN_ROLE = 0;
+	static const unsigned int CONSIGN_PRICE_ROLE_MIN = 6000;//cent
+	static const unsigned int CONSIGN_PRICE_ROLE_MAX = 100000000;//cent
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignPrePostRoleArg *arg = (DBConsignPrePostRoleArg *)argument;
+		DBConsignPrePostRoleRes *res = (DBConsignPrePostRoleRes *)result;
+		Log::formatlog("consign","DBConsignPrePostRole roleid=%d,margin=%d,item_id=0,item_cnt=0,money=0,price=%d,shelf_period=%d,consign_type=%d,category=%d",arg->roleid,arg->margin,arg->price,arg->shelf_period,arg->consign_type,arg->category);
+		int buyer_rid=0;
+		int buyer_uid=0;
+		if(arg->sell_to_rolename.size() > 0)
+		{
+			try
+			{
+				StorageEnv::Storage * prolename = StorageEnv::GetStorage("rolename");
+				StorageEnv::AtomTransaction txn;
+				try
+				{
+					Marshal::OctetsStream( prolename->find( arg->sell_to_rolename, txn ) ) >> buyer_rid;
+				//	res->retcode = ERR_SUCCESS;
+				}
+				catch ( DbException e ) { throw; }
+				catch ( ... )
+				{
+					DbException ee( DB_OLD_VERSION );
+					txn.abort( ee );
+					throw ee;
+				}
+			}
+			catch ( DbException e )
+			{
+				res->retcode = ERR_WT_BUYERNAME_INVALID;
+				return;
+			}
+			try
+			{
+				StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+				StorageEnv::AtomTransaction txn;
+				try
+				{
+					GRoleBase buyer_base;
+					Marshal::OctetsStream(pbase->find(Marshal::OctetsStream()<<buyer_rid, txn)) >> buyer_base;
+					if(buyer_base.userid)
+						buyer_uid = buyer_base.userid;
+					else
+						buyer_uid = LOGICUID(buyer_rid);
+				}
+				catch ( DbException e ) { throw; }
+				catch ( ... )
+				{
+					DbException ee( DB_OLD_VERSION );
+				
+					txn.abort( ee );
+					throw ee;
+				}
+			}
+			catch ( DbException e )
+			{
+				res->retcode = ERR_WT_DB_FAILURE;
+				return;
+			}
+}
+
+		if(arg->margin != CONSIGN_MARGIN_ROLE || arg->consign_type != CONSIGNTYPE_ROLE || arg->price > CONSIGN_PRICE_ROLE_MAX || arg->price < CONSIGN_PRICE_ROLE_MIN)
+		{
+			LOG_TRACE("dbconsignprepostrole price=%d,consign_type=%d",arg->price,arg->consign_type);
+			res->retcode= ERR_WT_PREPOST_ARG_ERR;
+			return;
+		}
+
+		try
+		{
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage *pstatus,*pstorehouse;
+			pstatus = StorageEnv::GetStorage("status");
+			pstorehouse = StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage * pmailbox = StorageEnv::GetStorage("mailbox");
+			StorageEnv::Storage * pfriends = StorageEnv::GetStorage("friends");
+			StorageEnv::Storage * psect = StorageEnv::GetStorage("sect");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+			/*	GRoleBase buyer_base;
+				Marshal::OctetsStream(pbase->find(Marshal::OctetsStream()<<buyer_rid, txn)) >> buyer_base;
+				if(buyer_base.userid)
+					buyer_uid = buyer_base.userid;
+				else
+					buyer_uid = LOGICUID(buyer_rid);*/
+				//reject sell to same user
+				if(buyer_uid == arg->userid)
+				{
+					res->retcode = ERR_WT_BUYER_SAMEUSER;
+					return;
+				}	
+		//		LOG_TRACE("dbconsignprepostrole debug1");
+
+				GRolePocket bag;
+				Marshal::OctetsStream krole;
+				krole<< arg->roleid;
+				Marshal::OctetsStream( pinventory->find( krole, txn ) ) >> bag;
+				GRoleInventoryVector::iterator ititem;
+				if(arg->consign_type == CONSIGNTYPE_ROLE)  //寄售角色
+				{
+					//检查寄售凭证和保证金	
+					{
+						GRoleInventoryVector::iterator it,ie;
+						for(it=bag.items.begin(),ie=bag.items.end();it!=ie;++it)
+						{
+							if(it->pos == arg->token_item_idx)
+							{	
+								if(it->id != arg->token_item_id || it->count < arg->token_item_cnt || arg->token_item_cnt<=0)
+								{
+									it=ie;
+									Log::log( LOG_ERR, "DBConsignPrePostRole it->id=%d,token_item_id=%d,it->pos=%d,token_item_idx=%d,it->count=%d,item_cnt=%d",it->id,arg->token_item_id,it->pos,arg->token_item_idx,it->count,arg->token_item_cnt);
+									
+								}	
+								else
+									ititem = it;
+								break;
+							}
+						}
+						//if(it == ie || it->proctype&MASK_ITEM_NOTRADE || arg->margin > (int)bag.money)
+						if(it == ie)
+						{
+							Log::log( LOG_ERR, "DBConsignPrePostRole token_item_id=%d,token_item_idx=%d,item_cnt=%d",arg->token_item_id,arg->token_item_idx,arg->token_item_cnt);
+							res->retcode = ERR_WT_PREPOST_ARG_ERR;
+						//	throw DbException(DB_VERIFY_BAD);
+							return;
+						}
+					}
+				}
+				else
+				{
+					Log::log( LOG_ERR, "DBConsignPrePostRole,consign_type=%d",arg->consign_type);
+					res->retcode = ERR_WT_DB_FAILURE;
+					return;
+				}
+			//	LOG_TRACE("dbconsignprepostrole debug2");
+				
+				Marshal::OctetsStream ksn;
+				ksn <<CONSIGNID_FOR_SN_STORAGE;
+				int64_t sn;
+				Marshal::OctetsStream stateos;
+				if(pconsign->find(ksn, stateos,txn)==true)// use this find to avoid exception
+					stateos>>sn;
+				else
+				{
+					sn = (((int64_t)(GameDBServer::GetInstance()->zoneid))<<32) + 1;//record 0 is not exist, init value of sn to 1
+					Log::formatlog("consign","init db consign sn=%lld, zoneid=%d",sn,GameDBServer::GetInstance()->zoneid);
+							
+				}
+
+				//check sn with delivery zoneid 
+				/* 11.05.17 remove this limit, let zoneid of either server be used after mergedb*/
+				/*int sn_prefix = (int)(sn>>32);
+				if(sn_prefix != GameDBServer::GetInstance()->delivery_zoneid)
+				{
+					Log::log( LOG_ERR, "DBConsignPrePost,sn prefix=%d delivery_zoneid=%d unequal",sn_prefix,GameDBServer::GetInstance()->delivery_zoneid);
+					res->retcode = ERR_WT_DB_FAILURE;
+					return;
+				}*/
+
+			//	LOG_TRACE("dbconsignprepostrole debug3");
+				GConsignDB detail;
+				detail.info.sn = sn;
+				detail.info.state = DSTATE_PRE_POST;
+				detail.info.consign_type = arg->consign_type;
+			//	detail.info.money = 0;
+			//	detail.info.item_id = 0;
+			//	detail.info.item_cnt = 0;
+				detail.info.post_endtime = 0;
+				detail.info.show_endtime = 0;
+				detail.info.sell_endtime = arg->shelf_period*60*24;
+				detail.info.price = arg->price;
+				detail.category = arg->category;
+				//保存寄售凭证
+				{
+					detail.item = *ititem;
+					detail.item.count = arg->token_item_cnt;//need count
+				}
+
+				detail.post_time = Timer::GetTime();
+				//detail.post_time *= 1000;
+				detail.shelf_time = detail.post_time;
+				detail.largest_web_timestamp = 0;
+				detail.margin = arg->margin;
+				detail.loginip = arg->loginip;
+				detail.seller_roleid = arg->roleid;
+				detail.seller_userid = arg->userid;
+				detail.seller_name = arg->seller_name;
+				detail.buyer_roleid = buyer_rid;
+				detail.buyer_userid = buyer_uid;
+				detail.buyer_name = arg->sell_to_rolename;
+				detail.game_timestamp =1;
+				Marshal::OctetsStream gsinfo;
+				gsinfo<<arg->roleinfo;
+				detail.gs_roleinfo = gsinfo;
+				//modify inventory
+		//		bag.money-=arg->margin;//扣除margin
+				//modify role status
+			//	LOG_TRACE("dbconsignprepostrole debug4");
+				GRoleBase seller_base;
+				Marshal::OctetsStream(pbase->find(Marshal::OctetsStream()<<arg->roleid, txn)) >> seller_base;
+				if(seller_base.familyid)
+				{
+					res->retcode = ERR_WT_SELL_ROLE_HAS_FAC_RELATION;
+					return;
+				}	
+				if(seller_base.spouse)
+				{
+					res->retcode = ERR_WT_SELL_ROLE_HAS_SPOUSE_RELATION;
+					return;
+				}	
+				if(seller_base.sectid)
+				{
+					if(seller_base.sectid != arg->roleid)
+					{
+						res->retcode = ERR_WT_SELL_ROLE_HAS_SECT_RELATION;
+						return;
+					}
+					else
+					{
+						GSect sect;
+						Marshal::OctetsStream  sectvalue;
+						if(psect->find(Marshal::OctetsStream()<<arg->roleid,sectvalue,txn))
+						{
+							sectvalue >> sect;
+							if(sect.disciples.size()>0)
+							{
+								res->retcode = ERR_WT_SELL_ROLE_HAS_SECT_RELATION;
+								return;
+							}	
+						}
+						else
+						{
+							res->retcode = ERR_WT_SELL_ROLE_HAS_SECT_RELATION;
+							return;
+						}	
+					}
+				}
+				seller_base.status = _ROLE_STATUS_SELLING;
+				
+				GRoleStatus status;
+				Marshal::OctetsStream(pstatus->find(krole,txn)) >> status;
+				detail.info.money = status.level;//level
+				detail.info.item_id = (status.occupation<<16) + status.cultivation;//occupation,cultivation
+				detail.info.item_cnt = status.reborndata.size()/sizeof(int);//reborn_cnt
+				
+				//write db
+				int64_t newsn=sn+1;
+				pconsign->insert(ksn,Marshal::OctetsStream()<<newsn, txn);
+				pconsign->insert(Marshal::OctetsStream()<<sn, Marshal::OctetsStream()<<detail, txn, \
+						DB_NOOVERWRITE);
+			       	pinventory->insert(krole, Marshal::OctetsStream()<<bag, txn);
+				pbase->insert(Marshal::OctetsStream()<<arg->roleid, Marshal::OctetsStream()<<seller_base, txn);
+				//send mail to friends
+				Marshal::OctetsStream friend_value;
+				GFriendList frienddata;
+				if(pfriends->find(Marshal::OctetsStream() << arg->roleid, friend_value, txn))
+					friend_value >> frienddata;
+				GFriendInfoVector::iterator it,ite=frienddata.friends.end();
+				GMailHeader mailheader;
+			//	LOG_TRACE("dbconsignprepostrole friend size = %d",frienddata.friends.size());
+
+				for(it=frienddata.friends.begin();it!=ite;++it)
+				{
+					mailheader.receiver = it->rid;
+					mailheader.sndr_type = _MST_ROLE_CONSIGN_NOTIFY;
+					mailheader.sender = _CONSIGNROLE_POST;// 0
+					mailheader.sender_name = seller_base.name;
+					MailSender::Send(pmailbox,mailheader, 0, txn);
+			//		if(MailSender::Send(pmailbox,mailheader, 0, txn)==0)
+			//			LOG_TRACE("dbconsignprepostrole sendmail to %d",it->rid);
+			//		else
+			//			LOG_TRACE("dbconsignprepostrole sendmail to %d fail",it->rid);
+
+				}
+
+			//	LOG_TRACE("dbconsignprepostrole debug51");
+				res->detail = detail;
+				//get role data
+				GCreditInfo credit;
+				credit.credits = status.credit;
+				GPetsInfo pet(bag.petbadge,bag.petequip);
+				GRoleStorehouse storehouse;
+				Marshal::OctetsStream(pstorehouse->find(krole,txn)) >> storehouse;
+                              	GRoleInventoryVector mountwing;
+                               	short mountwingsize=0;
+
+				if(bag.mountwing.size())
+				{
+					Marshal::OctetsStream os_mountwing(bag.mountwing);//refer to gdbclient/db_if.cpp
+					try
+					{
+						os_mountwing >> mountwingsize;
+		                               	os_mountwing >> mountwing;
+					}
+					catch(...)
+					{
+						Log::log(LOG_ERR, "dbconsignprepostrole, error unmarshal, roleid=%d\n", arg->roleid);
+					}
+				}
+				GPocketInfo pocketinfo(bag.money, bag.equipment, bag.capacity, bag.items, bag.pocket_capacity, bag.pocket_items, bag.fashion, mountwingsize,mountwing,storehouse);
+				res->roledetail = GConsignRole(arg->roleinfo,credit,pet,pocketinfo);
+				res->retcode = ERR_SUCCESS;
+				Log::formatlog("webtradeprepostrole","roleid=%d:sn=%lld:type=%d:itemid=0:item_count=0:money=0:role=0:petid=0:pet_count=0",arg->roleid,sn,arg->consign_type);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignPrePostRole, roleid=%d, what=%s\n",arg->roleid, e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

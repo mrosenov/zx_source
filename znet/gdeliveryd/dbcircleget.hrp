@@ -1,0 +1,50 @@
+
+#ifndef __GNET_DBCIRCLEGET_HPP
+#define __GNET_DBCIRCLEGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "circleid"
+#include "gcirclememberdb"
+#include "dbcirclegetres"
+
+#include "circlemanager.h"
+namespace GNET
+{
+
+class DBCircleGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcircleget"
+#undef	RPC_BASECLASS
+	int roleid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// CircleID *arg = (CircleID *)argument;
+		// DBCircleGetRes *res = (DBCircleGetRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+//		CircleID *arg = (CircleID *)argument;
+		DBCircleGetRes *res = (DBCircleGetRes *)result;
+		DEBUG_PRINT("DBCircleGet, retcode=%d, roleid=%d, circleid=%d", res->retcode, roleid, res->value.circleid);	
+		if (res->retcode == ERR_SUCCESS)
+		{
+			CircleManager::Instance()->OnLoad(res->value,roleid);
+		}
+	
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

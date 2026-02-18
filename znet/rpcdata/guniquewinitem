@@ -1,0 +1,77 @@
+#ifndef __GNET_GUNIQUEWINITEM_RPCDATA
+#define __GNET_GUNIQUEWINITEM_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GUniqueWinItem : public GNET::Rpc::Data
+	{
+	public:
+		int itemid;
+		int bid_min;
+		int reserve1;
+		int reserve2;
+
+	public:
+		GUniqueWinItem (int l_itemid = 0,int l_bid_min = 0,int l_reserve1 = 0
+			,int l_reserve2 = 0)
+			: itemid(l_itemid),bid_min(l_bid_min),reserve1(l_reserve1)
+			,reserve2(l_reserve2)
+		{
+		}
+
+		GUniqueWinItem(const GUniqueWinItem &rhs)
+			: itemid(rhs.itemid),bid_min(rhs.bid_min),reserve1(rhs.reserve1),
+			reserve2(rhs.reserve2) { }
+
+		Rpc::Data *Clone() const { return new GUniqueWinItem(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GUniqueWinItem *r = dynamic_cast<const GUniqueWinItem *>(&rhs);
+			if (r && r != this)
+			{
+				itemid = r->itemid;
+				bid_min = r->bid_min;
+				reserve1 = r->reserve1;
+				reserve2 = r->reserve2;
+			}
+			return *this;
+		}
+
+		GUniqueWinItem& operator = (const GUniqueWinItem &rhs)
+		{
+			const GUniqueWinItem *r = &rhs;
+			if (r && r != this)
+			{
+				itemid = r->itemid;
+				bid_min = r->bid_min;
+				reserve1 = r->reserve1;
+				reserve2 = r->reserve2;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << itemid;
+			os << bid_min;
+			os << reserve1;
+			os << reserve2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> itemid;
+			os >> bid_min;
+			os >> reserve1;
+			os >> reserve2;
+			return os;
+		}
+
+	};
+};
+#endif

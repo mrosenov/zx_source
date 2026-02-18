@@ -1,0 +1,118 @@
+
+#ifndef __GNET_DBCIRCLEJOIN_HPP
+#define __GNET_DBCIRCLEJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcirclejoinarg"
+#include "dbcirclejoinres"
+#include "circlemanager.h"
+#include "circlenotifylink.hpp"
+namespace GNET
+{
+
+class DBCircleJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcirclejoin"
+#undef	RPC_BASECLASS
+	int roleid;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCircleJoinArg *arg = (DBCircleJoinArg *)argument;
+		// DBCircleJoinRes *res = (DBCircleJoinRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCircleJoinArg *arg = (DBCircleJoinArg *)argument;
+		DBCircleJoinRes *res = (DBCircleJoinRes *)result;
+		DEBUG_PRINT("DBCircleJoin, retcode=%d, roleid=%d, circleid=%d level=%d", res->retcode, arg->roleid, \
+				res->cur_circleid,arg->level);
+	
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRole(arg->roleid);
+		if(pinfo==NULL)
+		{
+			Log::log( LOG_ERR,"DBCircleJoin: roleid=%d,role not in cache", arg->roleid);
+			return;
+		}
+		//permit another circlejoin request
+		if(pinfo->circlejoin_processing == true)
+			pinfo->circlejoin_processing =false;
+		else
+			Log::log( LOG_ERR,"DBCircleJoin: roleid=%d,flag circlejoin_processing not true", arg->roleid);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			if(pinfo->circleinfo_valid==false)
+			{
+				Log::log( LOG_ERR,"DBCircleJoin: roleid=%d,role circle history not in cache", arg->roleid);
+				return;
+			}
+
+			if(arg->jointype == LEAVE_CIRCLE || arg->jointype == LEAVE_AND_JOIN_CIRCLE)
+			{
+				CircleManager::Instance()->OnLeave(arg->oldcircleid,arg->roleid,res->jointime);
+				CircleManager::Instance()->NotifyClient(CIRCLE_GRADUATE,arg->roleid,arg->oldcircleid,\
+						pinfo->localsid,pinfo->linksid);
+			}
+			if(arg->jointype == JOIN_CIRCLE || arg->jointype == LEAVE_AND_JOIN_CIRCLE)
+			{	
+				CircleManager::Instance()->OnJoin(res->cur_circleid,\
+					GCircleMemberDB(arg->roleid,res->name,arg->level,arg->reborn_cnt,\
+						arg->occupation,res->gender,res->jointime,0));	
+				CircleManager::Instance()->NotifyClient(CIRCLE_JOIN,arg->roleid,res->cur_circleid,pinfo->localsid,\
+						pinfo->linksid,res->circlename,arg->newgrade);
+			}
+	                GCircleHistory circlehisnode;
+			circlehisnode.circleid = res->cur_circleid;
+        	        circlehisnode.titlemask = res->titlemask;
+               		circlehisnode.jointime = res->jointime;
+			circlehisnode.circlegrade = arg->newgrade;
+			circlehisnode.circlename = res->circlename;
+ 			
+		       		
+			CircleManager::Instance()->SyncRoleCircleHis(arg->roleid,(Jointype)arg->jointype,circlehisnode,res->jointime);
+			//notify gs
+			CircleManager::Instance()->NotifyGSNewCircle(arg->roleid,res->cur_circleid,res->titlemask,pinfo->gameid);
+			//check circle master appoint
+			if(circlehisnode.titlemask&CIRCLE_MASTER)
+			{
+				DEBUG_PRINT("DBCircleJoin: roleid=%d,role appoint circle master", arg->roleid);
+				CircleManager::Instance()->NotifyClient(CIRCLE_APPOINT_MASTER,arg->roleid,res->cur_circleid,\
+						pinfo->localsid,pinfo->linksid);
+			//	CircleManager::Instance()->OnAppoint(arg->roleid,res->cur_circleid,title,circlehisnode.titlemask);
+			}
+		}
+		else
+		{
+			DEBUG_PRINT("DBCircleJoin not success, retcode=%d, roleid=%d, jointype=%d",\
+				res->retcode, arg->roleid, arg->jointype);
+		}	
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+		DBCircleJoinArg *arg = (DBCircleJoinArg *)argument;
+		DEBUG_PRINT("DBCircleJoin timeout:roleid=%d ", arg->roleid);
+
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if(pinfo==NULL)
+		{
+			Log::log( LOG_ERR,"DBCircleJoin::OnTimeout roleid=%d,role not in cache", arg->roleid);
+			return;
+		}
+		//permit another circlejoin request
+		if(pinfo->circlejoin_processing == true)
+			pinfo->circlejoin_processing =false;
+		else
+			Log::log( LOG_ERR,"DBCircleJoin::OnTimeout roleid=%d,flag circlejoin_processing not true", arg->roleid);
+	}
+
+};
+
+};
+#endif

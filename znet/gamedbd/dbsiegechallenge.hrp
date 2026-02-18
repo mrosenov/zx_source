@@ -1,0 +1,209 @@
+
+#ifndef __GNET_DBSIEGECHALLENGE_HPP
+#define __GNET_DBSIEGECHALLENGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegechallengearg"
+#include "dbsiegechallengeres"
+#include "gcitystore"
+#include "grolepocket"
+#include "glog.h"
+
+namespace GNET
+{
+
+class DBSiegeChallenge : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegechallenge"
+#undef	RPC_BASECLASS
+
+	GCity * FindCity(GCityStore & store, int battle_id)
+	{                       
+		for (std::vector<GCity>::iterator it = store.cities.begin(); it != store.cities.end(); ++ it)
+		{               
+			if (it->info.battle_id == battle_id) 
+			{               
+				return &*it;
+			}
+		}               
+		return NULL;    
+	}         
+	bool HasChallenge(GCity& city, int attacker)
+	{
+		for (std::vector<GChallenger>::iterator it = city.challengers.begin(); it != city.challengers.end(); ++it)
+		{
+			if (attacker == it->challenger.fid)
+				return true;
+		}
+		return false;
+	}
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSiegeChallengeArg *arg = (DBSiegeChallengeArg *)argument;
+		DBSiegeChallengeRes *res = (DBSiegeChallengeRes *)result;
+		try
+		{
+			LOG_TRACE("DBSiegeChallenge roleid=%d attacker=%d battle_id=%d begin_time"
+				,arg->roleid,arg->attacker,arg->battle_id,arg->begin_time);
+			StorageEnv::Storage * pcity = StorageEnv::GetStorage("citystore");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, krole, value;
+			GCityStore store;
+			try{
+				key << 0;
+				Marshal::OctetsStream(pcity->find(key, txn)) >> store;
+				GCity * city = FindCity(store, arg->battle_id);
+				if (!city)
+				{
+					GCity newone;
+					newone.info.battle_id = arg->battle_id;
+					store.cities.push_back(newone);
+				}
+
+				if (city->challengers.size() > 14)
+				{
+					res->retcode = ERR_SIEGE_QUEUEFULL;
+					return;
+				}
+
+				if (HasChallenge(*city, arg->attacker))
+				{
+					res->retcode = ERR_SIEGE_CHALLENGED;
+					return;
+				}
+
+				unsigned int money_need;
+				if (arg->day == 1)
+				{
+					money_need = MONEY_ONEDAY_SIEGE;
+				}
+				else if (arg->day == 2)
+				{
+					money_need = MONEY_TWODAY_SIEGE;
+				}
+				else if (arg->day == 3)
+				{
+					money_need = MONEY_THREEDAY_SIEGE;
+				}
+				else
+				{
+					res->retcode = ERR_VERIFYFAILED;
+					return;
+				}
+				if(arg->syncdata.inventory.money < money_need)
+				{
+					res->retcode = ERR_SIEGE_MONEYLIMIT;
+					return;
+				}
+				// ¿Û³ý½ð
+				arg->syncdata.inventory.money -= money_need;
+				// ¿Û³ýÎïÆ·
+				GRolePocket bag;
+				krole << arg->roleid;
+				Marshal::OctetsStream(pinventory->find(krole,txn)) >> bag;
+				if(arg->syncdata.inventory.timestamp-bag.timestamp<=0)
+				{
+					Log::log(LOG_ERR,"DBSiegeChallenge, timestamp mismatch. %d<%d",
+							arg->syncdata.inventory.timestamp, bag.timestamp);
+					res->retcode = ERR_VERIFYFAILED;
+					return;
+				}
+				int need = arg->day;
+				GRoleInventoryVector::iterator it;
+				GRoleInventoryVector& v = arg->syncdata.inventory.items;
+				for (it = v.begin(); it != v.end();)
+				{
+					GRoleInventory & item = *it;
+					if (item.id != (unsigned int)arg->attach_obj_id)
+					{
+						++it;
+						continue;
+					}
+
+					if (item.count > need)
+					{
+						item.count -= need;
+						need = 0;
+						res->syncdata.inventory.items.push_back(item);
+						break;
+					}
+					else if (item.count == need)
+					{
+						need = 0;
+						item.count = 0;
+						res->syncdata.inventory.items.push_back(item);
+						it = v.erase(it);
+						break;
+					}
+					else
+					{
+						need -= item.count;
+						item.count = 0;
+						res->syncdata.inventory.items.push_back(item);
+						it = v.erase(it);
+					}
+				}
+				if (need)
+				{
+					res->retcode = ERR_SIEGE_ITEMLIMIT;
+					return;
+				}
+
+				pinventory->insert(krole, Marshal::OctetsStream()<<arg->syncdata.inventory, txn);
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				for (int i = 0; i < arg->day; i++)
+				{
+					city->challengers.push_back(
+						GChallenger(
+							GFactionMaster(arg->attacker,arg->roleid), 
+							GFactionMaster(), 
+							arg->begin_time+i*86400
+							)
+						);
+					res->challenger.push_back(city->challengers.back());
+				}
+				pcity->insert(key, Marshal::OctetsStream()<<store, txn);
+				res->retcode = ERR_SUCCESS;
+				GLog::action("challenge, cid=%d:owner=%d:fid=%d:dep=%ditem=%d:item_count=%d:begin_time=%d", 
+					arg->battle_id,city->info.owner.fid,arg->attacker,money_need,arg->attach_obj_id,arg->day,arg->begin_time);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSiegeChallenge, roleid=%d, battle_id=%d, what=%s\n"
+					,arg->roleid, arg->attacker, arg->battle_id, e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSiegeChallengeArg *arg = (DBSiegeChallengeArg *)argument;
+		// DBSiegeChallengeRes *res = (DBSiegeChallengeRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

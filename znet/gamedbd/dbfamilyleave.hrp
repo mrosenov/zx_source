@@ -1,0 +1,89 @@
+
+#ifndef __GNET_DBFAMILYLEAVE_HPP
+#define __GNET_DBFAMILYLEAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfamilyleavearg"
+#include "delfactionres"
+
+namespace GNET
+{
+
+class DBFamilyLeave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyleave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilyLeaveArg *arg = (DBFamilyLeaveArg *)argument;
+		DelFactionRes *res = (DelFactionRes *)result;
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole;
+		Marshal::OctetsStream kfamily;
+		try
+		{
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+
+			StorageEnv::CommonTransaction txn;
+			Log::formatlog("familyleave","familyid=%d:roleid=%d",arg->familyid,arg->rid);
+			try{
+				GFamily family;
+				GRoleBase base;
+				res->retcode = ERR_SUCCESS;
+
+				kfamily << arg->familyid;
+				key << arg->rid;
+				Marshal::OctetsStream(pfamily->find(kfamily, txn)) >> family;
+				Marshal::OctetsStream(pbase->find(key, txn)) >> base;
+				base.familyid = 0;
+				base.title = 0;
+				base.jointime = Timer::GetTime();
+
+				GFolkVector::iterator it = family.member.begin();
+				for(; it != family.member.end(); ++ it)
+				{
+					if (it->rid == arg->rid)
+					{
+						family.member.erase(it);
+						break;
+					}
+				}
+
+				pbase->insert( key, Marshal::OctetsStream()<<base, txn );
+				pfamily->insert( kfamily, Marshal::OctetsStream()<<family, txn );
+
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFamilyLeave, familyid=%d, roleid=%d what=%s.",arg->familyid,arg->rid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

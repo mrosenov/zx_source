@@ -1,0 +1,87 @@
+
+#ifndef __GNET_CRSSVRTEAMSINVITE_HPP
+#define __GNET_CRSSVRTEAMSINVITE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "crssvrteamsinvitearg"
+#include "crssvrteamsinviteres"
+#include "crssvrteamsmanager.h"
+
+#include "dbcrssvrteamsjoin.hrp"
+
+namespace GNET
+{
+
+class CrssvrTeamsInvite : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "crssvrteamsinvite"
+#undef	RPC_BASECLASS
+
+	int localsid, linksid;// 邀请人的
+	int teamid, roleid; // 被邀请人
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// CrssvrTeamsInviteArg *arg = (CrssvrTeamsInviteArg *)argument;
+		// CrssvrTeamsInviteRes *res = (CrssvrTeamsInviteRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		CrssvrTeamsInviteArg *arg = (CrssvrTeamsInviteArg *)argument;
+		CrssvrTeamsInviteRes *res = (CrssvrTeamsInviteRes *)result;
+	
+		GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		if (dsm->IsCentralDS())
+		{
+			Log::log(LOG_ERR, "roleid %d try to CrssvrTeamsInvite on Central Delivery Server, refuse him!", arg->roleid);
+			return;
+		}
+
+	
+		LOG_TRACE("CrssvrTeamsInvite, retcode=%d, teamid=%d, invitee=%d, inviter=%d, roleid=%d", res->retcode, teamid, arg->invitee, arg->roleid, roleid);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			if(arg->invitee != roleid)
+			{
+				return;
+			}
+
+			GCrssvrTeamsRole roleinfo;
+			int invitee_gameid;
+			unsigned int invitee_linksid;
+			unsigned int invitee_localsid;
+			if(!SerialCrssvrTeamsRole(arg->invitee, roleinfo, invitee_gameid, invitee_linksid, invitee_localsid))
+			{
+				return;
+			}
+
+			DBCrssvrTeamsJoinArg joinarg(arg->invitee, teamid);
+			joinarg.info = roleinfo;
+			DBCrssvrTeamsJoin* rpc = (DBCrssvrTeamsJoin*) Rpc::Call( RPC_DBCRSSVRTEAMSJOIN,	joinarg);
+			rpc->roleid = arg->roleid;
+			rpc->invitee_linksid = invitee_linksid;
+			rpc->invitee_localsid = invitee_localsid;
+			GameDBClient::GetInstance()->SendProtocol(rpc);
+		}
+		else
+		{
+			GDeliveryServer::GetInstance()->Send(linksid, CrssvrTeamsNotify_Re(ERR_CRSSVRTEAMS_JOIN_REFUSE, arg->roleid, teamid, localsid));
+			//GDeliveryServer::GetInstance()->Send(linksid, CrssvrTeamsRecruit_Re(ERR_CRSSVRTEAMS_JOIN_REFUSE,arg->teamid,
+			//	arg->invitee, arg->roleid, Octets(), localsid));
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

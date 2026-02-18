@@ -1,0 +1,33 @@
+	public:
+		int roleid;
+		char self_title;
+		enum { PROTOCOL_TYPE = PROTOCOL_KINGDOMTITLESYNC };
+	public:
+		KingdomTitleSync() { type = PROTOCOL_KINGDOMTITLESYNC; }
+		KingdomTitleSync(void*) : Protocol(PROTOCOL_KINGDOMTITLESYNC) { }
+		KingdomTitleSync (int l_roleid,char l_self_title)
+			 : roleid(l_roleid),self_title(l_self_title)
+		{
+			type = PROTOCOL_KINGDOMTITLESYNC;
+		}
+
+		KingdomTitleSync(const KingdomTitleSync &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),self_title(rhs.self_title) { }
+
+		GNET::Protocol *Clone() const { return new KingdomTitleSync(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << self_title;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> self_title;
+			return os;
+		}
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

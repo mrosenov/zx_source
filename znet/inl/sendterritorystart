@@ -1,0 +1,47 @@
+	public:
+		int territoryid;
+		int map_tag;
+		unsigned int defender;
+		unsigned int attacker;
+		int end_time;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDTERRITORYSTART };
+	public:
+		SendTerritoryStart() { type = PROTOCOL_SENDTERRITORYSTART; }
+		SendTerritoryStart(void*) : Protocol(PROTOCOL_SENDTERRITORYSTART) { }
+		SendTerritoryStart (int l_territoryid,int l_map_tag = -1,unsigned int l_defender = 0,
+			unsigned int l_attacker = 0,int l_end_time = 0)
+			 : territoryid(l_territoryid),map_tag(l_map_tag),defender(l_defender)
+			,attacker(l_attacker),end_time(l_end_time)
+		{
+			type = PROTOCOL_SENDTERRITORYSTART;
+		}
+
+		SendTerritoryStart(const SendTerritoryStart &rhs)
+			: Protocol(rhs),territoryid(rhs.territoryid),map_tag(rhs.map_tag),defender(rhs.defender)
+			,attacker(rhs.attacker),end_time(rhs.end_time) { }
+
+		GNET::Protocol *Clone() const { return new SendTerritoryStart(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << territoryid;
+			os << map_tag;
+			os << defender;
+			os << attacker;
+			os << end_time;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> territoryid;
+			os >> map_tag;
+			os >> defender;
+			os >> attacker;
+			os >> end_time;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

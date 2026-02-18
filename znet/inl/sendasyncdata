@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		Octets data;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDASYNCDATA };
+	public:
+		SendAsyncData() { type = PROTOCOL_SENDASYNCDATA; }
+		SendAsyncData(void*) : Protocol(PROTOCOL_SENDASYNCDATA) { }
+		SendAsyncData (int l_roleid,const Octets& l_data = Octets())
+			 : roleid(l_roleid),data(l_data)
+		{
+			type = PROTOCOL_SENDASYNCDATA;
+		}
+
+		SendAsyncData(const SendAsyncData &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),data(rhs.data) { }
+
+		GNET::Protocol *Clone() const { return new SendAsyncData(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> data;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 4096; }

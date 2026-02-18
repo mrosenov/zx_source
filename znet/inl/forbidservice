@@ -1,0 +1,30 @@
+	public:
+		std::vector<ServiceForbidCmd> cmdlist;
+		enum { PROTOCOL_TYPE = PROTOCOL_FORBIDSERVICE };
+	public:
+		ForbidService() { type = PROTOCOL_FORBIDSERVICE; }
+		ForbidService(void*) : Protocol(PROTOCOL_FORBIDSERVICE) { }
+		ForbidService (const std::vector<ServiceForbidCmd>& l_cmdlist = std::vector<ServiceForbidCmd>())
+			 : cmdlist(l_cmdlist)
+		{
+			type = PROTOCOL_FORBIDSERVICE;
+		}
+
+		ForbidService(const ForbidService &rhs)
+			: Protocol(rhs),cmdlist(rhs.cmdlist) { }
+
+		GNET::Protocol *Clone() const { return new ForbidService(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << cmdlist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> cmdlist;
+			return os;
+		}
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

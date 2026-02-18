@@ -1,0 +1,96 @@
+
+#ifndef __GNET_DBKINGGETREWARD_HPP
+#define __GNET_DBKINGGETREWARD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkinggetrewardarg"
+#include "dbkinggetrewardres"
+
+namespace GNET
+{
+
+class DBKingGetReward : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkinggetreward"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingGetRewardArg *arg = (DBKingGetRewardArg *)argument;
+		DBKingGetRewardRes *res = (DBKingGetRewardRes *)result;
+		try
+		{
+			StorageEnv::Storage * pkingdom = StorageEnv::GetStorage("kingdom");
+			StorageEnv::AtomTransaction txn;
+			try{
+				Marshal::OctetsStream key;
+				key << 0;
+				GKingdomInfo data;
+				Marshal::OctetsStream(pkingdom->find(key, txn)) >> data;
+				if (data.king.roleid != arg->roleid)
+				{
+					Log::log(LOG_ERR, "dbkinggetreward king mismatch %d:%d", data.king.roleid, arg->roleid);
+					res->retcode = ERR_KINGDOM_LOGIC;
+					return;
+				}
+				bool can_get_reward = false;
+				int reward_times = data.win_times/KINGDOM_REWARD_WIN_TIMES;
+				if (reward_times > 32)
+					reward_times = 32;
+				int i = 0;
+				for (; i < reward_times; i++)
+				{
+					if ((data.reward_mask & (1 << i)) == 0)
+					{
+						can_get_reward = true;
+						break;
+					}
+				}
+				if (!can_get_reward)
+				{
+					Log::log(LOG_ERR, "dbkinggetreward repeat win_times %d reward_mask %d", data.win_times, data.reward_mask);
+					res->retcode = ERR_KINGDOM_LOGIC;
+					return;
+				}
+				Log::formatlog("kingdom", "king getreward win_times %d old reward_mask %d", data.win_times, data.reward_mask);
+				data.reward_mask |= (1 << i);
+				pkingdom->insert(key, Marshal::OctetsStream()<<data, txn);
+				res->retcode = ERR_SUCCESS;
+				res->reward_mask = data.reward_mask;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBKingGetReward, what=%s\n", e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingGetRewardArg *arg = (DBKingGetRewardArg *)argument;
+		// DBKingGetRewardRes *res = (DBKingGetRewardRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

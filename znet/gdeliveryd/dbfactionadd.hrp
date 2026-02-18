@@ -1,0 +1,66 @@
+
+#ifndef __GNET_DBFACTIONADD_HPP
+#define __GNET_DBFACTIONADD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gmember"
+#include "gfactioninfo"
+#include "dbfactionaddarg"
+#include "dbfactionaddres"
+#include "factionmanager.h"
+#include "factioncreate_re.hpp"
+#include "postcreatefaction.hrp"
+
+namespace GNET
+{
+
+class DBFactionAdd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionadd"
+#undef	RPC_BASECLASS
+	int gamesid;
+	int linksid;
+	int localsid;
+
+	void NotifyUnamed(char result,int zoneid,int factionid,const Octets& name)
+	{
+		PostCreateFaction* rpc = (PostCreateFaction*) Rpc::Call(RPC_POSTCREATEFACTION,
+			PostCreateFactionArg((char)result,zoneid,factionid,name));
+		UniqueNameClient::GetInstance()->SendProtocol(rpc);
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionAddArg *arg = (DBFactionAddArg *)argument;
+		DBFactionAddRes *res = (DBFactionAddRes *)result;
+		GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		DEBUG_PRINT("DBFactionAdd, retcode=%d, factionid=%d", res->retcode, arg->fid);
+		if(res->retcode==ERR_SUCCESS)
+		{
+			FactionManager::Instance()->OnCreate(res->info);
+			dsm->Send(linksid, FactionCreate_Re(0, arg->rid, arg->fid, arg->name, 0, localsid));
+		}
+		else
+			dsm->Send(linksid, FactionCreate_Re(ERR_FC_DBFAILURE,0,0,arg->name, 0, localsid));
+		NotifyUnamed(res->retcode==ERR_SUCCESS, dsm->zoneid, arg->fid, arg->name);
+		GProviderServer::GetInstance()->Send(gamesid, GMailEndSync(0,res->retcode,arg->rid,res->syncdata));
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBFactionAddArg *arg = (DBFactionAddArg *)argument;
+		Log::log( LOG_ERR,"dbfactionadd: timeout. roleid=%d,factionid=%d", arg->rid,arg->fid);
+		GDeliveryServer::GetInstance()->Send(linksid,FactionCreate_Re(ERR_DATABASE_TIMEOUT,0,0,arg->name,'0',localsid));
+	}
+};
+
+};
+#endif

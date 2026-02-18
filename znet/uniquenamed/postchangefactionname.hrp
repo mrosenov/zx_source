@@ -1,0 +1,104 @@
+
+#ifndef __GNET_POSTCHANGEFACTIONNAME_HPP
+#define __GNET_POSTCHANGEFACTIONNAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "postchangefactionnamearg"
+#include "postchangefactionnameres"
+
+namespace GNET
+{
+
+class PostChangeFactionname : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "postchangefactionname"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PostChangeFactionnameArg *arg = (PostChangeFactionnameArg *)argument;
+		PostChangeFactionnameRes *res = (PostChangeFactionnameRes *)result;
+		UniqueNameServer::GetInstance()->TransformName(arg->newname);
+		UniqueNameServer::GetInstance()->TransformName(arg->oldname);
+		LOG_TRACE("PostChagneFactionname(success=%d, zoneid=%d fid=%d scale=%d", arg->success, arg->zoneid,
+				arg->fid, arg->scale);
+		try
+		{
+			StorageEnv::Storage * puname = NULL;
+			if (arg->scale == 0)
+				puname = StorageEnv::GetStorage("unamefaction");
+			else
+				puname = StorageEnv::GetStorage("unamefamily");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				Marshal::OctetsStream key_nextid;
+				int nextid_forkey = 0;
+				key_nextid << nextid_forkey;
+				if (arg->newname == key_nextid || arg->oldname == key_nextid)
+				{
+					res->retcode = ERR_DUPLICATRECORD;
+					Log::log(LOG_ERR, "PostChangeFaction fid=%d old or new name is nextid_key",
+							arg->fid);
+					return;
+				}
+				if (arg->success)
+				{
+					Marshal::OctetsStream value_uname, value_old;
+					if (puname->find(arg->oldname, value_old, txn))
+					{
+						int old_zoneid, old_fid, old_status, old_time;
+						value_old >> old_zoneid >> old_fid >> old_status >> old_time;
+						if (old_fid == arg->fid)
+						{
+							old_status = UNIQUENAME_OBSOLETE;
+							value_old.clear();
+							value_old << old_zoneid << old_fid << old_status << old_time;
+							puname->insert(arg->oldname, value_old, txn);
+						}
+						else
+							Log::log(LOG_ERR, "PostChangeFactionname oldfid %d newfid %d not equal", old_fid, arg->fid);
+					}
+					int status = UNIQUENAME_USED;
+					value_uname << arg->zoneid << arg->fid << status << (int)Timer::GetTime();
+					puname->insert(arg->newname, value_uname, txn);
+				}
+				else
+					puname->del(arg->newname, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PostChangeFactionname, zoneid=%d, fid=%d, what=%s\n", arg->zoneid, arg->fid, e.what() );
+			res->retcode = -1;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PostChangeFactionnameArg *arg = (PostChangeFactionnameArg *)argument;
+		// PostChangeFactionnameRes *res = (PostChangeFactionnameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

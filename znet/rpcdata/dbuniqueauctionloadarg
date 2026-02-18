@@ -1,0 +1,59 @@
+#ifndef __GNET_DBUNIQUEAUCTIONLOADARG_RPCDATA
+#define __GNET_DBUNIQUEAUCTIONLOADARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBUniqueAuctionLoadArg : public GNET::Rpc::Data
+	{
+	public:
+		int dummy;
+
+	public:
+		DBUniqueAuctionLoadArg (int l_dummy = 0)
+			: dummy(l_dummy)
+		{
+		}
+
+		DBUniqueAuctionLoadArg(const DBUniqueAuctionLoadArg &rhs)
+			: dummy(rhs.dummy) { }
+
+		Rpc::Data *Clone() const { return new DBUniqueAuctionLoadArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBUniqueAuctionLoadArg *r = dynamic_cast<const DBUniqueAuctionLoadArg *>(&rhs);
+			if (r && r != this)
+			{
+				dummy = r->dummy;
+			}
+			return *this;
+		}
+
+		DBUniqueAuctionLoadArg& operator = (const DBUniqueAuctionLoadArg &rhs)
+		{
+			const DBUniqueAuctionLoadArg *r = &rhs;
+			if (r && r != this)
+			{
+				dummy = r->dummy;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << dummy;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> dummy;
+			return os;
+		}
+
+	};
+};
+#endif

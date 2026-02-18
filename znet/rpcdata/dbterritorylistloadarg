@@ -1,0 +1,58 @@
+#ifndef __GNET_DBTERRITORYLISTLOADARG_RPCDATA
+#define __GNET_DBTERRITORYLISTLOADARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBTerritoryListLoadArg : public GNET::Rpc::Data
+	{
+	public:
+		std::vector<int> default_ids;
+
+	public:
+		DBTerritoryListLoadArg ()
+		{
+		}
+
+		DBTerritoryListLoadArg(const DBTerritoryListLoadArg &rhs)
+			: default_ids(rhs.default_ids) { }
+
+		Rpc::Data *Clone() const { return new DBTerritoryListLoadArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBTerritoryListLoadArg *r = dynamic_cast<const DBTerritoryListLoadArg *>(&rhs);
+			if (r && r != this)
+			{
+				default_ids = r->default_ids;
+			}
+			return *this;
+		}
+
+		DBTerritoryListLoadArg& operator = (const DBTerritoryListLoadArg &rhs)
+		{
+			const DBTerritoryListLoadArg *r = &rhs;
+			if (r && r != this)
+			{
+				default_ids = r->default_ids;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << default_ids;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> default_ids;
+			return os;
+		}
+
+	};
+};
+#endif

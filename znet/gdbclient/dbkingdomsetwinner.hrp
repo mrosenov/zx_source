@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBKINGDOMSETWINNER_HPP
+#define __GNET_DBKINGDOMSETWINNER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomsetwinnerarg"
+#include "dbkingdomsetwinnerres"
+
+namespace GNET
+{
+
+class DBKingdomSetWinner : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomsetwinner"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomSetWinnerArg *arg = (DBKingdomSetWinnerArg *)argument;
+		// DBKingdomSetWinnerRes *res = (DBKingdomSetWinnerRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomSetWinnerArg *arg = (DBKingdomSetWinnerArg *)argument;
+		// DBKingdomSetWinnerRes *res = (DBKingdomSetWinnerRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

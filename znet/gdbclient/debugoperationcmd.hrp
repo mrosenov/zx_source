@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DEBUGOPERATIONCMD_HPP
+#define __GNET_DEBUGOPERATIONCMD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "debugoperationcmdarg"
+#include "debugoperationcmdres"
+
+namespace GNET
+{
+
+class DebugOperationCmd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "debugoperationcmd"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DebugOperationCmdArg *arg = (DebugOperationCmdArg *)argument;
+		// DebugOperationCmdRes *res = (DebugOperationCmdRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DebugOperationCmdArg *arg = (DebugOperationCmdArg *)argument;
+		// DebugOperationCmdRes *res = (DebugOperationCmdRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,48 @@
+
+#ifndef __GNET_TASKASYNCDATA_HPP
+#define __GNET_TASKASYNCDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "asyncdata"
+#include "asyncdata"
+
+namespace GMSV
+{
+	void RecvTaskAsyncData(int roleid, int result, const void * buf, size_t size);
+}
+
+namespace GNET
+{
+
+class TaskAsyncData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "taskasyncdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// AsyncData *arg = (AsyncData *)argument;
+		// AsyncData *res = (AsyncData *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// AsyncData *arg = (AsyncData *)argument;
+		 AsyncData *res = (AsyncData *)result;
+		 GMSV::RecvTaskAsyncData(res->roleid, res->result, res->data.begin(), res->data.size());
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

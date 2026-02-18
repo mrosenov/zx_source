@@ -1,0 +1,43 @@
+
+#ifndef __GNET_DBFACTIONGET_HPP
+#define __GNET_DBFACTIONGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gmember"
+#include "factionid"
+#include "factioninfores"
+
+namespace GNET
+{
+
+class DBFactionGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// FactionId *arg = (FactionId *)argument;
+		// FactionInfoRes *res = (FactionInfoRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// FactionId *arg = (FactionId *)argument;
+		// FactionInfoRes *res = (FactionInfoRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

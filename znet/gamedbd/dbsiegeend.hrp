@@ -1,0 +1,123 @@
+
+#ifndef __GNET_DBSIEGEEND_HPP
+#define __GNET_DBSIEGEEND_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegeendarg"
+#include "dbsiegeendres"
+
+namespace GNET
+{
+
+class DBSiegeEnd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegeend"
+#undef	RPC_BASECLASS
+	GCity * FindCity(GCityStore & store, int battle_id)
+	{
+		for (std::vector<GCity>::iterator it = store.cities.begin(); it != store.cities.end(); ++ it)
+		{
+			if (it->info.battle_id == battle_id)
+			{
+				return &*it;
+			}
+		}
+		return NULL;
+	}
+						            
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSiegeEndArg *arg = (DBSiegeEndArg *)argument;
+		DBSiegeEndRes *res = (DBSiegeEndRes *)result;
+		try
+		{
+			Log::formatlog("siegeend","battle_id=%d,attacker=%d,owner=%d,result=%d",arg->battle_id,arg->attacker,arg->owner,arg->result);
+			StorageEnv::Storage * pcity = StorageEnv::GetStorage("citystore");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream kcity, name_value;
+			GCityStore store;
+			try{
+				kcity << 0;
+				Marshal::OctetsStream(pcity->find(kcity, txn)) >> store;
+				GCity * city = FindCity(store, arg->battle_id);
+				if (!city)
+				{
+					Log::formatlog("siegeend","battleid=%d, city not found" , arg->battle_id);
+					res->retcode = ERR_VERIFYFAILED;
+					return;
+				}
+				if (city->challengers.size() == 0)
+				{
+					Log::formatlog("siegeend","battleid=%d, no challenger found!" , arg->battle_id);
+					res->retcode = ERR_VERIFYFAILED;
+					return;
+				}
+				GChallenger & challenger = *(city->challengers.begin());                                                                                        
+				if (challenger.challenger.fid != arg->attacker || city->info.owner.fid != arg->owner)
+				{                                                                                                                                               
+					Log::formatlog("siegeend","battleid=%d, fid not match!! challenger=%d,owner=%d,arg->attacker=%d,arg->owner=%d"
+						, arg->battle_id,challenger.challenger.fid,arg->attacker,city->info.owner.fid,arg->owner);
+					res->retcode = ERR_VERIFYFAILED;
+					return;                                                                                                                                 
+				}                                                                                                                                               
+				if (arg->result == SIEGE_ATTACKER_WIN)
+				{
+					city->info.owner = challenger.challenger;
+					city->info.occupy_time = Timer::GetTime();
+					/*
+					for (std::vector<GChallenger>::iterator it = city->challengers.begin(); it != city->challengers.end(); )
+					{
+						if (it->challenger.fid != city->info.owner.fid)
+							break;
+						it = city->challengers.erase(it);
+					}
+					*/
+					Log::formatlog("siegeend","battleid=%d, change owner from %d to %d", arg->owner, arg->attacker);
+				}
+				//else
+				//{
+					city->challengers.erase(city->challengers.begin());
+				//}
+				
+				pcity->insert(kcity, Marshal::OctetsStream()<<store, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSiegeEnd, what=%s\n", e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSiegeEndArg *arg = (DBSiegeEndArg *)argument;
+		// DBSiegeEndRes *res = (DBSiegeEndRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

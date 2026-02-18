@@ -1,0 +1,82 @@
+#ifndef __GNET_ROLESIMPLEINFO_RPCDATA
+#define __GNET_ROLESIMPLEINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class RoleSimpleInfo : public GNET::Rpc::Data
+	{
+	public:
+		int64_t roleid;
+		int level;
+		int race;
+		int gender;
+		Octets name;
+
+	public:
+		RoleSimpleInfo (int64_t l_roleid = 0,int l_level = 0,int l_race = 0
+			,int l_gender = 0,const Octets& l_name = Octets())
+			: roleid(l_roleid),level(l_level),race(l_race)
+			,gender(l_gender),name(l_name)
+		{
+		}
+
+		RoleSimpleInfo(const RoleSimpleInfo &rhs)
+			: roleid(rhs.roleid),level(rhs.level),race(rhs.race),
+			gender(rhs.gender),name(rhs.name) { }
+
+		Rpc::Data *Clone() const { return new RoleSimpleInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const RoleSimpleInfo *r = dynamic_cast<const RoleSimpleInfo *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				level = r->level;
+				race = r->race;
+				gender = r->gender;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		RoleSimpleInfo& operator = (const RoleSimpleInfo &rhs)
+		{
+			const RoleSimpleInfo *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				level = r->level;
+				race = r->race;
+				gender = r->gender;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << level;
+			os << race;
+			os << gender;
+			os << name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> level;
+			os >> race;
+			os >> gender;
+			os >> name;
+			return os;
+		}
+
+	};
+};
+#endif

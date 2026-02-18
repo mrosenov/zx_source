@@ -1,0 +1,38 @@
+	public:
+		int roleid;
+		unsigned int localsid;
+		unsigned int factionid;
+		enum { PROTOCOL_TYPE = PROTOCOL_GETFACTIONHOSTILE };
+	public:
+		GetFactionHostile() { type = PROTOCOL_GETFACTIONHOSTILE; }
+		GetFactionHostile(void*) : Protocol(PROTOCOL_GETFACTIONHOSTILE) { }
+		GetFactionHostile (int l_roleid,unsigned int l_localsid,unsigned int l_factionid)
+			 : roleid(l_roleid),localsid(l_localsid),factionid(l_factionid)
+		{
+			type = PROTOCOL_GETFACTIONHOSTILE;
+		}
+
+		GetFactionHostile(const GetFactionHostile &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),localsid(rhs.localsid),factionid(rhs.factionid) { }
+
+		GNET::Protocol *Clone() const { return new GetFactionHostile(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << localsid;
+			os << factionid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> localsid;
+			os >> factionid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

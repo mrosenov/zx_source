@@ -1,0 +1,77 @@
+
+#ifndef __GNET_DBCONSIGNQUERY_HPP
+#define __GNET_DBCONSIGNQUERY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignqueryarg"
+#include "dbconsignqueryres"
+
+namespace GNET
+{
+
+class DBConsignQuery : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignquery"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignQueryArg *arg = (DBConsignQueryArg *)argument;
+		DBConsignQueryRes *res = (DBConsignQueryRes *)result;
+		Log::formatlog("consign","DBConsignQuery,snsize=%d",arg->snlist.size());
+		try
+		{
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				std::vector<int64_t>::iterator it,ie=arg->snlist.end();
+				GConsignDB detail;
+				for(it=arg->snlist.begin();it!=ie;it++)
+				{
+					if(*it==0)
+					{
+						Log::formatlog("consign","dbconsignquery: sn equals 0.\n");
+						continue;
+					}
+					Marshal::OctetsStream(pconsign->find(Marshal::OctetsStream()<<*it, txn)) >> detail;
+					res->items.push_back(detail.info);
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignQuery, what=%s\n",e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignQueryArg *arg = (DBConsignQueryArg *)argument;
+		// DBConsignQueryRes *res = (DBConsignQueryRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

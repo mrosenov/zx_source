@@ -1,0 +1,64 @@
+#ifndef __GNET_DBSECTQUITRES_RPCDATA
+#define __GNET_DBSECTQUITRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSectQuitRes : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int retcode;
+		Octets name;
+
+	public:
+		DBSectQuitRes (unsigned int l_retcode = 0,const Octets& l_name = Octets(0))
+			: retcode(l_retcode),name(l_name)
+		{
+		}
+
+		DBSectQuitRes(const DBSectQuitRes &rhs)
+			: retcode(rhs.retcode),name(rhs.name) { }
+
+		Rpc::Data *Clone() const { return new DBSectQuitRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSectQuitRes *r = dynamic_cast<const DBSectQuitRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		DBSectQuitRes& operator = (const DBSectQuitRes &rhs)
+		{
+			const DBSectQuitRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> name;
+			return os;
+		}
+
+	};
+};
+#endif

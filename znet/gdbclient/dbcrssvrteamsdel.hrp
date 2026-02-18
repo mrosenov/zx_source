@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSDEL_HPP
+#define __GNET_DBCRSSVRTEAMSDEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "teamid"
+#include "delcrssvrteamsres"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsDel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsdel"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TeamId *arg = (TeamId *)argument;
+		// DelCrssvrTeamsRes *res = (DelCrssvrTeamsRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// TeamId *arg = (TeamId *)argument;
+		// DelCrssvrTeamsRes *res = (DelCrssvrTeamsRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

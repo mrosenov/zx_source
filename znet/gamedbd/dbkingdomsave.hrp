@@ -1,0 +1,79 @@
+
+#ifndef __GNET_DBKINGDOMSAVE_HPP
+#define __GNET_DBKINGDOMSAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomsavearg"
+#include "dbkingdomsaveres"
+
+namespace GNET
+{
+
+class DBKingdomSave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomsave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingdomSaveArg *arg = (DBKingdomSaveArg *)argument;
+		DBKingdomSaveRes *res = (DBKingdomSaveRes *)result;
+		try
+		{
+			StorageEnv::Storage * pkingdom = StorageEnv::GetStorage("kingdom");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream key, value;
+			try{
+				key << 0;
+				GKingdomInfo data;
+				Marshal::OctetsStream(pkingdom->find(key, txn)) >> data;
+				if (data.kingfaction != arg->info.kingfaction)
+				{
+					Log::log(LOG_ERR, "dbkingdomsave king_faction mismatch %d:%d", data.kingfaction, arg->info.kingfaction);
+					res->retcode = -1;
+					return;
+				}
+				data.kingdomname = arg->info.kingdomname;
+				data.announce = arg->info.announce;
+				data.points = arg->info.points;
+				data.limits = arg->info.limits;
+				data.taskpoints = arg->info.taskpoints;
+				pkingdom->insert(key, Marshal::OctetsStream()<<data, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBKingdomSave, what=%s\n", e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomSaveArg *arg = (DBKingdomSaveArg *)argument;
+		// DBKingdomSaveRes *res = (DBKingdomSaveRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

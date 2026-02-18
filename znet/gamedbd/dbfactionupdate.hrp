@@ -1,0 +1,79 @@
+
+#ifndef __GNET_DBFACTIONUPDATE_HPP
+#define __GNET_DBFACTIONUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionupdatearg"
+#include "deffactionres"
+#include "gfactionbase"
+
+namespace GNET
+{
+
+class DBFactionUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionupdate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionUpdateArg *arg = (DBFactionUpdateArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+
+		Marshal::OctetsStream key, value;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+//			StorageEnv::Storage * pfactionbase = StorageEnv::GetStorage("factionbase");
+
+			Log::formatlog("factionupdate","factionid=%d:level=%d:prosperity=%d",
+				arg->fid, arg->level, arg->prosperity);
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GFactionInfo faction;
+				key << arg->fid;
+				Marshal::OctetsStream(pfaction->find(key, txn )) >> faction;
+
+				faction.level = arg->level;
+				faction.announce = arg->announce;
+				faction.prosperity = arg->prosperity;
+
+				pfaction->insert( key, Marshal::OctetsStream()<<faction, txn );
+				/*
+				if (arg->reason && faction.level >= FAC_ACT_START_LEV)
+					pfactionbase->insert(key, Marshal::OctetsStream()<<GFactionBase(), txn, DB_NOOVERWRITE);
+					*/
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionUpdate, factionid=%d what=%s.",arg->fid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

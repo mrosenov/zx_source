@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCONSIGNPRECANCEL_HPP
+#define __GNET_DBCONSIGNPRECANCEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignprecancelarg"
+#include "dbconsignprecancelres"
+
+namespace GNET
+{
+
+class DBConsignPreCancel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignprecancel"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignPreCancelArg *arg = (DBConsignPreCancelArg *)argument;
+		// DBConsignPreCancelRes *res = (DBConsignPreCancelRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignPreCancelArg *arg = (DBConsignPreCancelArg *)argument;
+		// DBConsignPreCancelRes *res = (DBConsignPreCancelRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

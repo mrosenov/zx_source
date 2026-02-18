@@ -1,0 +1,94 @@
+
+#ifndef __GNET_GETFRIENDLIST_HPP
+#define __GNET_GETFRIENDLIST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "dbbuffer.h"
+#include "roleid"
+#include "gfriendinfo"
+#include "ggroupinfo"
+#include "genemyinfo"
+#include "friendlistres"
+
+namespace GNET
+{
+
+class GetFriendList : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getfriendlist"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		FriendListRes *res = (FriendListRes *)result;
+
+		LOG_TRACE( "GetFriendList, roleid=%d.\n", arg->id );
+		try
+		{
+			StorageEnv::Storage * pfriends = StorageEnv::GetStorage("friends");
+			StorageEnv::AtomTransaction txn;
+			try{
+				Marshal::OctetsStream value;
+				if(pfriends->find(Marshal::OctetsStream() << *arg, value, txn))	
+					value >> res->value; 
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetFriendList, roleid=%d, what=%s\n", arg->id, e.what() );
+			res->retcode = ERR_DATANOTFIND;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		FriendListRes *res = (FriendListRes *)result;
+		if(res->retcode != ERR_SUCCESS)
+		{
+			Log::log( LOG_ERR, "[NOK] GetFriendList, roleid=%d, retcode=%d", arg->id, res->retcode);
+			return;
+		}
+		try
+		{
+			StorageEnv::Storage * pfriends = StorageEnv::GetStorage("friends");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				pfriends->insert(Marshal::OctetsStream()<<*arg,Marshal::OctetsStream()<<res->value,txn);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+			Log::log( LOG_ERR, "[OK] GetFriendList, roleid=%d", arg->id);
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "[NOK] GetFriendList, roleid=%d, what=%s\n", arg->id, e.what() );
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

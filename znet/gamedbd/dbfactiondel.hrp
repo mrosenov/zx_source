@@ -1,0 +1,82 @@
+
+#ifndef __GNET_DBFACTIONDEL_HPP
+#define __GNET_DBFACTIONDEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "factionid"
+#include "delfactionres"
+#include "integer"
+#include "familyid"
+#include "utilfunction.h"
+
+namespace GNET
+{
+
+class DBFactionDel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactiondel"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FactionId *arg = (FactionId *)argument;
+		DelFactionRes *res = (DelFactionRes *)result;
+
+		GFactionInfo info, cache;
+		Marshal::OctetsStream key,value;
+
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pwaitdel = StorageEnv::GetStorage("waitdel");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				Log::formatlog("delfaction","factionid=%d", arg->fid);
+				key << arg->fid;
+				if(!pfaction->find( key, value, txn ))
+				{
+					Log::log( LOG_ERR, "DBFactionDel, fid=%d, not found", arg->fid);
+					res->retcode = ERR_SUCCESS;
+					return;
+				}
+				value >> info;
+				info.deletetime = Timer::GetTime();
+				info.status = _ROLE_STATUS_READYDEL;
+				pfaction->insert(key, Marshal::OctetsStream() << info, txn);
+				Marshal::OctetsStream delkey;
+				delkey << WaitDelKey(arg->fid, TYPE_FACTION);
+				pwaitdel->insert(delkey, Marshal::OctetsStream() << info.deletetime, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionDel, fid=%d, what=%s\n", arg->fid, e.what() );
+			res->retcode = -1;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

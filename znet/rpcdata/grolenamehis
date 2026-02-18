@@ -1,0 +1,65 @@
+#ifndef __GNET_GROLENAMEHIS_RPCDATA
+#define __GNET_GROLENAMEHIS_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GRoleNameHis : public GNET::Rpc::Data
+	{
+	public:
+		Octets name;
+		int endtime;
+
+	public:
+		GRoleNameHis (const Octets& l_name = Octets(),int l_endtime = 0)
+			: name(l_name),endtime(l_endtime)
+		{
+		}
+
+		GRoleNameHis(const GRoleNameHis &rhs)
+			: name(rhs.name),endtime(rhs.endtime) { }
+
+		Rpc::Data *Clone() const { return new GRoleNameHis(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GRoleNameHis *r = dynamic_cast<const GRoleNameHis *>(&rhs);
+			if (r && r != this)
+			{
+				name = r->name;
+				endtime = r->endtime;
+			}
+			return *this;
+		}
+
+		GRoleNameHis& operator = (const GRoleNameHis &rhs)
+		{
+			const GRoleNameHis *r = &rhs;
+			if (r && r != this)
+			{
+				name = r->name;
+				endtime = r->endtime;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << name;
+			os << endtime;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> name;
+			os >> endtime;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<GRoleNameHis>	GRoleNameHisVector;
+};
+#endif

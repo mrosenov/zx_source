@@ -1,0 +1,43 @@
+
+#ifndef __GNET_DBFACTIONDEL_HPP
+#define __GNET_DBFACTIONDEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "factionid"
+#include "delfactionres"
+#include "factionmanager.h"
+
+namespace GNET
+{
+
+class DBFactionDel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactiondel"
+#undef	RPC_BASECLASS
+
+	int localsid, linksid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FactionId *arg = (FactionId *)argument;
+		DelFactionRes *res = (DelFactionRes *)result;
+		DEBUG_PRINT("DBFactionDel, retcode=%d, factionid=%d", res->retcode, arg->fid);
+		if(res->retcode==ERR_SUCCESS)
+			FactionManager::Instance()->SetDelete(arg->fid, Timer::GetTime());
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

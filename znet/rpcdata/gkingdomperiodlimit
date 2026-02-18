@@ -1,0 +1,87 @@
+#ifndef __GNET_GKINGDOMPERIODLIMIT_RPCDATA
+#define __GNET_GKINGDOMPERIODLIMIT_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GKingdomPeriodLimit : public GNET::Rpc::Data
+	{
+	public:
+		int func_type;
+		int period_type;
+		int period_times;
+		int last_timestamp;
+		int reserved2;
+		int reserved3;
+
+	public:
+		GKingdomPeriodLimit (int l_func_type = 0,int l_period_type = 0,int l_period_times = 0
+			,int l_last_timestamp = 0,int l_reserved2 = 0,int l_reserved3 = 0)
+			: func_type(l_func_type),period_type(l_period_type),period_times(l_period_times)
+			,last_timestamp(l_last_timestamp),reserved2(l_reserved2),reserved3(l_reserved3)
+		{
+		}
+
+		GKingdomPeriodLimit(const GKingdomPeriodLimit &rhs)
+			: func_type(rhs.func_type),period_type(rhs.period_type),period_times(rhs.period_times),
+			last_timestamp(rhs.last_timestamp),reserved2(rhs.reserved2),reserved3(rhs.reserved3) { }
+
+		Rpc::Data *Clone() const { return new GKingdomPeriodLimit(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GKingdomPeriodLimit *r = dynamic_cast<const GKingdomPeriodLimit *>(&rhs);
+			if (r && r != this)
+			{
+				func_type = r->func_type;
+				period_type = r->period_type;
+				period_times = r->period_times;
+				last_timestamp = r->last_timestamp;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+			}
+			return *this;
+		}
+
+		GKingdomPeriodLimit& operator = (const GKingdomPeriodLimit &rhs)
+		{
+			const GKingdomPeriodLimit *r = &rhs;
+			if (r && r != this)
+			{
+				func_type = r->func_type;
+				period_type = r->period_type;
+				period_times = r->period_times;
+				last_timestamp = r->last_timestamp;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << func_type;
+			os << period_type;
+			os << period_times;
+			os << last_timestamp;
+			os << reserved2;
+			os << reserved3;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> func_type;
+			os >> period_type;
+			os >> period_times;
+			os >> last_timestamp;
+			os >> reserved2;
+			os >> reserved3;
+			return os;
+		}
+
+	};
+};
+#endif

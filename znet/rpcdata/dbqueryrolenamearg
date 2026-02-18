@@ -1,0 +1,59 @@
+#ifndef __GNET_DBQUERYROLENAMEARG_RPCDATA
+#define __GNET_DBQUERYROLENAMEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBQueryRoleNameArg : public GNET::Rpc::Data
+	{
+	public:
+		Octets name;
+
+	public:
+		DBQueryRoleNameArg (const Octets& l_name = Octets())
+			: name(l_name)
+		{
+		}
+
+		DBQueryRoleNameArg(const DBQueryRoleNameArg &rhs)
+			: name(rhs.name) { }
+
+		Rpc::Data *Clone() const { return new DBQueryRoleNameArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBQueryRoleNameArg *r = dynamic_cast<const DBQueryRoleNameArg *>(&rhs);
+			if (r && r != this)
+			{
+				name = r->name;
+			}
+			return *this;
+		}
+
+		DBQueryRoleNameArg& operator = (const DBQueryRoleNameArg &rhs)
+		{
+			const DBQueryRoleNameArg *r = &rhs;
+			if (r && r != this)
+			{
+				name = r->name;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> name;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,65 @@
+#ifndef __GNET_DBTERRITORYLISTLOADRES_RPCDATA
+#define __GNET_DBTERRITORYLISTLOADRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gterritorystore"
+
+namespace GNET
+{
+	class DBTerritoryListLoadRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GTerritoryStore store;
+
+	public:
+		DBTerritoryListLoadRes (const GTerritoryStore& l_store = GTerritoryStore())
+			: store(l_store)
+		{
+		}
+
+		DBTerritoryListLoadRes(const DBTerritoryListLoadRes &rhs)
+			: retcode(rhs.retcode),store(rhs.store) { }
+
+		Rpc::Data *Clone() const { return new DBTerritoryListLoadRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBTerritoryListLoadRes *r = dynamic_cast<const DBTerritoryListLoadRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				store = r->store;
+			}
+			return *this;
+		}
+
+		DBTerritoryListLoadRes& operator = (const DBTerritoryListLoadRes &rhs)
+		{
+			const DBTerritoryListLoadRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				store = r->store;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << store;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> store;
+			return os;
+		}
+
+	};
+};
+#endif

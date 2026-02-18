@@ -1,0 +1,64 @@
+#ifndef __GNET_DBHOSTILEADDRES_RPCDATA
+#define __GNET_DBHOSTILEADDRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBHostileAddRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		Octets name;
+
+	public:
+		DBHostileAddRes (int l_retcode = -1,const Octets& l_name = Octets(0))
+			: retcode(l_retcode),name(l_name)
+		{
+		}
+
+		DBHostileAddRes(const DBHostileAddRes &rhs)
+			: retcode(rhs.retcode),name(rhs.name) { }
+
+		Rpc::Data *Clone() const { return new DBHostileAddRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBHostileAddRes *r = dynamic_cast<const DBHostileAddRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		DBHostileAddRes& operator = (const DBHostileAddRes &rhs)
+		{
+			const DBHostileAddRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> name;
+			return os;
+		}
+
+	};
+};
+#endif

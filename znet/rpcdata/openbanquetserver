@@ -1,0 +1,70 @@
+#ifndef __GNET_OPENBANQUETSERVER_RPCDATA
+#define __GNET_OPENBANQUETSERVER_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class OpenBanquetServer : public GNET::Rpc::Data
+	{
+	public:
+		int map_type;
+		int map_tag;
+		int player_limit;
+
+	public:
+		OpenBanquetServer (int l_map_type = 0,int l_map_tag = -1,int l_player_limit = 0)
+			: map_type(l_map_type),map_tag(l_map_tag),player_limit(l_player_limit)
+		{
+		}
+
+		OpenBanquetServer(const OpenBanquetServer &rhs)
+			: map_type(rhs.map_type),map_tag(rhs.map_tag),player_limit(rhs.player_limit) { }
+
+		Rpc::Data *Clone() const { return new OpenBanquetServer(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const OpenBanquetServer *r = dynamic_cast<const OpenBanquetServer *>(&rhs);
+			if (r && r != this)
+			{
+				map_type = r->map_type;
+				map_tag = r->map_tag;
+				player_limit = r->player_limit;
+			}
+			return *this;
+		}
+
+		OpenBanquetServer& operator = (const OpenBanquetServer &rhs)
+		{
+			const OpenBanquetServer *r = &rhs;
+			if (r && r != this)
+			{
+				map_type = r->map_type;
+				map_tag = r->map_tag;
+				player_limit = r->player_limit;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << map_type;
+			os << map_tag;
+			os << player_limit;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> map_type;
+			os >> map_tag;
+			os >> player_limit;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<OpenBanquetServer>	OpenBanquetServerVector;
+};
+#endif

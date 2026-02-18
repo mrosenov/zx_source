@@ -1,0 +1,69 @@
+#ifndef __GNET_DBSECTJOINARG_RPCDATA
+#define __GNET_DBSECTJOINARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSectJoinArg : public GNET::Rpc::Data
+	{
+	public:
+		int master;
+		int disciple;
+		int capacity;
+
+	public:
+		DBSectJoinArg (int l_master = 0,int l_disciple = 0,int l_capacity = 0)
+			: master(l_master),disciple(l_disciple),capacity(l_capacity)
+		{
+		}
+
+		DBSectJoinArg(const DBSectJoinArg &rhs)
+			: master(rhs.master),disciple(rhs.disciple),capacity(rhs.capacity) { }
+
+		Rpc::Data *Clone() const { return new DBSectJoinArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSectJoinArg *r = dynamic_cast<const DBSectJoinArg *>(&rhs);
+			if (r && r != this)
+			{
+				master = r->master;
+				disciple = r->disciple;
+				capacity = r->capacity;
+			}
+			return *this;
+		}
+
+		DBSectJoinArg& operator = (const DBSectJoinArg &rhs)
+		{
+			const DBSectJoinArg *r = &rhs;
+			if (r && r != this)
+			{
+				master = r->master;
+				disciple = r->disciple;
+				capacity = r->capacity;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << master;
+			os << disciple;
+			os << capacity;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> master;
+			os >> disciple;
+			os >> capacity;
+			return os;
+		}
+
+	};
+};
+#endif

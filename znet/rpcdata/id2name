@@ -1,0 +1,65 @@
+#ifndef __GNET_ID2NAME_RPCDATA
+#define __GNET_ID2NAME_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class ID2Name : public GNET::Rpc::Data
+	{
+	public:
+		int id;
+		Octets name;
+
+	public:
+		ID2Name (int l_id = 0,const Octets& l_name = Octets(0))
+			: id(l_id),name(l_name)
+		{
+		}
+
+		ID2Name(const ID2Name &rhs)
+			: id(rhs.id),name(rhs.name) { }
+
+		Rpc::Data *Clone() const { return new ID2Name(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const ID2Name *r = dynamic_cast<const ID2Name *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		ID2Name& operator = (const ID2Name &rhs)
+		{
+			const ID2Name *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				name = r->name;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> name;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<ID2Name>	ID2NameVector;
+};
+#endif

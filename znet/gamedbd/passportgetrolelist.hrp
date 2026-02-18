@@ -1,0 +1,95 @@
+
+#ifndef __GNET_PASSPORTGETROLELIST_HPP
+#define __GNET_PASSPORTGETROLELIST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "passportgetrolelistarg"
+#include "passportgetrolelistres"
+
+namespace GNET
+{
+
+class PassportGetRoleList : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "passportgetrolelist"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PassportGetRoleListArg *arg = (PassportGetRoleListArg *)argument;
+		PassportGetRoleListRes *res = (PassportGetRoleListRes *)result;
+
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream value;
+			try
+			{
+				User user;
+				if (!puser->find(Marshal::OctetsStream()<<arg->userid, value, txn))
+				{
+					res->retcode = ERR_DATANOTFIND;
+					return;
+				}
+				value >> user;
+				if( 0 == user.logicuid )        
+					user.logicuid = arg->userid;
+				RoleList rolelist(user.rolelist);
+				int roleid;
+				GRoleBase base;
+				GRoleStatus status;
+				while ( (roleid = rolelist.GetNextRole()) >= 0 )
+				{
+					Marshal::OctetsStream key, vbase, vstatus;
+					int r = user.logicuid+roleid;
+					key << r;
+					if (!pbase->find(key, vbase, txn))
+						continue;
+					if (!pstatus->find(key, vstatus, txn))
+						continue;
+					vbase >> base;
+					vstatus >> status;
+					res->rolelist.push_back(RoleSimple(r, base.name, status.level));
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "passportgetrolelist, userid=%d, what=%s\n", arg->userid, e.what() );
+			res->retcode = ERR_DATANOTFIND;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PassportGetRoleListArg *arg = (PassportGetRoleListArg *)argument;
+		// PassportGetRoleListRes *res = (PassportGetRoleListRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,44 @@
+	public:
+		int retcode;
+		int fid;
+		int gameid;
+		int base_tag;
+		enum { PROTOCOL_TYPE = PROTOCOL_STOPFACBASE_RE };
+	public:
+		StopFacBase_Re() { type = PROTOCOL_STOPFACBASE_RE; }
+		StopFacBase_Re(void*) : Protocol(PROTOCOL_STOPFACBASE_RE) { }
+		StopFacBase_Re (int l_retcode,int l_fid,int l_gameid = 0,
+			int l_base_tag = 0)
+			 : retcode(l_retcode),fid(l_fid),gameid(l_gameid)
+			,base_tag(l_base_tag)
+		{
+			type = PROTOCOL_STOPFACBASE_RE;
+		}
+
+		StopFacBase_Re(const StopFacBase_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),fid(rhs.fid),gameid(rhs.gameid)
+			,base_tag(rhs.base_tag) { }
+
+		GNET::Protocol *Clone() const { return new StopFacBase_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << fid;
+			os << gameid;
+			os << base_tag;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> fid;
+			os >> gameid;
+			os >> base_tag;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int flag;
+		int count;
+		int points_need;
+		enum { PROTOCOL_TYPE = PROTOCOL_GTOUCHPOINTEXCHANGE };
+	public:
+		GTouchPointExchange() { type = PROTOCOL_GTOUCHPOINTEXCHANGE; }
+		GTouchPointExchange(void*) : Protocol(PROTOCOL_GTOUCHPOINTEXCHANGE) { }
+		GTouchPointExchange (int l_roleid,int l_flag = 0,int l_count = 0,
+			int l_points_need = 0)
+			 : roleid(l_roleid),flag(l_flag),count(l_count)
+			,points_need(l_points_need)
+		{
+			type = PROTOCOL_GTOUCHPOINTEXCHANGE;
+		}
+
+		GTouchPointExchange(const GTouchPointExchange &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),flag(rhs.flag),count(rhs.count)
+			,points_need(rhs.points_need) { }
+
+		GNET::Protocol *Clone() const { return new GTouchPointExchange(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << flag;
+			os << count;
+			os << points_need;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> flag;
+			os >> count;
+			os >> points_need;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

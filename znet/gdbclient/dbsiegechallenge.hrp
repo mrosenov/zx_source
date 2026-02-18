@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSIEGECHALLENGE_HPP
+#define __GNET_DBSIEGECHALLENGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegechallengearg"
+#include "dbsiegechallengeres"
+
+namespace GNET
+{
+
+class DBSiegeChallenge : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegechallenge"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSiegeChallengeArg *arg = (DBSiegeChallengeArg *)argument;
+		// DBSiegeChallengeRes *res = (DBSiegeChallengeRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSiegeChallengeArg *arg = (DBSiegeChallengeArg *)argument;
+		// DBSiegeChallengeRes *res = (DBSiegeChallengeRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

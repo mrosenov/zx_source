@@ -1,0 +1,9 @@
+		GNET::Protocol *Clone() const {  return new DBPutTopTable(*this); }
+	public:
+		enum { PROTOCOL_TYPE = RPC_DBPUTTOPTABLE };
+		DBPutTopTable(Type type, Rpc::Data *argument, Rpc::Data *result)
+			: RPC_BASECLASS(type, argument, result ) { }
+		DBPutTopTable(const DBPutTopTable &rhs) : RPC_BASECLASS(rhs) { }
+		int  PriorPolicy( ) const { return 1; }
+		bool SizePolicy(size_t size) const { return size <= 1048576; }
+		bool TimePolicy(int timeout) const { return timeout <= 40; }

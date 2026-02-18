@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSROLEPUNISHSCORE_HPP
+#define __GNET_DBCRSSVRTEAMSROLEPUNISHSCORE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsrolepunishscorearg"
+#include "dbcrssvrteamsrolepunishscoreres"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsRolePunishScore : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsrolepunishscore"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsRolePunishScoreArg *arg = (DBCrssvrTeamsRolePunishScoreArg *)argument;
+		// DBCrssvrTeamsRolePunishScoreRes *res = (DBCrssvrTeamsRolePunishScoreRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsRolePunishScoreArg *arg = (DBCrssvrTeamsRolePunishScoreArg *)argument;
+		// DBCrssvrTeamsRolePunishScoreRes *res = (DBCrssvrTeamsRolePunishScoreRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,48 @@
+
+#ifndef __GNET_DBSIEGESETASSISTANT_HPP
+#define __GNET_DBSIEGESETASSISTANT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegesetassistantarg"
+#include "dbsiegesetassistantres"
+#include "siegesetassistant_re.hpp"
+
+namespace GNET
+{
+
+class DBSiegeSetAssistant : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegesetassistant"
+#undef	RPC_BASECLASS
+	int link_sid, localsid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSiegeSetAssistantArg *arg = (DBSiegeSetAssistantArg *)argument;
+		DBSiegeSetAssistantRes *res = (DBSiegeSetAssistantRes *)result;
+		LOG_TRACE("DBSiegeSetAssistant client retcode=%d, battle_id=%d, attacker=%d, assistant=%d, pre_assistant=%d",
+				res->retcode, arg->battle_id, arg->attacker, res->assistant, res->pre_assistant);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			SiegeManager::GetInstance()->OnSetAssistant(arg->battle_id, arg->attacker, res->assistant, res->master);
+		}
+		GDeliveryServer::GetInstance()->Send(link_sid, SiegeSetAssistant_Re(res->retcode,arg->battle_id,res->assistant, localsid));
+
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

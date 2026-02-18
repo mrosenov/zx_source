@@ -1,0 +1,96 @@
+#ifndef __GNET_DBCHANGEFACTIONNAMEARG_RPCDATA
+#define __GNET_DBCHANGEFACTIONNAMEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBChangeFactionnameArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int fid;
+		Octets newname;
+		int itemid;
+		int item_pos;
+		char scale;
+		GMailSyncData syncdata;
+
+	public:
+		DBChangeFactionnameArg (int l_roleid = 0,int l_fid = 0,const Octets& l_newname = Octets()
+			,int l_itemid = 0,int l_item_pos = -1,char l_scale = 0
+			,const GMailSyncData& l_syncdata = GMailSyncData())
+			: roleid(l_roleid),fid(l_fid),newname(l_newname)
+			,itemid(l_itemid),item_pos(l_item_pos),scale(l_scale)
+			,syncdata(l_syncdata)
+		{
+		}
+
+		DBChangeFactionnameArg(const DBChangeFactionnameArg &rhs)
+			: roleid(rhs.roleid),fid(rhs.fid),newname(rhs.newname),
+			itemid(rhs.itemid),item_pos(rhs.item_pos),scale(rhs.scale),
+			syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBChangeFactionnameArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBChangeFactionnameArg *r = dynamic_cast<const DBChangeFactionnameArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				fid = r->fid;
+				newname = r->newname;
+				itemid = r->itemid;
+				item_pos = r->item_pos;
+				scale = r->scale;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBChangeFactionnameArg& operator = (const DBChangeFactionnameArg &rhs)
+		{
+			const DBChangeFactionnameArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				fid = r->fid;
+				newname = r->newname;
+				itemid = r->itemid;
+				item_pos = r->item_pos;
+				scale = r->scale;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << fid;
+			os << newname;
+			os << itemid;
+			os << item_pos;
+			os << scale;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> fid;
+			os >> newname;
+			os >> itemid;
+			os >> item_pos;
+			os >> scale;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

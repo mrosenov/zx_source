@@ -1,0 +1,65 @@
+#ifndef __GNET_DBUPDATECALLBACKINFOARG_RPCDATA
+#define __GNET_DBUPDATECALLBACKINFOARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcallbackinfo"
+
+namespace GNET
+{
+	class DBUpdateCallbackInfoArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		GCallbackInfo callback_info;
+
+	public:
+		DBUpdateCallbackInfoArg (int l_roleid = 0,const GCallbackInfo& l_callback_info = GCallbackInfo())
+			: roleid(l_roleid),callback_info(l_callback_info)
+		{
+		}
+
+		DBUpdateCallbackInfoArg(const DBUpdateCallbackInfoArg &rhs)
+			: roleid(rhs.roleid),callback_info(rhs.callback_info) { }
+
+		Rpc::Data *Clone() const { return new DBUpdateCallbackInfoArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBUpdateCallbackInfoArg *r = dynamic_cast<const DBUpdateCallbackInfoArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				callback_info = r->callback_info;
+			}
+			return *this;
+		}
+
+		DBUpdateCallbackInfoArg& operator = (const DBUpdateCallbackInfoArg &rhs)
+		{
+			const DBUpdateCallbackInfoArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				callback_info = r->callback_info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << callback_info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> callback_info;
+			return os;
+		}
+
+	};
+};
+#endif

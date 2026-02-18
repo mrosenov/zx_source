@@ -1,0 +1,79 @@
+
+#ifndef __GNET_DBCIRCLEGET_HPP
+#define __GNET_DBCIRCLEGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "circleid"
+#include "gcirclememberdb"
+#include "dbcirclegetres"
+
+namespace GNET
+{
+
+class DBCircleGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcircleget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		CircleID *arg = (CircleID *)argument;
+		DBCircleGetRes *res = (DBCircleGetRes *)result;
+		
+		Marshal::OctetsStream krole, kcircle;
+		try
+		{
+			if(arg->circleid ==0)
+	                {
+				Log::log( LOG_ERR, "circle get circleid=0");
+                                res->retcode = ERR_DATAERROR;
+				return;
+                        }       	
+			StorageEnv::Storage * pcircle = StorageEnv::GetStorage("circle");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+
+				LOG_TRACE("circleget circleid=%d", arg->circleid);
+                      		kcircle << arg->circleid;
+				Marshal::OctetsStream(pcircle->find(kcircle, txn)) >> res->value;
+	     	
+				res->retcode = ERR_SUCCESS;	
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCircleGet,circleid=%d what=%s.",arg->circleid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	 	
+	}
+
+
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// CircleID *arg = (CircleID *)argument;
+		// DBCircleGetRes *res = (DBCircleGetRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

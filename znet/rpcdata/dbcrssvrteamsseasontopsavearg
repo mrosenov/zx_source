@@ -1,0 +1,59 @@
+#ifndef __GNET_DBCRSSVRTEAMSSEASONTOPSAVEARG_RPCDATA
+#define __GNET_DBCRSSVRTEAMSSEASONTOPSAVEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcrssvrteamsseasontop"
+
+namespace GNET
+{
+	class DBCrssvrTeamsSeasonTopSaveArg : public GNET::Rpc::Data
+	{
+	public:
+		GCrssvrTeamsSeasonTop seasontop;
+
+	public:
+		DBCrssvrTeamsSeasonTopSaveArg ()
+		{
+		}
+
+		DBCrssvrTeamsSeasonTopSaveArg(const DBCrssvrTeamsSeasonTopSaveArg &rhs)
+			: seasontop(rhs.seasontop) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsSeasonTopSaveArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsSeasonTopSaveArg *r = dynamic_cast<const DBCrssvrTeamsSeasonTopSaveArg *>(&rhs);
+			if (r && r != this)
+			{
+				seasontop = r->seasontop;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsSeasonTopSaveArg& operator = (const DBCrssvrTeamsSeasonTopSaveArg &rhs)
+		{
+			const DBCrssvrTeamsSeasonTopSaveArg *r = &rhs;
+			if (r && r != this)
+			{
+				seasontop = r->seasontop;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << seasontop;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> seasontop;
+			return os;
+		}
+
+	};
+};
+#endif

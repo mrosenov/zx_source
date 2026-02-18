@@ -1,0 +1,71 @@
+#ifndef __GNET_CLEARROLEDATA_RPCDATA
+#define __GNET_CLEARROLEDATA_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "grolepocket"
+#include "grolestorehouse"
+
+namespace GNET
+{
+	class ClearRoleData : public GNET::Rpc::Data
+	{
+	public:
+		int time;
+		GRolePocket pocket;
+		GRoleStorehouse storehouse;
+
+	public:
+		ClearRoleData (int l_time = 0,const GRolePocket& l_pocket = GRolePocket(),const GRoleStorehouse& l_storehouse = GRoleStorehouse())
+			: time(l_time),pocket(l_pocket),storehouse(l_storehouse)
+		{
+		}
+
+		ClearRoleData(const ClearRoleData &rhs)
+			: time(rhs.time),pocket(rhs.pocket),storehouse(rhs.storehouse) { }
+
+		Rpc::Data *Clone() const { return new ClearRoleData(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const ClearRoleData *r = dynamic_cast<const ClearRoleData *>(&rhs);
+			if (r && r != this)
+			{
+				time = r->time;
+				pocket = r->pocket;
+				storehouse = r->storehouse;
+			}
+			return *this;
+		}
+
+		ClearRoleData& operator = (const ClearRoleData &rhs)
+		{
+			const ClearRoleData *r = &rhs;
+			if (r && r != this)
+			{
+				time = r->time;
+				pocket = r->pocket;
+				storehouse = r->storehouse;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << time;
+			os << pocket;
+			os << storehouse;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> time;
+			os >> pocket;
+			os >> storehouse;
+			return os;
+		}
+
+	};
+};
+#endif

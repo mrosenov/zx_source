@@ -1,0 +1,52 @@
+
+#ifndef __GNET_DBTERRITORYLISTLOAD_HPP
+#define __GNET_DBTERRITORYLISTLOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbterritorylistloadarg"
+#include "dbterritorylistloadres"
+#include "territorymanager.h"
+#include "gamedbclient.hpp"
+
+namespace GNET
+{
+
+class DBTerritoryListLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbterritorylistload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBTerritoryListLoadArg *arg = (DBTerritoryListLoadArg *)argument;
+		// DBTerritoryListLoadRes *res = (DBTerritoryListLoadRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBTerritoryListLoadArg *arg = (DBTerritoryListLoadArg *)argument;
+		DBTerritoryListLoadRes *res = (DBTerritoryListLoadRes *)result;
+		if(res->retcode==ERR_SUCCESS)
+			TerritoryManager::GetInstance()->LoadTerritoryList(res->store);
+		else if(res->retcode==ERR_AGAIN)
+			GameDBClient::GetInstance()->SendProtocol(Rpc::Call(RPC_DBTERRITORYLISTLOAD,arg));
+		else
+			Log::log(LOG_ERR, "dbterritorylistload errno %d", res->retcode);
+
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBTerritoryListLoadArg *arg = (DBTerritoryListLoadArg *)argument;
+		Log::log(LOG_ERR, "dbterritorylistload timeout");
+		GameDBClient::GetInstance()->SendProtocol(Rpc::Call(RPC_DBTERRITORYLISTLOAD,arg));
+	}
+
+};
+
+};
+#endif

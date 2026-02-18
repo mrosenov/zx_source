@@ -1,0 +1,83 @@
+
+#ifndef __GNET_GETGLOBALCOUNTER_HPP
+#define __GNET_GETGLOBALCOUNTER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "getglobalcounterarg"
+#include "getglobalcounterres"
+
+namespace GNET
+{
+
+class GetGlobalCounter : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getglobalcounter"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		GetGlobalCounterArg *arg = (GetGlobalCounterArg *)argument;
+		GetGlobalCounterRes *res = (GetGlobalCounterRes *)result;
+		try
+		{
+			StorageEnv::Storage * pcounter = StorageEnv::GetStorage("dropcounter");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				int64_t key = (((int64_t)(arg->template_id))<<32) + arg->start_time; 
+				int current = 0;
+				Marshal::OctetsStream currentos,keyos;
+				keyos<<key;
+				if(pcounter->find(keyos, currentos,txn))
+				{
+					currentos>>current;
+					res->cur_count = current;
+				}
+				int now = Timer::GetTime();
+				if(now >= arg->start_time + arg->duration*3600)
+				{
+					pcounter->del(keyos,txn);
+					res->retcode = ERR_DROP_COUNTER_TIME;
+					return; 
+				}
+				else
+				{
+					res->retcode = ERR_SUCCESS;
+					return;
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetGlobalCounter, what=%s\n",e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GetGlobalCounterArg *arg = (GetGlobalCounterArg *)argument;
+		// GetGlobalCounterRes *res = (GetGlobalCounterRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,82 @@
+#ifndef __GNET_DBCRSSVRTEAMSROLEPUNISHSCOREARG_RPCDATA
+#define __GNET_DBCRSSVRTEAMSROLEPUNISHSCOREARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCrssvrTeamsRolePunishScoreArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int ct_score;
+		int ct_last_punish_time;
+		int ct_last_battle_count;
+		int updatemask;
+
+	public:
+		DBCrssvrTeamsRolePunishScoreArg (int l_roleid = 0,int l_ct_score = 0,int l_ct_last_punish_time = 0
+			,int l_ct_last_battle_count = 0,int l_updatemask = 0)
+			: roleid(l_roleid),ct_score(l_ct_score),ct_last_punish_time(l_ct_last_punish_time)
+			,ct_last_battle_count(l_ct_last_battle_count),updatemask(l_updatemask)
+		{
+		}
+
+		DBCrssvrTeamsRolePunishScoreArg(const DBCrssvrTeamsRolePunishScoreArg &rhs)
+			: roleid(rhs.roleid),ct_score(rhs.ct_score),ct_last_punish_time(rhs.ct_last_punish_time),
+			ct_last_battle_count(rhs.ct_last_battle_count),updatemask(rhs.updatemask) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsRolePunishScoreArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsRolePunishScoreArg *r = dynamic_cast<const DBCrssvrTeamsRolePunishScoreArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				ct_score = r->ct_score;
+				ct_last_punish_time = r->ct_last_punish_time;
+				ct_last_battle_count = r->ct_last_battle_count;
+				updatemask = r->updatemask;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsRolePunishScoreArg& operator = (const DBCrssvrTeamsRolePunishScoreArg &rhs)
+		{
+			const DBCrssvrTeamsRolePunishScoreArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				ct_score = r->ct_score;
+				ct_last_punish_time = r->ct_last_punish_time;
+				ct_last_battle_count = r->ct_last_battle_count;
+				updatemask = r->updatemask;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << ct_score;
+			os << ct_last_punish_time;
+			os << ct_last_battle_count;
+			os << updatemask;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> ct_score;
+			os >> ct_last_punish_time;
+			os >> ct_last_battle_count;
+			os >> updatemask;
+			return os;
+		}
+
+	};
+};
+#endif

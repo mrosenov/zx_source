@@ -1,0 +1,44 @@
+	public:
+		int raidroom_id;
+		int map_id;
+		int index;
+		int reason;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDRAIDCLOSE };
+	public:
+		SendRaidClose() { type = PROTOCOL_SENDRAIDCLOSE; }
+		SendRaidClose(void*) : Protocol(PROTOCOL_SENDRAIDCLOSE) { }
+		SendRaidClose (int l_raidroom_id,int l_map_id = 0,int l_index = -1,
+			int l_reason = -1)
+			 : raidroom_id(l_raidroom_id),map_id(l_map_id),index(l_index)
+			,reason(l_reason)
+		{
+			type = PROTOCOL_SENDRAIDCLOSE;
+		}
+
+		SendRaidClose(const SendRaidClose &rhs)
+			: Protocol(rhs),raidroom_id(rhs.raidroom_id),map_id(rhs.map_id),index(rhs.index)
+			,reason(rhs.reason) { }
+
+		GNET::Protocol *Clone() const { return new SendRaidClose(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << raidroom_id;
+			os << map_id;
+			os << index;
+			os << reason;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> raidroom_id;
+			os >> map_id;
+			os >> index;
+			os >> reason;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

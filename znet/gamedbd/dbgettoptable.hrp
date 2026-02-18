@@ -1,0 +1,151 @@
+
+#ifndef __GNET_DBGETTOPTABLE_HPP
+#define __GNET_DBGETTOPTABLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gtopitem"
+#include "integer"
+#include "gtoptable"
+#include "gtoptableold"
+#include "toptableres"
+
+namespace GNET
+{
+
+class DBGetTopTable : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgettoptable"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		Integer *arg = (Integer *)argument;
+		TopTableRes *res = (TopTableRes *)result;
+		LOG_TRACE( "DBGetTopTable, tableid=%d.\n", arg->value );
+
+		try
+		{
+			StorageEnv::Storage * ptop = StorageEnv::GetStorage("top");
+			Marshal::OctetsStream key1, value1, value1_old, key2, value2, value2_old;
+			GTopTableOld toptableold_daily, toptableold_weekly;
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key1 << *arg;
+				if(ptop->find(key1, value1, txn))
+				{
+					value1_old = value1;
+					try
+					{
+						GTopTable tab;
+						LOG_TRACE( "DBGetTopTable, Post daily table, daily.id=%d", arg->value );
+						value1 >> tab;
+						res->daily = tab;
+					}
+					catch(Marshal::Exception &)
+					{
+						LOG_TRACE( "DBGetTopTable post daily table, re unmarshal tableid=%d\n", arg->value );
+						value1_old >> toptableold_daily;
+
+						res->daily.id = toptableold_daily.id;
+						res->daily.maxsize = toptableold_daily.maxsize;
+						res->daily.time = toptableold_daily.time;
+						res->daily.items = toptableold_daily.items;
+						res->daily.weekly = toptableold_daily.weekly;
+						res->daily.items_detail.clear();
+						res->daily.reserved = 0;
+						res->daily.reserved1 = 0;
+
+						Marshal::OctetsStream t_id;
+						t_id << *arg;
+
+						//LOG_TRACE( "DBGetTopTable insert daily table, tableid=%d", *arg );
+						ptop->insert(t_id, Marshal::OctetsStream()<<res->daily,txn);
+					}
+				}
+				else
+				{
+					res->daily.id = arg->value;
+					res->daily.maxsize = 0;
+				}
+				int nweek = arg->value + WEEKLYTOP_BEGIN;
+				key2 << nweek;
+				if(ptop->find(key2, value2, txn))
+				{
+					value2_old = value2;
+					try
+					{
+						GTopTable tab;	
+						value2 >> tab;
+						res->weekly = tab;
+						LOG_TRACE( "DBGetTopTable, Post weekly table, weekly.id=%d", res->weekly.id );
+					}
+					catch(Marshal::Exception &)
+					{
+						value2_old >> toptableold_weekly;
+
+						LOG_TRACE( "DBGetTopTable post weekly table, re unmarshal tableid=%d", arg->value);
+						res->weekly.id = toptableold_weekly.id;
+						res->weekly.maxsize = toptableold_weekly.maxsize;
+						res->weekly.time = toptableold_weekly.time;
+						res->weekly.items = toptableold_weekly.items;
+						res->weekly.weekly = toptableold_weekly.weekly;
+						res->weekly.items_detail.clear();
+						res->weekly.reserved = 0;
+						res->weekly.reserved1 = 0;
+
+						Marshal::OctetsStream t_id;
+						t_id << nweek;
+
+						LOG_TRACE( "DBGetTopTable insert weekly table, tableid=%d", nweek);
+
+						ptop->insert(t_id, Marshal::OctetsStream()<<res->weekly,txn);
+					}
+
+				}
+				else
+				{
+					res->weekly.id = nweek;
+					res->daily.maxsize = 0;
+					LOG_TRACE( "DBGetTopTable, Post weekly table, not find nweek=%d, weekly.id=%d", nweek, res->weekly.id );
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBGetTopTable, tableid=%d, what=%s\n", arg->value, e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+			{
+				res->retcode = ERR_EXCEPTION;
+			}
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// Integer *arg = (Integer *)argument;
+		// GTopTable *res = (GTopTable *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

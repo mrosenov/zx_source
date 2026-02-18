@@ -1,0 +1,45 @@
+
+#ifndef __GNET_DBFAMILYADD_HPP
+#define __GNET_DBFAMILYADD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gfolk"
+#include "gfamilyskill"
+#include "gfamily"
+#include "dbfamilyaddarg"
+#include "dbfamilyaddres"
+
+namespace GNET
+{
+
+class DBFamilyAdd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyadd"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFamilyAddArg *arg = (DBFamilyAddArg *)argument;
+		// DBFamilyAddRes *res = (DBFamilyAddRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFamilyAddArg *arg = (DBFamilyAddArg *)argument;
+		// DBFamilyAddRes *res = (DBFamilyAddRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

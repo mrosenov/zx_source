@@ -1,0 +1,77 @@
+
+#ifndef __GNET_DBKINGDOMDISCHARGE_HPP
+#define __GNET_DBKINGDOMDISCHARGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomdischargearg"
+#include "dbkingdomdischargeres"
+
+namespace GNET
+{
+
+class DBKingdomDischarge : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomdischarge"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingdomDischargeArg *arg = (DBKingdomDischargeArg *)argument;
+		DBKingdomDischargeRes *res = (DBKingdomDischargeRes *)result;
+		try
+		{
+			StorageEnv::Storage * pkingdom = StorageEnv::GetStorage("kingdom");
+			StorageEnv::AtomTransaction txn;
+			try{
+				Marshal::OctetsStream key;
+				key << 0;
+				GKingdomInfo data;
+				Marshal::OctetsStream(pkingdom->find(key, txn)) >> data;
+				std::vector<GKingdomFunctionary>::iterator it;
+				for (it = data.functionaries.begin(); it != data.functionaries.end();)
+				{
+					if (it->roleid == arg->candidate_id)
+						it = data.functionaries.erase(it);
+					else
+						it++;
+				}
+				pkingdom->insert(key, Marshal::OctetsStream()<<data, txn);
+				res->retcode = ERR_SUCCESS;
+				Log::formatlog("kingdom", "discharge role %d", arg->candidate_id);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBKingdomDischarge, what=%s\n", e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBKingdomDischargeArg *arg = (DBKingdomDischargeArg *)argument;
+		// DBKingdomDischargeRes *res = (DBKingdomDischargeRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

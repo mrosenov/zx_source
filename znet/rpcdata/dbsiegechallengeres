@@ -1,0 +1,71 @@
+#ifndef __GNET_DBSIEGECHALLENGERES_RPCDATA
+#define __GNET_DBSIEGECHALLENGERES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gchallenger"
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBSiegeChallengeRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		std::vector<GChallenger> challenger;
+		GMailSyncData syncdata;
+
+	public:
+		DBSiegeChallengeRes (int l_retcode = 0,const std::vector<GChallenger>& l_challenger = std::vector<GChallenger>(),const GMailSyncData& l_syncdata = GMailSyncData())
+			: retcode(l_retcode),challenger(l_challenger),syncdata(l_syncdata)
+		{
+		}
+
+		DBSiegeChallengeRes(const DBSiegeChallengeRes &rhs)
+			: retcode(rhs.retcode),challenger(rhs.challenger),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBSiegeChallengeRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegeChallengeRes *r = dynamic_cast<const DBSiegeChallengeRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				challenger = r->challenger;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBSiegeChallengeRes& operator = (const DBSiegeChallengeRes &rhs)
+		{
+			const DBSiegeChallengeRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				challenger = r->challenger;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << challenger;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> challenger;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

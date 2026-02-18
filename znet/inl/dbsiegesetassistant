@@ -1,0 +1,9 @@
+		GNET::Protocol *Clone() const {  return new DBSiegeSetAssistant(*this); }
+	public:
+		enum { PROTOCOL_TYPE = RPC_DBSIEGESETASSISTANT };
+		DBSiegeSetAssistant(Type type, Rpc::Data *argument, Rpc::Data *result)
+			: RPC_BASECLASS(type, argument, result ) { }
+		DBSiegeSetAssistant(const DBSiegeSetAssistant &rhs) : RPC_BASECLASS(rhs) { }
+		int  PriorPolicy( ) const { return 1; }
+		bool SizePolicy(size_t size) const { return size <= 1024; }
+		bool TimePolicy(int timeout) const { return timeout <= 40; }

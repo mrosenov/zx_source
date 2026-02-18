@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSCREATE_HPP
+#define __GNET_DBCRSSVRTEAMSCREATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamscreatearg"
+#include "dbcrssvrteamscreateres"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsCreate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamscreate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsCreateArg *arg = (DBCrssvrTeamsCreateArg *)argument;
+		// DBCrssvrTeamsCreateRes *res = (DBCrssvrTeamsCreateRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsCreateArg *arg = (DBCrssvrTeamsCreateArg *)argument;
+		// DBCrssvrTeamsCreateRes *res = (DBCrssvrTeamsCreateRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

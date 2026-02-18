@@ -1,0 +1,59 @@
+	public:
+		int map_id;
+		std::vector<TeamRaidApplyingRole> roles;
+		int reborn_cnt;
+		char iscross;
+		int crssvrteamid;
+		char issrc;
+		int src_zoneid;
+		int src_gsid;
+		enum { PROTOCOL_TYPE = PROTOCOL_GRAIDTEAMAPPLY };
+	public:
+		GRaidTeamApply() { type = PROTOCOL_GRAIDTEAMAPPLY; }
+		GRaidTeamApply(void*) : Protocol(PROTOCOL_GRAIDTEAMAPPLY) { }
+		GRaidTeamApply (int l_map_id,const std::vector<TeamRaidApplyingRole>& l_roles = std::vector<TeamRaidApplyingRole>(),int l_reborn_cnt = 0,
+			char l_iscross = 0,int l_crssvrteamid = -1,char l_issrc = 0,
+			int l_src_zoneid = 0,int l_src_gsid = 0)
+			 : map_id(l_map_id),roles(l_roles),reborn_cnt(l_reborn_cnt)
+			,iscross(l_iscross),crssvrteamid(l_crssvrteamid),issrc(l_issrc)
+			,src_zoneid(l_src_zoneid),src_gsid(l_src_gsid)
+		{
+			type = PROTOCOL_GRAIDTEAMAPPLY;
+		}
+
+		GRaidTeamApply(const GRaidTeamApply &rhs)
+			: Protocol(rhs),map_id(rhs.map_id),roles(rhs.roles),reborn_cnt(rhs.reborn_cnt)
+			,iscross(rhs.iscross),crssvrteamid(rhs.crssvrteamid),issrc(rhs.issrc)
+			,src_zoneid(rhs.src_zoneid),src_gsid(rhs.src_gsid) { }
+
+		GNET::Protocol *Clone() const { return new GRaidTeamApply(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << map_id;
+			os << roles;
+			os << reborn_cnt;
+			os << iscross;
+			os << crssvrteamid;
+			os << issrc;
+			os << src_zoneid;
+			os << src_gsid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> map_id;
+			os >> roles;
+			os >> reborn_cnt;
+			os >> iscross;
+			os >> crssvrteamid;
+			os >> issrc;
+			os >> src_zoneid;
+			os >> src_gsid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

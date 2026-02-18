@@ -1,0 +1,47 @@
+	public:
+		int roleid;
+		int tag;
+		int map_id;
+		unsigned char team;
+		int field_type;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDBATTLEENTER };
+	public:
+		SendBattleEnter() { type = PROTOCOL_SENDBATTLEENTER; }
+		SendBattleEnter(void*) : Protocol(PROTOCOL_SENDBATTLEENTER) { }
+		SendBattleEnter (int l_roleid,int l_tag = 0,int l_map_id = 0,
+			unsigned char l_team = 0,int l_field_type = 0)
+			 : roleid(l_roleid),tag(l_tag),map_id(l_map_id)
+			,team(l_team),field_type(l_field_type)
+		{
+			type = PROTOCOL_SENDBATTLEENTER;
+		}
+
+		SendBattleEnter(const SendBattleEnter &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),tag(rhs.tag),map_id(rhs.map_id)
+			,team(rhs.team),field_type(rhs.field_type) { }
+
+		GNET::Protocol *Clone() const { return new SendBattleEnter(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << tag;
+			os << map_id;
+			os << team;
+			os << field_type;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> tag;
+			os >> map_id;
+			os >> team;
+			os >> field_type;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

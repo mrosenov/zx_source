@@ -1,0 +1,41 @@
+
+#ifndef __GNET_DBSELLCANCEL_HPP
+#define __GNET_DBSELLCANCEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "sellid"
+#include "dbsyncsellinfores"
+#include "cardmarket.h"
+#include "mapuser.h"
+#include "gdeliveryserver.hpp"
+#include "gamedbclient.hpp"
+#include "sellcancel_re.hpp"
+#include "dbsyncsellinfo.hrp"
+namespace GNET
+{
+
+class DBSellCancel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsellcancel"
+#undef	RPC_BASECLASS
+	unsigned int save_linksid;
+	unsigned int save_localsid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+	}
+
+};
+
+};
+#endif

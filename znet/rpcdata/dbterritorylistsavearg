@@ -1,0 +1,65 @@
+#ifndef __GNET_DBTERRITORYLISTSAVEARG_RPCDATA
+#define __GNET_DBTERRITORYLISTSAVEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gterritorystore"
+
+namespace GNET
+{
+	class DBTerritoryListSaveArg : public GNET::Rpc::Data
+	{
+	public:
+		int reason;
+		GTerritoryStore store;
+
+	public:
+		DBTerritoryListSaveArg (int l_reason = 0,const GTerritoryStore& l_store = GTerritoryStore())
+			: reason(l_reason),store(l_store)
+		{
+		}
+
+		DBTerritoryListSaveArg(const DBTerritoryListSaveArg &rhs)
+			: reason(rhs.reason),store(rhs.store) { }
+
+		Rpc::Data *Clone() const { return new DBTerritoryListSaveArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBTerritoryListSaveArg *r = dynamic_cast<const DBTerritoryListSaveArg *>(&rhs);
+			if (r && r != this)
+			{
+				reason = r->reason;
+				store = r->store;
+			}
+			return *this;
+		}
+
+		DBTerritoryListSaveArg& operator = (const DBTerritoryListSaveArg &rhs)
+		{
+			const DBTerritoryListSaveArg *r = &rhs;
+			if (r && r != this)
+			{
+				reason = r->reason;
+				store = r->store;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << reason;
+			os << store;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> reason;
+			os >> store;
+			return os;
+		}
+
+	};
+};
+#endif

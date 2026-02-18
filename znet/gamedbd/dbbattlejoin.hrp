@@ -1,0 +1,108 @@
+
+#ifndef __GNET_DBBATTLEJOIN_HPP
+#define __GNET_DBBATTLEJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbbattlejoinarg"
+#include "dbbattlejoinres"
+
+namespace GNET
+{
+
+class DBBattleJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbbattlejoin"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBBattleJoinArg *arg = (DBBattleJoinArg *)argument;
+		DBBattleJoinRes *res = (DBBattleJoinRes *)result;
+		LOG_TRACE("DBBattleJoin roleid %d itemid %d item_pos %d", arg->roleid, arg->itemid, arg->item_pos);
+		try
+		{
+
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * puser = (arg->syncdata.data_mask&SYNC_CASHUSED)?StorageEnv::GetStorage("user"):NULL;
+//			StorageEnv::Storage * pstore = (arg->syncdata.data_mask&SYNC_STOTEHOUSE)?StorageEnv::GetStorage("storehouse"):NULL;
+			StorageEnv::Storage * pstore = StorageEnv::GetStorage("storehouse");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream role_key;
+			try{
+				GRolePocket pocket;
+				role_key << arg->roleid;
+				Marshal::OctetsStream(pinventory->find(role_key, txn)) >> pocket;
+				if(arg->syncdata.inventory.timestamp-pocket.timestamp<=0)
+				{
+					Log::log(LOG_ERR,"dbbattlejoin, timestamp mismatch. %d<%d",
+						arg->syncdata.inventory.timestamp, pocket.timestamp);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				int delta = arg->syncdata.inventory.money - pocket.money;
+				GRoleInventoryVector::iterator it;
+				GRoleInventoryVector& v = arg->syncdata.inventory.items;
+				unsigned int pos;
+				for(pos=0;pos<v.size();pos++)
+				{
+					if(v[pos].pos == arg->item_pos)
+						break;
+				}
+				if(pos >= v.size())
+					throw DbException(DB_VERIFY_BAD);
+				if((int)v[pos].id != arg->itemid || v[pos].count < 1)
+					throw DbException(DB_VERIFY_BAD);
+				if(v[pos].count == 1)
+				{
+					v[pos].count = 0;
+					res->syncdata.inventory.items.push_back(v[pos]);
+					v.erase(v.begin()+pos); 
+				} else {
+					v[pos].count--;
+					res->syncdata.inventory.items.push_back(v[pos]);
+				}
+				pinventory->insert(role_key, Marshal::OctetsStream()<<arg->syncdata.inventory, txn);
+				::UpdateCash(puser, arg->syncdata, txn);
+				::UpdateStore(arg->roleid, pstore, arg->syncdata, txn, delta);
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				res->syncdata.data_mask = arg->syncdata.data_mask;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBSiegeChallenge, roleid=%d, map_id=%d, what=%s.\n",
+				arg->roleid, arg->map_id, e.what() );
+			res->syncdata.inventory.money = arg->syncdata.inventory.money;
+			res->syncdata.data_mask = 0;
+			res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBBattleJoinArg *arg = (DBBattleJoinArg *)argument;
+		// DBBattleJoinRes *res = (DBBattleJoinRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

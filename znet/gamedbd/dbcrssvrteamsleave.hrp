@@ -1,0 +1,128 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSLEAVE_HPP
+#define __GNET_DBCRSSVRTEAMSLEAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsleavearg"
+#include "dbcrssvrteamsleaveres"
+
+#include "gcrssvrteamsrole"
+#include "gcrssvrteamsdata"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsLeave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsleave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsLeaveArg *arg = (DBCrssvrTeamsLeaveArg *)argument;
+		DBCrssvrTeamsLeaveRes *res = (DBCrssvrTeamsLeaveRes *)result;
+
+ 		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kteamid;
+		try
+		{
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				if(arg->teamid == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+
+				GCrssvrTeamsData crssvrteams;
+				LOG_TRACE("DBCrssvrTeamsLeave, roleid=%d, teamid=%d", arg->roleid, arg->teamid);
+
+				krole << arg->roleid;
+				kteamid << arg->teamid;
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> crssvrteams;
+				}
+				
+				LOG_TRACE("DBCrssvrTeamsLeave find pcrssvrteams, roleid=%d, teamid=%d", arg->roleid, arg->teamid);
+				if(crssvrteams.info.teamid <= 0)
+				{
+					Log::log( LOG_ERR, "CrssvrTeamsLeave, teamid=%d not found", arg->teamid);
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}
+				
+				std::vector<GCrssvrTeamsRole>::iterator it_roles = crssvrteams.roles.begin(), ie_roles=crssvrteams.roles.end();
+				for(;it_roles!=ie_roles;++it_roles)
+				{
+					if (arg->roleid == it_roles->roleid)
+					{
+						LOG_TRACE("DBCrssvrTeamsLeave erase roleid=%d", arg->roleid);
+						crssvrteams.roles.erase(it_roles);
+						break;
+					}
+				}
+				if(it_roles==ie_roles)
+				{
+					Log::log( LOG_ERR, "DBCrssvrTeamsLeave, roleid=%d not found", arg->roleid);
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}
+				
+				GRoleBase base;
+				value.clear();
+				if( pbase->find(krole, value, txn ))
+				{
+					value >> base;
+					base.datagroup[KEY_DATAGOURP_ROLE_CT_TEAMID] = -1;
+					base.datagroup[KEY_DATAGOURP_ROLE_CT_COOLTIME] = Timer::GetTime();
+					pbase->insert( krole, Marshal::OctetsStream()<< base, txn );
+				}
+
+				pcrssvrteams->insert( kteamid, Marshal::OctetsStream()<< crssvrteams, txn );
+				Log::formatlog("CrssvrTeamsLeave","teamid=%d:roleid=%d", arg->teamid, arg->roleid);
+
+				//res->name = crssvrteams.info.name;
+				res->captain_roleid = crssvrteams.info.master;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrssvrTeamsLeave, teamid=%d, roleid=%d what=%s.",arg->teamid,arg->roleid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsLeaveArg *arg = (DBCrssvrTeamsLeaveArg *)argument;
+		// DBCrssvrTeamsLeaveRes *res = (DBCrssvrTeamsLeaveRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

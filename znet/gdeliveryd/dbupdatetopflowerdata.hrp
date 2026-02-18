@@ -1,0 +1,54 @@
+
+#ifndef __GNET_DBUPDATETOPFLOWERDATA_HPP
+#define __GNET_DBUPDATETOPFLOWERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "localmacro.h"
+
+#include "dbupdatetopflowerdataarg"
+#include "dbupdatetopflowerdatares"
+
+namespace GNET
+{
+
+class DBUpdateTopFlowerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbupdatetopflowerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBUpdateTopFlowerDataArg *arg = (DBUpdateTopFlowerDataArg *)argument;
+		// DBUpdateTopFlowerDataRes *res = (DBUpdateTopFlowerDataRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBUpdateTopFlowerDataArg *arg = (DBUpdateTopFlowerDataArg *)argument;
+		DBUpdateTopFlowerDataRes *res = (DBUpdateTopFlowerDataRes *)result;
+		
+		DEBUG_PRINT("DBUpdateTopFlowerData: retcode=%d", res->retcode);
+		//bool init_top_success = false;
+		//bool init_addtop_success = false;
+		if(res->retcode==TOPFLOWER_UPDATA_DATA_SUCCESS) 
+		{
+		}
+		
+		if(res->retcode==TOPFLOWER_UPDATA_DATA_ERR)
+		{
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

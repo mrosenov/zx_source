@@ -1,0 +1,59 @@
+#ifndef __GNET_POSTCRSSVRTEAMSDELRES_RPCDATA
+#define __GNET_POSTCRSSVRTEAMSDELRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class PostCrssvrTeamsDelRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		PostCrssvrTeamsDelRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		PostCrssvrTeamsDelRes(const PostCrssvrTeamsDelRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new PostCrssvrTeamsDelRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PostCrssvrTeamsDelRes *r = dynamic_cast<const PostCrssvrTeamsDelRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		PostCrssvrTeamsDelRes& operator = (const PostCrssvrTeamsDelRes &rhs)
+		{
+			const PostCrssvrTeamsDelRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

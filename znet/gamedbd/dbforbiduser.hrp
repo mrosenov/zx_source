@@ -1,0 +1,175 @@
+
+#ifndef __GNET_DBFORBIDUSER_HPP
+#define __GNET_DBFORBIDUSER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "forbiduserarg"
+#include "localmacro.h"
+
+#include "base64.h" 
+#include "acforbidrule.h" 
+
+namespace GNET
+{
+
+class DBForbidUser : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbforbiduser"
+#undef	RPC_BASECLASS
+
+	int AdjustTimeAccordingCash(const User & user, int time)
+	{
+#define MAX(a, b) ((a)>(b)?(a):(b))
+		int cash = MAX((int)user.cash_add, (int)user.cash_used);
+		int fbdtime = ForbidPolicy::GetInstance()->GetForbidTime(cash, time);
+		if (fbdtime == -1)
+			fbdtime = time;
+		return fbdtime;
+	}	
+	bool AddForbidRecord(User &user, const ForbidUserArg *arg, int fbdtime)
+	{
+		GRoleForbid forbid(FORBID_USER_LOGIN, fbdtime, Timer::GetTime(), arg->reason);
+
+		Octets reason;
+		Base64Encoder::Convert(reason, arg->reason);
+		Log::formatlog("forbiduser", "source=%d:gmuserid=%d:userid=%d:zoneid=%d:areaid=%d:forbid_time=%d:real_time=%d:reason=%.*s:cash_add=%d:cash_used=%d",
+			     	arg->source,arg->gmuserid,arg->userid,GameDBManager::Zoneid(),GameDBManager::Areaid(),arg->time,fbdtime,reason.size(),
+				(char *)reason.begin(),user.cash_add,user.cash_used);
+
+		size_t i;
+		for (i = 0; i < user.forbid.size(); i++)
+		{
+			GRoleForbid& tmp = user.forbid[i];;
+			if (tmp.type == FORBID_USER_LOGIN)
+			{
+				if(forbid.time+forbid.createtime < tmp.time+tmp.createtime)
+					return false;
+				tmp = forbid;
+				return true;
+			}
+		}
+		if ( i == user.forbid.size())
+			user.forbid.add(forbid);
+		return true;
+	}
+
+	bool RemoveForbidRecord(User &user, const ForbidUserArg *arg)
+	{
+		Octets reason;
+		Base64Encoder::Convert(reason, arg->reason);
+		Log::formatlog("unforbiduser", "source=%d:gmuserid=%d:userid=%d:zoneid=%d:areaid=%d:reason=%.*s:cash_add=%d:cash_used=%d",
+			     	arg->source,arg->gmuserid,arg->userid,GameDBManager::Zoneid(),GameDBManager::Areaid(),reason.size(),
+				(char *)reason.begin(),user.cash_add,user.cash_used);
+		for (GRoleForbidVector::iterator itr = user.forbid.begin(); itr != user.forbid.end(); itr++)
+		{
+			if (itr->type == FORBID_USER_LOGIN)
+			{
+				user.forbid.erase(itr);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		ForbidUserArg *arg = (ForbidUserArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		int fbdtime=0;
+
+		try
+		{
+			StorageEnv::Storage *puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage *pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::CommonTransaction txn;
+			User user;
+			try
+			{
+				Marshal::OctetsStream key, value;
+				key << arg->userid;
+				if(puser->find(key,value,txn))
+				{
+					bool changed;
+					value >> user;
+					if (arg->operation!=1) 
+						changed = RemoveForbidRecord(user, arg);
+					else 
+					{
+						if (arg->source == 3 && arg->time == -2)
+						{
+							//反外挂封个人挂 查表得封禁时间
+							int64_t consumption = 0;
+							if (0 != user.logicuid)
+							{
+								RoleList rolelist(user.rolelist);
+								int roleid;
+								while ((roleid = rolelist.GetNextRole()) >= 0)
+								{
+									GRoleBase2 base2;
+									int r = user.logicuid+roleid;
+									Marshal::OctetsStream base2_os;
+									if (pbase2->find(Marshal::OctetsStream()<<r, base2_os, txn ))
+									{
+										try
+										{
+											base2_os >> base2;
+											consumption += base2.comsumption;
+										}
+										catch (...)
+										{
+											Log::log(LOG_ERR, "dbforbiduser %d, role %d base2 unmarshal error", arg->userid, r);
+										}
+									}
+								}
+							}
+							fbdtime = FORBIDRULE::GetForbidTime(arg->ac_score, consumption);
+						}
+						else
+							fbdtime = AdjustTimeAccordingCash(user, arg->time);
+						changed = AddForbidRecord(user, arg, fbdtime);
+					}
+					if(changed)
+						puser->insert(key, Marshal::OctetsStream()<<user, txn);
+					res->retcode = ERR_SUCCESS;
+				}
+				else
+					res->retcode = ERR_NOTFOUND;
+
+			}
+			catch (DbException e) { throw; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException e)
+		{
+			Log::log(LOG_ERR, "GameDBServer::ForbidUser, userid=%d, what=%s\n", arg->userid, e.what());
+			res->retcode = ERR_FAILED;
+		}
+		LOG_TRACE("Gamedbd::DBForbidUser: userid=%d,operation=%d,forbid_time=%d,real_time=%d,reduced=%d,retcode=%d",
+			arg->userid,arg->operation,arg->time,fbdtime,(arg->time!=fbdtime),res->retcode);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// ForbidUserArg *arg = (ForbidUserArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)reult;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

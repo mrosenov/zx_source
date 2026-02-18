@@ -1,0 +1,68 @@
+
+#ifndef __GNET_PRECRSSVRTEAMSRENAME_HPP
+#define __GNET_PRECRSSVRTEAMSRENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#ifdef USE_DB
+#include "dbbuffer.h"
+#endif
+#include "precrssvrteamsrenamearg"
+#include "precrssvrteamsrenameres"
+
+namespace GNET
+{
+
+class PreCrssvrTeamsRename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "precrssvrteamsrename"
+#undef	RPC_BASECLASS
+
+	int roleid, linksid, localsid;
+	Octets oldname;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+	void SendError(int errcode)
+	{
+		CrssvrTeamsNotify_Re res;
+		res.retcode = errcode;
+		res.localsid = localsid;
+		GDeliveryServer::GetInstance()->Send(linksid, res);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PreCrssvrTeamsRenameArg *arg = (PreCrssvrTeamsRenameArg *)argument;
+		PreCrssvrTeamsRenameRes *res = (PreCrssvrTeamsRenameRes *)result;
+		DEBUG_PRINT("PreCrssvrTeamsRename, retcode=%d, roleid=%d, teamid=%d", res->retcode, roleid, arg->teamid);
+
+		if(res->retcode == ERR_SUCCESS)
+		{
+			DBCrssvrTeamsRenameArg rpcarg(roleid, arg->teamid, oldname, arg->new_teamsname);
+			DBCrssvrTeamsRename* rpc = (DBCrssvrTeamsRename*) Rpc::Call( RPC_DBCRSSVRTEAMSRENAME,rpcarg);
+			rpc->linksid = linksid;
+			rpc->localsid = localsid;
+			GameDBClient::GetInstance()->SendProtocol(rpc);
+		}
+		else
+		{
+			if(res->retcode==ERR_DUPLICATRECORD)
+				SendError(ERR_CRSSVRTEAMS_CREATE_DUP);
+			else
+				SendError(ERR_CRSSVRTEAMS_DBFAILURE);
+		}
+
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

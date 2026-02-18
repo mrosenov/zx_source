@@ -1,0 +1,46 @@
+
+#ifndef __GNET_DBFACTIONUPDATE_HPP
+#define __GNET_DBFACTIONUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionupdatearg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBFactionUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionupdate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionUpdateArg *arg = (DBFactionUpdateArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+		DEBUG_PRINT("DBFactionUpdate,retcode=%d,factionid=%d,roleid=%d,level=%d",res->retcode,arg->fid,arg->rid,arg->level);
+		if(res->retcode==ERR_SUCCESS)
+		{
+			if(arg->reason)
+				FactionManager::Instance()->OnGradeChg(arg->fid, arg->rid, arg->level);
+			else
+				FactionManager::Instance()->SetAnnounce(arg->fid, arg->rid, arg->announce);
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

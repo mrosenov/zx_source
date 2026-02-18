@@ -1,0 +1,59 @@
+	public:
+		int roleid;
+		int rolescore;
+		int teamscore;
+		int toppos;
+		int weektoptime;
+		int retcode;
+		int award_type;
+		int award_level;
+		enum { PROTOCOL_TYPE = PROTOCOL_GCRSSVRTEAMSPOSTSCORE };
+	public:
+		GCrssvrTeamsPostScore() { type = PROTOCOL_GCRSSVRTEAMSPOSTSCORE; }
+		GCrssvrTeamsPostScore(void*) : Protocol(PROTOCOL_GCRSSVRTEAMSPOSTSCORE) { }
+		GCrssvrTeamsPostScore (int l_roleid,int l_rolescore = 0,int l_teamscore = 0,
+			int l_toppos = 0,int l_weektoptime = 0,int l_retcode = 0,
+			int l_award_type = 0,int l_award_level = 0)
+			 : roleid(l_roleid),rolescore(l_rolescore),teamscore(l_teamscore)
+			,toppos(l_toppos),weektoptime(l_weektoptime),retcode(l_retcode)
+			,award_type(l_award_type),award_level(l_award_level)
+		{
+			type = PROTOCOL_GCRSSVRTEAMSPOSTSCORE;
+		}
+
+		GCrssvrTeamsPostScore(const GCrssvrTeamsPostScore &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),rolescore(rhs.rolescore),teamscore(rhs.teamscore)
+			,toppos(rhs.toppos),weektoptime(rhs.weektoptime),retcode(rhs.retcode)
+			,award_type(rhs.award_type),award_level(rhs.award_level) { }
+
+		GNET::Protocol *Clone() const { return new GCrssvrTeamsPostScore(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << rolescore;
+			os << teamscore;
+			os << toppos;
+			os << weektoptime;
+			os << retcode;
+			os << award_type;
+			os << award_level;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> rolescore;
+			os >> teamscore;
+			os >> toppos;
+			os >> weektoptime;
+			os >> retcode;
+			os >> award_type;
+			os >> award_level;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

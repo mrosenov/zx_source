@@ -1,0 +1,42 @@
+
+#ifndef __GNET_PASSPORTGETROLELIST_HPP
+#define __GNET_PASSPORTGETROLELIST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "passportgetrolelistarg"
+#include "passportgetrolelistres"
+
+namespace GNET
+{
+
+class PassportGetRoleList : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "passportgetrolelist"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//PassportGetRoleListArg *arg = (PassportGetRoleListArg *)argument;
+		//PassportGetRoleListRes *res = (PassportGetRoleListRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PassportGetRoleListArg *arg = (PassportGetRoleListArg *)argument;
+		// PassportGetRoleListRes *res = (PassportGetRoleListRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

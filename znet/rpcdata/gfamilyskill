@@ -1,0 +1,78 @@
+#ifndef __GNET_GFAMILYSKILL_RPCDATA
+#define __GNET_GFAMILYSKILL_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GFamilySkill : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int id;
+		int level;
+		int ability;
+		int reserved;
+
+	public:
+		GFamilySkill (unsigned int l_id = 0,int l_level = 0,int l_ability = 0
+			,int l_reserved = 0)
+			: id(l_id),level(l_level),ability(l_ability)
+			,reserved(l_reserved)
+		{
+		}
+
+		GFamilySkill(const GFamilySkill &rhs)
+			: id(rhs.id),level(rhs.level),ability(rhs.ability),
+			reserved(rhs.reserved) { }
+
+		Rpc::Data *Clone() const { return new GFamilySkill(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFamilySkill *r = dynamic_cast<const GFamilySkill *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				level = r->level;
+				ability = r->ability;
+				reserved = r->reserved;
+			}
+			return *this;
+		}
+
+		GFamilySkill& operator = (const GFamilySkill &rhs)
+		{
+			const GFamilySkill *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				level = r->level;
+				ability = r->ability;
+				reserved = r->reserved;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << level;
+			os << ability;
+			os << reserved;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> level;
+			os >> ability;
+			os >> reserved;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<GFamilySkill>	GFamilySkillVector;
+};
+#endif

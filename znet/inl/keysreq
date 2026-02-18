@@ -1,0 +1,35 @@
+	public:
+		Octets kc_name;
+		int kc_activeId;
+		enum { PROTOCOL_TYPE = PROTOCOL_KEYSREQ };
+	public:
+		KeysReq() { type = PROTOCOL_KEYSREQ; }
+		KeysReq(void*) : Protocol(PROTOCOL_KEYSREQ) { }
+		KeysReq (const Octets& l_kc_name,int l_kc_activeId = 0)
+			 : kc_name(l_kc_name),kc_activeId(l_kc_activeId)
+		{
+			type = PROTOCOL_KEYSREQ;
+		}
+
+		KeysReq(const KeysReq &rhs)
+			: Protocol(rhs),kc_name(rhs.kc_name),kc_activeId(rhs.kc_activeId) { }
+
+		GNET::Protocol *Clone() const { return new KeysReq(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << kc_name;
+			os << kc_activeId;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> kc_name;
+			os >> kc_activeId;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 65536; }

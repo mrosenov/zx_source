@@ -1,0 +1,71 @@
+#ifndef __GNET_DBFAMILYADDRES_RPCDATA
+#define __GNET_DBFAMILYADDRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+#include "gfamily"
+
+namespace GNET
+{
+	class DBFamilyAddRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GMailSyncData syncdata;
+		GFamily info;
+
+	public:
+		DBFamilyAddRes (int l_retcode = -1,const GMailSyncData& l_syncdata = GMailSyncData())
+			: retcode(l_retcode),syncdata(l_syncdata)
+		{
+		}
+
+		DBFamilyAddRes(const DBFamilyAddRes &rhs)
+			: retcode(rhs.retcode),syncdata(rhs.syncdata),info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBFamilyAddRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFamilyAddRes *r = dynamic_cast<const DBFamilyAddRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				syncdata = r->syncdata;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBFamilyAddRes& operator = (const DBFamilyAddRes &rhs)
+		{
+			const DBFamilyAddRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				syncdata = r->syncdata;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << syncdata;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> syncdata;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

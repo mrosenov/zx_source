@@ -1,0 +1,64 @@
+#ifndef __GNET_GSHOPSCHEME_RPCDATA
+#define __GNET_GSHOPSCHEME_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GShopScheme : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int discount;
+		unsigned int sale;
+
+	public:
+		GShopScheme (unsigned int l_discount = 0,unsigned int l_sale = 0)
+			: discount(l_discount),sale(l_sale)
+		{
+		}
+
+		GShopScheme(const GShopScheme &rhs)
+			: discount(rhs.discount),sale(rhs.sale) { }
+
+		Rpc::Data *Clone() const { return new GShopScheme(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GShopScheme *r = dynamic_cast<const GShopScheme *>(&rhs);
+			if (r && r != this)
+			{
+				discount = r->discount;
+				sale = r->sale;
+			}
+			return *this;
+		}
+
+		GShopScheme& operator = (const GShopScheme &rhs)
+		{
+			const GShopScheme *r = &rhs;
+			if (r && r != this)
+			{
+				discount = r->discount;
+				sale = r->sale;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << discount;
+			os << sale;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> discount;
+			os >> sale;
+			return os;
+		}
+
+	};
+};
+#endif

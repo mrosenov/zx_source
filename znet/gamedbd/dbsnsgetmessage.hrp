@@ -1,0 +1,114 @@
+
+#ifndef __GNET_DBSNSGETMESSAGE_HPP
+#define __GNET_DBSNSGETMESSAGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsgetmessagearg"
+#include "dbsnsgetmessageres"
+#include "gsnsmessage"
+
+#define MESSAGE_COUNT_PER_RPC 4
+
+namespace GNET
+{
+
+class DBSNSGetMessage : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsgetmessage"
+#undef	RPC_BASECLASS
+
+	class DBSNSGetMessageQuery : public StorageEnv::IQuery
+	{
+	public:
+		DBSNSGetMessageRes *res;
+		int count;
+
+		DBSNSGetMessageQuery(DBSNSGetMessageRes *_res) : res(_res), count(0) {}
+
+		bool Update( StorageEnv::Transaction& txn, Octets& key, Octets& value)
+		{
+			try
+			{
+				if (++count > MESSAGE_COUNT_PER_RPC)
+				{
+					int64_t nkey;
+					Marshal::OctetsStream(key) >> nkey;
+					res->message_type = (char)(nkey>>32);
+					res->message_id = (int)(nkey&0xffffffff);
+					return false;
+				}
+
+				GSNSMessage msg;
+				Marshal::OctetsStream(value) >> msg;
+				res->messages.push_back(msg);
+			}
+			catch (Marshal::Exception &e)
+			{
+				Log::log(LOG_ERR, "gamedbd:DBSNSGetMessageQuery marshal exception\n");
+			}
+			return true;
+		}
+	};
+	
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSNSGetMessageArg *arg = (DBSNSGetMessageArg *)argument;
+		DBSNSGetMessageRes *res = (DBSNSGetMessageRes *)result;
+
+		try
+		{
+			StorageEnv::Storage *pmsg = StorageEnv::GetStorage("snsmessage");
+			StorageEnv::AtomTransaction txn;
+			DBSNSGetMessageQuery q(res);
+
+			try
+			{
+				StorageEnv::Storage::Cursor cursor = pmsg->cursor(txn);
+				if (arg->message_id == -1)
+					cursor.walk(q);
+				else
+				{
+					int64_t key = ((int64_t)arg->message_type<<32)|(int64_t)arg->message_id;
+					cursor.walk(Marshal::OctetsStream()<<key, q);
+				}
+				
+				if (q.count <= MESSAGE_COUNT_PER_RPC)
+					res->message_id = -1;
+
+				res->retcode = ERR_SUCCESS;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+			Log::log(LOG_ERR, "gamedbd:DBSNSGetMessage failed, what=%s\n", e.what());
+			res->retcode = ERR_FAILED;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSNSGetMessageArg *arg = (DBSNSGetMessageArg *)argument;
+		// DBSNSGetMessageRes *res = (DBSNSGetMessageRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

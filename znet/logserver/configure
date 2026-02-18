@@ -1,0 +1,42 @@
+if [ ! -d ../mk ]; then
+	cd ../..
+	cvs co share
+	cd -
+	echo "get ../../share ok"
+	cd ..
+	ln -s ../share/mk ../mk
+	ln -s ../share/rpc ../rpc
+	ln -s ../share/perf ../perf
+	ln -s ../share/io ../io
+	ln -s ../share/common ../common	
+	cd -
+fi
+if [ ! -e ../rpcgen ]; then
+	cd ..	
+	ln  ../share/rpcgen ../rpcgen
+	cd -
+fi
+
+if [ ! -d ../log_client ]; then
+	echo "../log_client NOT exist"
+	cd ../..
+	cvs co znet/log_client
+	cd -
+	echo "get ../log_client ok"
+fi
+
+cd ..
+./rpcgen -trace rpcalls.xml
+
+cd -
+cd ../log_client
+make
+
+cd -
+cd trace
+make
+
+cd -
+cd idxdemo
+make
+cd -

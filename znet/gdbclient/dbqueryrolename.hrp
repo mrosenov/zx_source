@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBQUERYROLENAME_HPP
+#define __GNET_DBQUERYROLENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbqueryrolenamearg"
+#include "dbqueryrolenameres"
+
+namespace GNET
+{
+
+class DBQueryRoleName : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbqueryrolename"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBQueryRoleNameArg *arg = (DBQueryRoleNameArg *)argument;
+		// DBQueryRoleNameRes *res = (DBQueryRoleNameRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBQueryRoleNameArg *arg = (DBQueryRoleNameArg *)argument;
+		// DBQueryRoleNameRes *res = (DBQueryRoleNameRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

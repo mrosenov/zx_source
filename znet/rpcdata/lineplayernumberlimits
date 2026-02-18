@@ -1,0 +1,59 @@
+#ifndef __GNET_LINEPLAYERNUMBERLIMITS_RPCDATA
+#define __GNET_LINEPLAYERNUMBERLIMITS_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "lineplayerlimit"
+
+namespace GNET
+{
+	class LinePlayerNumberLimits : public GNET::Rpc::Data
+	{
+	public:
+		LinePlayerLimitVector limits;
+
+	public:
+		LinePlayerNumberLimits ()
+		{
+		}
+
+		LinePlayerNumberLimits(const LinePlayerNumberLimits &rhs)
+			: limits(rhs.limits) { }
+
+		Rpc::Data *Clone() const { return new LinePlayerNumberLimits(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const LinePlayerNumberLimits *r = dynamic_cast<const LinePlayerNumberLimits *>(&rhs);
+			if (r && r != this)
+			{
+				limits = r->limits;
+			}
+			return *this;
+		}
+
+		LinePlayerNumberLimits& operator = (const LinePlayerNumberLimits &rhs)
+		{
+			const LinePlayerNumberLimits *r = &rhs;
+			if (r && r != this)
+			{
+				limits = r->limits;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << limits;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> limits;
+			return os;
+		}
+
+	};
+};
+#endif

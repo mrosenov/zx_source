@@ -1,0 +1,47 @@
+
+#ifndef __GNET_DBQUERYROLENAME_HPP
+#define __GNET_DBQUERYROLENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbqueryrolenamearg"
+#include "dbqueryrolenameres"
+#include "queryrolenamehistory_re.hpp"
+
+namespace GNET
+{
+
+class DBQueryRoleName : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbqueryrolename"
+#undef	RPC_BASECLASS
+	int linksid, localsid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBQueryRoleNameArg *arg = (DBQueryRoleNameArg *)argument;
+		// DBQueryRoleNameRes *res = (DBQueryRoleNameRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBQueryRoleNameArg *arg = (DBQueryRoleNameArg *)argument;
+		DBQueryRoleNameRes *res = (DBQueryRoleNameRes *)result;
+		GDeliveryServer::GetInstance()->Send(linksid, QueryRolenameHistory_Re(res->retcode, arg->name, localsid, res->list));
+		if (res->retcode == ERR_SUCCESS)
+			NameManager::GetInstance()->CacheNameHistory(arg->name, res->list);
+	}
+
+	void OnTimeout()
+	{
+		DBQueryRoleNameArg *arg = (DBQueryRoleNameArg *)argument;
+		Log::log(LOG_ERR, "DBQueryRoleName timeout");
+		GDeliveryServer::GetInstance()->Send(linksid, QueryRolenameHistory_Re(ERR_TIMEOUT, arg->name, localsid, std::vector<NameHistory>()));
+	}
+
+};
+
+};
+#endif

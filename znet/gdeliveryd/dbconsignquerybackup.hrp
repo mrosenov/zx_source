@@ -1,0 +1,48 @@
+
+#ifndef __GNET_DBCONSIGNQUERYBACKUP_HPP
+#define __GNET_DBCONSIGNQUERYBACKUP_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignquerybackuparg"
+#include "dbconsignquerybackupres"
+#include "consignmanager.h"
+
+namespace GNET
+{
+
+class DBConsignQueryBackup : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignquerybackup"
+#undef	RPC_BASECLASS
+
+//	Protocol* pmsg;
+//	int64_t sn;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignQueryBackupArg *arg = (DBConsignQueryBackupArg *)argument;
+		// DBConsignQueryBackupRes *res = (DBConsignQueryBackupRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		DBConsignQueryBackupArg *arg = (DBConsignQueryBackupArg *)argument;
+		DBConsignQueryBackupRes *res = (DBConsignQueryBackupRes *)result;
+		DEBUG_PRINT("dbconsignquerybackup: sn=%lld,retcode=%d,detail_os.size=%d", arg->sn,res->retcode,res->detail_os.size());
+		ConsignManager::GetInstance()->OnQueryBackup(res->retcode,arg->sn,res->detail_os);
+		//delete pmsg;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

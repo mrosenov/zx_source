@@ -1,0 +1,106 @@
+#ifndef __GNET_INSTANCINGFIELDINFO_RPCDATA
+#define __GNET_INSTANCINGFIELDINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "instancingsideinfo"
+
+namespace GNET
+{
+	class InstancingFieldInfo : public GNET::Rpc::Data
+	{
+	public:
+		int battle_id;
+		int world_tag;
+		int tid;
+		int queuing_time;
+		int fighting_time;
+		int preparing_time;
+		InstancingSideInfo attacker;
+		InstancingSideInfo defender;
+		InstancingSideInfo looker;
+
+	public:
+		InstancingFieldInfo (int l_battle_id = 0,int l_world_tag = 0,int l_queuing_time = 0
+			,int l_fighting_time = 0,int l_preparing_time = 0,const InstancingSideInfo& l_attacker = InstancingSideInfo()
+			,const InstancingSideInfo& l_defender = InstancingSideInfo(),const InstancingSideInfo& l_looker = InstancingSideInfo())
+			: battle_id(l_battle_id),world_tag(l_world_tag),queuing_time(l_queuing_time)
+			,fighting_time(l_fighting_time),preparing_time(l_preparing_time),attacker(l_attacker)
+			,defender(l_defender),looker(l_looker)
+		{
+		}
+
+		InstancingFieldInfo(const InstancingFieldInfo &rhs)
+			: battle_id(rhs.battle_id),world_tag(rhs.world_tag),tid(rhs.tid),
+			queuing_time(rhs.queuing_time),fighting_time(rhs.fighting_time),preparing_time(rhs.preparing_time),
+			attacker(rhs.attacker),defender(rhs.defender),looker(rhs.looker) { }
+
+		Rpc::Data *Clone() const { return new InstancingFieldInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const InstancingFieldInfo *r = dynamic_cast<const InstancingFieldInfo *>(&rhs);
+			if (r && r != this)
+			{
+				battle_id = r->battle_id;
+				world_tag = r->world_tag;
+				tid = r->tid;
+				queuing_time = r->queuing_time;
+				fighting_time = r->fighting_time;
+				preparing_time = r->preparing_time;
+				attacker = r->attacker;
+				defender = r->defender;
+				looker = r->looker;
+			}
+			return *this;
+		}
+
+		InstancingFieldInfo& operator = (const InstancingFieldInfo &rhs)
+		{
+			const InstancingFieldInfo *r = &rhs;
+			if (r && r != this)
+			{
+				battle_id = r->battle_id;
+				world_tag = r->world_tag;
+				tid = r->tid;
+				queuing_time = r->queuing_time;
+				fighting_time = r->fighting_time;
+				preparing_time = r->preparing_time;
+				attacker = r->attacker;
+				defender = r->defender;
+				looker = r->looker;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << battle_id;
+			os << world_tag;
+			os << tid;
+			os << queuing_time;
+			os << fighting_time;
+			os << preparing_time;
+			os << attacker;
+			os << defender;
+			os << looker;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> battle_id;
+			os >> world_tag;
+			os >> tid;
+			os >> queuing_time;
+			os >> fighting_time;
+			os >> preparing_time;
+			os >> attacker;
+			os >> defender;
+			os >> looker;
+			return os;
+		}
+
+	};
+};
+#endif

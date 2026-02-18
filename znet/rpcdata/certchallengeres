@@ -1,0 +1,63 @@
+#ifndef __GNET_CERTCHALLENGERES_RPCDATA
+#define __GNET_CERTCHALLENGERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class CertChallengeRes : public GNET::Rpc::Data
+	{
+	public:
+		Octets authd_cert;
+		Octets response;
+
+	public:
+		CertChallengeRes ()
+		{
+		}
+
+		CertChallengeRes(const CertChallengeRes &rhs)
+			: authd_cert(rhs.authd_cert),response(rhs.response) { }
+
+		Rpc::Data *Clone() const { return new CertChallengeRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const CertChallengeRes *r = dynamic_cast<const CertChallengeRes *>(&rhs);
+			if (r && r != this)
+			{
+				authd_cert = r->authd_cert;
+				response = r->response;
+			}
+			return *this;
+		}
+
+		CertChallengeRes& operator = (const CertChallengeRes &rhs)
+		{
+			const CertChallengeRes *r = &rhs;
+			if (r && r != this)
+			{
+				authd_cert = r->authd_cert;
+				response = r->response;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << authd_cert;
+			os << response;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> authd_cert;
+			os >> response;
+			return os;
+		}
+
+	};
+};
+#endif

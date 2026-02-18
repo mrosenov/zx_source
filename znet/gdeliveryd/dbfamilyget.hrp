@@ -1,0 +1,91 @@
+
+#ifndef __GNET_DBFAMILYGET_HPP
+#define __GNET_DBFAMILYGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "familyid"
+#include "familygetres"
+#include "familymanager.h"
+#include "factionmanager.h"
+#include "dbfactionleave.hrp"
+
+namespace GNET
+{
+
+class DBFamilyGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyget"
+#undef	RPC_BASECLASS
+
+        int  roleid;
+	int  factionid;
+	int  factiontitle, familytitle;
+	int contribution;
+	int devotion;
+	bool sendclient;
+	bool logining;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FamilyId *arg = (FamilyId*)argument;
+		FamilyGetRes *res = (FamilyGetRes *)result;
+
+		DEBUG_PRINT("DBFamilyGet, retcode=%d, familyid=%d, roleid=%d", res->retcode,arg->fid, roleid);
+                if(res->retcode!=ERR_SUCCESS)
+                        return;
+		if ((unsigned int)factionid != res->value.factionid)
+		{
+			Log::log(LOG_ERR, "dbfamilyget: family.factionid != loader. familyid=%d, factionid=%d, loader=%d",
+				res->value.id, res->value.factionid, factionid);
+			FactionDetailInfo * faction = FactionManager::Instance()->Find(factionid);
+			if (faction)
+			{
+				faction->OnLoadErrFamily(res->value.id);
+			}
+		}
+                FamilyManager::Instance()->OnLoad(res->value);
+                if(roleid>0)
+                {
+                        Thread::RWLock::WRScoped l(UserContainer::GetInstance().GetLocker());
+                        PlayerInfo * pinfo = UserContainer::GetInstance().FindRole(roleid);
+                        if (NULL==pinfo)
+                        {
+                                DEBUG_PRINT("DBFamilyGet, roleid=%d not found", roleid);
+                                return;
+                        }
+			if (sendclient)
+                        {
+				FamilyInfo * family = FamilyManager::Instance()->Find(arg->fid);
+				if (!family)
+					return;
+                                GetFactionBaseInfo_Re re;
+                                re.roleid = roleid;
+                                re.localsid = pinfo->localsid;
+                                re.faction_info.fid = family->info.id;
+                                re.faction_info.name = family->info.name;
+                                re.faction_info.level = 0;
+				re.scale = 1;
+                                GDeliveryServer::GetInstance()->Send(pinfo->linksid,re);
+                        }
+			if (logining)
+				FamilyManager::Instance()->OnLogin(roleid, res->value.factionid, factiontitle,
+					arg->fid, contribution,devotion,pinfo->gameid, pinfo->linksid,pinfo->localsid);
+                }
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

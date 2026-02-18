@@ -1,0 +1,136 @@
+
+#ifndef __GNET_DBCROSSCRSSVRTEAMS_HPP
+#define __GNET_DBCROSSCRSSVRTEAMS_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrosscrssvrteamsarg"
+#include "dbcrosscrssvrteamsres"
+#include "gcrssvrteamsrole"
+#include "gcrssvrteamsdata"
+
+
+namespace GNET
+{
+
+class DBCrossCrssvrTeams : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrosscrssvrteams"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrossCrssvrTeamsArg *arg = (DBCrossCrssvrTeamsArg *)argument;
+		DBCrossCrssvrTeamsRes *res = (DBCrossCrssvrTeamsRes *)result;
+		
+		// 跨服战队延迟写入消息处理，同时要处理战队名字索引表
+		int zoneid = arg->info.info.zoneid;
+		int createtime = arg->info.info.createtime;
+		LOG_TRACE("DBCrossCrssvrTeams, teamid=%d, zoneid=%d, createtime=%d", arg->teamid, zoneid, createtime);
+	
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream kteamid, kinfo, kteamname;
+		try
+		{
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			StorageEnv::Storage * pnamecrssvrteams = StorageEnv::GetStorage("crssvrteamsname");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				if(arg->teamid == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+
+				GCrssvrTeamsData crssvrteams;
+				kteamid << arg->teamid;
+				kinfo << arg->info;
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> crssvrteams;
+				}
+				else
+				{
+					pcrssvrteams->insert( kteamid, kinfo, txn );
+					res->retcode = ERR_SUCCESS;
+					
+					value.clear();
+					LOG_TRACE("DBCrossCrssvrTeams, teamname.size=%d, teamname=%.*s, teamid=%d", 
+							arg->info.info.name.size(), arg->info.info.name.size(), (char*)arg->info.info.name.begin(), arg->teamid);
+					kteamname << arg->info.info.name;
+					if( !pnamecrssvrteams->find(kteamname, value, txn) )
+					{
+						LOG_TRACE("DBCrossCrssvrTeams, pnamecrssvrteams insert teamname.size=%d, teamname=%.*s, teamid=%d", 
+								arg->info.info.name.size(), arg->info.info.name.size(), (char*)arg->info.info.name.begin(),arg->teamid);
+						pnamecrssvrteams->insert(kteamname, kteamid, txn); 
+					}
+					else
+					{
+						// 有,检查一下teamid
+						int t_teamid;
+						value >> t_teamid;
+						if(t_teamid != arg->teamid)
+						{
+							// 不应该出现不一致
+							Log::log( LOG_ERR, "DBCrossCrssvrTeams, in crssvrteamsname t_teamid=%d != arg->teamid=%d", t_teamid, arg->teamid);
+						}
+					}
+
+					return;
+				}
+
+				/*if(crssvrteams.info.zoneid != zoneid)
+				{
+					Log::log( LOG_ERR, "DBCrossCrssvrTeams, zoneid is err, teamid=%d, crssvrteams.zoneid=%d, arg->zoneid=%d", arg->teamid, crssvrteams.info.zoneid, zoneid);
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}*/
+
+				if(crssvrteams.info.createtime != createtime)
+				{
+					Log::log( LOG_ERR, "DBCrossCrssvrTeams, createtime is err, teamid=%d, crssvrteams.createtime=%d, arg->createtime=%d", arg->teamid, crssvrteams.info.createtime, createtime);
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}
+
+				//Log::formatlog("DBCrossCrssvrTeams","update teamid=%d", arg->teamid);
+				pcrssvrteams->insert( kteamid, kinfo, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrossCrssvrTeams, teamid=%d, what=%s.",arg->teamid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrossCrssvrTeamsArg *arg = (DBCrossCrssvrTeamsArg *)argument;
+		// DBCrossCrssvrTeamsRes *res = (DBCrossCrssvrTeamsRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

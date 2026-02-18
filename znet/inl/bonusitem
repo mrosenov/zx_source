@@ -1,0 +1,38 @@
+	public:
+		unsigned int roleid;
+		unsigned int award_type;
+		unsigned int itemid;
+		enum { PROTOCOL_TYPE = PROTOCOL_BONUSITEM };
+	public:
+		BonusItem() { type = PROTOCOL_BONUSITEM; }
+		BonusItem(void*) : Protocol(PROTOCOL_BONUSITEM) { }
+		BonusItem (unsigned int l_roleid,unsigned int l_award_type,unsigned int l_itemid)
+			 : roleid(l_roleid),award_type(l_award_type),itemid(l_itemid)
+		{
+			type = PROTOCOL_BONUSITEM;
+		}
+
+		BonusItem(const BonusItem &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),award_type(rhs.award_type),itemid(rhs.itemid) { }
+
+		GNET::Protocol *Clone() const { return new BonusItem(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << award_type;
+			os << itemid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> award_type;
+			os >> itemid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

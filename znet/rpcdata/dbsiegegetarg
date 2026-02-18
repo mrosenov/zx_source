@@ -1,0 +1,59 @@
+#ifndef __GNET_DBSIEGEGETARG_RPCDATA
+#define __GNET_DBSIEGEGETARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSiegeGetArg : public GNET::Rpc::Data
+	{
+	public:
+		int battle_id;
+
+	public:
+		DBSiegeGetArg (int l_battle_id = 0)
+			: battle_id(l_battle_id)
+		{
+		}
+
+		DBSiegeGetArg(const DBSiegeGetArg &rhs)
+			: battle_id(rhs.battle_id) { }
+
+		Rpc::Data *Clone() const { return new DBSiegeGetArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegeGetArg *r = dynamic_cast<const DBSiegeGetArg *>(&rhs);
+			if (r && r != this)
+			{
+				battle_id = r->battle_id;
+			}
+			return *this;
+		}
+
+		DBSiegeGetArg& operator = (const DBSiegeGetArg &rhs)
+		{
+			const DBSiegeGetArg *r = &rhs;
+			if (r && r != this)
+			{
+				battle_id = r->battle_id;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << battle_id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> battle_id;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,38 @@
+	public:
+		int64_t roleid;
+		int event_type;
+		Octets event_data;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYNCROLEEVENT2SNS };
+	public:
+		SyncRoleEvent2SNS() { type = PROTOCOL_SYNCROLEEVENT2SNS; }
+		SyncRoleEvent2SNS(void*) : Protocol(PROTOCOL_SYNCROLEEVENT2SNS) { }
+		SyncRoleEvent2SNS (int64_t l_roleid,int l_event_type,const Octets& l_event_data)
+			 : roleid(l_roleid),event_type(l_event_type),event_data(l_event_data)
+		{
+			type = PROTOCOL_SYNCROLEEVENT2SNS;
+		}
+
+		SyncRoleEvent2SNS(const SyncRoleEvent2SNS &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),event_type(rhs.event_type),event_data(rhs.event_data) { }
+
+		GNET::Protocol *Clone() const { return new SyncRoleEvent2SNS(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << event_type;
+			os << event_data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> event_type;
+			os >> event_data;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

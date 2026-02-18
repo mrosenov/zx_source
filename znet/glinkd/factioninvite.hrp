@@ -1,0 +1,52 @@
+
+#ifndef __GNET_FACTIONINVITE_HPP
+#define __GNET_FACTIONINVITE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "factioninvitearg"
+#include "factioninviteres"
+#include "glinkserver.hpp"
+
+namespace GNET
+{
+
+class FactionInvite : public ProxyRpc
+{
+#define	RPC_BASECLASS	ProxyRpc
+	#include "factioninvite"
+#undef	RPC_BASECLASS
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		FactionInviteArg arg;
+		osArg >> arg;
+		DEBUG_PRINT("FactionInvite: roleid=%d, invitee=%d\n", arg.roleid, arg.invitee);
+		GLinkServer* lsm=GLinkServer::GetInstance();
+		unsigned int localsid=0;
+		RoleData * invitee = lsm->GetRoleInfo(arg.invitee);
+		if (invitee)
+			localsid = invitee->sid;
+		if( localsid && lsm->Send(localsid,*this) )
+			return true;
+		else
+		{
+			SetResult(FactionInviteRes(ERR_DELIVER_SEND));
+			SendToSponsor();
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+	}
+
+	void OnTimeout( )
+	{
+	}
+
+};
+
+};
+#endif

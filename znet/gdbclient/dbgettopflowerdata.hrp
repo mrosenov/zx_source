@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBGETTOPFLOWERDATA_HPP
+#define __GNET_DBGETTOPFLOWERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbgettopflowerdataarg"
+#include "dbgettopflowerdatares"
+
+namespace GNET
+{
+
+class DBGetTopFlowerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgettopflowerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBGetTopFlowerDataArg *arg = (DBGetTopFlowerDataArg *)argument;
+		// DBGetTopFlowerDataRes *res = (DBGetTopFlowerDataRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBGetTopFlowerDataArg *arg = (DBGetTopFlowerDataArg *)argument;
+		// DBGetTopFlowerDataRes *res = (DBGetTopFlowerDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

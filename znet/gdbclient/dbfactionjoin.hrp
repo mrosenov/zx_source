@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFACTIONJOIN_HPP
+#define __GNET_DBFACTIONJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionjoinarg"
+#include "dbfactionjoinres"
+
+namespace GNET
+{
+
+class DBFactionJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionjoin"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFactionJoinArg *arg = (DBFactionJoinArg *)argument;
+		// DBFactionJoinRes *res = (DBFactionJoinRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFactionJoinArg *arg = (DBFactionJoinArg *)argument;
+		// DBFactionJoinRes *res = (DBFactionJoinRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

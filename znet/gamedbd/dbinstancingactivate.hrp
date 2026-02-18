@@ -1,0 +1,113 @@
+
+#ifndef __GNET_DBINSTANCINGACTIVATE_HPP
+#define __GNET_DBINSTANCINGACTIVATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbinstancingactivatearg"
+#include "dbinstancingactivateres"
+
+namespace GNET
+{
+
+class DBInstancingActivate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbinstancingactivate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBInstancingActivateArg *arg = (DBInstancingActivateArg *)argument;
+		DBInstancingActivateRes *res = (DBInstancingActivateRes *)result;
+
+		if (!arg->required_money && !arg->required_item)
+		{
+			res->retcode = ERR_SUCCESS;
+			return;
+		}
+		try
+		{
+			StorageEnv::CommonTransaction txn;
+			StorageEnv::Storage *pinv = StorageEnv::GetStorage("inventory");
+			try
+			{
+				GRolePocket pocket;
+				Marshal::OctetsStream key;
+				key << arg->roleid;
+				Marshal::OctetsStream(pinv->find(key, txn)) >> pocket;
+				if (arg->syncdata.inventory.timestamp-pocket.timestamp <= 0)
+				{
+					Log::log(LOG_ERR, "DBInstancingActivate, timestamp mismatch, %d<%d\n", arg->syncdata.inventory.timestamp, pocket.timestamp);
+					res->retcode = ERR_VERIFYFAILED;
+					return;
+				}
+				if (arg->required_money>0 && arg->syncdata.inventory.money<(unsigned int)arg->required_money)
+				{
+					res->retcode = ERR_BATTLE_MONEYLIMIT;
+					return;
+				}
+				if (arg->required_item)
+				{
+					GRoleInventoryVector::iterator it = arg->syncdata.inventory.items.begin();
+					GRoleInventoryVector::iterator ie = arg->syncdata.inventory.items.end();
+
+					bool item_exist = false;
+					for (; it != ie; ++it)
+					{
+						if (it->id == (unsigned int)arg->required_item)
+						{
+							item_exist = true;
+							--it->count;
+							res->syncdata.inventory.items.push_back(*it);
+							if (it->count == 0)
+								arg->syncdata.inventory.items.erase(it);
+							break;
+						}
+					}
+					if (!item_exist)
+					{
+						res->retcode = ERR_BATTLE_ITEMLIMIT;
+						return;
+					}
+				}
+				arg->syncdata.inventory.money -= arg->required_money;
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				pinv->insert(key, Marshal::OctetsStream()<<arg->syncdata.inventory, txn);
+				res->retcode = ERR_SUCCESS;
+				GLog::action("instancing activate, roleid=%d, required_item=%d, required_money=%d", arg->roleid, arg->required_item, arg->required_money);
+
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException e(DB_OLD_VERSION);
+				txn.abort(e);
+				throw e;
+			}
+		}
+		catch (DbException &e)
+		{
+			Log::log(LOG_ERR, "DBInstancingActivate, error, roleid=%d, what=%s\n", arg->roleid, e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBInstancingActivateArg *arg = (DBInstancingActivateArg *)argument;
+		// DBInstancingActivateRes *res = (DBInstancingActivateRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

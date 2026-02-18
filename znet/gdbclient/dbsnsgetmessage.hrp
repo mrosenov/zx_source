@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSNSGETMESSAGE_HPP
+#define __GNET_DBSNSGETMESSAGE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsgetmessagearg"
+#include "dbsnsgetmessageres"
+
+namespace GNET
+{
+
+class DBSNSGetMessage : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsgetmessage"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSNSGetMessageArg *arg = (DBSNSGetMessageArg *)argument;
+		// DBSNSGetMessageRes *res = (DBSNSGetMessageRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSNSGetMessageArg *arg = (DBSNSGetMessageArg *)argument;
+		// DBSNSGetMessageRes *res = (DBSNSGetMessageRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,64 @@
+#ifndef __GNET_DBFACTIONJOINARG_RPCDATA
+#define __GNET_DBFACTIONJOINARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFactionJoinArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int fid;
+		unsigned int familyid;
+
+	public:
+		DBFactionJoinArg (unsigned int l_fid = 0,unsigned int l_familyid = 0)
+			: fid(l_fid),familyid(l_familyid)
+		{
+		}
+
+		DBFactionJoinArg(const DBFactionJoinArg &rhs)
+			: fid(rhs.fid),familyid(rhs.familyid) { }
+
+		Rpc::Data *Clone() const { return new DBFactionJoinArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFactionJoinArg *r = dynamic_cast<const DBFactionJoinArg *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				familyid = r->familyid;
+			}
+			return *this;
+		}
+
+		DBFactionJoinArg& operator = (const DBFactionJoinArg &rhs)
+		{
+			const DBFactionJoinArg *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				familyid = r->familyid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << familyid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> familyid;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,38 @@
+	public:
+		int fid;
+		int msg_type;
+		Octets msg;
+		enum { PROTOCOL_TYPE = PROTOCOL_SIEGEBROADCAT };
+	public:
+		SiegeBroadcat() { type = PROTOCOL_SIEGEBROADCAT; }
+		SiegeBroadcat(void*) : Protocol(PROTOCOL_SIEGEBROADCAT) { }
+		SiegeBroadcat (int l_fid,int l_msg_type,const Octets& l_msg = Octets(0))
+			 : fid(l_fid),msg_type(l_msg_type),msg(l_msg)
+		{
+			type = PROTOCOL_SIEGEBROADCAT;
+		}
+
+		SiegeBroadcat(const SiegeBroadcat &rhs)
+			: Protocol(rhs),fid(rhs.fid),msg_type(rhs.msg_type),msg(rhs.msg) { }
+
+		GNET::Protocol *Clone() const { return new SiegeBroadcat(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << msg_type;
+			os << msg;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> msg_type;
+			os >> msg;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 256; }

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCHECKAWARD_HPP
+#define __GNET_DBCHECKAWARD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcheckawardarg"
+#include "dbcheckawardres"
+
+namespace GNET
+{
+
+class DBCheckAward : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcheckaward"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCheckAwardArg *arg = (DBCheckAwardArg *)argument;
+		// DBCheckAwardRes *res = (DBCheckAwardRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCheckAwardArg *arg = (DBCheckAwardArg *)argument;
+		// DBCheckAwardRes *res = (DBCheckAwardRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

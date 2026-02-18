@@ -1,0 +1,36 @@
+
+#ifndef __GNET_DBFACTIONRENAME_HPP
+#define __GNET_DBFACTIONRENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionrenamearg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBFactionRename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionrename"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

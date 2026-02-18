@@ -1,0 +1,77 @@
+#ifndef __GNET_PRECHANGEFACTIONNAMEARG_RPCDATA
+#define __GNET_PRECHANGEFACTIONNAMEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class PreChangeFactionnameArg : public GNET::Rpc::Data
+	{
+	public:
+		int zoneid;
+		int fid;
+		Octets newname;
+		char scale;
+
+	public:
+		PreChangeFactionnameArg (int l_zoneid = -1,int l_fid = 0,const Octets& l_newname = Octets(0)
+			,char l_scale = 0)
+			: zoneid(l_zoneid),fid(l_fid),newname(l_newname)
+			,scale(l_scale)
+		{
+		}
+
+		PreChangeFactionnameArg(const PreChangeFactionnameArg &rhs)
+			: zoneid(rhs.zoneid),fid(rhs.fid),newname(rhs.newname),
+			scale(rhs.scale) { }
+
+		Rpc::Data *Clone() const { return new PreChangeFactionnameArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const PreChangeFactionnameArg *r = dynamic_cast<const PreChangeFactionnameArg *>(&rhs);
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				fid = r->fid;
+				newname = r->newname;
+				scale = r->scale;
+			}
+			return *this;
+		}
+
+		PreChangeFactionnameArg& operator = (const PreChangeFactionnameArg &rhs)
+		{
+			const PreChangeFactionnameArg *r = &rhs;
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				fid = r->fid;
+				newname = r->newname;
+				scale = r->scale;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << zoneid;
+			os << fid;
+			os << newname;
+			os << scale;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> zoneid;
+			os >> fid;
+			os >> newname;
+			os >> scale;
+			return os;
+		}
+
+	};
+};
+#endif

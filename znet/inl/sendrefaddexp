@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		int64_t exp;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDREFADDEXP };
+	public:
+		SendRefAddExp() { type = PROTOCOL_SENDREFADDEXP; }
+		SendRefAddExp(void*) : Protocol(PROTOCOL_SENDREFADDEXP) { }
+		SendRefAddExp (int l_roleid,int64_t l_exp = 0)
+			 : roleid(l_roleid),exp(l_exp)
+		{
+			type = PROTOCOL_SENDREFADDEXP;
+		}
+
+		SendRefAddExp(const SendRefAddExp &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),exp(rhs.exp) { }
+
+		GNET::Protocol *Clone() const { return new SendRefAddExp(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << exp;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> exp;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

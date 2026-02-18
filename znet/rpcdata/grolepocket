@@ -1,0 +1,121 @@
+#ifndef __GNET_GROLEPOCKET_RPCDATA
+#define __GNET_GROLEPOCKET_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "groleinventory"
+#include "gpocketinventory"
+
+namespace GNET
+{
+	class GRolePocket : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int capacity;
+		int timestamp;
+		unsigned int money;
+		GRoleInventoryVector items;
+		GRoleInventoryVector equipment;
+		GRoleInventoryVector petbadge;
+		GRoleInventoryVector petequip;
+		short pocket_capacity;
+		GPocketInventoryVector pocket_items;
+		GRoleInventoryVector fashion;
+		Octets mountwing;
+		GRoleInventoryVector gifts;
+
+	public:
+		GRolePocket (unsigned int l_capacity = 0,int l_timestamp = 0,unsigned int l_money = 0
+			,short l_pocket_capacity = 0)
+			: capacity(l_capacity),timestamp(l_timestamp),money(l_money)
+			,pocket_capacity(l_pocket_capacity)
+		{
+		}
+
+		GRolePocket(const GRolePocket &rhs)
+			: capacity(rhs.capacity),timestamp(rhs.timestamp),money(rhs.money),
+			items(rhs.items),equipment(rhs.equipment),petbadge(rhs.petbadge),
+			petequip(rhs.petequip),pocket_capacity(rhs.pocket_capacity),pocket_items(rhs.pocket_items),
+			fashion(rhs.fashion),mountwing(rhs.mountwing),gifts(rhs.gifts) { }
+
+		Rpc::Data *Clone() const { return new GRolePocket(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GRolePocket *r = dynamic_cast<const GRolePocket *>(&rhs);
+			if (r && r != this)
+			{
+				capacity = r->capacity;
+				timestamp = r->timestamp;
+				money = r->money;
+				items = r->items;
+				equipment = r->equipment;
+				petbadge = r->petbadge;
+				petequip = r->petequip;
+				pocket_capacity = r->pocket_capacity;
+				pocket_items = r->pocket_items;
+				fashion = r->fashion;
+				mountwing = r->mountwing;
+				gifts = r->gifts;
+			}
+			return *this;
+		}
+
+		GRolePocket& operator = (const GRolePocket &rhs)
+		{
+			const GRolePocket *r = &rhs;
+			if (r && r != this)
+			{
+				capacity = r->capacity;
+				timestamp = r->timestamp;
+				money = r->money;
+				items = r->items;
+				equipment = r->equipment;
+				petbadge = r->petbadge;
+				petequip = r->petequip;
+				pocket_capacity = r->pocket_capacity;
+				pocket_items = r->pocket_items;
+				fashion = r->fashion;
+				mountwing = r->mountwing;
+				gifts = r->gifts;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << capacity;
+			os << timestamp;
+			os << money;
+			os << items;
+			os << equipment;
+			os << petbadge;
+			os << petequip;
+			os << pocket_capacity;
+			os << pocket_items;
+			os << fashion;
+			os << mountwing;
+			os << gifts;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> capacity;
+			os >> timestamp;
+			os >> money;
+			os >> items;
+			os >> equipment;
+			os >> petbadge;
+			os >> petequip;
+			os >> pocket_capacity;
+			os >> pocket_items;
+			os >> fashion;
+			os >> mountwing;
+			os >> gifts;
+			return os;
+		}
+
+	};
+};
+#endif

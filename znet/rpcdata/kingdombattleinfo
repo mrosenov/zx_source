@@ -1,0 +1,65 @@
+#ifndef __GNET_KINGDOMBATTLEINFO_RPCDATA
+#define __GNET_KINGDOMBATTLEINFO_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class KingdomBattleInfo : public GNET::Rpc::Data
+	{
+	public:
+		char fieldtype;
+		int tagid;
+
+	public:
+		KingdomBattleInfo (char l_fieldtype = 0,int l_tagid = 0)
+			: fieldtype(l_fieldtype),tagid(l_tagid)
+		{
+		}
+
+		KingdomBattleInfo(const KingdomBattleInfo &rhs)
+			: fieldtype(rhs.fieldtype),tagid(rhs.tagid) { }
+
+		Rpc::Data *Clone() const { return new KingdomBattleInfo(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const KingdomBattleInfo *r = dynamic_cast<const KingdomBattleInfo *>(&rhs);
+			if (r && r != this)
+			{
+				fieldtype = r->fieldtype;
+				tagid = r->tagid;
+			}
+			return *this;
+		}
+
+		KingdomBattleInfo& operator = (const KingdomBattleInfo &rhs)
+		{
+			const KingdomBattleInfo *r = &rhs;
+			if (r && r != this)
+			{
+				fieldtype = r->fieldtype;
+				tagid = r->tagid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fieldtype;
+			os << tagid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fieldtype;
+			os >> tagid;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<KingdomBattleInfo>	KingdomBattleInfoVector;
+};
+#endif

@@ -1,0 +1,116 @@
+
+#ifndef __GNET_DBHOMETOWNGETINFO_HPP
+#define __GNET_DBHOMETOWNGETINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhometowngetinfoarg"
+#include "dbhometowngetinfores"
+
+namespace GNET
+{
+
+class DBHometownGetInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhometowngetinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHometownGetInfoArg *arg = (DBHometownGetInfoArg *)argument;
+		DBHometownGetInfoRes *res = (DBHometownGetInfoRes *)result;
+
+		try
+		{
+			StorageEnv::Storage *phometown = StorageEnv::GetStorage("hometown");
+			StorageEnv::Storage *pfriend = StorageEnv::GetStorage("friends");
+			StorageEnv::Storage *pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+
+			try
+			{
+				GRoleBase base;
+				Marshal::OctetsStream(pbase->find(Marshal::OctetsStream()<<arg->roleid, txn)) >> base;
+				res->name.swap(base.name);
+
+				int64_t key = ((int64_t)arg->roleid<<32);
+				OctetsStream ht_value;
+				if (phometown->find(Marshal::OctetsStream()<<key, ht_value, txn))
+				{
+					ht_value >> res->hometown_info;
+					bool compo_list_updated = false;
+
+					std::set<int>::iterator it = res->hometown_info.player.compo_list.begin();
+					std::set<int>::iterator ie = res->hometown_info.player.compo_list.end();
+					for(; it != ie; )
+					{
+						Octets value;
+						key = ((int64_t)arg->roleid<<32)+(int64_t)*it;
+						if (phometown->find(Marshal::OctetsStream()<<key, value, txn))
+						{
+							LOG_TRACE("gamedbd: DBHometownGetInfo, success load compo %d for role %d with key %lld\n", *it, arg->roleid, key);
+							res->compo_info[*it].swap(value);
+							++it;
+						}
+						else
+						{
+							Log::log(LOG_ERR, "gamedbd: DBHometownGetInfo, fail load compo %d for role %d with key %lld\n", *it, arg->roleid, key);
+							res->hometown_info.player.compo_list.erase(it++);
+							compo_list_updated = true;
+						}
+					}
+
+					if (compo_list_updated)
+					{
+						phometown->insert(Marshal::OctetsStream()<<key, Marshal::OctetsStream()<<res->hometown_info, txn);
+						LOG_TRACE("gamedbd: DBHometownGetInfo, update hometowninfo for role %d\n", arg->roleid);
+					}
+				}
+
+				GFriendList friend_info;
+				OctetsStream fr_value;
+				if (pfriend->find(Marshal::OctetsStream()<<arg->roleid, fr_value, txn))
+				{
+					fr_value >> friend_info;
+					GFriendInfoVector::iterator fit = friend_info.friends.begin(), fie = friend_info.friends.end();
+					for (; fit != fie; ++fit)
+					{
+						res->friend_list.insert(fit->rid);
+					}
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+//			Log::log(LOG_ERR, "gamedbd: DBHometownGetInfo failed, roleid=%d, what=%s\n", arg->roleid, e.what());
+			res->retcode = ERR_FAILED;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBHometownGetInfoArg *arg = (DBHometownGetInfoArg *)argument;
+		// DBHometownGetInfoRes *res = (DBHometownGetInfoRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

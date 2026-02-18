@@ -1,0 +1,361 @@
+
+#ifndef __GNET_DBDELETEROLE_HPP
+#define __GNET_DBDELETEROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "gfolk"
+#include "gfamilyskill"
+#include "gfamily"
+#include "familyid"
+#include "gamedbmanager.h" /* include class RoleList */
+#include "dbdeleterolearg"
+#include "dbdeleteroleres"
+#include "gmember"
+#include "hostilefaction"
+#include "gfactioninfo"
+#include "dbbuffer.h"
+#include "user"
+#include "userid"
+#include "roleid"
+#include "grolebase"
+#include "waitdelkey"
+#include "utilfunction.h"
+#include "familycache.h"
+#include "gcirclehistorydb"
+#include "gcircledb"
+#include "grolenamehis"
+namespace GNET
+{
+
+class DBDeleteRole : public Rpc
+{
+
+#define	RPC_BASECLASS	Rpc
+	#include "dbdeleterole"
+#undef	RPC_BASECLASS
+	int UpdateFaction(unsigned int fid, unsigned int rid, unsigned char title, int contribution)
+	{
+		Marshal::OctetsStream key,value;
+		GFactionInfo info;
+
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				Log::formatlog("faction","type=deleterole:roleid=%d:factionid=%d:title=%d", rid,fid,title);
+				key << fid;
+				Marshal::OctetsStream(pfaction->find( key, txn )) >> info;
+				info.contribution += contribution;
+				pfaction->insert(key, Marshal::OctetsStream() << info, txn );
+				return fid;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "UpdateFaction, roleid=%d, what=%s\n", rid, e.what() );
+		}
+		return 0;
+	}
+
+	int UpdateFamily(unsigned int fid, unsigned int rid, unsigned char title, int & contribution)
+	{
+		Marshal::OctetsStream key,value;
+		GFamily family;
+
+		try
+		{
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				Log::formatlog("family","type=deleterole:roleid=%d:familyid=%d:title=%d",rid,fid,title);
+				key << fid;
+				Marshal::OctetsStream(pfamily->find( key, txn )) >> family;
+				for(std::vector<GFolk>::iterator it=family.member.begin(); it!=family.member.end(); ++it)
+				{
+					if (rid == it->rid)
+					{
+						contribution = it->contribution;					
+						family.member.erase(it);
+						break;
+					}
+				}
+				pfamily->insert(key, Marshal::OctetsStream() << family, txn );
+				return fid;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "UpdateFamily, roleid=%d, what=%s\n", rid, e.what() );
+		}
+		return 0;
+	}
+	static std::vector<GCircleMemberDB>::iterator FindMember(GCircleDB& cinfo,unsigned int roleid)
+	{
+		for(std::vector<GCircleMemberDB>::iterator it=cinfo.member.begin(),ie=cinfo.member.end();it!=ie;++it)
+		{
+			if(it->roleid==roleid)
+			{	
+				return it;
+			}
+		}
+		return cinfo.member.end();
+	}
+	static int UpdateCircle(unsigned int circleid, unsigned int roleid)
+	{
+		Marshal::OctetsStream key,value;
+		GCircleDB circle;
+		if(circleid ==0)
+		{
+			LOG_TRACE("updatecircle deleterole circleid=0");
+			return 0;
+		}
+
+		try
+		{
+			StorageEnv::Storage * pcircle = StorageEnv::GetStorage("circle");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+			//	DEBUG_PRINT("circle ondeleterole:roleid=%d:circleid=%d",roleid,circleid);
+				key << circleid;
+				Marshal::OctetsStream(pcircle->find( key, txn )) >> circle;
+				std::vector< GCircleMemberDB >::iterator  it = FindMember(circle,roleid);
+				if(it!=circle.member.end())
+				{
+					circle.member.erase(it);
+					pcircle->insert(key, Marshal::OctetsStream() << circle, txn );
+				}
+				else
+					Log::log( LOG_ERR, "DBDeleteRole, role not in circle id=%d circle=%d\n", roleid ,circleid);
+				return circleid;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "UpdateCircle, roleid=%d, what=%s\n", roleid, e.what() );
+		}
+		return 0;
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBDeleteRoleArg *arg = (DBDeleteRoleArg *)argument;
+		DBDeleteRoleRes *res = (DBDeleteRoleRes *)result;
+
+		Marshal::OctetsStream key_userid, key_roleid,value_base, key64_roleid;
+		GRoleBase rolebase;
+
+		User user;
+
+		LOG_TRACE( "DBDeleteRole, roleid=%d\n", arg->roleid );
+
+		try
+		{
+			StorageEnv::Storage * prolename = StorageEnv::GetStorage("rolename");
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pwaitdel = StorageEnv::GetStorage("waitdel");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pstatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * pstorehouse = StorageEnv::GetStorage("storehouse");
+			StorageEnv::Storage * ptask = StorageEnv::GetStorage("task");
+			StorageEnv::Storage * pfriends = StorageEnv::GetStorage("friends");
+
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::Storage * preferral = StorageEnv::GetStorage("referral");
+			StorageEnv::Storage * pachieve = StorageEnv::GetStorage("achievement");
+			StorageEnv::Storage * phome = StorageEnv::GetStorage("hometown");
+			StorageEnv::Storage * pgt = StorageEnv::GetStorage("gtactivate");
+			StorageEnv::Storage * prolenamehis = StorageEnv::GetStorage("rolenamehis");
+			StorageEnv::Storage * paward = StorageEnv::GetStorage("award");
+			StorageEnv::Storage * pcallback = StorageEnv::GetStorage("friendcallback");
+			StorageEnv::Storage * pmail = StorageEnv::GetStorage("mailbox");
+//			StorageEnv::Storage * pfungame = StorageEnv::GetStorage("fungame");
+			StorageEnv::Storage * psnsplayer = StorageEnv::GetStorage("snsplayerinfo");
+			StorageEnv::Storage * psect = StorageEnv::GetStorage("sect");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key_roleid<<RoleId(arg->roleid);
+				if( pbase->find( key_roleid, value_base, txn ) )
+				{
+					try {
+						value_base >> rolebase;
+						res->userid = rolebase.userid;
+
+						if( arg->create_rollback && rolebase.create_time > 0
+							&& Timer::GetTime() - rolebase.create_time > 300 )
+						{
+							res->retcode = ERR_DELETEROLE;
+							return;
+						}
+					}
+					catch ( Marshal::Exception & )
+					{
+						Log::log( LOG_ERR, "DBDeleteRole, base unmarshal error, roleid=%d.", 
+							arg->roleid );
+					}
+				}
+				// 角色选择删号后,有可能被传位为帮主,这里就删不掉了
+				//if(rolebase.factionid && rolebase.factiontitle==TITLE_MASTER)
+				//	throw DbException(DB_VERIFY_BAD);
+
+				//update user rolelist
+				if(res->userid==0)
+					res->userid = LOGICUID(arg->roleid);
+				key_userid<<UserID(res->userid);
+				Marshal::OctetsStream(puser->find( key_userid, txn )) >> user; //backup old value; 
+
+				RoleList rolelist(user.rolelist); //create rolelist object
+				rolelist.DelRole(arg->roleid % MAX_ROLE_COUNT);
+				user.rolelist = rolelist.GetRoleList();
+
+				Log::formatlog("deleterole","roleid=%d:create_time=%d", rolebase.id,rolebase.create_time);
+		
+				puser->insert( key_userid, Marshal::OctetsStream() << user, txn );
+
+				//delete role
+				pbase->del( key_roleid, txn );
+
+				pstatus->del( key_roleid, txn );
+				pinventory->del( key_roleid, txn );
+				pstorehouse->del( key_roleid, txn );
+				ptask->del( key_roleid, txn );
+				pfriends->del( key_roleid, txn );
+				psnsplayer->del(key_roleid, txn);
+				paward->del( key_roleid, txn );
+				pcallback->del( key_roleid, txn );
+				pmail->del(key_roleid, txn);
+				Marshal::OctetsStream key_all, value_all, value_rolenamehis;
+				key_all << (int)0;
+				if (prolenamehis->find(key_all, value_all, txn))
+				{
+					std::map<int, Octets> name_map;
+					value_all >> name_map;
+					if (name_map.erase(arg->roleid) > 0)
+					{
+						LOG_TRACE("erase roleid %d from global namemap", arg->roleid);
+						prolenamehis->insert(key_all, Marshal::OctetsStream() << name_map, txn);
+					}
+				}
+				prolename->del( rolebase.name, txn );
+				res->namelist.push_back(rolebase.name);
+				GRoleNameHisVector rolenamehis_vec;
+				if (prolenamehis->find(key_roleid, value_rolenamehis, txn))
+				{
+					value_rolenamehis >> rolenamehis_vec;
+					GRoleNameHisVector::const_iterator it, ite = rolenamehis_vec.end();
+					for (it = rolenamehis_vec.begin(); it != ite; ++it)
+					{
+						Marshal::OctetsStream os_rolename;
+						if (prolename->find(it->name, os_rolename, txn))
+						{
+							int tmpid = 0;
+							os_rolename >> tmpid; 
+							if (arg->roleid == tmpid)
+							{
+								prolename->del(it->name, txn);
+								res->namelist.push_back(it->name);
+							}
+						}
+					}
+					prolenamehis->del(key_roleid, txn);
+				}
+
+				pbase2->del(key_roleid, txn);
+				preferral->del(key_roleid, txn);
+				pachieve->del(key_roleid, txn);
+				key64_roleid<<((int64_t)arg->roleid<<32);
+				phome->del(key64_roleid, txn);
+				pgt->del(key_roleid,txn);
+				psect->del(key_roleid, txn);
+//				pfungame->del(key64_roleid, txn);
+//				pfungame->del(Marshal::OctetsStream()<<((int64_t)arg->roleid<<32+GAME_TYPE_LANDLORD, txn));
+//				pfungame->del(Marshal::OctetsStream()<<((int64_t)arg->roleid<<32+GAME_TYPE_CARD, txn));
+
+				//delete roleid from "waitdel" table
+				pwaitdel->del( Marshal::OctetsStream() << WaitDelKey(arg->roleid, TYPE_ROLE), txn ); 
+
+				res->rolelist = rolelist.GetRoleList();
+				//res->rolename = rolebase.name;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBDeleteRole, roleid=%d, res->userid %d what=%s\n", arg->roleid, res->userid, e.what() );
+			res->retcode = ERR_DELETEROLE;
+		}
+		//notify deliver circleid and modify circle table in db
+		Marshal::OctetsStream hisos = rolebase.circletrack;
+		if(hisos.size()>0)
+		{
+			std::vector<GCircleHistoryDB> hislist;
+			hisos >> hislist;
+			if(hislist.size()>0)
+			{
+				res->circleid = hislist.back().circleid;
+				UpdateCircle(res->circleid, arg->roleid);
+			}
+		}
+		res->family = rolebase.familyid;
+		int jointime;
+		FamilyCache::GetFaction(rolebase.familyid, res->faction, jointime);
+
+		if( ERR_SUCCESS == res->retcode  && rolebase.familyid)
+		{
+			int contribution = 0;
+			UpdateFamily(rolebase.familyid, arg->roleid, rolebase.title, contribution);
+			//if (res->faction)
+				//UpdateFaction(res->faction, arg->roleid, rolebase.title, contribution);
+			
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBDeleteRoleArg *arg = (DBDeleteRoleArg *)argument;
+		// DBDeleteRoleRes *res = (DBDeleteRoleRes *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

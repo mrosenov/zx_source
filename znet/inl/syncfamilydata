@@ -1,0 +1,38 @@
+	public:
+		int roleid;
+		int familyid;
+		std::vector<GFamilySkill> skills;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYNCFAMILYDATA };
+	public:
+		SyncFamilyData() { type = PROTOCOL_SYNCFAMILYDATA; }
+		SyncFamilyData(void*) : Protocol(PROTOCOL_SYNCFAMILYDATA) { }
+		SyncFamilyData (int l_roleid,int l_familyid,const std::vector<GFamilySkill>& l_skills)
+			 : roleid(l_roleid),familyid(l_familyid),skills(l_skills)
+		{
+			type = PROTOCOL_SYNCFAMILYDATA;
+		}
+
+		SyncFamilyData(const SyncFamilyData &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),familyid(rhs.familyid),skills(rhs.skills) { }
+
+		GNET::Protocol *Clone() const { return new SyncFamilyData(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << familyid;
+			os << skills;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> familyid;
+			os >> skills;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

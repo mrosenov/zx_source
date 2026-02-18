@@ -1,0 +1,77 @@
+#ifndef __GNET_DBCONSIGNSHELFCANCELARG_RPCDATA
+#define __GNET_DBCONSIGNSHELFCANCELARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignShelfCancelArg : public GNET::Rpc::Data
+	{
+	public:
+		int64_t sn;
+		int roleid;
+		int state;
+		int64_t timestamp;
+
+	public:
+		DBConsignShelfCancelArg (int64_t l_sn = 0,int l_roleid = 0,int l_state = 0
+			,int64_t l_timestamp = 0)
+			: sn(l_sn),roleid(l_roleid),state(l_state)
+			,timestamp(l_timestamp)
+		{
+		}
+
+		DBConsignShelfCancelArg(const DBConsignShelfCancelArg &rhs)
+			: sn(rhs.sn),roleid(rhs.roleid),state(rhs.state),
+			timestamp(rhs.timestamp) { }
+
+		Rpc::Data *Clone() const { return new DBConsignShelfCancelArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignShelfCancelArg *r = dynamic_cast<const DBConsignShelfCancelArg *>(&rhs);
+			if (r && r != this)
+			{
+				sn = r->sn;
+				roleid = r->roleid;
+				state = r->state;
+				timestamp = r->timestamp;
+			}
+			return *this;
+		}
+
+		DBConsignShelfCancelArg& operator = (const DBConsignShelfCancelArg &rhs)
+		{
+			const DBConsignShelfCancelArg *r = &rhs;
+			if (r && r != this)
+			{
+				sn = r->sn;
+				roleid = r->roleid;
+				state = r->state;
+				timestamp = r->timestamp;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << sn;
+			os << roleid;
+			os << state;
+			os << timestamp;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> sn;
+			os >> roleid;
+			os >> state;
+			os >> timestamp;
+			return os;
+		}
+
+	};
+};
+#endif

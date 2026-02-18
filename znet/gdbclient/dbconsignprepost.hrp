@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCONSIGNPREPOST_HPP
+#define __GNET_DBCONSIGNPREPOST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignprepostarg"
+#include "dbconsignprepostres"
+
+namespace GNET
+{
+
+class DBConsignPrePost : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignprepost"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignPrePostArg *arg = (DBConsignPrePostArg *)argument;
+		// DBConsignPrePostRes *res = (DBConsignPrePostRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignPrePostArg *arg = (DBConsignPrePostArg *)argument;
+		// DBConsignPrePostRes *res = (DBConsignPrePostRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

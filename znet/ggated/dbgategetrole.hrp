@@ -1,0 +1,61 @@
+
+#ifndef __GNET_DBGATEGETROLE_HPP
+#define __GNET_DBGATEGETROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "gamedbclient.hpp"
+
+#include "roleid"
+#include "dbgategetroleres"
+#include "gtmanager.h"
+
+namespace GNET
+{
+
+class DBGateGetRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgategetrole"
+#undef	RPC_BASECLASS
+	int userid;
+	int64_t localuid;
+	int pt_type;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBGateGetRoleRes *res = (DBGateGetRoleRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBGateGetRoleRes *res = (DBGateGetRoleRes *)result;
+		DEBUG_PRINT("dbgategetrole: retcode=%d roleid=%d userid=%d localuid=%lld pt_type=%d",res->retcode,arg->id,userid,localuid,pt_type);
+		if(res->retcode == ERR_SUCCESS)
+		{
+			if(GTManager::Instance()->OnDBGateGetRole(res->roledata,userid,localuid,pt_type))
+				DEBUG_PRINT("dbgategetrole:OnDBGateGetRole error");
+		}
+		else
+		{
+			GTManager::Instance()->OnDBGateGetRoleErr(userid,localuid,arg->id,res->retcode,pt_type);
+			DEBUG_PRINT("DBGateGetRole error:retcode =%d",res->retcode);
+		}
+	}
+
+	void OnTimeout()
+	{
+		RoleId *arg = (RoleId *)argument;
+		DEBUG_PRINT("dbgategetrole: timeout. roleid=%d userid=%d pt_type=%d",arg->id,userid,pt_type);
+		DBGateGetRole * rpc=(DBGateGetRole*)Rpc::Call(RPC_DBGATEGETROLE,arg);
+		rpc->userid =userid;
+		rpc->localuid = localuid;
+		rpc->pt_type = pt_type;
+		GameDBClient::GetInstance()->SendProtocol(rpc);
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,64 @@
+#ifndef __GNET_DBGETTOUCHORDERRES_RPCDATA
+#define __GNET_DBGETTOUCHORDERRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBGetTouchOrderRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int64_t order;
+
+	public:
+		DBGetTouchOrderRes (int l_retcode = 0,int64_t l_order = 0)
+			: retcode(l_retcode),order(l_order)
+		{
+		}
+
+		DBGetTouchOrderRes(const DBGetTouchOrderRes &rhs)
+			: retcode(rhs.retcode),order(rhs.order) { }
+
+		Rpc::Data *Clone() const { return new DBGetTouchOrderRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGetTouchOrderRes *r = dynamic_cast<const DBGetTouchOrderRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				order = r->order;
+			}
+			return *this;
+		}
+
+		DBGetTouchOrderRes& operator = (const DBGetTouchOrderRes &rhs)
+		{
+			const DBGetTouchOrderRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				order = r->order;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << order;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> order;
+			return os;
+		}
+
+	};
+};
+#endif

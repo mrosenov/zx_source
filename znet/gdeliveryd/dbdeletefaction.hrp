@@ -1,0 +1,56 @@
+
+#ifndef __GNET_DBDELETEFACTION_HPP
+#define __GNET_DBDELETEFACTION_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbdeletefactionarg"
+#include "dbdeletefactionres"
+#include "delhelper.h"
+#include "territorymanager.h"
+#include "gtplatformagent.h"
+#include "postdeletefaction.hrp"
+
+namespace GNET
+{
+
+class DBDeleteFaction : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbdeletefaction"
+#undef	RPC_BASECLASS
+	bool isbatch;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBDeleteFactionArg *arg = (DBDeleteFactionArg *)argument;
+		DBDeleteFactionRes *res = (DBDeleteFactionRes *)result;
+		DEBUG_PRINT("DBDeleteFaction, retcode=%d, factionid=%d namlist.size %d", res->retcode, arg->factionid, res->namelist.size());
+		if(res->retcode==ERR_SUCCESS)
+		{
+			PostDeleteFactionArg argument(GDeliveryServer::GetInstance()->zoneid,arg->factionid,res->namelist);
+			PostDeleteFaction* rpc = (PostDeleteFaction*) Rpc::Call(RPC_POSTDELETEFACTION, argument);
+			UniqueNameClient::GetInstance()->SendProtocol(rpc);
+
+			TerritoryManager::GetInstance()->OnDelFaction(arg->factionid);
+			FactionManager::Instance()->OnDelete(arg->factionid);
+			GTPlatformAgent::DeleteFaction(FACTIONTYPE,arg->factionid);
+		}
+
+		if (isbatch)
+			DeleteHelper::Instance()->DeleteNext();
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

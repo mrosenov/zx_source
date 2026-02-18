@@ -1,0 +1,127 @@
+
+#ifndef __GNET_DBFACTIONGET_HPP
+#define __GNET_DBFACTIONGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "factionid"
+#include "factioninfores"
+#include "localmacro.h"
+#include "familycache.h"
+#include "gfactionbase"
+
+namespace GNET
+{
+
+class DBFactionGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FactionId *arg = (FactionId *)argument;
+		FactionInfoRes *res = (FactionInfoRes *)result;
+		LOG_TRACE( "DBFactionGet, factionid=%d.\n", arg->fid );
+
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pfactionbase = StorageEnv::GetStorage("factionbase");
+			Marshal::OctetsStream key, value;
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << *arg;
+				Marshal::OctetsStream(pfaction->find( key, txn )) >> res->value;
+				/*
+				if (0 == res->value.hostileinfo.size())
+				{
+					res->value.hostileinfo.push_back(HostileInfo(Timer::GetTime(), 1, 0, 0));
+					pfaction->insert(key, Marshal::OctetsStream() << res->value, txn);
+				}
+				*/
+				Marshal::OctetsStream os_base;
+				if (pfactionbase->find(key, os_base, txn))
+				{
+					GFactionBase base;
+					os_base >> base;
+					res->activity = base.activity;
+					res->act_uptime = base.act_uptime;
+					res->base_status = base.status_mask;
+				}
+				FamilyCache::InsertFamilies(arg->fid,res->value.member);
+				res->cachesize = res->value.member.size();
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFactionGet, factionid=%d, what=%s\n", arg->fid, e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_DATANOTFIND;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FactionId *arg = (FactionId *)argument;
+		FactionInfoRes *res = (FactionInfoRes *)result;
+		if(res->retcode != ERR_SUCCESS)
+		{
+			Log::log( LOG_ERR, "[NOK] DBFactionGet, factionid=%d, retcode=%d", arg->fid, res->retcode);
+			return;
+		}
+
+		try
+		{
+			GFactionInfo info;
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pname = StorageEnv::GetStorage("factionname");
+			Marshal::OctetsStream key, value;
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << *arg;
+				res->value.status = _ROLE_STATUS_NORMAL;
+				res->value.deletetime = 0;
+				value << res->value;
+				pfaction->insert( key, value, txn );
+				res->value.member.clear();
+				pname->insert(Marshal::OctetsStream()<<res->value.name, key, txn, DB_NOOVERWRITE);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+			Log::log( LOG_ERR, "[OK] DBFactionGet, factionid=%d", arg->fid);
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "[NOK] DBFactionGet, factionid=%d, what=%s\n", arg->fid, e.what() );
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

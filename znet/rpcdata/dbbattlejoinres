@@ -1,0 +1,65 @@
+#ifndef __GNET_DBBATTLEJOINRES_RPCDATA
+#define __GNET_DBBATTLEJOINRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBBattleJoinRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GMailSyncData syncdata;
+
+	public:
+		DBBattleJoinRes (int l_retcode = 0,const GMailSyncData& l_syncdata = GMailSyncData())
+			: retcode(l_retcode),syncdata(l_syncdata)
+		{
+		}
+
+		DBBattleJoinRes(const DBBattleJoinRes &rhs)
+			: retcode(rhs.retcode),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBBattleJoinRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBBattleJoinRes *r = dynamic_cast<const DBBattleJoinRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBBattleJoinRes& operator = (const DBBattleJoinRes &rhs)
+		{
+			const DBBattleJoinRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

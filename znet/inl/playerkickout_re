@@ -1,0 +1,38 @@
+	public:
+		int result;
+		int roleid;
+		int src_zoneid;
+		enum { PROTOCOL_TYPE = PROTOCOL_PLAYERKICKOUT_RE };
+	public:
+		PlayerKickout_Re() { type = PROTOCOL_PLAYERKICKOUT_RE; }
+		PlayerKickout_Re(void*) : Protocol(PROTOCOL_PLAYERKICKOUT_RE) { }
+		PlayerKickout_Re (int l_result,int l_roleid,int l_src_zoneid = 0)
+			 : result(l_result),roleid(l_roleid),src_zoneid(l_src_zoneid)
+		{
+			type = PROTOCOL_PLAYERKICKOUT_RE;
+		}
+
+		PlayerKickout_Re(const PlayerKickout_Re &rhs)
+			: Protocol(rhs),result(rhs.result),roleid(rhs.roleid),src_zoneid(rhs.src_zoneid) { }
+
+		GNET::Protocol *Clone() const { return new PlayerKickout_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << result;
+			os << roleid;
+			os << src_zoneid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> result;
+			os >> roleid;
+			os >> src_zoneid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

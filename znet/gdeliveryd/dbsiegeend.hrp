@@ -1,0 +1,45 @@
+
+#ifndef __GNET_DBSIEGEEND_HPP
+#define __GNET_DBSIEGEEND_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegeendarg"
+#include "dbsiegeendres"
+
+namespace GNET
+{
+
+class DBSiegeEnd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegeend"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSiegeEndArg *arg = (DBSiegeEndArg *)argument;
+		// DBSiegeEndRes *res = (DBSiegeEndRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSiegeEndArg *arg = (DBSiegeEndArg *)argument;
+		DBSiegeEndRes *res = (DBSiegeEndRes *)result;
+		LOG_TRACE("DBSiegeEnd client: retcode=%d, battle_id=%d, result=%d, owner=%d, attacker=%d",
+			res->retcode, arg->battle_id, arg->result, arg->owner, arg->attacker);
+		//if (res->retcode == ERR_SUCCESS) 
+			SiegeManager::GetInstance()->AfterSiegeEnd(arg->battle_id, res->retcode, arg->result);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

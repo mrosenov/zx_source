@@ -1,0 +1,136 @@
+#ifndef __GNET_DBCONSIGNPREPOSTARG_RPCDATA
+#define __GNET_DBCONSIGNPREPOSTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignPrePostArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int userid;
+		Octets seller_name;
+		int margin;
+		unsigned int item_id;
+		int item_cnt;
+		int item_idx;
+		int money;
+		unsigned int price;
+		unsigned int shelf_period;
+		Octets sell_to_rolename;
+		unsigned char consign_type;
+		int loginip;
+		int category;
+
+	public:
+		DBConsignPrePostArg (int l_roleid = 0,int l_userid = 0,const Octets& l_seller_name = Octets()
+			,int l_margin = 0,unsigned int l_item_id = 0,int l_item_cnt = 0
+			,int l_item_idx = 0,int l_money = 0,unsigned int l_price = 0
+			,unsigned int l_shelf_period = 0,const Octets& l_sell_to_rolename = Octets(),unsigned char l_consign_type = 0
+			,int l_loginip = 0,int l_category = 0)
+			: roleid(l_roleid),userid(l_userid),seller_name(l_seller_name)
+			,margin(l_margin),item_id(l_item_id),item_cnt(l_item_cnt)
+			,item_idx(l_item_idx),money(l_money),price(l_price)
+			,shelf_period(l_shelf_period),sell_to_rolename(l_sell_to_rolename),consign_type(l_consign_type)
+			,loginip(l_loginip),category(l_category)
+		{
+		}
+
+		DBConsignPrePostArg(const DBConsignPrePostArg &rhs)
+			: roleid(rhs.roleid),userid(rhs.userid),seller_name(rhs.seller_name),
+			margin(rhs.margin),item_id(rhs.item_id),item_cnt(rhs.item_cnt),
+			item_idx(rhs.item_idx),money(rhs.money),price(rhs.price),
+			shelf_period(rhs.shelf_period),sell_to_rolename(rhs.sell_to_rolename),consign_type(rhs.consign_type),
+			loginip(rhs.loginip),category(rhs.category) { }
+
+		Rpc::Data *Clone() const { return new DBConsignPrePostArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignPrePostArg *r = dynamic_cast<const DBConsignPrePostArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				userid = r->userid;
+				seller_name = r->seller_name;
+				margin = r->margin;
+				item_id = r->item_id;
+				item_cnt = r->item_cnt;
+				item_idx = r->item_idx;
+				money = r->money;
+				price = r->price;
+				shelf_period = r->shelf_period;
+				sell_to_rolename = r->sell_to_rolename;
+				consign_type = r->consign_type;
+				loginip = r->loginip;
+				category = r->category;
+			}
+			return *this;
+		}
+
+		DBConsignPrePostArg& operator = (const DBConsignPrePostArg &rhs)
+		{
+			const DBConsignPrePostArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				userid = r->userid;
+				seller_name = r->seller_name;
+				margin = r->margin;
+				item_id = r->item_id;
+				item_cnt = r->item_cnt;
+				item_idx = r->item_idx;
+				money = r->money;
+				price = r->price;
+				shelf_period = r->shelf_period;
+				sell_to_rolename = r->sell_to_rolename;
+				consign_type = r->consign_type;
+				loginip = r->loginip;
+				category = r->category;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << userid;
+			os << seller_name;
+			os << margin;
+			os << item_id;
+			os << item_cnt;
+			os << item_idx;
+			os << money;
+			os << price;
+			os << shelf_period;
+			os << sell_to_rolename;
+			os << consign_type;
+			os << loginip;
+			os << category;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> userid;
+			os >> seller_name;
+			os >> margin;
+			os >> item_id;
+			os >> item_cnt;
+			os >> item_idx;
+			os >> money;
+			os >> price;
+			os >> shelf_period;
+			os >> sell_to_rolename;
+			os >> consign_type;
+			os >> loginip;
+			os >> category;
+			return os;
+		}
+
+	};
+};
+#endif

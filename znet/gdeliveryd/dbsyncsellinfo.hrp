@@ -1,0 +1,66 @@
+
+#ifndef __GNET_DBSYNCSELLINFO_HPP
+#define __GNET_DBSYNCSELLINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "sellpointinfo"
+#include "roleid"
+#include "dbsyncsellinfores"
+#include "cardmarket.h"
+#include "gamedbclient.hpp"
+#include "mapuser.h"
+namespace GNET
+{
+
+class DBSyncSellInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsyncsellinfo"
+#undef	RPC_BASECLASS
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// RoleId *arg = (RoleId *)argument;
+		// DBSyncSellInfoRes *res = (DBSyncSellInfoRes *)result;
+	}
+	void ResendRequest( RoleId &arg )
+	{
+		GameDBClient::GetInstance()->SendProtocol(
+				Rpc::Call(RPC_DBSYNCSELLINFO,arg)
+			);
+	}
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		RoleId *arg = (RoleId *)argument;
+		DBSyncSellInfoRes *res = (DBSyncSellInfoRes *)result;
+		Log::formatlog("sellpoint","dbsyncsellinfo: retcode=%d. roleid=%d,list.size=%d\n",res->retcode,arg->id,res->list.size() );
+		if ( res->retcode==ERR_SUCCESS )
+		{	
+			if ( (int)arg->id==_ROLE_INVALID ) //means sync all data with gamedbd to initial cardmarket
+				CardMarket::GetInstance().InitMarket( res->list,true );
+			else
+				CardMarket::GetInstance().SyncSell( arg->id,res->list );
+		}
+		else switch (res->retcode)
+		{
+			default:
+				ResendRequest( *arg );
+				break;
+		}
+	}
+
+	void OnTimeout( Rpc::Data *argument )
+	{
+		// TODO Client Only
+		RoleId *arg = (RoleId *)argument;
+		Log::log(LOG_ERR,"dbsyncsellinfo: timeout. roleid=%d\n",arg->id );
+		ResendRequest( *arg );
+	}
+
+};
+
+};
+#endif

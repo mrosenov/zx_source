@@ -1,0 +1,72 @@
+
+#ifndef __GNET_DBREFGETREFERRAL_HPP
+#define __GNET_DBREFGETREFERRAL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "dbrefgetreferralres"
+
+namespace GNET
+{
+
+class DBRefGetReferral : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbrefgetreferral"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBRefGetReferralRes *res = (DBRefGetReferralRes *)result;
+
+		try
+		{
+			StorageEnv::Storage *pstorage = StorageEnv::GetStorage("referral");
+			StorageEnv::AtomTransaction txn;
+			Octets oct_info;
+
+			try
+			{
+				if (pstorage->find(Marshal::OctetsStream()<<arg->id, oct_info, txn))
+				{
+					Marshal::OctetsStream(oct_info) >> res->referral;
+					res->retcode = ERR_SUCCESS;
+				}
+				else
+					res->retcode = ERR_NOTFOUND;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+			res->retcode = ERR_FAILED;
+			Log::log(LOG_ERR, "gamedbd:DBRefGetReferral, error, what=%s\n", e.what());
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// RoleId *arg = (RoleId *)argument;
+		// DBRefGetReferralRes *res = (DBRefGetReferralRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

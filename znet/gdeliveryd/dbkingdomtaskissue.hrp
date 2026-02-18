@@ -1,0 +1,59 @@
+
+#ifndef __GNET_DBKINGDOMTASKISSUE_HPP
+#define __GNET_DBKINGDOMTASKISSUE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomtaskissuearg"
+#include "dbkingdomtaskissueres"
+#include "kingissuetask_re.hpp"
+#include "gkingissuetask_re.hpp"
+
+namespace GNET
+{
+
+class DBKingdomTaskIssue : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomtaskissue"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBKingdomTaskIssueArg *arg = (DBKingdomTaskIssueArg *)argument;
+		// DBKingdomTaskIssueRes *res = (DBKingdomTaskIssueRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBKingdomTaskIssueArg *arg = (DBKingdomTaskIssueArg *)argument;
+		DBKingdomTaskIssueRes *res = (DBKingdomTaskIssueRes *)result;
+		if (res->retcode != ERR_SUCCESS)
+			res->retcode = ERR_KINGDOM_DATABASE;
+		else
+			KingdomManager::GetInstance()->OnDBTaskIssue(arg->task_type, arg->task_issue_time);
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if(pinfo)
+		{
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, KingIssueTask_Re(res->retcode, arg->roleid, arg->task_type, pinfo->localsid));
+			GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, GKingIssueTask_Re(res->retcode, arg->roleid, arg->task_type));
+		}
+	}
+
+	void OnTimeout()
+	{
+		DBKingdomTaskIssueArg *arg = (DBKingdomTaskIssueArg *)argument;
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+		if(pinfo)
+		{
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, KingIssueTask_Re(ERR_KINGDOM_DATABASE, arg->roleid, arg->task_type, pinfo->localsid));
+			GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, GKingIssueTask_Re(ERR_KINGDOM_DATABASE, arg->roleid, arg->task_type));
+		}
+	}
+
+};
+
+};
+#endif

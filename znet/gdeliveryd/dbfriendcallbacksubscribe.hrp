@@ -1,0 +1,56 @@
+
+#ifndef __GNET_DBFRIENDCALLBACKSUBSCRIBE_HPP
+#define __GNET_DBFRIENDCALLBACKSUBSCRIBE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfriendcallbacksubscribearg"
+#include "dbfriendcallbacksubscriberes"
+#include "friendcallbackmanager.hpp"
+
+namespace GNET
+{
+
+class DBFriendCallbackSubscribe : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfriendcallbacksubscribe"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFriendCallbackSubscribeArg *arg = (DBFriendCallbackSubscribeArg *)argument;
+		// DBFriendCallbackSubscribeRes *res = (DBFriendCallbackSubscribeRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFriendCallbackSubscribeArg *arg = (DBFriendCallbackSubscribeArg *)argument;
+		DBFriendCallbackSubscribeRes *res = (DBFriendCallbackSubscribeRes *)result;
+		FriendCallbackManager *fcbmanager = FriendCallbackManager::GetInstance();
+		PlayerInfo *playerinfo = NULL;
+		if(!fcbmanager->IsPlayerOnLine(arg->roleid, playerinfo))
+			return;
+
+		LOG_TRACE("GDelivery::DBFriendCallbackSubscribe, retcode=%d, roleid=%d, is_subscribe=%d\n", res->retcode, arg->roleid, arg->is_subscribe);
+		fcbmanager->ReplySubscribeResult(res->retcode, arg->is_subscribe, arg->roleid, playerinfo->localsid, playerinfo->linksid);
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBFriendCallbackSubscribeArg *arg = (DBFriendCallbackSubscribeArg *)argument;
+		FriendCallbackManager *fcbmanager = FriendCallbackManager::GetInstance();
+		PlayerInfo *playerinfo = NULL;
+
+		if(!fcbmanager->IsPlayerOnLine(arg->roleid, playerinfo))
+			return;
+		LOG_TRACE("GDelivery::DBFriendCallbackSubscribe::OnTimeout, roleid=%d, is_subscribe=%d\n", arg->roleid, arg->is_subscribe);
+		fcbmanager->ReplySubscribeResult(ERR_CALLBACK_TIMEOUT, 1, arg->roleid, playerinfo->localsid, playerinfo->linksid);
+	}
+
+};
+
+};
+#endif

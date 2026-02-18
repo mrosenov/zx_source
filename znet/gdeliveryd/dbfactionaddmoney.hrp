@@ -1,0 +1,47 @@
+
+#ifndef __GNET_DBFACTIONADDMONEY_HPP
+#define __GNET_DBFACTIONADDMONEY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfactionaddmoneyarg"
+#include "dbfactionaddmoneyres"
+#include "factionmanager.h"
+
+namespace GNET
+{
+
+class DBFactionAddMoney : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfactionaddmoney"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFactionAddMoneyArg *arg = (DBFactionAddMoneyArg *)argument;
+		// DBFactionAddMoneyRes *res = (DBFactionAddMoneyRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFactionAddMoneyArg *arg = (DBFactionAddMoneyArg *)argument;
+		DBFactionAddMoneyRes *res = (DBFactionAddMoneyRes *)result;
+		DEBUG_PRINT("DBFactionAddMoney, retcode=%d, factionid=%d money=%d", res->retcode, arg->factionid,res->new_money);
+		if (res->retcode == ERR_SUCCESS)
+		{
+			FactionManager::Instance()->OnDBFactionAddMoney(arg->factionid,res->new_money);
+		}
+ 	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

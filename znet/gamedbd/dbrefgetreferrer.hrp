@@ -1,0 +1,78 @@
+
+#ifndef __GNET_DBREFGETREFERRER_HPP
+#define __GNET_DBREFGETREFERRER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "dbrefgetreferrerres"
+#include "grolebase2"
+
+namespace GNET
+{
+
+class DBRefGetReferrer : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbrefgetreferrer"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBRefGetReferrerRes *res = (DBRefGetReferrerRes *)result;
+
+		try
+		{
+			StorageEnv::Storage *pstorage = StorageEnv::GetStorage("base2");
+			StorageEnv::AtomTransaction txn;
+			Octets oct_info;
+
+			try
+			{
+				if (pstorage->find(Marshal::OctetsStream()<<arg->id, oct_info, txn))
+				{
+					GRoleBase2 base2;
+					Marshal::OctetsStream(oct_info) >> base2;
+					res->referrer.roleid = base2.id;
+					res->referrer.bonus_withdraw = base2.bonus_withdraw;
+					res->referrer.exp_withdraw_today = base2.exp_withdraw_today;
+					res->referrer.exp_withdraw_time = base2.exp_withdraw_time;
+					res->retcode = ERR_SUCCESS;
+				}
+				else
+					res->retcode = ERR_NOTFOUND;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+			res->retcode = ERR_FAILED;
+			Log::log(LOG_ERR, "gamedbd:DBRefGetReferrer, error, what=%s\n", e.what());
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// RoleId *arg = (RoleId *)argument;
+		// DBRefGetReferrerRes *res = (DBRefGetReferrerRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

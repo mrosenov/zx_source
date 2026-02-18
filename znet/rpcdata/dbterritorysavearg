@@ -1,0 +1,65 @@
+#ifndef __GNET_DBTERRITORYSAVEARG_RPCDATA
+#define __GNET_DBTERRITORYSAVEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gterritoryinfo"
+
+namespace GNET
+{
+	class DBTerritorySaveArg : public GNET::Rpc::Data
+	{
+	public:
+		int reason;
+		GTerritoryInfo territory;
+
+	public:
+		DBTerritorySaveArg (int l_reason = 0,const GTerritoryInfo& l_territory = GTerritoryInfo())
+			: reason(l_reason),territory(l_territory)
+		{
+		}
+
+		DBTerritorySaveArg(const DBTerritorySaveArg &rhs)
+			: reason(rhs.reason),territory(rhs.territory) { }
+
+		Rpc::Data *Clone() const { return new DBTerritorySaveArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBTerritorySaveArg *r = dynamic_cast<const DBTerritorySaveArg *>(&rhs);
+			if (r && r != this)
+			{
+				reason = r->reason;
+				territory = r->territory;
+			}
+			return *this;
+		}
+
+		DBTerritorySaveArg& operator = (const DBTerritorySaveArg &rhs)
+		{
+			const DBTerritorySaveArg *r = &rhs;
+			if (r && r != this)
+			{
+				reason = r->reason;
+				territory = r->territory;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << reason;
+			os << territory;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> reason;
+			os >> territory;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,77 @@
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSRENAMEARG_RPCDATA
+#define __GNET_SYNCCROSSCRSSVRTEAMSRENAMEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class SyncCrossCrssvrTeamsRenameArg : public GNET::Rpc::Data
+	{
+	public:
+		int zoneid;
+		int teamid;
+		Octets oldname;
+		Octets newname;
+
+	public:
+		SyncCrossCrssvrTeamsRenameArg (int l_zoneid = -1,int l_teamid = -1,const Octets& l_oldname = Octets(0)
+			,const Octets& l_newname = Octets(0))
+			: zoneid(l_zoneid),teamid(l_teamid),oldname(l_oldname)
+			,newname(l_newname)
+		{
+		}
+
+		SyncCrossCrssvrTeamsRenameArg(const SyncCrossCrssvrTeamsRenameArg &rhs)
+			: zoneid(rhs.zoneid),teamid(rhs.teamid),oldname(rhs.oldname),
+			newname(rhs.newname) { }
+
+		Rpc::Data *Clone() const { return new SyncCrossCrssvrTeamsRenameArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SyncCrossCrssvrTeamsRenameArg *r = dynamic_cast<const SyncCrossCrssvrTeamsRenameArg *>(&rhs);
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				teamid = r->teamid;
+				oldname = r->oldname;
+				newname = r->newname;
+			}
+			return *this;
+		}
+
+		SyncCrossCrssvrTeamsRenameArg& operator = (const SyncCrossCrssvrTeamsRenameArg &rhs)
+		{
+			const SyncCrossCrssvrTeamsRenameArg *r = &rhs;
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				teamid = r->teamid;
+				oldname = r->oldname;
+				newname = r->newname;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << zoneid;
+			os << teamid;
+			os << oldname;
+			os << newname;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> zoneid;
+			os >> teamid;
+			os >> oldname;
+			os >> newname;
+			return os;
+		}
+
+	};
+};
+#endif

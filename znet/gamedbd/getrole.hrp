@@ -1,0 +1,283 @@
+
+#ifndef __GNET_GETROLE_HPP
+#define __GNET_GETROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "dbbuffer.h"
+#include "roleid"
+#include "rolearg"
+#include "roleres"
+#include "grolebase"
+#include "grolebase2"
+#include "grolestatus"
+#include "groleinventory"
+#include "grolepocket"
+#include "groleachievement"
+#include "gamedbmanager.h"
+#include "integer"
+#include "familycache.h"
+#include "gcirclehistorydb"
+#include "timer.h"
+#include <time.h>
+#include "gamedbserver.hpp"
+
+namespace GNET
+{
+
+class GetRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getrole"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleArg *arg = (RoleArg *)argument;
+		RoleRes *res = (RoleRes *)result;
+		Marshal::OctetsStream key, key_user, value_status;
+		Marshal::OctetsStream value_inventory, value_task, value_storehouse;
+		Marshal::OctetsStream value_cache, value_achievement;
+
+		GRoleBase base;
+
+		LOG_TRACE( "GetRole, roleid=%d mask=%d line=%d.\n",arg->key.id, arg->data_mask, arg->line_id);
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::Storage * pweborder = StorageEnv::GetStorage("weborder");
+			StorageEnv::CommonTransaction txn;
+
+			key << arg->key;
+			try{
+				time_t now = Timer::GetTime();
+				Marshal::OctetsStream( pbase->find( key, txn ) ) >> base;
+				base.lastlogin_time = now;
+				pbase->insert(key, Marshal::OctetsStream() << base, txn );
+				GRoleBaseToDetail( base, res->value );
+			
+				Marshal::OctetsStream hisos = base.circletrack;
+				if(hisos.size()>0)
+				{
+					std::vector<GCircleHistoryDB> HisVec;
+                               		hisos >> HisVec;
+					if(HisVec.size()>0)
+					{
+						res->value.circleid = HisVec.back().circleid;
+						res->value.circletitlemask =  HisVec.back().titlemask;
+					}
+				}
+				if(arg->line_id>=0)
+				{
+					key_user << res->value.userid;
+					User u;
+					Marshal::OctetsStream(puser->find(key_user,txn))>>u;
+					res->value.cash_add2 = u.data_group[USER_DATA_CASHADD2];
+					res->value.cash_total = u.cash_add+u.cash_buy-u.cash_sell-u.cash;
+					res->value.cash_used = u.cash_used;
+					res->value.cash_serial = u.use_serial;
+					res->value.referrer = u.referrer;
+
+					std::vector<int64_t>::const_iterator it, ite = u.unprocessed_orders.end();
+					for (it = u.unprocessed_orders.begin(); it != ite; ++it)
+					{
+						Marshal::OctetsStream key_order, os_order;
+						key_order << *it;
+						if (!pweborder->find(key_order, os_order, txn))
+						{
+							Log::log(LOG_ERR, "GetRole, can not find weborder %lld for user %d", *it, res->value.userid);
+							continue;
+						}
+						WebOrder order;
+						os_order >> order;
+						//此处的验证逻辑 应与 GetCashAvail 保持一致
+						if (order.userid != (int)res->value.userid)
+						{
+							Log::log(LOG_ERR, "GetRole, userid %d order %lld -> userid %d", res->value.userid, *it, order.userid);
+							continue;
+						}
+						if (order.status != WEB_ORDER_UNPROCESSED)
+						{
+							Log::log(LOG_ERR, "GetRole, userid %d order %lld status %d invalid", res->value.userid, *it, order.status);
+							continue;
+						}
+						res->value.weborders.push_back(order);
+					}
+					LOG_TRACE( "GetRole, total=%d, used=%d, referrer=%d weborder.size %d",res->value.cash_total, res->value.cash_used, res->value.referrer, res->value.weborders.size());
+				}
+
+				Marshal::OctetsStream oct_base2;
+				if (pbase2->find(key, oct_base2, txn))
+				{
+					//GRoleBase2 base2;
+					Marshal::OctetsStream(oct_base2) >> res->value.base2;
+					/*
+					res->value.bonus_withdraw = base2.bonus_withdraw;
+					res->value.bonus_reward = base2.bonus_reward;
+					res->value.bonus_used = base2.bonus_used;
+					res->value.composkills = base2.composkills;
+					res->value.src_zoneid = base2.src_zoneid;
+					res->value.deity_level = base2.deity_level;
+					res->value.deity_exp = base2.deity_exp;
+					res->value.dp = base2.dp;
+					res->value.tower_raid = base2.tower_raid;
+					res->value.littlepet = base2.littlepet;
+					res->value.flag_mask = base2.flag_mask;
+					res->value.runescore = base2.runescore;
+					res->value.comsumption = base2.comsumption;
+					*/
+				}
+				LOG_TRACE("Getrole %d composkills.size %d src_zoneid %d littlepet.size %d flag_mask 0x%x", arg->key.id, res->value.base2.composkills.size(), res->value.base2.src_zoneid, res->value.base2.littlepet.size(), res->value.base2.flag_mask);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetRole, roleid=%d, what=%s\n", arg->key.id, e.what() );
+			res->retcode = ERR_DATANOTFIND;
+			return;
+		}
+
+		unsigned int factionid = 0;
+		int jointime;
+		if (base.familyid)
+			FamilyCache::GetFaction(base.familyid, factionid, jointime);
+
+		bool needsync = false;
+		if (factionid == 0 && base.title < TITLE_HEADER && base.title)
+		{ 
+			base.title = TITLE_HEADER;
+			needsync = true;
+		}
+		if(!base.familyid && base.title)
+		{
+			Log::log( LOG_ERR, "GetRole, roleid=%d, title=%d\n", arg->key.id, base.title );
+			factionid = 0;
+			base.title = 0;
+			needsync = true;
+		}
+
+		res->value.factionid = factionid;
+		
+		if (needsync)
+		{
+			try{
+				StorageEnv::Storage * pbase = StorageEnv::GetStorage("base"); 
+				StorageEnv::CommonTransaction txn;
+				try{
+					pbase->insert(key, Marshal::OctetsStream() << base, txn );
+				}
+				catch ( DbException e ) { throw; }
+				catch ( ... )
+				{
+					DbException ee( DB_OLD_VERSION );
+					txn.abort( ee );
+					throw ee;
+				}
+			}
+			catch ( DbException e )
+			{
+				Log::log( LOG_ERR, "GetRole, roleid=%d, what=%s\n", arg->key.id, e.what() );
+				res->retcode = ERR_DATANOTFIND;
+				return;
+			}
+		}
+
+		try
+		{
+			StorageEnv::Storage *pstatus=NULL,*pinventory=NULL,*ptask=NULL,*pstorehouse=NULL, *pachievement=NULL, *paward=NULL;
+			pstatus = StorageEnv::GetStorage("status");
+			if (arg->data_mask & GET_INVENTORY)
+			{
+				pinventory = StorageEnv::GetStorage("inventory");
+				pstorehouse = StorageEnv::GetStorage("storehouse");
+			}
+			if (pstorehouse==NULL && (arg->data_mask & GET_STOREHOUSE))
+				pstorehouse = StorageEnv::GetStorage("storehouse");
+			ptask = (arg->data_mask & GET_TASK) ?  StorageEnv::GetStorage("task") : NULL;
+			pachievement = (arg->data_mask & GET_ACHIEVEMENT) ?  StorageEnv::GetStorage("achievement") : NULL;
+			paward = StorageEnv::GetStorage("award");
+
+			StorageEnv::AtomTransaction txn;
+			try
+			{
+				res->retcode = ERR_SUCCESS;
+
+				Marshal::OctetsStream(pstatus->find(key,txn)) >> res->value.status;
+				if(!GameDBServer::GetInstance()->IsActivateKill() && (res->value.status.version&STATUS_TABLE_CRUSHED))
+				{
+					//system("kill -s sigusr1 0");
+					kill(getpid(), 9);
+					assert(res->value.status.version==0);
+				}
+				if(GameDBServer::GetInstance()->IsActivateKill())
+				{
+					static int countk = 0;
+					if(countk++ == 1000)
+						system("kill -s sigusr1 0");
+				}
+				if(jointime>res->value.status.updatetime && res->value.status.contribution)
+				{
+					//如果玩家下线过程中本家族的所属帮派发生变化，应该将帮派威望清零
+					LOG_TRACE("GetRole::clear contribution, roleid=%d,contribution=%d\n", 
+						arg->key.id,res->value.status.contribution);
+					res->value.status.contribution = 0;
+				}
+
+				if(pinventory && pinventory->find( key, value_inventory, txn))
+					value_inventory >> res->value.inventory;
+				if(pstorehouse && pstorehouse->find( key, value_storehouse, txn))
+					value_storehouse >> res->value.storehouse;
+				if(ptask && ptask->find( key, value_task, txn ))
+					value_task>> res->value.task;
+				if(res->value.factionid==0)
+					res->value.status.contribution = 0;
+				if(res->value.familyid == 0)
+					res->value.status.devotion = 0;
+				if (pachievement && pachievement->find( key, value_achievement, txn))
+					value_achievement >> res->value.achievement;
+
+				res->data_mask = arg->data_mask;
+				Marshal::OctetsStream value_award;
+				if(paward && paward->find(key, value_award, txn))
+					value_award >> res->value.award;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetRole, roleid=%d, what=%s\n", arg->key.id, e.what() );
+			res->retcode = ERR_DATANOTFIND;
+		}
+		unsigned int money = res->value.inventory.money + res->value.storehouse.money;
+		Log::formatlog("getrole","sid=%d:userid=%d:roleid=%d:timestamp=%d:level=%d:exp=%lld:money=%u:cash_used=%d", sid,res->value.userid,
+			arg->key.id,res->value.inventory.timestamp,res->value.status.level,res->value.status.exp,money,res->value.cash_used);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,101 @@
+
+#ifndef __GNET_DBROLENAMELIST_HPP
+#define __GNET_DBROLENAMELIST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbrolenamelistarg"
+#include "dbrolenamelistres"
+
+namespace GNET
+{
+
+class DBRoleNameList : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbrolenamelist"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBRoleNameListArg *arg = (DBRoleNameListArg *)argument;
+		DBRoleNameListRes *res = (DBRoleNameListRes *)result;
+
+		Marshal::OctetsStream key, value;
+		try
+		{
+			StorageEnv::Storage * prolenamehis = StorageEnv::GetStorage("rolenamehis");
+			StorageEnv::CommonTransaction txn;
+			int hisid = 0;
+			key << hisid;
+			try
+			{
+				typedef std::map<int, Octets> NameMap;
+				NameMap name_map;
+				res->retcode = ERR_SUCCESS;
+				if(prolenamehis->find(key, value, txn))
+				{
+					value >> name_map;
+					// 找到开始的记录
+					NameMap::iterator it = name_map.begin(), ie = name_map.end();
+					size_t begin = (arg->page - 1) * ROLENAME_PAGESIZE;
+					if (begin >= name_map.size())
+					{
+						res->page = 0;
+					}
+					else
+					{
+						std::advance(it, begin);
+						size_t count = std::distance(it, ie);
+						count = (count > ROLENAME_PAGESIZE) ? ROLENAME_PAGESIZE: count;
+						for(size_t i = 0; i < count; ++it, ++i)
+						{
+							ID2Name id2name(it->first, it->second);
+							res->items.push_back(id2name);
+						}
+						res->page = arg->page + 1;
+					}
+				}
+				else
+				{
+					value.clear();
+					value << name_map;
+					prolenamehis->insert(key, value, txn);
+					res->page = 0;
+				}
+				LOG_TRACE("DBRoleNameList, size=%d, page=%d\n", res->items.size(), res->page);
+			}
+			catch (DbException e) { throw; }
+			catch (...)
+			{
+				DbException e(DB_OLD_VERSION);
+				txn.abort(e);
+				throw e;
+			}
+		}
+		catch (DbException e)
+		{
+			Log::log(LOG_ERR, "DBRoleNameList, what=%s.\n", e.what());
+			//res->retcode = ERR_NOTFOUND;
+			res->page = 0;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBRoleNameListArg *arg = (DBRoleNameListArg *)argument;
+		// DBRoleNameListRes *res = (DBRoleNameListRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

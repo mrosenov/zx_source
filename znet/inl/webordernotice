@@ -1,0 +1,35 @@
+	public:
+		int roleid;
+		WebOrderVector weborders;
+		enum { PROTOCOL_TYPE = PROTOCOL_WEBORDERNOTICE };
+	public:
+		WebOrderNotice() { type = PROTOCOL_WEBORDERNOTICE; }
+		WebOrderNotice(void*) : Protocol(PROTOCOL_WEBORDERNOTICE) { }
+		WebOrderNotice (int l_roleid,const WebOrderVector& l_weborders)
+			 : roleid(l_roleid),weborders(l_weborders)
+		{
+			type = PROTOCOL_WEBORDERNOTICE;
+		}
+
+		WebOrderNotice(const WebOrderNotice &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),weborders(rhs.weborders) { }
+
+		GNET::Protocol *Clone() const { return new WebOrderNotice(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << weborders;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> weborders;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

@@ -1,0 +1,64 @@
+
+#ifndef __GNET_SAVEPLAYERDATA_HPP
+#define __GNET_SAVEPLAYERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "saveplayerdataarg"
+#include "saveplayerdatares"
+#include "senddataandidentity_re.hpp"
+#include "namemanager.h"
+
+namespace GNET
+{
+
+class SavePlayerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "saveplayerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// SavePlayerDataArg *arg = (SavePlayerDataArg *)argument;
+		// SavePlayerDataRes *res = (SavePlayerDataRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SavePlayerDataArg *arg = (SavePlayerDataArg *)argument;
+		SavePlayerDataRes *res = (SavePlayerDataRes *)result;
+		LOG_TRACE("Recv SavePlayerData, roleid %d userid %d retcode = %d oldname.size =%d ", arg->roleid, arg->userid, res->retcode, res->oldname.size());
+		SendDataAndIdentity_Re re(res->retcode, arg->roleid, arg->userid, arg->flag, GDeliveryServer::GetInstance()->zoneid);
+		if (GDeliveryServer::GetInstance()->IsCentralDS())
+		{
+			if(arg->flag == DS_TO_BATTLENPC /*|| arg->flag == DS_TO_BATTLEMAP*/) // »¹Ô­DS_TO_BATTLEMAP£¬wangkai
+			{
+				re.flag = DS_TO_CENTRALDS;
+			}
+
+			CentralDeliveryServer::GetInstance()->DispatchProtocol(arg->src_zoneid, re);
+			if (res->oldname.size() > 0)
+			{
+				NameManager::GetInstance()->AddName(arg->roleid, arg->data.base.name);
+				NameManager::GetInstance()->ClearNameHistoryCache(res->oldname);
+				NameManager::GetInstance()->ClearNameHistoryCache(arg->data.base.name);
+			}
+		}
+		else
+			CentralDeliveryClient::GetInstance()->SendProtocol(re);
+		if (res->retcode != ERR_SUCCESS)
+			UserIdentityCache::GetInstance()->Remove(arg->userid);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCIRCLEAPPOINTRES_RPCDATA
+#define __GNET_DBCIRCLEAPPOINTRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCircleAppointRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		unsigned char titlemask;
+
+	public:
+		DBCircleAppointRes (int l_retcode = -1,unsigned char l_titlemask = 0)
+			: retcode(l_retcode),titlemask(l_titlemask)
+		{
+		}
+
+		DBCircleAppointRes(const DBCircleAppointRes &rhs)
+			: retcode(rhs.retcode),titlemask(rhs.titlemask) { }
+
+		Rpc::Data *Clone() const { return new DBCircleAppointRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCircleAppointRes *r = dynamic_cast<const DBCircleAppointRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				titlemask = r->titlemask;
+			}
+			return *this;
+		}
+
+		DBCircleAppointRes& operator = (const DBCircleAppointRes &rhs)
+		{
+			const DBCircleAppointRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				titlemask = r->titlemask;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << titlemask;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> titlemask;
+			return os;
+		}
+
+	};
+};
+#endif

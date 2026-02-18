@@ -1,0 +1,253 @@
+#ifndef __GNET_GFACTIONBASE_RPCDATA
+#define __GNET_GFACTIONBASE_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gfactionfield"
+#include "gfactionauction"
+#include "gfactionauctionfailer"
+#include "gfactionauctionhistory"
+
+namespace GNET
+{
+	class GFactionBase : public GNET::Rpc::Data
+	{
+	public:
+		int activity;
+		int act_uptime;
+		int status_mask;
+		int grass;
+		int mine;
+		int monster_food;
+		int monster_core;
+		int cash;
+		GFactionFieldVector fields;
+		Octets msg;
+		GFactionAuctionVector auctions;
+		GFactionAuctionFailerVector auction_failers;
+		int createtime;
+		GFactionAuctionHistoryVector auction_history;
+		char reserved8;
+		short reserved9;
+		int timestamp;
+		int reserved11;
+		int reserved12;
+		int reserved13;
+		int reserved14;
+		int reserved15;
+		int reserved16;
+		int reserved17;
+		int reserved18;
+		int reserved19;
+		int reserved20;
+		int reserved21;
+		int reserved22;
+		int reserved23;
+		int reserved24;
+		int reserved25;
+		int reserved26;
+
+	public:
+		GFactionBase (int l_activity = 0,int l_act_uptime = 0,int l_status_mask = 0
+			,int l_grass = 0,int l_mine = 0,int l_monster_food = 0
+			,int l_monster_core = 0,int l_cash = 0,const GFactionFieldVector& l_fields = GFactionFieldVector()
+			,const Octets& l_msg = Octets(),GFactionAuctionVector l_auctions = GFactionAuctionVector(),GFactionAuctionFailerVector l_auction_failers = GFactionAuctionFailerVector()
+			,int l_createtime = 0,GFactionAuctionHistoryVector l_auction_history = GFactionAuctionHistoryVector(),char l_reserved8 = 0
+			,short l_reserved9 = 0,int l_timestamp = 0,int l_reserved11 = 0
+			,int l_reserved12 = 0,int l_reserved13 = 0,int l_reserved14 = 0
+			,int l_reserved15 = 0,int l_reserved16 = 0,int l_reserved17 = 0
+			,int l_reserved18 = 0,int l_reserved19 = 0,int l_reserved20 = 0
+			,int l_reserved21 = 0,int l_reserved22 = 0,int l_reserved23 = 0
+			,int l_reserved24 = 0,int l_reserved25 = 0,int l_reserved26 = 0)
+			: activity(l_activity),act_uptime(l_act_uptime),status_mask(l_status_mask)
+			,grass(l_grass),mine(l_mine),monster_food(l_monster_food)
+			,monster_core(l_monster_core),cash(l_cash),fields(l_fields)
+			,msg(l_msg),auctions(l_auctions),auction_failers(l_auction_failers)
+			,createtime(l_createtime),auction_history(l_auction_history),reserved8(l_reserved8)
+			,reserved9(l_reserved9),timestamp(l_timestamp),reserved11(l_reserved11)
+			,reserved12(l_reserved12),reserved13(l_reserved13),reserved14(l_reserved14)
+			,reserved15(l_reserved15),reserved16(l_reserved16),reserved17(l_reserved17)
+			,reserved18(l_reserved18),reserved19(l_reserved19),reserved20(l_reserved20)
+			,reserved21(l_reserved21),reserved22(l_reserved22),reserved23(l_reserved23)
+			,reserved24(l_reserved24),reserved25(l_reserved25),reserved26(l_reserved26)
+		{
+		}
+
+		GFactionBase(const GFactionBase &rhs)
+			: activity(rhs.activity),act_uptime(rhs.act_uptime),status_mask(rhs.status_mask),
+			grass(rhs.grass),mine(rhs.mine),monster_food(rhs.monster_food),
+			monster_core(rhs.monster_core),cash(rhs.cash),fields(rhs.fields),
+			msg(rhs.msg),auctions(rhs.auctions),auction_failers(rhs.auction_failers),
+			createtime(rhs.createtime),auction_history(rhs.auction_history),reserved8(rhs.reserved8),
+			reserved9(rhs.reserved9),timestamp(rhs.timestamp),reserved11(rhs.reserved11),
+			reserved12(rhs.reserved12),reserved13(rhs.reserved13),reserved14(rhs.reserved14),
+			reserved15(rhs.reserved15),reserved16(rhs.reserved16),reserved17(rhs.reserved17),
+			reserved18(rhs.reserved18),reserved19(rhs.reserved19),reserved20(rhs.reserved20),
+			reserved21(rhs.reserved21),reserved22(rhs.reserved22),reserved23(rhs.reserved23),
+			reserved24(rhs.reserved24),reserved25(rhs.reserved25),reserved26(rhs.reserved26) { }
+
+		Rpc::Data *Clone() const { return new GFactionBase(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFactionBase *r = dynamic_cast<const GFactionBase *>(&rhs);
+			if (r && r != this)
+			{
+				activity = r->activity;
+				act_uptime = r->act_uptime;
+				status_mask = r->status_mask;
+				grass = r->grass;
+				mine = r->mine;
+				monster_food = r->monster_food;
+				monster_core = r->monster_core;
+				cash = r->cash;
+				fields = r->fields;
+				msg = r->msg;
+				auctions = r->auctions;
+				auction_failers = r->auction_failers;
+				createtime = r->createtime;
+				auction_history = r->auction_history;
+				reserved8 = r->reserved8;
+				reserved9 = r->reserved9;
+				timestamp = r->timestamp;
+				reserved11 = r->reserved11;
+				reserved12 = r->reserved12;
+				reserved13 = r->reserved13;
+				reserved14 = r->reserved14;
+				reserved15 = r->reserved15;
+				reserved16 = r->reserved16;
+				reserved17 = r->reserved17;
+				reserved18 = r->reserved18;
+				reserved19 = r->reserved19;
+				reserved20 = r->reserved20;
+				reserved21 = r->reserved21;
+				reserved22 = r->reserved22;
+				reserved23 = r->reserved23;
+				reserved24 = r->reserved24;
+				reserved25 = r->reserved25;
+				reserved26 = r->reserved26;
+			}
+			return *this;
+		}
+
+		GFactionBase& operator = (const GFactionBase &rhs)
+		{
+			const GFactionBase *r = &rhs;
+			if (r && r != this)
+			{
+				activity = r->activity;
+				act_uptime = r->act_uptime;
+				status_mask = r->status_mask;
+				grass = r->grass;
+				mine = r->mine;
+				monster_food = r->monster_food;
+				monster_core = r->monster_core;
+				cash = r->cash;
+				fields = r->fields;
+				msg = r->msg;
+				auctions = r->auctions;
+				auction_failers = r->auction_failers;
+				createtime = r->createtime;
+				auction_history = r->auction_history;
+				reserved8 = r->reserved8;
+				reserved9 = r->reserved9;
+				timestamp = r->timestamp;
+				reserved11 = r->reserved11;
+				reserved12 = r->reserved12;
+				reserved13 = r->reserved13;
+				reserved14 = r->reserved14;
+				reserved15 = r->reserved15;
+				reserved16 = r->reserved16;
+				reserved17 = r->reserved17;
+				reserved18 = r->reserved18;
+				reserved19 = r->reserved19;
+				reserved20 = r->reserved20;
+				reserved21 = r->reserved21;
+				reserved22 = r->reserved22;
+				reserved23 = r->reserved23;
+				reserved24 = r->reserved24;
+				reserved25 = r->reserved25;
+				reserved26 = r->reserved26;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << activity;
+			os << act_uptime;
+			os << status_mask;
+			os << grass;
+			os << mine;
+			os << monster_food;
+			os << monster_core;
+			os << cash;
+			os << fields;
+			os << msg;
+			os << auctions;
+			os << auction_failers;
+			os << createtime;
+			os << auction_history;
+			os << reserved8;
+			os << reserved9;
+			os << timestamp;
+			os << reserved11;
+			os << reserved12;
+			os << reserved13;
+			os << reserved14;
+			os << reserved15;
+			os << reserved16;
+			os << reserved17;
+			os << reserved18;
+			os << reserved19;
+			os << reserved20;
+			os << reserved21;
+			os << reserved22;
+			os << reserved23;
+			os << reserved24;
+			os << reserved25;
+			os << reserved26;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> activity;
+			os >> act_uptime;
+			os >> status_mask;
+			os >> grass;
+			os >> mine;
+			os >> monster_food;
+			os >> monster_core;
+			os >> cash;
+			os >> fields;
+			os >> msg;
+			os >> auctions;
+			os >> auction_failers;
+			os >> createtime;
+			os >> auction_history;
+			os >> reserved8;
+			os >> reserved9;
+			os >> timestamp;
+			os >> reserved11;
+			os >> reserved12;
+			os >> reserved13;
+			os >> reserved14;
+			os >> reserved15;
+			os >> reserved16;
+			os >> reserved17;
+			os >> reserved18;
+			os >> reserved19;
+			os >> reserved20;
+			os >> reserved21;
+			os >> reserved22;
+			os >> reserved23;
+			os >> reserved24;
+			os >> reserved25;
+			os >> reserved26;
+			return os;
+		}
+
+	};
+};
+#endif

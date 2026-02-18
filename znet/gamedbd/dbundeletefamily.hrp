@@ -1,0 +1,68 @@
+
+#ifndef __GNET_DBUNDELETEFAMILY_HPP
+#define __GNET_DBUNDELETEFAMILY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "familyid"
+#include "delfactionres"
+
+namespace GNET
+{
+
+class DBUndeleteFamily : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbundeletefamily"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FamilyId *arg = (FamilyId *)argument;
+		DelFactionRes *res = (DelFactionRes *)result;
+		Marshal::OctetsStream key,value;
+		try
+		{
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+			StorageEnv::Storage * pwaitdel = StorageEnv::GetStorage("waitdel");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key<< arg->fid;
+				GFamily family;
+				Marshal::OctetsStream(pfamily->find( key, txn )) >> family;
+				family.deletetime = 0;
+				pfamily->insert( key, Marshal::OctetsStream() << family, txn );
+
+				pwaitdel->del( Marshal::OctetsStream() << WaitDelKey(arg->fid, TYPE_FAMILY), txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBUndeleteFamily, fid=%d, what=%s\n", arg->fid, e.what() );
+			res->retcode = ERR_UNDODELROLE;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

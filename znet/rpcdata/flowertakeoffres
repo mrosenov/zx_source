@@ -1,0 +1,58 @@
+#ifndef __GNET_FLOWERTAKEOFFRES_RPCDATA
+#define __GNET_FLOWERTAKEOFFRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class FlowerTakeOffRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		FlowerTakeOffRes ()
+		{
+		}
+
+		FlowerTakeOffRes(const FlowerTakeOffRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new FlowerTakeOffRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FlowerTakeOffRes *r = dynamic_cast<const FlowerTakeOffRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		FlowerTakeOffRes& operator = (const FlowerTakeOffRes &rhs)
+		{
+			const FlowerTakeOffRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

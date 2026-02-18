@@ -1,0 +1,32 @@
+	public:
+		GKingdomFunctionary queen;
+		enum { PROTOCOL_TYPE = PROTOCOL_UPDATEQUEEN };
+	public:
+		UpdateQueen() { type = PROTOCOL_UPDATEQUEEN; }
+		UpdateQueen(void*) : Protocol(PROTOCOL_UPDATEQUEEN) { }
+		UpdateQueen (const GKingdomFunctionary& l_queen)
+			 : queen(l_queen)
+		{
+			type = PROTOCOL_UPDATEQUEEN;
+		}
+
+		UpdateQueen(const UpdateQueen &rhs)
+			: Protocol(rhs),queen(rhs.queen) { }
+
+		GNET::Protocol *Clone() const { return new UpdateQueen(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << queen;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> queen;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

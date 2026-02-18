@@ -1,0 +1,167 @@
+#ifndef __GNET_GFARMCROP_RPCDATA
+#define __GNET_GFARMCROP_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GFarmCrop : public GNET::Rpc::Data
+	{
+	public:
+		int id;
+		int seed_time;
+		int grow_time;
+		int grow_period;
+		int grow_stop_end;
+		int state_grow_time;
+		Octets protect_period;
+		int fruit_left;
+		int fruit_total;
+		Octets states;
+		Octets cooldown;
+		int reserved1;
+		int reserved2;
+		int reserved3;
+		int reserved4;
+		int reserved5;
+		int reserved6;
+		int reserved7;
+		int reserved8;
+
+	public:
+		GFarmCrop (int l_id = 0,int l_seed_time = 0,int l_grow_time = 0
+			,int l_grow_period = 0,int l_grow_stop_end = 0,int l_state_grow_time = 0
+			,Octets l_protect_period = Octets(),int l_fruit_left = 0,int l_fruit_total = 0
+			,const Octets& l_states = Octets(),const Octets& l_cooldown = Octets(),int l_reserved1 = 0
+			,int l_reserved2 = 0,int l_reserved3 = 0,int l_reserved4 = 0
+			,int l_reserved5 = 0,int l_reserved6 = 0,int l_reserved7 = 0
+			,int l_reserved8 = 0)
+			: id(l_id),seed_time(l_seed_time),grow_time(l_grow_time)
+			,grow_period(l_grow_period),grow_stop_end(l_grow_stop_end),state_grow_time(l_state_grow_time)
+			,protect_period(l_protect_period),fruit_left(l_fruit_left),fruit_total(l_fruit_total)
+			,states(l_states),cooldown(l_cooldown),reserved1(l_reserved1)
+			,reserved2(l_reserved2),reserved3(l_reserved3),reserved4(l_reserved4)
+			,reserved5(l_reserved5),reserved6(l_reserved6),reserved7(l_reserved7)
+			,reserved8(l_reserved8)
+		{
+		}
+
+		GFarmCrop(const GFarmCrop &rhs)
+			: id(rhs.id),seed_time(rhs.seed_time),grow_time(rhs.grow_time),
+			grow_period(rhs.grow_period),grow_stop_end(rhs.grow_stop_end),state_grow_time(rhs.state_grow_time),
+			protect_period(rhs.protect_period),fruit_left(rhs.fruit_left),fruit_total(rhs.fruit_total),
+			states(rhs.states),cooldown(rhs.cooldown),reserved1(rhs.reserved1),
+			reserved2(rhs.reserved2),reserved3(rhs.reserved3),reserved4(rhs.reserved4),
+			reserved5(rhs.reserved5),reserved6(rhs.reserved6),reserved7(rhs.reserved7),
+			reserved8(rhs.reserved8) { }
+
+		Rpc::Data *Clone() const { return new GFarmCrop(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFarmCrop *r = dynamic_cast<const GFarmCrop *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				seed_time = r->seed_time;
+				grow_time = r->grow_time;
+				grow_period = r->grow_period;
+				grow_stop_end = r->grow_stop_end;
+				state_grow_time = r->state_grow_time;
+				protect_period = r->protect_period;
+				fruit_left = r->fruit_left;
+				fruit_total = r->fruit_total;
+				states = r->states;
+				cooldown = r->cooldown;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+				reserved5 = r->reserved5;
+				reserved6 = r->reserved6;
+				reserved7 = r->reserved7;
+				reserved8 = r->reserved8;
+			}
+			return *this;
+		}
+
+		GFarmCrop& operator = (const GFarmCrop &rhs)
+		{
+			const GFarmCrop *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				seed_time = r->seed_time;
+				grow_time = r->grow_time;
+				grow_period = r->grow_period;
+				grow_stop_end = r->grow_stop_end;
+				state_grow_time = r->state_grow_time;
+				protect_period = r->protect_period;
+				fruit_left = r->fruit_left;
+				fruit_total = r->fruit_total;
+				states = r->states;
+				cooldown = r->cooldown;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+				reserved5 = r->reserved5;
+				reserved6 = r->reserved6;
+				reserved7 = r->reserved7;
+				reserved8 = r->reserved8;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << seed_time;
+			os << grow_time;
+			os << grow_period;
+			os << grow_stop_end;
+			os << state_grow_time;
+			os << protect_period;
+			os << fruit_left;
+			os << fruit_total;
+			os << states;
+			os << cooldown;
+			os << reserved1;
+			os << reserved2;
+			os << reserved3;
+			os << reserved4;
+			os << reserved5;
+			os << reserved6;
+			os << reserved7;
+			os << reserved8;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> seed_time;
+			os >> grow_time;
+			os >> grow_period;
+			os >> grow_stop_end;
+			os >> state_grow_time;
+			os >> protect_period;
+			os >> fruit_left;
+			os >> fruit_total;
+			os >> states;
+			os >> cooldown;
+			os >> reserved1;
+			os >> reserved2;
+			os >> reserved3;
+			os >> reserved4;
+			os >> reserved5;
+			os >> reserved6;
+			os >> reserved7;
+			os >> reserved8;
+			return os;
+		}
+
+	};
+};
+#endif

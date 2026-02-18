@@ -1,0 +1,70 @@
+#ifndef __GNET_DBUPDATETOPFLOWERDATAARG_RPCDATA
+#define __GNET_DBUPDATETOPFLOWERDATAARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gtopflowerdata"
+
+namespace GNET
+{
+	class DBUpdateTopFlowerDataArg : public GNET::Rpc::Data
+	{
+	public:
+		bool isRecv;
+		int type;
+		GTopFlowerData data;
+
+	public:
+		DBUpdateTopFlowerDataArg (bool l_isRecv = 0,int l_type = 0,const GTopFlowerData& l_data = GTopFlowerData())
+			: isRecv(l_isRecv),type(l_type),data(l_data)
+		{
+		}
+
+		DBUpdateTopFlowerDataArg(const DBUpdateTopFlowerDataArg &rhs)
+			: isRecv(rhs.isRecv),type(rhs.type),data(rhs.data) { }
+
+		Rpc::Data *Clone() const { return new DBUpdateTopFlowerDataArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBUpdateTopFlowerDataArg *r = dynamic_cast<const DBUpdateTopFlowerDataArg *>(&rhs);
+			if (r && r != this)
+			{
+				isRecv = r->isRecv;
+				type = r->type;
+				data = r->data;
+			}
+			return *this;
+		}
+
+		DBUpdateTopFlowerDataArg& operator = (const DBUpdateTopFlowerDataArg &rhs)
+		{
+			const DBUpdateTopFlowerDataArg *r = &rhs;
+			if (r && r != this)
+			{
+				isRecv = r->isRecv;
+				type = r->type;
+				data = r->data;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << isRecv;
+			os << type;
+			os << data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> isRecv;
+			os >> type;
+			os >> data;
+			return os;
+		}
+
+	};
+};
+#endif

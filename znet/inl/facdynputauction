@@ -1,0 +1,47 @@
+	public:
+		int fid;
+		Octets rolename;
+		int itemid;
+		int time;
+		int task_id;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACDYNPUTAUCTION };
+	public:
+		FacDynPutAuction() { type = PROTOCOL_FACDYNPUTAUCTION; }
+		FacDynPutAuction(void*) : Protocol(PROTOCOL_FACDYNPUTAUCTION) { }
+		FacDynPutAuction (int l_fid,const Octets& l_rolename = Octets(),int l_itemid = 0,
+			int l_time = 0,int l_task_id = 0)
+			 : fid(l_fid),rolename(l_rolename),itemid(l_itemid)
+			,time(l_time),task_id(l_task_id)
+		{
+			type = PROTOCOL_FACDYNPUTAUCTION;
+		}
+
+		FacDynPutAuction(const FacDynPutAuction &rhs)
+			: Protocol(rhs),fid(rhs.fid),rolename(rhs.rolename),itemid(rhs.itemid)
+			,time(rhs.time),task_id(rhs.task_id) { }
+
+		GNET::Protocol *Clone() const { return new FacDynPutAuction(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << rolename;
+			os << itemid;
+			os << time;
+			os << task_id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> rolename;
+			os >> itemid;
+			os >> time;
+			os >> task_id;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

@@ -1,0 +1,74 @@
+
+#ifndef __GNET_DBFAMILYSYNC_HPP
+#define __GNET_DBFAMILYSYNC_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfamilysyncarg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBFamilySync : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilysync"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilySyncArg *arg = (DBFamilySyncArg *)argument;
+		DefFactionRes *res = (DefFactionRes *)result;
+
+		LOG_TRACE( "DBFamilySync,familyid=%d population=%d skills=%d taskdata=%d.",
+			arg->fid,arg->member.size(),arg->skills.size(), arg->task_data.size());
+                Marshal::OctetsStream key, krole;
+                try
+                {
+                        StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+
+                        StorageEnv::CommonTransaction txn;
+                        try{
+                                GFamily family;
+
+                                key << arg->fid;
+
+                                Marshal::OctetsStream(pfamily->find(key, txn )) >> family;
+				family.member.swap(arg->member);
+				family.skills.swap(arg->skills);
+				family.task_data.swap(arg->task_data);
+				family.task_record.swap(arg->task_record);
+                                pfamily->insert( key, Marshal::OctetsStream()<<family, txn );
+
+                                res->retcode = ERR_SUCCESS;
+                        }
+                        catch ( DbException e ) { throw; }
+                        catch ( ... )
+                        {
+                                DbException e( DB_OLD_VERSION );
+                                txn.abort( e );
+                                throw e;
+                        }
+                }
+                catch ( DbException e )
+                {
+                        Log::log( LOG_ERR, "DBFactionSync, factionid=%d what=%s.",arg->fid,e.what());
+                        res->retcode = ERR_EXCEPTION;
+                }
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,56 @@
+
+#ifndef __GNET_DBHOSTILEPROTECT_HPP
+#define __GNET_DBHOSTILEPROTECT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhostileprotectarg"
+#include "dbhostileprotectres"
+#include "hostileprotect_re.hpp"
+#include "gmailendsync.hpp"
+
+namespace GNET
+{
+
+class DBHostileProtect : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhostileprotect"
+#undef	RPC_BASECLASS
+	int localsid;
+	int linksid;
+	int gs_id;
+
+	void Send2Player(DBHostileProtectArg& arg, int retcode)
+	{
+		GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		dsm->Send(linksid, HostileProtect_Re(retcode, arg.factionid, localsid));
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHostileProtectArg *arg = (DBHostileProtectArg *)argument;
+		DBHostileProtectRes *res = (DBHostileProtectRes *)result;
+		DEBUG_PRINT("DBHostileProtect, retcode=%d, factionid=%d, item_id=%d, item_pos=%d, item_num=%d"
+				, res->retcode, arg->factionid, arg->item_id, arg->item_pos, arg->item_num);
+		FactionManager::Instance()->OnHostileProtect(*arg);
+		Send2Player(*arg, res->retcode);
+		GProviderServer::GetInstance()->DispatchProtocol(gs_id, GMailEndSync(0, res->retcode, arg->roleid, res->syncdata));
+	}
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBHostileProtectArg *arg = (DBHostileProtectArg *)argument;
+		DEBUG_PRINT("DBHostileUpdate, timeout! factionid=%d, item_id=%d, item_pos=%d, item_num=%d"
+				, arg->factionid, arg->item_id, arg->item_pos, arg->item_num);
+		Send2Player(*arg, ERR_DATABASE_TIMEOUT);
+	}
+};
+
+};
+#endif

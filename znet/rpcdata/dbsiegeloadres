@@ -1,0 +1,65 @@
+#ifndef __GNET_DBSIEGELOADRES_RPCDATA
+#define __GNET_DBSIEGELOADRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcity"
+
+namespace GNET
+{
+	class DBSiegeLoadRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		std::vector<GCity> cities;
+
+	public:
+		DBSiegeLoadRes (int l_retcode = 0,const std::vector<GCity>& l_cities = std::vector<GCity>())
+			: retcode(l_retcode),cities(l_cities)
+		{
+		}
+
+		DBSiegeLoadRes(const DBSiegeLoadRes &rhs)
+			: retcode(rhs.retcode),cities(rhs.cities) { }
+
+		Rpc::Data *Clone() const { return new DBSiegeLoadRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegeLoadRes *r = dynamic_cast<const DBSiegeLoadRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				cities = r->cities;
+			}
+			return *this;
+		}
+
+		DBSiegeLoadRes& operator = (const DBSiegeLoadRes &rhs)
+		{
+			const DBSiegeLoadRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				cities = r->cities;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << cities;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> cities;
+			return os;
+		}
+
+	};
+};
+#endif

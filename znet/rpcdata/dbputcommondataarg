@@ -1,0 +1,59 @@
+#ifndef __GNET_DBPUTCOMMONDATAARG_RPCDATA
+#define __GNET_DBPUTCOMMONDATAARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcommondata"
+
+namespace GNET
+{
+	class DBPutCommonDataArg : public GNET::Rpc::Data
+	{
+	public:
+		std::vector<GCommonData> data;
+
+	public:
+		DBPutCommonDataArg ()
+		{
+		}
+
+		DBPutCommonDataArg(const DBPutCommonDataArg &rhs)
+			: data(rhs.data) { }
+
+		Rpc::Data *Clone() const { return new DBPutCommonDataArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBPutCommonDataArg *r = dynamic_cast<const DBPutCommonDataArg *>(&rhs);
+			if (r && r != this)
+			{
+				data = r->data;
+			}
+			return *this;
+		}
+
+		DBPutCommonDataArg& operator = (const DBPutCommonDataArg &rhs)
+		{
+			const DBPutCommonDataArg *r = &rhs;
+			if (r && r != this)
+			{
+				data = r->data;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> data;
+			return os;
+		}
+
+	};
+};
+#endif

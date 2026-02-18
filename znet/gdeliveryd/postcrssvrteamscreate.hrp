@@ -1,0 +1,49 @@
+
+#ifndef __GNET_POSTCRSSVRTEAMSCREATE_HPP
+#define __GNET_POSTCRSSVRTEAMSCREATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#ifdef USE_DB
+#include "dbbuffer.h"
+#endif
+#include "postcrssvrteamscreatearg"
+#include "postcrssvrteamscreateres"
+
+namespace GNET
+{
+
+class PostCrssvrTeamsCreate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "postcrssvrteamscreate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+#ifdef USE_DB
+		PostCrssvrTeamsCreateArg *arg = (PostCrssvrTeamsCreateArg *)argument;
+		PostCrssvrTeamsCreateRes *res = (PostCrssvrTeamsCreateRes *)result;
+		Marshal::OctetsStream key, value;
+		key << arg->teamname;
+		value << arg->teamid;
+#endif
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PostCrssvrTeamsCreateArg *arg = (PostCrssvrTeamsCreateArg *)argument;
+		// PostCrssvrTeamsCreateRes *res = (PostCrssvrTeamsCreateRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,69 @@
+#ifndef __GNET_DBCONSIGNMAILARG_RPCDATA
+#define __GNET_DBCONSIGNMAILARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignMailArg : public GNET::Rpc::Data
+	{
+	public:
+		int64_t sn;
+		int cur_state;
+		int roleid;
+
+	public:
+		DBConsignMailArg (int64_t l_sn = 0,int l_cur_state = 0,int l_roleid = 0)
+			: sn(l_sn),cur_state(l_cur_state),roleid(l_roleid)
+		{
+		}
+
+		DBConsignMailArg(const DBConsignMailArg &rhs)
+			: sn(rhs.sn),cur_state(rhs.cur_state),roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new DBConsignMailArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignMailArg *r = dynamic_cast<const DBConsignMailArg *>(&rhs);
+			if (r && r != this)
+			{
+				sn = r->sn;
+				cur_state = r->cur_state;
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		DBConsignMailArg& operator = (const DBConsignMailArg &rhs)
+		{
+			const DBConsignMailArg *r = &rhs;
+			if (r && r != this)
+			{
+				sn = r->sn;
+				cur_state = r->cur_state;
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << sn;
+			os << cur_state;
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> sn;
+			os >> cur_state;
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

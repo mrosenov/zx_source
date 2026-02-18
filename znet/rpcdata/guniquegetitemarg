@@ -1,0 +1,59 @@
+#ifndef __GNET_GUNIQUEGETITEMARG_RPCDATA
+#define __GNET_GUNIQUEGETITEMARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GUniqueGetItemArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+
+	public:
+		GUniqueGetItemArg (int l_roleid = 0)
+			: roleid(l_roleid)
+		{
+		}
+
+		GUniqueGetItemArg(const GUniqueGetItemArg &rhs)
+			: roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new GUniqueGetItemArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GUniqueGetItemArg *r = dynamic_cast<const GUniqueGetItemArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		GUniqueGetItemArg& operator = (const GUniqueGetItemArg &rhs)
+		{
+			const GUniqueGetItemArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,80 @@
+
+#ifndef __GNET_POSTCRSSVRTEAMSDEL_HPP
+#define __GNET_POSTCRSSVRTEAMSDEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "postcrssvrteamsdelarg"
+#include "postcrssvrteamsdelres"
+
+namespace GNET
+{
+
+class PostCrssvrTeamsDel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "postcrssvrteamsdel"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		PostCrssvrTeamsDelArg *arg = (PostCrssvrTeamsDelArg *)argument;
+		PostCrssvrTeamsDelRes *res = (PostCrssvrTeamsDelRes *)result;
+		
+		LOG_TRACE( "PostCrssvrTeamsDel(zoneid=%d, teamid=%d,name=%.*s)",
+			arg->zoneid, arg->teamid, arg->teamname.size(), (char*)arg->teamname.begin());
+
+		try
+		{
+			StorageEnv::Storage * punamecrssvrteams = StorageEnv::GetStorage("unamecrssvrteams");
+			StorageEnv::AtomTransaction txn;
+			try
+			{
+				Marshal::OctetsStream key_nextid;
+				int nextid_forkey = 0;
+				key_nextid << nextid_forkey;
+				
+				if( key_nextid == arg->teamname )
+				{
+					res->retcode = ERR_DUPLICATRECORD;
+					LOG_TRACE( "PostCrssvrTeamsDel(zoneid=%d,teamid=%d,name=%.*s), duplicate, equals to next_id", 
+						arg->zoneid, arg->teamid, arg->teamname.size(), (char*)arg->teamname.begin() );
+					return;
+				}
+				punamecrssvrteams->del( arg->teamname, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "PostCrssvrTeamsDel, zoneid=%d, teamid=%d, what=%s\n", arg->zoneid, arg->teamid, e.what() );
+			res->retcode = -1;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// PostCrssvrTeamsDelArg *arg = (PostCrssvrTeamsDelArg *)argument;
+		// PostCrssvrTeamsDelRes *res = (PostCrssvrTeamsDelRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

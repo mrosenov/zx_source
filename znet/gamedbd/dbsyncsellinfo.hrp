@@ -1,0 +1,111 @@
+
+#ifndef __GNET_DBSYNCSELLINFO_HPP
+#define __GNET_DBSYNCSELLINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "sellpointinfo"
+#include "dbsyncsellinfores"
+#include "selldataimage.h"
+namespace GNET
+{
+
+class DBSyncSellInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsyncsellinfo"
+#undef	RPC_BASECLASS
+	class SellInfoQuery : public StorageEnv::IQuery
+	{
+	public:	
+		bool Update( StorageEnv::Transaction& txn, Octets& key, Octets& value )
+		{
+			SellPointInfo sellinfo;
+			try
+			{
+				Marshal::OctetsStream(value)>>sellinfo;
+				m_list.push_back(sellinfo);
+			}
+			catch (Marshal::Exception &)
+			{
+				Log::log(LOG_ERR,"dbsyncsellinfo::SellInfoQuery. unmarshal error.");
+				return true;
+			}
+			return true;
+		}
+	public:
+		std::vector<SellPointInfo> m_list;	
+	};
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBSyncSellInfoRes *res = (DBSyncSellInfoRes *)result;
+		try {
+            StorageEnv::Storage * psell = StorageEnv::GetStorage("sellpoint");
+            StorageEnv::CommonTransaction txn;
+			Log::formatlog("sellpoint","dbsyncsellinfo. received. roleid=%d\n",arg->id);
+			AttendList attendlist;
+			SellPointInfo sellinfo;
+			try {
+				if ( (int)arg->id==_ROLE_INVALID ) //means sync all data
+				{
+					SellInfoQuery q;
+					StorageEnv::Storage::Cursor cursor = psell->cursor( txn );
+					cursor.walk( q );
+					res->retcode=ERR_SUCCESS;
+					res->list.swap( q.m_list );
+					return;
+				}
+				if ( !SellDataImage::GetInstance().GetAttendList(arg->id,attendlist) ) {
+					res->retcode=ERR_SP_NOT_INIT;
+					return;
+				}
+				AttendList::iterator it=attendlist.begin(),ite=attendlist.end();
+				for ( ;it!=ite;++it )
+				{
+					Marshal::OctetsStream(
+							psell->find( Marshal::OctetsStream()<<SellID(arg->id,(*it)), txn )
+						) >> sellinfo;
+					res->list.push_back( sellinfo );
+				}
+				Log::formatlog("sellpoint","dbsyncsellinfo. roleid=%d\n",arg->id);
+				res->retcode=ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}	
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "dbsyncsellinfo, roleid=%d, what=%s\n", arg->id, e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode=ERR_SP_DBDEADLOCK;
+			else
+				res->retcode=ERR_DATANOTFIND;
+		}	
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// RoleId *arg = (RoleId *)argument;
+		// std::vector<SellPointInfo> *res = (std::vector<SellPointInfo> *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,69 @@
+#ifndef __GNET_NETMARBLEDEDUCTARG_RPCDATA
+#define __GNET_NETMARBLEDEDUCTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class NetMarbleDeductArg : public GNET::Rpc::Data
+	{
+	public:
+		int userid;
+		int ipaddress;
+		int playTime;
+
+	public:
+		NetMarbleDeductArg (int l_userid = 0,int l_ipaddress = 0,int l_playTime = 0)
+			: userid(l_userid),ipaddress(l_ipaddress),playTime(l_playTime)
+		{
+		}
+
+		NetMarbleDeductArg(const NetMarbleDeductArg &rhs)
+			: userid(rhs.userid),ipaddress(rhs.ipaddress),playTime(rhs.playTime) { }
+
+		Rpc::Data *Clone() const { return new NetMarbleDeductArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const NetMarbleDeductArg *r = dynamic_cast<const NetMarbleDeductArg *>(&rhs);
+			if (r && r != this)
+			{
+				userid = r->userid;
+				ipaddress = r->ipaddress;
+				playTime = r->playTime;
+			}
+			return *this;
+		}
+
+		NetMarbleDeductArg& operator = (const NetMarbleDeductArg &rhs)
+		{
+			const NetMarbleDeductArg *r = &rhs;
+			if (r && r != this)
+			{
+				userid = r->userid;
+				ipaddress = r->ipaddress;
+				playTime = r->playTime;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			os << ipaddress;
+			os << playTime;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			os >> ipaddress;
+			os >> playTime;
+			return os;
+		}
+
+	};
+};
+#endif

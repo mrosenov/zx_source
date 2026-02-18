@@ -1,0 +1,32 @@
+	public:
+		int tableid;
+		enum { PROTOCOL_TYPE = PROTOCOL_NOTIFYDAILYTABLECHANGE };
+	public:
+		NotifyDailyTableChange() { type = PROTOCOL_NOTIFYDAILYTABLECHANGE; }
+		NotifyDailyTableChange(void*) : Protocol(PROTOCOL_NOTIFYDAILYTABLECHANGE) { }
+		NotifyDailyTableChange (int l_tableid)
+			 : tableid(l_tableid)
+		{
+			type = PROTOCOL_NOTIFYDAILYTABLECHANGE;
+		}
+
+		NotifyDailyTableChange(const NotifyDailyTableChange &rhs)
+			: Protocol(rhs),tableid(rhs.tableid) { }
+
+		GNET::Protocol *Clone() const { return new NotifyDailyTableChange(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << tableid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> tableid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

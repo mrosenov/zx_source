@@ -1,0 +1,93 @@
+#ifndef __GNET_GTERRITORYITEMGETARG_RPCDATA
+#define __GNET_GTERRITORYITEMGETARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GTerritoryItemGetArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		unsigned int factionid;
+		int territoryid;
+		char itemtype;
+		int itemid;
+		int item_count;
+		int money;
+
+	public:
+		GTerritoryItemGetArg (unsigned int l_factionid = 0,int l_territoryid = 0,char l_itemtype = -1
+			,int l_itemid = -1,int l_item_count = 0,int l_money = 0)
+			: factionid(l_factionid),territoryid(l_territoryid),itemtype(l_itemtype)
+			,itemid(l_itemid),item_count(l_item_count),money(l_money)
+		{
+		}
+
+		GTerritoryItemGetArg(const GTerritoryItemGetArg &rhs)
+			: roleid(rhs.roleid),factionid(rhs.factionid),territoryid(rhs.territoryid),
+			itemtype(rhs.itemtype),itemid(rhs.itemid),item_count(rhs.item_count),
+			money(rhs.money) { }
+
+		Rpc::Data *Clone() const { return new GTerritoryItemGetArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GTerritoryItemGetArg *r = dynamic_cast<const GTerritoryItemGetArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				factionid = r->factionid;
+				territoryid = r->territoryid;
+				itemtype = r->itemtype;
+				itemid = r->itemid;
+				item_count = r->item_count;
+				money = r->money;
+			}
+			return *this;
+		}
+
+		GTerritoryItemGetArg& operator = (const GTerritoryItemGetArg &rhs)
+		{
+			const GTerritoryItemGetArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				factionid = r->factionid;
+				territoryid = r->territoryid;
+				itemtype = r->itemtype;
+				itemid = r->itemid;
+				item_count = r->item_count;
+				money = r->money;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << factionid;
+			os << territoryid;
+			os << itemtype;
+			os << itemid;
+			os << item_count;
+			os << money;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> factionid;
+			os >> territoryid;
+			os >> itemtype;
+			os >> itemid;
+			os >> item_count;
+			os >> money;
+			return os;
+		}
+
+	};
+};
+#endif

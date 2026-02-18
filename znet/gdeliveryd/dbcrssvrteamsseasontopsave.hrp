@@ -1,0 +1,62 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSSEASONTOPSAVE_HPP
+#define __GNET_DBCRSSVRTEAMSSEASONTOPSAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsseasontopsavearg"
+#include "dbcrssvrteamsseasontopsaveres"
+
+#include "crssvrteamsmanager.h"
+#include "crosscrssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsSeasonTopSave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsseasontopsave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsSeasonTopSaveArg *arg = (DBCrssvrTeamsSeasonTopSaveArg *)argument;
+		// DBCrssvrTeamsSeasonTopSaveRes *res = (DBCrssvrTeamsSeasonTopSaveRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		DBCrssvrTeamsSeasonTopSaveArg *arg = (DBCrssvrTeamsSeasonTopSaveArg *)argument;
+		DBCrssvrTeamsSeasonTopSaveRes *res = (DBCrssvrTeamsSeasonTopSaveRes *)result;
+
+		LOG_TRACE("DBCrssvrTeamsSeasonTopSave, retcode=%d, updatetime=%d", res->retcode, arg->seasontop.updatetime);
+		if(res->retcode==ERR_SUCCESS)
+		{
+			GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+			if (!dsm->IsCentralDS())
+			{
+	                	CrssvrTeamsManager::Instance()->UpdateSeasonPos(arg->seasontop.updatetime, arg->seasontop.pos_map);
+			}
+			else
+			{
+				CrossCrssvrTeamsManager::Instance()->UpdateSeasonTop(arg->seasontop.updatetime, arg->seasontop.table);	
+			}
+		}
+	}
+
+	void OnTimeout()
+	{
+		DBCrssvrTeamsSeasonTopSaveArg *arg = (DBCrssvrTeamsSeasonTopSaveArg *)argument;
+		DEBUG_PRINT("DBCrssvrTeamsSeasonTopSave: timeout. updatetime=%d", arg->seasontop.updatetime);
+		DBCrssvrTeamsSeasonTopSave* rpc = (DBCrssvrTeamsSeasonTopSave*) Rpc::Call( RPC_DBCRSSVRTEAMSSEASONTOPSAVE,arg);
+		GameDBClient::GetInstance()->SendProtocol(rpc);
+	}
+
+};
+
+};
+#endif

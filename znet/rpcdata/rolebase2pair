@@ -1,0 +1,65 @@
+#ifndef __GNET_ROLEBASE2PAIR_RPCDATA
+#define __GNET_ROLEBASE2PAIR_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "roleid"
+#include "grolebase2"
+
+namespace GNET
+{
+	class RoleBase2Pair : public GNET::Rpc::Data
+	{
+	public:
+		RoleId key;
+		GRoleBase2 value;
+
+	public:
+		RoleBase2Pair ()
+		{
+		}
+
+		RoleBase2Pair(const RoleBase2Pair &rhs)
+			: key(rhs.key),value(rhs.value) { }
+
+		Rpc::Data *Clone() const { return new RoleBase2Pair(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const RoleBase2Pair *r = dynamic_cast<const RoleBase2Pair *>(&rhs);
+			if (r && r != this)
+			{
+				key = r->key;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		RoleBase2Pair& operator = (const RoleBase2Pair &rhs)
+		{
+			const RoleBase2Pair *r = &rhs;
+			if (r && r != this)
+			{
+				key = r->key;
+				value = r->value;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << key;
+			os << value;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> key;
+			os >> value;
+			return os;
+		}
+
+	};
+};
+#endif

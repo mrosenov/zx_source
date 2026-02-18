@@ -1,0 +1,48 @@
+
+#ifndef __GNET_DBCONSIGNGETROLE_HPP
+#define __GNET_DBCONSIGNGETROLE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsigngetrolearg"
+#include "dbconsigngetroleres"
+#include "consignmanager.h"
+
+namespace GNET
+{
+
+class DBConsignGetRole : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsigngetrole"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignGetRoleArg *arg = (DBConsignGetRoleArg *)argument;
+		// DBConsignGetRoleRes *res = (DBConsignGetRoleRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignGetRoleArg *arg = (DBConsignGetRoleArg *)argument;
+		DBConsignGetRoleRes *res = (DBConsignGetRoleRes *)result;
+		DEBUG_PRINT("dbconsigngetrole: rpc return. retcode=%d,roleid=%d", res->retcode, arg->roleid);
+
+		if(res->retcode == ERR_SUCCESS)
+		{
+			ConsignManager::GetInstance()->SetRoleData(arg->sn,res->roledetail);
+		}
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

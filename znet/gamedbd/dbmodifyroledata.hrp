@@ -1,0 +1,221 @@
+
+#ifndef __GNET_DBMODIFYROLEDATA_HPP
+#define __GNET_DBMODIFYROLEDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbmodifyroledataarg"
+#include "dbmodifyroledatares"
+#include "clearroledata"
+
+
+namespace GNET
+{
+
+class DBModifyRoleData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbmodifyroledata"
+#undef	RPC_BASECLASS
+
+	enum {	
+		ATTR_NONE               = 0x00000000,
+		ATTR_LEVEL              = 0x00000001, 
+		ATTR_EXP                = 0x00000002, 
+		ATTR_POCKET_MONEY       = 0x00000004,
+		ATTR_STORE_MONEY        = 0x00000008,
+		ATTR_PKVALUE            = 0x00000010,
+		ATTR_REPUTATION         = 0x00000020,
+		ATTR_POTENTIAL          = 0x00000040,
+		ATTR_OCCUPATION         = 0x00000080,
+		ATTR_CLEARINVENTORY     = 0x00000100,
+	};
+
+	/*
+	   诛仙：
+	   
+	   名称        ID       兑换比例（1:X游戏币<铜>） 	<金>             
+	   金叶子    14062      1：10000                       1：1                    
+	   金条      14063     	1：100000                      1：10                  
+	   金砖      14064     	1：1000000                     1：100                
+	   钻石      14065     	1：10000000                    1：1000               
+	   银封      22324     	1：10000000                    1：1000    
+	*/
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBModifyRoleDataArg *arg = (DBModifyRoleDataArg *)argument;
+		DBModifyRoleDataRes *res = (DBModifyRoleDataRes *)result;
+		try
+		{
+			StorageEnv::Storage *pStatus = StorageEnv::GetStorage("status");
+			StorageEnv::Storage *pPocket = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage *pStore  = StorageEnv::GetStorage("storehouse");
+			//StorageEnv::Storage *pUser  = (arg->mask & ATTR_CLEARINVENTORY ) ? StorageEnv::GetStorage("user"):NULL;
+			StorageEnv::Storage *pBase  = (arg->mask & ATTR_CLEARINVENTORY ) ? StorageEnv::GetStorage("base"):NULL;
+			StorageEnv::Storage *pClrrole  = (arg->mask & ATTR_CLEARINVENTORY ) ? StorageEnv::GetStorage("clrrole"):NULL;
+			StorageEnv::CommonTransaction txn;
+			GRoleStatus status;
+			GRolePocket pocket;
+			GRoleStorehouse storehouse;
+			GRoleBase base;
+			User user;
+			Marshal::OctetsStream key;
+
+			try
+			{
+				key << arg->roleid;
+				Marshal::OctetsStream(pStatus->find(key, txn)) >> status;
+				Marshal::OctetsStream(pPocket->find(key, txn)) >> pocket;
+				Marshal::OctetsStream(pStore->find(key, txn)) >> storehouse;
+
+				if (arg->mask & ATTR_LEVEL)
+					status.level = arg->level;
+				if (arg->mask & ATTR_EXP)
+					status.exp = (int)arg->exp;
+				if (arg->mask & ATTR_POCKET_MONEY)
+					pocket.money = arg->pocket_money;
+				if (arg->mask & ATTR_STORE_MONEY)
+					storehouse.money = arg->store_money;
+				if (arg->mask & ATTR_PKVALUE)
+					status.pkvalue = arg->pkvalue;
+				if (arg->mask & ATTR_REPUTATION)
+					status.reputation = arg->reputation;
+				//if (arg->mask & ATTR_CLEARINVENTORY)
+				if (false)
+				{
+					time_t now = Timer::GetTime();
+
+					Marshal::OctetsStream clrrolelist;
+					std::vector<ClearRoleData> clrvec;
+
+					if (pClrrole->find(key, clrrolelist, txn))
+					{
+						clrrolelist >> clrvec;
+
+						// 清除一百天以前的删除数据
+						std::vector<ClearRoleData>::iterator it = clrvec.begin();
+						for (; it != clrvec.end(); ++it)
+						{
+							if ((now - it->time) / 86400 < 100)  break;
+						}
+						clrvec.erase(clrvec.begin(), it);
+
+						if (clrvec.size())
+						{
+							int last_optime = clrvec.back().time;
+							if (last_optime == now)
+							{
+								// 操作过于频繁，不做了
+								res->retcode = ERR_SUCCESS;
+								return;
+							}
+						}
+					}
+					// 数据打包顺序  时间 -> 背包 -> 仓库
+					ClearRoleData data(now, pocket, storehouse);
+					clrvec.push_back(data);	
+					pClrrole->insert(key, Marshal::OctetsStream() << clrvec, txn);
+
+					struct Token
+					{
+						int id;
+						int value;
+					} token[] = { {14062, 10000}, { 14063, 100000}, {14064, 1000000}, {14065, 10000000}, {22324, 10000000}};
+
+					typedef std::map<int, int> TokenMap;
+					TokenMap token_map;
+
+
+					Marshal::OctetsStream(pBase->find(key, txn)) >> base;
+
+					/* 不清除玩家的交易游戏币了，可能引起元宝交易的错误
+					Marshal::OctetsStream key_user;
+					int userid = base.userid;
+					if (0 == userid)
+					{
+						userid = LOGICUID(arg->roleid);
+						Log::formatlog("modifyrole", "Base.userid of role[%d] is 0, use LOGICUID(roleid)[%d]\n", arg->roleid, userid);
+					}
+					key_user << userid;
+
+					Marshal::OctetsStream(pUser->find(key_user, txn)) >> user;
+					res->total_money += user.money;
+					user.money = 0;
+					pUser->insert(key_user, Marshal::OctetsStream()<<user, txn);
+					*/
+
+					res->total_money += pocket.money;
+					res->total_money += storehouse.money;
+
+					for (size_t i = 0; i < sizeof(token)/sizeof(Token); i ++) token_map.insert(std::make_pair(token[i].id, token[i].value));
+
+					for (GRoleInventoryVector::iterator it = pocket.items.begin(); it != pocket.items.end(); ++it)
+					{
+						TokenMap::iterator tit = token_map.find(it->id);
+						if (tit != token_map.end()) res->total_money += it->count * tit->second;
+					}
+					for (GRoleInventoryVector::iterator it = storehouse.items.begin(); it != storehouse.items.end(); ++it)
+					{
+						TokenMap::iterator tit = token_map.find(it->id);
+						if (tit != token_map.end()) res->total_money += it->count * tit->second;
+					}
+					for (GRoleInventoryVector::iterator it = storehouse.items2.begin(); it != storehouse.items2.end(); ++it)
+					{
+						TokenMap::iterator tit = token_map.find(it->id);
+						if (tit != token_map.end()) res->total_money += it->count * tit->second;
+					}
+
+					pocket.money = 0;
+					pocket.items.clear();
+					pocket.equipment.clear();
+					pocket.petbadge.clear();
+					pocket.petequip.clear();
+
+					storehouse.money = 0;
+					storehouse.items.clear();
+					storehouse.items2.clear();
+
+				}
+					
+				pStatus->insert(key, Marshal::OctetsStream()<<status, txn);
+				pPocket->insert(key, Marshal::OctetsStream()<<pocket, txn);
+				pStore->insert(key, Marshal::OctetsStream()<<storehouse, txn);
+
+				res->retcode = ERR_SUCCESS;
+			}
+			catch (DbException e) { throw; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException e)
+		{
+			Log::log(LOG_ERR, "GameDBServer::DBModifyRoleData: roleid=%d, what=%s\n", arg->roleid, e.what());
+			res->retcode = ERR_FAILED;
+		}
+		Log::formatlog("modifyrole","retcode=%d,sid=%d:roleid=%d:mask=0x%x:level=%d:exp=%lld:pocket_money=%u:store_money=%d:pkvalue=%d,reputation=%d,total_money=%lld", 
+			res->retcode,sid,arg->roleid,arg->mask,arg->level,arg->exp,arg->pocket_money,arg->store_money,arg->pkvalue,arg->reputation,res->total_money);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBModifyRoleDataArg *arg = (DBModifyRoleDataArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

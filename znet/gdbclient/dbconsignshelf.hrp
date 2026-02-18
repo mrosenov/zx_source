@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCONSIGNSHELF_HPP
+#define __GNET_DBCONSIGNSHELF_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignshelfarg"
+#include "dbconsignshelfres"
+
+namespace GNET
+{
+
+class DBConsignShelf : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignshelf"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBConsignShelfArg *arg = (DBConsignShelfArg *)argument;
+		// DBConsignShelfRes *res = (DBConsignShelfRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignShelfArg *arg = (DBConsignShelfArg *)argument;
+		// DBConsignShelfRes *res = (DBConsignShelfRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

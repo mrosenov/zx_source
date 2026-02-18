@@ -1,0 +1,65 @@
+#ifndef __GNET_DBSECTJOINRES_RPCDATA
+#define __GNET_DBSECTJOINRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gdisciple"
+
+namespace GNET
+{
+	class DBSectJoinRes : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int retcode;
+		GDisciple disciple;
+
+	public:
+		DBSectJoinRes (unsigned int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBSectJoinRes(const DBSectJoinRes &rhs)
+			: retcode(rhs.retcode),disciple(rhs.disciple) { }
+
+		Rpc::Data *Clone() const { return new DBSectJoinRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSectJoinRes *r = dynamic_cast<const DBSectJoinRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				disciple = r->disciple;
+			}
+			return *this;
+		}
+
+		DBSectJoinRes& operator = (const DBSectJoinRes &rhs)
+		{
+			const DBSectJoinRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				disciple = r->disciple;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << disciple;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> disciple;
+			return os;
+		}
+
+	};
+};
+#endif

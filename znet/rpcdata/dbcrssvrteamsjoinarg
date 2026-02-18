@@ -1,0 +1,70 @@
+#ifndef __GNET_DBCRSSVRTEAMSJOINARG_RPCDATA
+#define __GNET_DBCRSSVRTEAMSJOINARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcrssvrteamsrole"
+
+namespace GNET
+{
+	class DBCrssvrTeamsJoinArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int teamid;
+		GCrssvrTeamsRole info;
+
+	public:
+		DBCrssvrTeamsJoinArg (int l_roleid = -1,int l_teamid = -1)
+			: roleid(l_roleid),teamid(l_teamid)
+		{
+		}
+
+		DBCrssvrTeamsJoinArg(const DBCrssvrTeamsJoinArg &rhs)
+			: roleid(rhs.roleid),teamid(rhs.teamid),info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsJoinArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsJoinArg *r = dynamic_cast<const DBCrssvrTeamsJoinArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				teamid = r->teamid;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsJoinArg& operator = (const DBCrssvrTeamsJoinArg &rhs)
+		{
+			const DBCrssvrTeamsJoinArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				teamid = r->teamid;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << teamid;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> teamid;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

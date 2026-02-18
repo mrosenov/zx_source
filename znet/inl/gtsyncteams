@@ -1,0 +1,32 @@
+	public:
+		std::vector<GTTeamBean> teams;
+		enum { PROTOCOL_TYPE = PROTOCOL_GTSYNCTEAMS };
+	public:
+		GTSyncTeams() { type = PROTOCOL_GTSYNCTEAMS; }
+		GTSyncTeams(void*) : Protocol(PROTOCOL_GTSYNCTEAMS) { }
+		GTSyncTeams (const std::vector<GTTeamBean>& l_teams)
+			 : teams(l_teams)
+		{
+			type = PROTOCOL_GTSYNCTEAMS;
+		}
+
+		GTSyncTeams(const GTSyncTeams &rhs)
+			: Protocol(rhs),teams(rhs.teams) { }
+
+		GNET::Protocol *Clone() const { return new GTSyncTeams(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << teams;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> teams;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 1048576; }

@@ -1,0 +1,82 @@
+
+#ifndef __GNET_DBFLOWERGETROLEEXIST_HPP
+#define __GNET_DBFLOWERGETROLEEXIST_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbflowergetroleexistarg"
+#include "dbflowergetroleexistres"
+
+namespace GNET
+{
+
+class DBFlowerGetRoleExist : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbflowergetroleexist"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFlowerGetRoleExistArg *arg = (DBFlowerGetRoleExistArg *)argument;
+		DBFlowerGetRoleExistRes *res = (DBFlowerGetRoleExistRes *)result;
+		
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::AtomTransaction txn;
+			try
+			{
+				Marshal::OctetsStream key, value_base;
+				key << arg->roleid;
+				GRoleBase base;
+				//Marshal::OctetsStream(pbase->find(Marshal::OctetsStream() << arg->roleid, txn)) >> base;
+				if(pbase->find(key, value_base, txn))
+				{
+					value_base >> base;
+					res->gender = base.gender;
+					res->userid = base.userid;
+					res->rolename = base.name;
+					res->retcode = TOPFLOWER_ROLEID_EXIST;
+				}
+				else
+				{
+					LOG_TRACE("DBFlowerGetRoleExist, no found for roleid %d.", arg->roleid );
+					res->retcode = TOPFLOWER_ROLEID_NOT_EXIST;
+				}
+
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			res->retcode = -1;
+		}
+
+		LOG_TRACE("DBFlowerGetRoleExist, retcode=%d,roleid=%d", res->retcode, arg->roleid);
+}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFlowerGetRoleExistArg *arg = (DBFlowerGetRoleExistArg *)argument;
+		// DBFlowerGetRoleExistRes *res = (DBFlowerGetRoleExistRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

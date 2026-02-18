@@ -1,0 +1,64 @@
+#ifndef __GNET_DBGATEACTIVATEARG_RPCDATA
+#define __GNET_DBGATEACTIVATEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBGateActivateArg : public GNET::Rpc::Data
+	{
+	public:
+		int id;
+		int operation;
+
+	public:
+		DBGateActivateArg (int l_id = 0,int l_operation = 0)
+			: id(l_id),operation(l_operation)
+		{
+		}
+
+		DBGateActivateArg(const DBGateActivateArg &rhs)
+			: id(rhs.id),operation(rhs.operation) { }
+
+		Rpc::Data *Clone() const { return new DBGateActivateArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGateActivateArg *r = dynamic_cast<const DBGateActivateArg *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				operation = r->operation;
+			}
+			return *this;
+		}
+
+		DBGateActivateArg& operator = (const DBGateActivateArg &rhs)
+		{
+			const DBGateActivateArg *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				operation = r->operation;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << operation;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> operation;
+			return os;
+		}
+
+	};
+};
+#endif

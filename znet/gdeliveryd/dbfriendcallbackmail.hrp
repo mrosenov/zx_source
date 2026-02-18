@@ -1,0 +1,108 @@
+
+#ifndef __GNET_DBFRIENDCALLBACKMAIL_HPP
+#define __GNET_DBFRIENDCALLBACKMAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfriendcallbackmailarg"
+#include "dbfriendcallbackmailres"
+#include "bonusitem.hpp"
+#include "friendcallbackmanager.hpp"
+#include "gproviderserver.hpp"
+#include "gdeliveryserver.hpp"
+#include "game2au.hpp"
+#include "gauthclient.hpp"
+
+namespace GNET
+{
+
+class DBFriendCallbackMail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfriendcallbackmail"
+#undef	RPC_BASECLASS
+
+#define SENDMAIL_ITEMAWARD 43497 // 鸿雁传书发送邮件奖励物品ID
+
+	int template_id;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFriendCallbackMailArg *arg = (DBFriendCallbackMailArg *)argument;
+		// DBFriendCallbackMailRes *res = (DBFriendCallbackMailRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFriendCallbackMailArg *arg = (DBFriendCallbackMailArg *)argument;
+		DBFriendCallbackMailRes *res = (DBFriendCallbackMailRes *)result;
+		int sender = arg->mail.header.sender;
+		int receiver = arg->mail.header.receiver;
+		FriendCallbackManager *fcbmanager = FriendCallbackManager::GetInstance();
+		PlayerInfo *sender_info = NULL;
+		if(!fcbmanager->IsPlayerOnLine(sender, sender_info))
+			return;
+
+		LOG_TRACE("GDelivery::DBFriendCallbackMail, retcode=%d, sender=%d(type=%d), receiver=%d\n", 
+			res->retcode, sender, arg->mail.header.sndr_type, receiver);
+
+		switch(res->retcode)
+		{
+		case ERR_CALLBACK_ACCOUNTFROZEN:
+			Send2WebMail(sender_info->userid, res->receiver_userid, sender_info->name, res->receiver_name, arg->mail.header.sender, arg->mail.header.receiver);
+			res->retcode = ERR_CALLBACK_SUCCESS;
+		case ERR_CALLBACK_SUCCESS:
+			GiveAward(sender, sender_info->gameid);
+			break;
+		default:
+			fcbmanager->Rollback(sender, receiver);
+			break;
+		}
+		fcbmanager->ReplyCallbackMail(res->retcode, sender, sender_info->localsid, receiver, sender_info->linksid);
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+		DBFriendCallbackMailArg *arg = (DBFriendCallbackMailArg *)argument;
+		int sender = arg->mail.header.sender;
+		int receiver = arg->mail.header.receiver;
+		LOG_TRACE("GDelivery::DBFriendCallbackMail Timeout, sender=%d, receiver=%d\n", sender, receiver);
+
+		// 回滚发送者的召回邮件限制
+		FriendCallbackManager *fcbmanager = FriendCallbackManager::GetInstance();
+		fcbmanager->Rollback(sender, receiver);
+
+		// 回复客户端超时
+		PlayerInfo *sender_info = NULL;
+		if(fcbmanager->IsPlayerOnLine(sender, sender_info))
+		{
+			fcbmanager->ReplyCallbackMail(ERR_CALLBACK_TIMEOUT, sender, sender_info->localsid, receiver, sender_info->linksid);
+		}
+	}
+
+	bool Send2WebMail(int sender_userid, int receiver_userid, Octets &sender_name, Octets &receiver_name, int sender_roleid, int receiver_roleid)
+	{
+		Game2AU pro;
+		pro.userid = sender_userid;
+		pro.qtype = 1;
+		Marshal::OctetsStream os;
+		os << receiver_userid << sender_name << receiver_name << template_id;
+		pro.info = os;
+		pro.reserved = 0;
+		bool is_succ = GAuthClient::GetInstance()->SendProtocol(pro);
+		LOG_TRACE("GDelivery::Send2WebMail, sender_userid=%d, receiver_userid=%d, template_id=%d, is_succ=%d\n", sender_userid, receiver_userid, template_id, is_succ);
+		return is_succ;
+	}
+
+	bool GiveAward(int roleid, int gameid)
+	{
+		LOG_TRACE("GDelivery::GiveAward, roleid=%d, type=%d, itemid=%d\n", roleid, BONUS_CALLBACK, SENDMAIL_ITEMAWARD);
+		BonusItem re(roleid, BONUS_CALLBACK, SENDMAIL_ITEMAWARD);
+		return GProviderServer::GetInstance()->DispatchProtocol(gameid, re);
+	}
+};
+
+};
+#endif

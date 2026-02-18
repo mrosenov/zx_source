@@ -1,0 +1,55 @@
+
+#ifndef __GNET_KINGGUARDINVITE_HPP
+#define __GNET_KINGGUARDINVITE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "kingguardinvitearg"
+#include "kingguardinviteres"
+#include "kingcallguard.hpp"
+
+namespace GNET
+{
+
+class KingGuardInvite : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "kingguardinvite"
+#undef	RPC_BASECLASS
+
+	int lineid;
+	int mapid;
+	float posx;
+	float posy;
+	float posz;
+	int guard_roleid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// KingGuardInviteArg *arg = (KingGuardInviteArg *)argument;
+		// KingGuardInviteRes *res = (KingGuardInviteRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//KingGuardInviteArg *arg = (KingGuardInviteArg *)argument;
+		KingGuardInviteRes *res = (KingGuardInviteRes *)result;
+		if (res->retcode == 0)
+		{
+			PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(guard_roleid);
+			if (pinfo)
+				GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, KingCallGuard(guard_roleid, lineid, mapid, posx, posy, posz));
+		}
+		LOG_TRACE("kingguardinvite ret %d, guard_roleid %d lineid %d mapid %d x %f y %f z %f", res->retcode, guard_roleid, lineid, mapid, posx, posy, posz);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

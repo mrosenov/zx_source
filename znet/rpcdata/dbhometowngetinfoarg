@@ -1,0 +1,64 @@
+#ifndef __GNET_DBHOMETOWNGETINFOARG_RPCDATA
+#define __GNET_DBHOMETOWNGETINFOARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBHometownGetInfoArg : public GNET::Rpc::Data
+	{
+	public:
+		int sponsor;
+		int roleid;
+
+	public:
+		DBHometownGetInfoArg (int l_sponsor = 0,int l_roleid = 0)
+			: sponsor(l_sponsor),roleid(l_roleid)
+		{
+		}
+
+		DBHometownGetInfoArg(const DBHometownGetInfoArg &rhs)
+			: sponsor(rhs.sponsor),roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new DBHometownGetInfoArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBHometownGetInfoArg *r = dynamic_cast<const DBHometownGetInfoArg *>(&rhs);
+			if (r && r != this)
+			{
+				sponsor = r->sponsor;
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		DBHometownGetInfoArg& operator = (const DBHometownGetInfoArg &rhs)
+		{
+			const DBHometownGetInfoArg *r = &rhs;
+			if (r && r != this)
+			{
+				sponsor = r->sponsor;
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << sponsor;
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> sponsor;
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

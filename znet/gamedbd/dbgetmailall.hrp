@@ -1,0 +1,94 @@
+
+#ifndef __GNET_DBGETMAILALL_HPP
+#define __GNET_DBGETMAILALL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "roleid"
+#include "dbgetmailallres"
+
+namespace GNET
+{
+
+class DBGetMailAll : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgetmailall"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+                DBGetMailAllRes *res = (DBGetMailAllRes *)result;
+
+                Marshal::OctetsStream key, value;
+                LOG_TRACE("DBGetMailAll: roleid=%d.\n", arg->id);
+                try
+                {
+                        StorageEnv::Storage * pmailbox = StorageEnv::GetStorage("mailbox");
+                        StorageEnv::AtomTransaction txn;
+                        try
+                        {
+                                Marshal::OctetsStream(pmailbox->find(Marshal::OctetsStream() << *arg, txn)) >> res->mailbox;
+                                res->retcode = ERR_SUCCESS;
+                        }
+                        catch (DbException e) { throw; }
+                        catch (...)
+                        {
+                                DbException e(DB_OLD_VERSION);
+                                txn.abort( e );
+                                throw e;
+                        }
+                }
+                catch (DbException e)
+                {
+                        Log::log(LOG_ERR, "DBGetMailAll, roleid=%d, what=%s\n", arg->id, e.what());
+                        res->retcode = ERR_MS_AGAIN;
+                }
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		RoleId *arg = (RoleId *)argument;
+		DBGetMailAllRes *res = (DBGetMailAllRes *)result;
+		if (res->retcode != ERR_SUCCESS)
+                {
+                        Log::log( LOG_ERR, "[NOK] DBGetMailAll, roleid=%d, retcode=%d", arg->id, res->retcode);
+                        return;
+                }
+                try
+                {
+                        StorageEnv::Storage * pmailbox = StorageEnv::GetStorage("mailbox");
+                        StorageEnv::CommonTransaction txn;
+                        try
+                        {
+                                pmailbox->insert(Marshal::OctetsStream() << *arg, Marshal::OctetsStream()<<res->mailbox, txn);
+				//OnGetMail();
+                        }
+                        catch (DbException e) { throw; }
+                        catch (...)
+                        {
+
+                                DbException ee(DB_OLD_VERSION);
+                                txn.abort(ee);
+                                throw ee;
+                        }
+                        Log::log(LOG_ERR, "[OK] DBGetMailAll, roleid=%d", arg->id);
+                }
+                catch (DbException e)
+                {
+                        Log::log( LOG_ERR, "[NOK] DBGetMailAll, roleid=%d, what=%s\n", arg->id, e.what());
+		}
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

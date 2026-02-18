@@ -1,0 +1,64 @@
+#ifndef __GNET_CROSSCRSSVRTEAMSGETTOPTABLEARG_RPCDATA
+#define __GNET_CROSSCRSSVRTEAMSGETTOPTABLEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class CrossCrssvrTeamsGetTopTableArg : public GNET::Rpc::Data
+	{
+	public:
+		int zoneid;
+		int toptype;
+
+	public:
+		CrossCrssvrTeamsGetTopTableArg (int l_zoneid = -1,int l_toptype = -1)
+			: zoneid(l_zoneid),toptype(l_toptype)
+		{
+		}
+
+		CrossCrssvrTeamsGetTopTableArg(const CrossCrssvrTeamsGetTopTableArg &rhs)
+			: zoneid(rhs.zoneid),toptype(rhs.toptype) { }
+
+		Rpc::Data *Clone() const { return new CrossCrssvrTeamsGetTopTableArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const CrossCrssvrTeamsGetTopTableArg *r = dynamic_cast<const CrossCrssvrTeamsGetTopTableArg *>(&rhs);
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				toptype = r->toptype;
+			}
+			return *this;
+		}
+
+		CrossCrssvrTeamsGetTopTableArg& operator = (const CrossCrssvrTeamsGetTopTableArg &rhs)
+		{
+			const CrossCrssvrTeamsGetTopTableArg *r = &rhs;
+			if (r && r != this)
+			{
+				zoneid = r->zoneid;
+				toptype = r->toptype;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << zoneid;
+			os << toptype;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> zoneid;
+			os >> toptype;
+			return os;
+		}
+
+	};
+};
+#endif

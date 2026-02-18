@@ -1,0 +1,49 @@
+
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSSCORE_HPP
+#define __GNET_SYNCCROSSCRSSVRTEAMSSCORE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrssvrteamsscorearg"
+#include "synccrssvrteamsscoreres"
+#include "synccrssvrteamsscore.hrp"
+
+namespace GNET
+{
+
+class SyncCrossCrssvrTeamsScore : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrosscrssvrteamsscore"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrssvrTeamsScoreArg *arg = (SyncCrssvrTeamsScoreArg *)argument;
+		//SyncCrssvrTeamsScoreRes *res = (SyncCrssvrTeamsScoreRes *)result;
+	
+		LOG_TRACE("SyncCrossCrssvrTeamsScore roleid=%d, ct_score=%d", arg->roleid, arg->ct_score);
+		SyncCrssvrTeamsScore* rpc = (SyncCrssvrTeamsScore*) Rpc::Call( RPC_SYNCCRSSVRTEAMSSCORE,arg);
+		GameDBClient::GetInstance()->SendProtocol(rpc);
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//SyncCrssvrTeamsScoreArg *arg = (SyncCrssvrTeamsScoreArg *)argument;
+		//SyncCrssvrTeamsScoreRes *res = (SyncCrssvrTeamsScoreRes *)result;
+
+		//LOG_TRACE("client SyncCrossCrssvrTeamsScore");
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCROSSCRSSVRTEAMSDISMISS_HPP
+#define __GNET_DBCROSSCRSSVRTEAMSDISMISS_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrosscrssvrteamsdismissarg"
+#include "dbcrosscrssvrteamsdismissres"
+
+namespace GNET
+{
+
+class DBCrossCrssvrTeamsDismiss : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrosscrssvrteamsdismiss"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrossCrssvrTeamsDismissArg *arg = (DBCrossCrssvrTeamsDismissArg *)argument;
+		// DBCrossCrssvrTeamsDismissRes *res = (DBCrossCrssvrTeamsDismissRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrossCrssvrTeamsDismissArg *arg = (DBCrossCrssvrTeamsDismissArg *)argument;
+		// DBCrossCrssvrTeamsDismissRes *res = (DBCrossCrssvrTeamsDismissRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

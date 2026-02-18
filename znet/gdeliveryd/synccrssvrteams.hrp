@@ -1,0 +1,42 @@
+
+#ifndef __GNET_SYNCCRSSVRTEAMS_HPP
+#define __GNET_SYNCCRSSVRTEAMS_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrssvrteamsarg"
+#include "synccrssvrteamsres"
+
+namespace GNET
+{
+
+class SyncCrssvrTeams : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrssvrteams"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// SyncCrssvrTeamsArg *arg = (SyncCrssvrTeamsArg *)argument;
+		// SyncCrssvrTeamsRes *res = (SyncCrssvrTeamsRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// SyncCrssvrTeamsArg *arg = (SyncCrssvrTeamsArg *)argument;
+		// SyncCrssvrTeamsRes *res = (SyncCrssvrTeamsRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,101 @@
+#ifndef __GNET_GFACTIONFIELD_RPCDATA
+#define __GNET_GFACTIONFIELD_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GFactionField : public GNET::Rpc::Data
+	{
+	public:
+		int index;
+		int tid;
+		int level;
+		int status;
+		int task_id;
+		int task_count;
+		int task_need;
+		int reserved11;
+
+	public:
+		GFactionField (int l_index = 0,int l_tid = 0,int l_level = 0
+			,int l_status = 0,int l_task_id = 0,int l_task_count = 0
+			,int l_task_need = 0,int l_reserved11 = 0)
+			: index(l_index),tid(l_tid),level(l_level)
+			,status(l_status),task_id(l_task_id),task_count(l_task_count)
+			,task_need(l_task_need),reserved11(l_reserved11)
+		{
+		}
+
+		GFactionField(const GFactionField &rhs)
+			: index(rhs.index),tid(rhs.tid),level(rhs.level),
+			status(rhs.status),task_id(rhs.task_id),task_count(rhs.task_count),
+			task_need(rhs.task_need),reserved11(rhs.reserved11) { }
+
+		Rpc::Data *Clone() const { return new GFactionField(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFactionField *r = dynamic_cast<const GFactionField *>(&rhs);
+			if (r && r != this)
+			{
+				index = r->index;
+				tid = r->tid;
+				level = r->level;
+				status = r->status;
+				task_id = r->task_id;
+				task_count = r->task_count;
+				task_need = r->task_need;
+				reserved11 = r->reserved11;
+			}
+			return *this;
+		}
+
+		GFactionField& operator = (const GFactionField &rhs)
+		{
+			const GFactionField *r = &rhs;
+			if (r && r != this)
+			{
+				index = r->index;
+				tid = r->tid;
+				level = r->level;
+				status = r->status;
+				task_id = r->task_id;
+				task_count = r->task_count;
+				task_need = r->task_need;
+				reserved11 = r->reserved11;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << index;
+			os << tid;
+			os << level;
+			os << status;
+			os << task_id;
+			os << task_count;
+			os << task_need;
+			os << reserved11;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> index;
+			os >> tid;
+			os >> level;
+			os >> status;
+			os >> task_id;
+			os >> task_count;
+			os >> task_need;
+			os >> reserved11;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<GFactionField>	GFactionFieldVector;
+};
+#endif

@@ -1,0 +1,65 @@
+#ifndef __GNET_DBKINGDOMSETWINNERRES_RPCDATA
+#define __GNET_DBKINGDOMSETWINNERRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gkingdominfo"
+
+namespace GNET
+{
+	class DBKingdomSetWinnerRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GKingdomInfo newinfo;
+
+	public:
+		DBKingdomSetWinnerRes (int l_retcode = 0,const GKingdomInfo& l_newinfo = GKingdomInfo())
+			: retcode(l_retcode),newinfo(l_newinfo)
+		{
+		}
+
+		DBKingdomSetWinnerRes(const DBKingdomSetWinnerRes &rhs)
+			: retcode(rhs.retcode),newinfo(rhs.newinfo) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomSetWinnerRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomSetWinnerRes *r = dynamic_cast<const DBKingdomSetWinnerRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				newinfo = r->newinfo;
+			}
+			return *this;
+		}
+
+		DBKingdomSetWinnerRes& operator = (const DBKingdomSetWinnerRes &rhs)
+		{
+			const DBKingdomSetWinnerRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				newinfo = r->newinfo;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << newinfo;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> newinfo;
+			return os;
+		}
+
+	};
+};
+#endif

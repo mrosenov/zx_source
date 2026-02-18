@@ -1,0 +1,141 @@
+
+#ifndef __GNET_DBCONSIGNFAIL_HPP
+#define __GNET_DBCONSIGNFAIL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignfailarg"
+#include "dbconsignfailres"
+#include "consigntool.h"
+namespace GNET
+{
+
+class DBConsignFail : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignfail"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignFailArg *arg = (DBConsignFailArg *)argument;
+		DBConsignFailRes *res = (DBConsignFailRes *)result;
+		try
+		{
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				if(arg->sn == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+				GConsignDB detail;
+				Marshal::OctetsStream(pconsign->find(Marshal::OctetsStream()<<arg->sn, txn)) >> detail;
+				ConsignState target_state = ConsignState(arg->fin_state);
+			/*	switch(arg->fin_type)
+				{
+				case EXPIRE:
+					target_state = DSTATE_EXPIRE;
+					break;
+				case POST_FAIL:
+					target_state = DSTATE_POST_FAIL;
+					break;
+				case POST_WEB_CANCEL:
+					target_state = DSTATE_POST_WEB_CANCEL;
+					break;
+				case POST_GAME_CANCEL:
+					target_state = DSTATE_POST_GAME_CANCEL;
+					break;
+				case POST_FORCE_CANCEL:
+					target_state = DSTATE_POST_FORCE_CANCEL;
+					break;
+				default:
+					res->retcode = ERR_WT_DB_INVALID_ARGUMENT;
+					return;	
+				}*/
+				switch(target_state)
+				{
+				case DSTATE_POST_WEB_CANCEL:
+					res->statechange = UpdateState(detail);
+					detail.largest_web_timestamp = arg->timestamp;
+					break;
+				case DSTATE_POST_GAME_CANCEL:
+				case DSTATE_POST_FAIL:
+					break;
+				case DSTATE_EXPIRE:
+				case DSTATE_POST_FORCE_CANCEL:
+					detail.largest_web_timestamp = arg->timestamp;
+					break;
+				default:
+					res->retcode = ERR_WT_DB_INVALID_ARGUMENT;
+					return;	
+				}	
+				int changeres =CheckStateChange(detail,target_state);
+				if(changeres == CHANGE_REPEAT)
+				{
+					res->retcode = ERR_WT_DB_DUPLICATE_RQST;
+					return;
+				}
+				if(changeres != CHANGE_PERMIT)
+				{
+					res->retcode = ERR_WT_DB_STATEERR;
+					return;
+				}
+				//detail.info.fin_type = arg->fin_type;
+				detail.info.state=target_state;
+			//	res->state=target_state;
+				pconsign->insert(Marshal::OctetsStream()<<arg->sn, Marshal::OctetsStream()<<detail, txn);
+				res->retcode = ERR_SUCCESS;
+				switch(target_state)
+				{
+				case DSTATE_POST_WEB_CANCEL:
+				case DSTATE_POST_GAME_CANCEL:
+				case DSTATE_POST_FORCE_CANCEL:
+					Log::formatlog("webtradecancelpost","roleid=%d:sn=%lld:type=%d:itemid=%d:item_count=%d:money=%d:role=0:petid=0:pet_count=0",arg->roleid,arg->sn,detail.info.consign_type,detail.info.item_id,detail.info.item_cnt,detail.info.money/10000);
+					break;
+				case DSTATE_POST_FAIL:
+					Log::formatlog("webtradepostrejected","roleid=%d:sn=%lld:type=%d:itemid=%d:item_count=%d:money=%d:role=0:petid=0:pet_count=0",arg->roleid,arg->sn,detail.info.consign_type,detail.info.item_id,detail.info.item_cnt,detail.info.money/10000);
+					break;
+				case DSTATE_EXPIRE:
+					Log::formatlog("webtradepostexpire","roleid=%d:sn=%lld:type=%d:itemid=%d:item_count=%d:money=%d:role=0:petid=0:pet_count=0",arg->roleid,arg->sn,detail.info.consign_type,detail.info.item_id,detail.info.item_cnt,detail.info.money/10000);
+					break;
+				default:
+					break;
+				}	
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignFail, what=%s\n",e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+	
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignFailArg *arg = (DBConsignFailArg *)argument;
+		// DBConsignFailRes *res = (DBConsignFailRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

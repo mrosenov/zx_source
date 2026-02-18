@@ -1,0 +1,67 @@
+
+#ifndef __GNET_DBKINGDOMLOAD_HPP
+#define __GNET_DBKINGDOMLOAD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbkingdomloadarg"
+#include "dbkingdomloadres"
+
+namespace GNET
+{
+
+class DBKingdomLoad : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbkingdomload"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBKingdomLoadArg *arg = (DBKingdomLoadArg *)argument;
+		DBKingdomLoadRes *res = (DBKingdomLoadRes *)result;
+		try
+		{
+			StorageEnv::Storage * pkingdom = StorageEnv::GetStorage("kingdom");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream key, value;
+			try{
+				key << 0;
+				if (pkingdom->find(key, value, txn))
+					value >> res->info;
+				else
+					pkingdom->insert(key, Marshal::OctetsStream()<<GKingdomInfo(), txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBKingdomLoad, what=%s\n", e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//DBKingdomLoadArg *arg = (DBKingdomLoadArg *)argument;
+		//DBKingdomLoadRes *res = (DBKingdomLoadRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

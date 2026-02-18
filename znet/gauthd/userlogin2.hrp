@@ -1,0 +1,56 @@
+
+#ifndef __GNET_USERLOGIN2_HPP
+#define __GNET_USERLOGIN2_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "userloginarg2"
+#include "userloginres2"
+#include "gauthclient.hpp"
+
+namespace GNET
+{
+
+class UserLogin2 : public ProxyRpc
+{
+#define	RPC_BASECLASS	ProxyRpc
+	#include "userlogin2"
+#undef	RPC_BASECLASS
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		// TODO
+		// UserLoginArg2 arg;
+		// osArg >> arg;
+		if( GAuthClient::GetInstance()->SendProtocol( *this ) )
+		{
+			return true;
+		}
+		else
+		{
+			SetResult(UserLoginRes2(ERR_DELIVER_SEND));
+			SendToSponsor();
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		// TODO
+		// UserLoginArg2 arg;
+		// osArg >> arg;
+		// UserLoginRes2 res;
+		// osRes >> res;
+		// SetResult( &res ); // if you modified res, do not forget to call this. 
+	}
+
+	void OnTimeout( )
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

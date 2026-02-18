@@ -1,0 +1,113 @@
+
+#ifndef __GNET_GQUERYPASSWD_HPP
+#define __GNET_GQUERYPASSWD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gquerypasswdarg"
+#include "gquerypasswdres"
+#include "keyexchange.hpp"
+#include "glinkserver.hpp"
+namespace GNET
+{
+
+class GQueryPasswd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "gquerypasswd"
+#undef	RPC_BASECLASS
+
+	Manager::Session::ID link_save_sid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GQueryPasswdArg *arg = (GQueryPasswdArg *)argument;
+		// GQueryPasswdRes *res = (GQueryPasswdRes *)result;
+	}
+	void toHexString(Octets& os)
+	{
+		unsigned char* p;
+		for (size_t i=0;i<os.size();i++)
+		{
+			p=((unsigned char*) os.begin()) + i;
+			printf("%x",*p);
+		}
+		printf("\n");
+	}
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GQueryPasswdArg *arg = (GQueryPasswdArg *)argument;
+		GQueryPasswdRes *res = (GQueryPasswdRes *)result;
+		GLinkServer *lsm=GLinkServer::GetInstance();
+		DEBUG_PRINT ("glinkd::receive gquerypasswd from delivery. retcode=%d\n",res->retcode);
+		
+		if (!lsm->ValidSid(link_save_sid)) return;
+		switch(res->retcode)
+		{
+			case ERR_COMMUNICATION:
+				lsm->SessionError(link_save_sid, ERR_COMMUNICATION, "Server network error.");
+				return;
+			case ERR_INVALID_ACCOUNT:
+				lsm->SessionError(link_save_sid, ERR_INVALID_PASSWORD, "Invalid Login.");
+				return;
+			case ERR_TIMEOUT:
+				lsm->SessionError(link_save_sid, ERR_TIMEOUT, "Server Timeout.");
+				return;
+			case ERR_IP_LOCK:
+                lsm->SessionError(link_save_sid, ERR_IP_LOCK, "IP Lock.");
+                return;
+            case ERR_ID_LOCK:
+                lsm->SessionError(link_save_sid, ERR_ID_LOCK, "ID Lock.");
+                return;
+		}
+		//DEBUG_PRINT("glinkd received response is: "); toHexString(res->response);
+		//DEBUG_PRINT("glinkd saved response is: "); toHexString(lsm->responsemap[link_save_sid]);
+		SessionInfo * sinfo = NULL;
+		{	
+			Thread::RWLock::WRScoped l(lsm->locker_map);
+			sinfo = lsm->GetSessionInfo(link_save_sid);
+			if (!sinfo)
+				return;
+			if (res->response != sinfo->response)
+			{
+				lsm->SessionError(link_save_sid, ERR_INVALID_PASSWORD, "Invalid Login.");
+				return;
+			}
+			sinfo->userid = res->userid;
+			sinfo->login_time = time(NULL);
+			sinfo->response.swap(res->response);
+		}
+		//change state to keyexchgsend
+		lsm->ChangeState(link_save_sid,&state_GKeyExchgSend);
+		{
+			Thread::RWLock::RDScoped l(lsm->locker_map);
+			//send keyexchange protocol
+			KeyExchange keyexchange(PROTOCOL_KEYEXCHANGE);
+			keyexchange.Setup(sinfo->identity, sinfo->response, lsm, link_save_sid);
+			lsm->Send(link_save_sid, keyexchange);
+			//log user's login information
+			char strlocal[256];
+			char strpeer[256];
+			Octets& username = sinfo->identity;
+			strcpy( strlocal,inet_ntoa(((const struct sockaddr_in*)sinfo->GetLocal())->sin_addr) );
+			strcpy( strpeer,inet_ntoa(((const struct sockaddr_in*)sinfo->GetPeer())->sin_addr) );
+			DEBUG_PRINT("glinkd: accept user(%.*s)'s connection from peer(%s) to local(%s), sid=%d\n",
+				username.size(),(char*)username.begin(),strpeer, strlocal, link_save_sid);
+			Log::login(username,res->userid,link_save_sid,strpeer, sinfo->mid);
+		}
+	}
+
+	void OnTimeout()
+	{
+		//Link不处理超时，等待Delivery发送回应
+		/*
+		GLinkServer *lsm=GLinkServer::GetInstance();
+		lsm->SessionError(link_save_sid, ERR_TIMEOUT, "Server Timeout.");
+		*/
+	}
+
+};
+
+};
+#endif

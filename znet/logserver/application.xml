@@ -1,0 +1,11 @@
+<!-- server_config.xml -->
+<application version="1.0.0">
+	<directory recorddir="/home/ljh/logdir/" />
+	<directory rotatedir="/home/ljh/logrotatedir/" />
+	<directory parsedir="/home/ljh/logidxdir/" />
+	<any file="" rotate="864000" />
+	<default file="default" rotate="3600" interval="30">
+		<deny id="2001"/>
+		<deny id="1009"/>
+	</default>
+</application>

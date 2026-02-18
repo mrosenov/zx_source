@@ -1,0 +1,78 @@
+#ifndef __GNET_GFACTIONAUCTIONFAILER_RPCDATA
+#define __GNET_GFACTIONAUCTIONFAILER_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GFactionAuctionFailer : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int return_coupon;
+		int reserved1;
+		int reserved2;
+
+	public:
+		GFactionAuctionFailer (int l_roleid = 0,int l_return_coupon = 0,int l_reserved1 = 0
+			,int l_reserved2 = 0)
+			: roleid(l_roleid),return_coupon(l_return_coupon),reserved1(l_reserved1)
+			,reserved2(l_reserved2)
+		{
+		}
+
+		GFactionAuctionFailer(const GFactionAuctionFailer &rhs)
+			: roleid(rhs.roleid),return_coupon(rhs.return_coupon),reserved1(rhs.reserved1),
+			reserved2(rhs.reserved2) { }
+
+		Rpc::Data *Clone() const { return new GFactionAuctionFailer(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GFactionAuctionFailer *r = dynamic_cast<const GFactionAuctionFailer *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				return_coupon = r->return_coupon;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		GFactionAuctionFailer& operator = (const GFactionAuctionFailer &rhs)
+		{
+			const GFactionAuctionFailer *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				return_coupon = r->return_coupon;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << return_coupon;
+			os << reserved1;
+			os << reserved2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> return_coupon;
+			os >> reserved1;
+			os >> reserved2;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<GFactionAuctionFailer>	GFactionAuctionFailerVector;
+};
+#endif

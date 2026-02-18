@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBSIEGEGET_HPP
+#define __GNET_DBSIEGEGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsiegegetarg"
+#include "dbsiegegetres"
+
+namespace GNET
+{
+
+class DBSiegeGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsiegeget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSiegeGetArg *arg = (DBSiegeGetArg *)argument;
+		// DBSiegeGetRes *res = (DBSiegeGetRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBSiegeGetArg *arg = (DBSiegeGetArg *)argument;
+		// DBSiegeGetRes *res = (DBSiegeGetRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

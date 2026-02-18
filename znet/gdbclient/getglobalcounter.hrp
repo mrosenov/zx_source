@@ -1,0 +1,42 @@
+
+#ifndef __GNET_GETGLOBALCOUNTER_HPP
+#define __GNET_GETGLOBALCOUNTER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "getglobalcounterarg"
+#include "getglobalcounterres"
+
+namespace GNET
+{
+
+class GetGlobalCounter : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getglobalcounter"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// GetGlobalCounterArg *arg = (GetGlobalCounterArg *)argument;
+		// GetGlobalCounterRes *res = (GetGlobalCounterRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// GetGlobalCounterArg *arg = (GetGlobalCounterArg *)argument;
+		// GetGlobalCounterRes *res = (GetGlobalCounterRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

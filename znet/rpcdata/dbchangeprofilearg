@@ -1,0 +1,87 @@
+#ifndef __GNET_DBCHANGEPROFILEARG_RPCDATA
+#define __GNET_DBCHANGEPROFILEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBChangeProfileArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		unsigned char faceid;
+		unsigned char hairid;
+		unsigned char earid;
+		unsigned char tailid;
+		unsigned char fashionid;
+
+	public:
+		DBChangeProfileArg (int l_roleid = 0,unsigned char l_faceid = 0,unsigned char l_hairid = 0
+			,unsigned char l_earid = 0,unsigned char l_tailid = 0,unsigned char l_fashionid = 0)
+			: roleid(l_roleid),faceid(l_faceid),hairid(l_hairid)
+			,earid(l_earid),tailid(l_tailid),fashionid(l_fashionid)
+		{
+		}
+
+		DBChangeProfileArg(const DBChangeProfileArg &rhs)
+			: roleid(rhs.roleid),faceid(rhs.faceid),hairid(rhs.hairid),
+			earid(rhs.earid),tailid(rhs.tailid),fashionid(rhs.fashionid) { }
+
+		Rpc::Data *Clone() const { return new DBChangeProfileArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBChangeProfileArg *r = dynamic_cast<const DBChangeProfileArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				faceid = r->faceid;
+				hairid = r->hairid;
+				earid = r->earid;
+				tailid = r->tailid;
+				fashionid = r->fashionid;
+			}
+			return *this;
+		}
+
+		DBChangeProfileArg& operator = (const DBChangeProfileArg &rhs)
+		{
+			const DBChangeProfileArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				faceid = r->faceid;
+				hairid = r->hairid;
+				earid = r->earid;
+				tailid = r->tailid;
+				fashionid = r->fashionid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << faceid;
+			os << hairid;
+			os << earid;
+			os << tailid;
+			os << fashionid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> faceid;
+			os >> hairid;
+			os >> earid;
+			os >> tailid;
+			os >> fashionid;
+			return os;
+		}
+
+	};
+};
+#endif

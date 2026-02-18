@@ -1,0 +1,59 @@
+#ifndef __GNET_DBFUNGAMEGETINFOARG_RPCDATA
+#define __GNET_DBFUNGAMEGETINFOARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFunGameGetInfoArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+
+	public:
+		DBFunGameGetInfoArg (int l_roleid = 0)
+			: roleid(l_roleid)
+		{
+		}
+
+		DBFunGameGetInfoArg(const DBFunGameGetInfoArg &rhs)
+			: roleid(rhs.roleid) { }
+
+		Rpc::Data *Clone() const { return new DBFunGameGetInfoArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFunGameGetInfoArg *r = dynamic_cast<const DBFunGameGetInfoArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		DBFunGameGetInfoArg& operator = (const DBFunGameGetInfoArg &rhs)
+		{
+			const DBFunGameGetInfoArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			return os;
+		}
+
+	};
+};
+#endif

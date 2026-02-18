@@ -1,0 +1,75 @@
+
+#ifndef __GNET_DBINSTANCINGACTIVATE_HPP
+#define __GNET_DBINSTANCINGACTIVATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbinstancingactivatearg"
+#include "dbinstancingactivateres"
+#include "instancingmanager.h"
+#include "mapuser.h"
+
+namespace GNET
+{
+
+class DBInstancingActivate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbinstancingactivate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBInstancingActivateArg *arg = (DBInstancingActivateArg *)argument;
+		// DBInstancingActivateRes *res = (DBInstancingActivateRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBInstancingActivateArg *arg = (DBInstancingActivateArg *)argument;
+		DBInstancingActivateRes *res = (DBInstancingActivateRes *)result;
+
+		InstancingRole role;
+		{
+			Thread::RWLock::WRScoped l(UserContainer::GetInstance().GetLocker());
+			PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+			if (NULL != pinfo)
+			{
+				role.roleid = pinfo->roleid;
+				role.level = pinfo->level;
+				role.name = pinfo->name;
+				role.occupation = pinfo->occupation;
+				role.localsid = pinfo->localsid;
+				role.linksid = pinfo->linksid;
+			}
+		}
+		InstancingManager::GetInstance()->OnActivate(res->retcode, role, arg->gs_id, arg->map_id, arg->team, res->syncdata);
+	}
+
+	void OnTimeout()
+	{
+		DBInstancingActivateArg *arg = (DBInstancingActivateArg *)argument;
+
+		InstancingRole role;
+		{
+			Thread::RWLock::WRScoped l(UserContainer::GetInstance().GetLocker());
+			PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(arg->roleid);
+			if (NULL != pinfo)
+			{
+				role.roleid = pinfo->roleid;
+				role.level = pinfo->level;
+				role.name = pinfo->name;
+				role.occupation = pinfo->occupation;
+				role.localsid = pinfo->localsid;
+				role.linksid = pinfo->linksid;
+			}
+		}
+		InstancingManager::GetInstance()->OnActivate(ERR_TIMEOUT, role, arg->gs_id, arg->map_id, arg->team, arg->syncdata);
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,68 @@
+
+#ifndef __GNET_DBSNSGETROLEINFO_HPP
+#define __GNET_DBSNSGETROLEINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsgetroleinfoarg"
+#include "dbsnsgetroleinfores"
+
+#include "gsnsplayerinfo"
+
+namespace GNET
+{
+
+class DBSNSGetRoleInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsgetroleinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSNSGetRoleInfoArg *arg = (DBSNSGetRoleInfoArg *)argument;
+		DBSNSGetRoleInfoRes *res = (DBSNSGetRoleInfoRes *)result;
+
+		try
+		{
+			StorageEnv::Storage *pinfo = StorageEnv::GetStorage("snsplayerinfo");
+			StorageEnv::AtomTransaction txn;
+
+			try
+			{
+				Marshal::OctetsStream(pinfo->find(Marshal::OctetsStream()<<arg->roleid, txn)) >> res->info >> GSNSPlayerInfo();
+				res->roleid = arg->roleid;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+			res->retcode = ERR_FAILED;
+			Log::log(LOG_ERR, "gamedbd:DBSNSGetRoleInfo, error, what=%s\n", e.what());
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

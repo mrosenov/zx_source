@@ -1,0 +1,89 @@
+
+#ifndef __GNET_UPDATEROLEBASE_HPP
+#define __GNET_UPDATEROLEBASE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "updaterolebasearg"
+
+
+namespace GNET
+{
+
+class UpdateRoleBase : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "updaterolebase"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		UpdateRoleBaseArg *arg = (UpdateRoleBaseArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+		Marshal::OctetsStream key, value_old, value;
+
+		LOG_TRACE("UpdateRoleBase, roleid=%d, datatype=%d, size=%d", arg->roleid, arg->datatype, arg->data.size());
+
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << arg->roleid;
+				GRoleBase	base;
+				Marshal::OctetsStream(pbase->find( key, txn )) >> base;
+				if ( arg->roleid!=(int)base.id )
+				{
+					Log::log( LOG_ERR,"UpdateRoleBase. fatal, roleid(%d)!=value.id(%d)\n",
+						arg->roleid,base.id);
+					res->retcode = ERR_FAILED;
+					return;
+				}
+				if(arg->datatype)
+					base.config_data = arg->data;
+				else
+					base.help_states = arg->data;
+
+				for(GRoleForbidVector::iterator it=base.forbid.begin();it!=base.forbid.end();)
+				{
+					int timeout = it->createtime+it->time-Timer::GetTime();
+					if(timeout<=0)
+						it = base.forbid.erase(it);
+					else
+						++it;
+				}
+				pbase->insert( key, Marshal::OctetsStream() << base, txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "UpdateRoleBase, roleid=%d, what=%s\n", arg->roleid, e.what() );
+			res->retcode = ERR_FAILED;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// UpdateRoleBaseArg *arg = (UpdateRoleBaseArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

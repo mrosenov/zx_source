@@ -1,0 +1,71 @@
+
+#ifndef __GNET_DBUNDELETEFACTION_HPP
+#define __GNET_DBUNDELETEFACTION_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "factionid"
+#include "delfactionres"
+#include "waitdelkey"
+
+namespace GNET
+{
+
+class DBUndeleteFaction : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbundeletefaction"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FactionId *arg = (FactionId *)argument;
+		DelFactionRes *res = (DelFactionRes *)result;
+
+		Marshal::OctetsStream key,value;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pwaitdel = StorageEnv::GetStorage("waitdel");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key<< arg->fid;
+				GFactionInfo faction;
+				Marshal::OctetsStream(pfaction->find( key, txn )) >> faction;
+				faction.status = _ROLE_STATUS_NORMAL;
+				faction.deletetime = 0;
+				pfaction->insert( key, Marshal::OctetsStream() << faction, txn );
+
+				pwaitdel->del( Marshal::OctetsStream() << WaitDelKey(arg->fid, TYPE_FACTION), txn );
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBUndeleteFaction, fid=%d, what=%s\n", arg->fid, e.what() );
+			res->retcode = ERR_UNDODELROLE;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

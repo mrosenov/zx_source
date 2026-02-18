@@ -1,0 +1,69 @@
+#ifndef __GNET_DBSIEGESETASSISTANTARG_RPCDATA
+#define __GNET_DBSIEGESETASSISTANTARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSiegeSetAssistantArg : public GNET::Rpc::Data
+	{
+	public:
+		int battle_id;
+		int attacker;
+		Octets faction_name;
+
+	public:
+		DBSiegeSetAssistantArg (int l_battle_id = 0,int l_attacker = 0,const Octets& l_faction_name = Octets(0))
+			: battle_id(l_battle_id),attacker(l_attacker),faction_name(l_faction_name)
+		{
+		}
+
+		DBSiegeSetAssistantArg(const DBSiegeSetAssistantArg &rhs)
+			: battle_id(rhs.battle_id),attacker(rhs.attacker),faction_name(rhs.faction_name) { }
+
+		Rpc::Data *Clone() const { return new DBSiegeSetAssistantArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegeSetAssistantArg *r = dynamic_cast<const DBSiegeSetAssistantArg *>(&rhs);
+			if (r && r != this)
+			{
+				battle_id = r->battle_id;
+				attacker = r->attacker;
+				faction_name = r->faction_name;
+			}
+			return *this;
+		}
+
+		DBSiegeSetAssistantArg& operator = (const DBSiegeSetAssistantArg &rhs)
+		{
+			const DBSiegeSetAssistantArg *r = &rhs;
+			if (r && r != this)
+			{
+				battle_id = r->battle_id;
+				attacker = r->attacker;
+				faction_name = r->faction_name;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << battle_id;
+			os << attacker;
+			os << faction_name;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> battle_id;
+			os >> attacker;
+			os >> faction_name;
+			return os;
+		}
+
+	};
+};
+#endif

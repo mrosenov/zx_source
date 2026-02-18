@@ -1,0 +1,59 @@
+#ifndef __GNET_DBGATEACTIVATERES_RPCDATA
+#define __GNET_DBGATEACTIVATERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBGateActivateRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DBGateActivateRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBGateActivateRes(const DBGateActivateRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBGateActivateRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGateActivateRes *r = dynamic_cast<const DBGateActivateRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBGateActivateRes& operator = (const DBGateActivateRes &rhs)
+		{
+			const DBGateActivateRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

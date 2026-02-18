@@ -1,0 +1,44 @@
+	public:
+		int dstid;
+		int srcid;
+		int status;
+		unsigned int localsid;
+		enum { PROTOCOL_TYPE = PROTOCOL_DELIVERSTATUS };
+	public:
+		DeliverStatus() { type = PROTOCOL_DELIVERSTATUS; }
+		DeliverStatus(void*) : Protocol(PROTOCOL_DELIVERSTATUS) { }
+		DeliverStatus (int l_dstid,int l_srcid,int l_status,
+			unsigned int l_localsid)
+			 : dstid(l_dstid),srcid(l_srcid),status(l_status)
+			,localsid(l_localsid)
+		{
+			type = PROTOCOL_DELIVERSTATUS;
+		}
+
+		DeliverStatus(const DeliverStatus &rhs)
+			: Protocol(rhs),dstid(rhs.dstid),srcid(rhs.srcid),status(rhs.status)
+			,localsid(rhs.localsid) { }
+
+		GNET::Protocol *Clone() const { return new DeliverStatus(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << dstid;
+			os << srcid;
+			os << status;
+			os << localsid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> dstid;
+			os >> srcid;
+			os >> status;
+			os >> localsid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

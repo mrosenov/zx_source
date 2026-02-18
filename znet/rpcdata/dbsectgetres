@@ -1,0 +1,65 @@
+#ifndef __GNET_DBSECTGETRES_RPCDATA
+#define __GNET_DBSECTGETRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gsect"
+
+namespace GNET
+{
+	class DBSectGetRes : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int retcode;
+		GSect sect;
+
+	public:
+		DBSectGetRes (unsigned int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBSectGetRes(const DBSectGetRes &rhs)
+			: retcode(rhs.retcode),sect(rhs.sect) { }
+
+		Rpc::Data *Clone() const { return new DBSectGetRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSectGetRes *r = dynamic_cast<const DBSectGetRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				sect = r->sect;
+			}
+			return *this;
+		}
+
+		DBSectGetRes& operator = (const DBSectGetRes &rhs)
+		{
+			const DBSectGetRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				sect = r->sect;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << sect;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> sect;
+			return os;
+		}
+
+	};
+};
+#endif

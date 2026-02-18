@@ -1,0 +1,98 @@
+
+#ifndef __GNET_DBCIRCLESYNC_HPP
+#define __GNET_DBCIRCLESYNC_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcirclesyncarg"
+#include "defcircleres"
+
+namespace GNET
+{
+
+class DBCircleSync : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcirclesync"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCircleSyncArg *arg = (DBCircleSyncArg *)argument;
+		DefCircleRes *res = (DefCircleRes *)result;
+		Marshal::OctetsStream kcircle;
+		try
+		{
+			if(arg->circleid ==0)
+			{
+				Log::log( LOG_ERR,"circle sync circleid=0");
+				res->retcode = ERR_DATAERROR;
+				return;
+			}
+			StorageEnv::Storage * pcircle = StorageEnv::GetStorage("circle");
+			StorageEnv::CommonTransaction txn;
+			try{
+				GCircleDB zcircle;
+				LOG_TRACE("circle sync circleid=%d", arg->circleid);
+                      		kcircle << arg->circleid;
+				Marshal::OctetsStream(pcircle->find(kcircle, txn)) >> zcircle;
+				if(zcircle.member.size()!= arg->info.member.size())
+				{
+					res->retcode = ERR_DATAERROR;
+					return;
+				}
+				zcircle.taskpoint = arg->info.taskpoint;
+				zcircle.tasksavetime = arg->info.tasksavetime;
+				std::vector<GCircleMemberDB>::iterator itnew = arg->info.member.begin();
+				std::vector<GCircleMemberDB>::iterator itnewe = arg->info.member.end();	
+				std::vector<GCircleMemberDB>::iterator itold = zcircle.member.begin();
+			//	std::vector<GCircleMemberDB>::iterator itolde = zcircle.member.end();
+				for(;itnew != itnewe;itnew++,itold++)
+				{
+					if(itnew->roleid != itold->roleid)
+					{
+						res->retcode = ERR_DATAERROR;
+						return;
+					}
+					itold->level = itnew->level;
+					itold->occupation = itnew->occupation;
+					itold->grad_bonus_count = itnew->grad_bonus_count;	
+				}
+				
+	     			pcircle->insert( kcircle, Marshal::OctetsStream()<<zcircle, txn );
+				res->retcode = ERR_SUCCESS;	
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCircleSync,circleid=%d what=%s.",arg->circleid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCircleSyncArg *arg = (DBCircleSyncArg *)argument;
+		// DefCircleRes *res = (DefCircleRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

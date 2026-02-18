@@ -1,0 +1,38 @@
+	public:
+		int roleid;
+		int gs_id;
+		int map_id;
+		enum { PROTOCOL_TYPE = PROTOCOL_GOPENBANQUETLEAVE };
+	public:
+		GOpenBanquetLeave() { type = PROTOCOL_GOPENBANQUETLEAVE; }
+		GOpenBanquetLeave(void*) : Protocol(PROTOCOL_GOPENBANQUETLEAVE) { }
+		GOpenBanquetLeave (int l_roleid,int l_gs_id = 0,int l_map_id = 0)
+			 : roleid(l_roleid),gs_id(l_gs_id),map_id(l_map_id)
+		{
+			type = PROTOCOL_GOPENBANQUETLEAVE;
+		}
+
+		GOpenBanquetLeave(const GOpenBanquetLeave &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),gs_id(rhs.gs_id),map_id(rhs.map_id) { }
+
+		GNET::Protocol *Clone() const { return new GOpenBanquetLeave(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << gs_id;
+			os << map_id;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> gs_id;
+			os >> map_id;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

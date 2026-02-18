@@ -1,0 +1,44 @@
+
+#ifndef __GNET_NETMARBLELOGIN_HPP
+#define __GNET_NETMARBLELOGIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "netmarbleloginarg"
+#include "netmarbleloginres"
+
+#include "netmarble.h"
+
+namespace GNET
+{
+
+class NetMarbleLogin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "netmarblelogin"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// NetMarbleLoginArg *arg = (NetMarbleLoginArg *)argument;
+		// NetMarbleLoginRes *res = (NetMarbleLoginRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		NetMarbleLoginArg *arg = (NetMarbleLoginArg *)argument;
+		NetMarbleLoginRes *res = (NetMarbleLoginRes *)result;
+		NetMarble::GetInstance()->OnNetMarbleLogin(res->result, arg->userid, arg->ipaddress, res->deductType);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

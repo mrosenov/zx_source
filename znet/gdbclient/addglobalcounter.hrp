@@ -1,0 +1,47 @@
+
+#ifndef __GNET_ADDGLOBALCOUNTER_HPP
+#define __GNET_ADDGLOBALCOUNTER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "addglobalcounterarg"
+#include "addglobalcounterres"
+#include "db_if.h"
+
+namespace GNET
+{
+
+class AddGlobalCounter : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "addglobalcounter"
+#undef	RPC_BASECLASS
+	GDB::CountDropResult *_result;
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// AddGlobalCounterArg *arg = (AddGlobalCounterArg *)argument;
+		// AddGlobalCounterRes *res = (AddGlobalCounterRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//AddGlobalCounterArg *arg = (AddGlobalCounterArg *)argument;
+		AddGlobalCounterRes *res = (AddGlobalCounterRes *)result;
+		if(_result) 
+		{
+			_result->OnCountDropResult(res->retcode);
+		}
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,46 @@
+
+#ifndef __GNET_DBCIRCLESYNC_HPP
+#define __GNET_DBCIRCLESYNC_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcirclesyncarg"
+#include "defcircleres"
+#include "circlemanager.h"
+namespace GNET
+{
+
+class DBCircleSync : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcirclesync"
+#undef	RPC_BASECLASS
+	
+	bool isbatch;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCircleSyncArg *arg = (DBCircleSyncArg *)argument;
+		// DefCircleRes *res = (DefCircleRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCircleSyncArg *arg = (DBCircleSyncArg *)argument;
+		DefCircleRes *res = (DefCircleRes *)result;
+		if(res->retcode!= ERR_SUCCESS)
+			Log::formatlog("circle", "sync fail,circleid=%d",arg->circleid);
+		if(isbatch)
+			CircleManager::Instance()->OnSyncBatch();
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

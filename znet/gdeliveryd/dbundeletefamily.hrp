@@ -1,0 +1,56 @@
+
+#ifndef __GNET_DBUNDELETEFAMILY_HPP
+#define __GNET_DBUNDELETEFAMILY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "familyid"
+#include "delfactionres"
+
+namespace GNET
+{
+
+class DBUndeleteFamily : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbundeletefamily"
+#undef	RPC_BASECLASS
+
+	int localsid, linksid;
+	bool isclient;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FamilyId *arg = (FamilyId *)argument;
+		DelFactionRes *res = (DelFactionRes *)result;
+		if (res->retcode == ERR_SUCCESS)
+		{
+			FamilyManager::Instance()->SetDelete(arg->fid, 0);
+		}
+		else
+		{
+			if (isclient)
+			{
+				FactionDismiss_Re re;
+				re.retcode = res->retcode;
+				re.localsid = localsid;
+				re.scale = 1;
+				re.oper = 0;
+				GDeliveryServer::GetInstance()->Send(linksid, re);
+			}
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

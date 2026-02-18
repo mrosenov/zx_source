@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBRAIDOPEN_HPP
+#define __GNET_DBRAIDOPEN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbraidopenarg"
+#include "dbraidopenres"
+
+namespace GNET
+{
+
+class DBRaidOpen : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbraidopen"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBRaidOpenArg *arg = (DBRaidOpenArg *)argument;
+		// DBRaidOpenRes *res = (DBRaidOpenRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBRaidOpenArg *arg = (DBRaidOpenArg *)argument;
+		// DBRaidOpenRes *res = (DBRaidOpenRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

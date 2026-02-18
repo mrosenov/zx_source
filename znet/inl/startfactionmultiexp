@@ -1,0 +1,38 @@
+	public:
+		int fid;
+		int multi;
+		int end_time;
+		enum { PROTOCOL_TYPE = PROTOCOL_STARTFACTIONMULTIEXP };
+	public:
+		StartFactionMultiExp() { type = PROTOCOL_STARTFACTIONMULTIEXP; }
+		StartFactionMultiExp(void*) : Protocol(PROTOCOL_STARTFACTIONMULTIEXP) { }
+		StartFactionMultiExp (int l_fid,int l_multi = 0,int l_end_time = 0)
+			 : fid(l_fid),multi(l_multi),end_time(l_end_time)
+		{
+			type = PROTOCOL_STARTFACTIONMULTIEXP;
+		}
+
+		StartFactionMultiExp(const StartFactionMultiExp &rhs)
+			: Protocol(rhs),fid(rhs.fid),multi(rhs.multi),end_time(rhs.end_time) { }
+
+		GNET::Protocol *Clone() const { return new StartFactionMultiExp(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << multi;
+			os << end_time;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> multi;
+			os >> end_time;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

@@ -1,0 +1,43 @@
+
+#ifndef __GNET_DBSECTUPDATE_HPP
+#define __GNET_DBSECTUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsectupdatearg"
+#include "dbsectupdateres"
+
+namespace GNET
+{
+
+class DBSectUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsectupdate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBSectUpdateArg *arg = (DBSectUpdateArg *)argument;
+		// Integer *res = (Integer *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSectUpdateArg *arg = (DBSectUpdateArg *)argument;
+		DBSectUpdateRes *res = (DBSectUpdateRes *)result;
+                if(res->retcode==ERR_SUCCESS)
+			SectManager::Instance()->OnUpdate(arg->sectid,res->sect);
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

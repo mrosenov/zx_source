@@ -1,0 +1,192 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSGET_HPP
+#define __GNET_DBCRSSVRTEAMSGET_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "teamid"
+#include "dbcrssvrteamsgetres"
+
+#include "gcrssvrteamsrole"
+#include "gcrssvrteamsdata"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsGet : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsget"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		TeamId *arg = (TeamId *)argument;
+		DBCrssvrTeamsGetRes *res = (DBCrssvrTeamsGetRes *)result;
+
+		LOG_TRACE("DBCrssvrTeamsGet, teamid=%d, season_start_time=%d", arg->teamid, arg->season_start_time);
+		Marshal::OctetsStream key, value, base_value;
+		Marshal::OctetsStream kteamid, krole;
+		try
+		{
+			StorageEnv::Storage * pcrssvrteams = StorageEnv::GetStorage("crssvrteams");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				if(arg->teamid == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+
+				GCrssvrTeamsData crssvrteams;
+				GRoleBase base;
+				kteamid << arg->teamid;
+				if( pcrssvrteams->find(kteamid, value, txn) )
+				{
+					value >> crssvrteams;
+				}
+
+				//Marshal::OctetsStream(pcrssvrteams->find(kteamid, txn)) >> crssvrteams;
+				if(crssvrteams.info.teamid <= 0)
+				{
+					Log::log( LOG_ERR, "CrssvrTeamsGet, teamid=%d, not found", arg->teamid);
+					res->retcode = ERR_CRSSVRTEAMS_DB_NOTIN_TEAMS;
+					return;
+				}
+		
+				if(arg->season_start_time != 0 && crssvrteams.info.seasonlastbattletime < arg->season_start_time)
+				{
+					LOG_TRACE("DBCrssvrTeamsGet neet to init season, teamid=%d, season_start_time=%d", arg->teamid, arg->season_start_time);
+					std::vector<GCrssvrTeamsRole>::iterator it_roles = crssvrteams.roles.begin(), ie_roles=crssvrteams.roles.end();
+					for(;it_roles!=ie_roles;++it_roles)
+					{
+						// 遍历所有玩家，统一初始化
+						int roleid = it_roles->roleid;
+						krole.clear();
+						krole << roleid;
+						Marshal::OctetsStream(pbase->find(krole, txn )) >> base;
+						{
+							// 与玩家创建队伍初始化保持一致
+							base.datagroup.clear();
+							base.datagroup[KEY_DATAGOURP_ROLE_CT_TEAMID] = crssvrteams.info.teamid;
+							base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE] = CRSSVRTEAMS_INIT_ROLE_SCORE;
+							base.datagroup[KEY_DATAGOURP_ROLE_CT_MAX_SCORE] = CRSSVRTEAMS_INIT_ROLE_SCORE;
+							base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE_UPDATETIME] = Timer::GetTime();
+							base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME] = Timer::GetTime();
+
+							pbase->insert( krole, Marshal::OctetsStream()<< base, txn );
+					
+							it_roles->score = base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE];
+							it_roles->data_score.ct_max_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_MAX_SCORE];
+							it_roles->data_score.ct_last_max_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_MAX_SCORE];
+							it_roles->data_score.ct_score_updatetime = base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE_UPDATETIME];
+							it_roles->ct_last_punish_time = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME];
+						}
+
+					}
+					
+					crssvrteams.info.battle_losses = 0;
+					crssvrteams.info.battle_draws = 0;
+					crssvrteams.info.battle_wins = 0;
+					crssvrteams.info.weekbattletimes = 0;
+					crssvrteams.info.lastbattletime = Timer::GetTime();
+					crssvrteams.info.score = CRSSVRTEAMS_INIT_ROLE_SCORE;	
+					crssvrteams.info.seasonlastbattletime = Timer::GetTime();
+
+
+					Log::formatlog("CrssvrTeamsGet SeasonInit","teamid=%d, season_start_time=%d", arg->teamid, arg->season_start_time);
+				}
+				else
+				{
+					typedef std::map<unsigned char/*occup*/, int/*count*/> OccupCount;
+					OccupCount occup_count;
+					
+					std::vector<GCrssvrTeamsRole>::iterator it_roles = crssvrteams.roles.begin(), ie_roles=crssvrteams.roles.end();
+					for(;it_roles!=ie_roles;)
+					{
+						int t_roleid = (*it_roles).roleid;
+						unsigned char occup = (*it_roles).occupation;
+
+						krole.clear();
+						base_value.clear();
+						krole << t_roleid;
+
+						/*
+						if(occup_count[occup] + 1 > OCCUPATION_PLAYER_LIMIT)
+						{
+							// 由于之前系统的bug，导致战队中同一个职业可能会超出2个，在玩家重新加载的时候，修复
+							LOG_TRACE("DBCrssvrTeamsGet occup is limit, teamid=%d, roleid=%d", arg->teamid, t_roleid);
+							it_roles = crssvrteams.roles.erase(++it_roles);
+							if( pbase->find(krole, base_value, txn) )
+							{
+								base_value >> base;
+								base.datagroup[KEY_DATAGOURP_ROLE_CT_TEAMID] = -1;
+								//base.datagroup[KEY_DATAGOURP_ROLE_CT_COOLTIME] = Timer::GetTime();
+								pbase->insert( krole, Marshal::OctetsStream()<< base, txn );
+							}
+							continue;
+						}
+						else*/
+						{
+							if( pbase->find(krole, base_value, txn) )
+							{
+								base_value >> base;
+								(*it_roles).score = base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE];
+								(*it_roles).data_score.ct_max_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_MAX_SCORE];
+								(*it_roles).data_score.ct_last_max_score = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_MAX_SCORE];
+								(*it_roles).data_score.ct_score_updatetime = base.datagroup[KEY_DATAGOURP_ROLE_CT_SCORE_UPDATETIME];
+								(*it_roles).ct_last_battle_count = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_BATTLE_COUNT];
+								(*it_roles).ct_last_punish_time = base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME];
+								LOG_TRACE("DBCrssvrTeamsGet, roleid=%d, teamid=%d,ct_score=%d,ct_max_score=%d,ct_last_max_score=%d,ct_score_updatetime=%d,ct_last_battle_count=%d,ct_last_punish_time=%d", 
+										(*it_roles).roleid, arg->teamid,(*it_roles).score,(*it_roles).data_score.ct_max_score,(*it_roles).data_score.ct_last_max_score,(*it_roles).data_score.ct_score_updatetime,(*it_roles).ct_last_battle_count, (*it_roles).ct_last_punish_time);
+
+							}
+							//Marshal::OctetsStream(pbase->find(krole, txn )) >> base;
+							occup_count[occup]++;
+							++it_roles;
+						}
+					}
+					pcrssvrteams->insert( kteamid, Marshal::OctetsStream()<< crssvrteams, txn );
+
+				}
+
+				res->info = crssvrteams;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrssvrTeamsGet, teamid=%d what=%s.",arg->teamid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// teamid *arg = (teamid *)argument;
+		// DBCrssvrTeamsGetRes *res = (DBCrssvrTeamsGetRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

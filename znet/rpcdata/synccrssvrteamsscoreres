@@ -1,0 +1,59 @@
+#ifndef __GNET_SYNCCRSSVRTEAMSSCORERES_RPCDATA
+#define __GNET_SYNCCRSSVRTEAMSSCORERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class SyncCrssvrTeamsScoreRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		SyncCrssvrTeamsScoreRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		SyncCrssvrTeamsScoreRes(const SyncCrssvrTeamsScoreRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new SyncCrssvrTeamsScoreRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SyncCrssvrTeamsScoreRes *r = dynamic_cast<const SyncCrssvrTeamsScoreRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		SyncCrssvrTeamsScoreRes& operator = (const SyncCrssvrTeamsScoreRes &rhs)
+		{
+			const SyncCrssvrTeamsScoreRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

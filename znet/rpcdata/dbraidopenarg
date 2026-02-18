@@ -1,0 +1,83 @@
+#ifndef __GNET_DBRAIDOPENARG_RPCDATA
+#define __GNET_DBRAIDOPENARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBRaidOpenArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int map_id;
+		int itemid;
+		int item_count;
+		GMailSyncData syncdata;
+
+	public:
+		DBRaidOpenArg (int l_roleid = 0,int l_map_id = 0,int l_itemid = 0
+			,int l_item_count = 0,const GMailSyncData& l_syncdata = GMailSyncData())
+			: roleid(l_roleid),map_id(l_map_id),itemid(l_itemid)
+			,item_count(l_item_count),syncdata(l_syncdata)
+		{
+		}
+
+		DBRaidOpenArg(const DBRaidOpenArg &rhs)
+			: roleid(rhs.roleid),map_id(rhs.map_id),itemid(rhs.itemid),
+			item_count(rhs.item_count),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBRaidOpenArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBRaidOpenArg *r = dynamic_cast<const DBRaidOpenArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				map_id = r->map_id;
+				itemid = r->itemid;
+				item_count = r->item_count;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBRaidOpenArg& operator = (const DBRaidOpenArg &rhs)
+		{
+			const DBRaidOpenArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				map_id = r->map_id;
+				itemid = r->itemid;
+				item_count = r->item_count;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << map_id;
+			os << itemid;
+			os << item_count;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> map_id;
+			os >> itemid;
+			os >> item_count;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

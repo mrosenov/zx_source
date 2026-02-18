@@ -1,0 +1,97 @@
+
+#ifndef __GNET_ADDGLOBALCOUNTER_HPP
+#define __GNET_ADDGLOBALCOUNTER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "addglobalcounterarg"
+#include "addglobalcounterres"
+
+namespace GNET
+{
+
+class AddGlobalCounter : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "addglobalcounter"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		AddGlobalCounterArg *arg = (AddGlobalCounterArg *)argument;
+		AddGlobalCounterRes *res = (AddGlobalCounterRes *)result;
+		Log::formatlog("AddGlobalCounter","templateid=%d starttime=%d duration=%d max_count=%d",arg->template_id,arg->start_time,arg->duration,arg->max_count);
+		try
+		{
+			StorageEnv::Storage * pcounter = StorageEnv::GetStorage("dropcounter");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				int64_t key = (((int64_t)(arg->template_id))<<32) + arg->start_time; 
+				int current = 0;
+				Marshal::OctetsStream currentos,keyos;
+				keyos<<key;
+				if(pcounter->find(keyos, currentos,txn))
+				{
+					currentos>>current;
+				}
+				int now = Timer::GetTime();
+				if(now >= arg->start_time + arg->duration*3600)
+				{
+					pcounter->del(keyos,txn);
+					res->retcode = ERR_DROP_COUNTER_TIME;
+					return; 
+				}
+				if(arg->max_count<=0)
+				{
+					res->retcode = ERR_DROP_COUNTER_ARGU;
+					return;
+				}
+				current++;
+				if(current>arg->max_count)
+				{
+					res->retcode = ERR_DROP_COUNTER_NUMBER;
+					return;
+				}
+				else
+				{
+					pcounter->insert(keyos,Marshal::OctetsStream()<<current,txn);
+					Log::formatlog("AddGlobalCounter","templateid=%d current=%d",arg->template_id,current);
+					res->retcode = ERR_SUCCESS;
+					return;
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "AddGlobalCounter, what=%s\n",e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// AddGlobalCounterArg *arg = (AddGlobalCounterArg *)argument;
+		// AddGlobalCounterRes *res = (AddGlobalCounterRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

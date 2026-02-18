@@ -1,0 +1,30 @@
+	public:
+		int value;
+		enum { PROTOCOL_TYPE = PROTOCOL_KINGDOMPOINTSYNC };
+	public:
+		KingdomPointSync() { type = PROTOCOL_KINGDOMPOINTSYNC; }
+		KingdomPointSync(void*) : Protocol(PROTOCOL_KINGDOMPOINTSYNC) { }
+		KingdomPointSync (int l_value)
+			 : value(l_value)
+		{
+			type = PROTOCOL_KINGDOMPOINTSYNC;
+		}
+
+		KingdomPointSync(const KingdomPointSync &rhs)
+			: Protocol(rhs),value(rhs.value) { }
+
+		GNET::Protocol *Clone() const { return new KingdomPointSync(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << value;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> value;
+			return os;
+		}
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

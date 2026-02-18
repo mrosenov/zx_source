@@ -1,0 +1,38 @@
+	public:
+		int session_key;
+		int data_type;
+		Octets data;
+		enum { PROTOCOL_TYPE = PROTOCOL_COMMONDATASYNC };
+	public:
+		CommonDataSync() { type = PROTOCOL_COMMONDATASYNC; }
+		CommonDataSync(void*) : Protocol(PROTOCOL_COMMONDATASYNC) { }
+		CommonDataSync (int l_session_key,int l_data_type,const Octets& l_data)
+			 : session_key(l_session_key),data_type(l_data_type),data(l_data)
+		{
+			type = PROTOCOL_COMMONDATASYNC;
+		}
+
+		CommonDataSync(const CommonDataSync &rhs)
+			: Protocol(rhs),session_key(rhs.session_key),data_type(rhs.data_type),data(rhs.data) { }
+
+		GNET::Protocol *Clone() const { return new CommonDataSync(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << session_key;
+			os << data_type;
+			os << data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> session_key;
+			os >> data_type;
+			os >> data;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 101; }
+
+		bool SizePolicy(size_t size) const { return size <= 655360; }

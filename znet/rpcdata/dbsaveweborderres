@@ -1,0 +1,65 @@
+#ifndef __GNET_DBSAVEWEBORDERRES_RPCDATA
+#define __GNET_DBSAVEWEBORDERRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "weborder"
+
+namespace GNET
+{
+	class DBSaveWebOrderRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		WebOrderVector weborders;
+
+	public:
+		DBSaveWebOrderRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBSaveWebOrderRes(const DBSaveWebOrderRes &rhs)
+			: retcode(rhs.retcode),weborders(rhs.weborders) { }
+
+		Rpc::Data *Clone() const { return new DBSaveWebOrderRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSaveWebOrderRes *r = dynamic_cast<const DBSaveWebOrderRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				weborders = r->weborders;
+			}
+			return *this;
+		}
+
+		DBSaveWebOrderRes& operator = (const DBSaveWebOrderRes &rhs)
+		{
+			const DBSaveWebOrderRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				weborders = r->weborders;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << weborders;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> weborders;
+			return os;
+		}
+
+	};
+};
+#endif

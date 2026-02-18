@@ -1,0 +1,47 @@
+	public:
+		int roleid;
+		int map_tag;
+		float scalex;
+		float scaley;
+		float scalez;
+		enum { PROTOCOL_TYPE = PROTOCOL_GFACBASELEAVE };
+	public:
+		GFacBaseLeave() { type = PROTOCOL_GFACBASELEAVE; }
+		GFacBaseLeave(void*) : Protocol(PROTOCOL_GFACBASELEAVE) { }
+		GFacBaseLeave (int l_roleid,int l_map_tag = -1,float l_scalex = 0.0f,
+			float l_scaley = 0.0f,float l_scalez = 0.0f)
+			 : roleid(l_roleid),map_tag(l_map_tag),scalex(l_scalex)
+			,scaley(l_scaley),scalez(l_scalez)
+		{
+			type = PROTOCOL_GFACBASELEAVE;
+		}
+
+		GFacBaseLeave(const GFacBaseLeave &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),map_tag(rhs.map_tag),scalex(rhs.scalex)
+			,scaley(rhs.scaley),scalez(rhs.scalez) { }
+
+		GNET::Protocol *Clone() const { return new GFacBaseLeave(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << map_tag;
+			os << scalex;
+			os << scaley;
+			os << scalez;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> map_tag;
+			os >> scalex;
+			os >> scaley;
+			os >> scalez;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

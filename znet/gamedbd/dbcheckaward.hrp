@@ -1,0 +1,316 @@
+
+#ifndef __GNET_DBCHECKAWARD_HPP
+#define __GNET_DBCHECKAWARD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcheckawardarg"
+#include "dbcheckawardres"
+#include "conv_charset.h"
+#include "sysmailcontainer.h"
+
+namespace GNET
+{
+
+class DBCheckAward : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcheckaward"
+#undef	RPC_BASECLASS
+
+	StorageEnv::Storage *pcallback;
+	StorageEnv::Storage *pmailbox;
+	StorageEnv::Storage *pbase;
+
+#define MAX_SYSTEMMAILNUM 64
+#define RECALLAWARD_OBJID 44219
+#define RETURNAWARD_OBJID 44220
+#define MAX_AWARDNUM 100
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCheckAwardArg *arg = (DBCheckAwardArg *)argument;
+		DBCheckAwardRes *res = (DBCheckAwardRes *)result;
+
+		int roleid = arg->roleid;
+		try
+		{
+			pcallback = StorageEnv::GetStorage("friendcallback");
+			pmailbox = StorageEnv::GetStorage("mailbox");
+			pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				GFriendCallback callback;
+				if(IsReturnPlayer(roleid, callback, txn))
+				{
+					res->recaller_list = callback.callback_award.recaller_list;
+					SetRecallPlayerAward(roleid, res->recaller_list, txn);
+					callback.callback_award.returnaward_num = 0;
+				}
+				res->retcode = CheckAward(roleid, callback, res->award_type, txn);
+			}
+			catch(DbException e)
+			{
+				throw;
+			}
+			catch(...)
+			{
+				DbException e(DB_OLD_VERSION);
+				txn.abort(e);
+				throw e;
+			}
+		}
+		catch(DbException e)
+		{
+			Log::log(LOG_ERR, "DBCheckAward, roleid=%d, what=%s\n", arg->roleid, e.what());
+			res->retcode = ERR_CALLBACK_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCheckAwardArg *arg = (DBCheckAwardArg *)argument;
+		// DBCheckAwardRes *res = (DBCheckAwardRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+	bool IsReturnPlayer(int roleid, GFriendCallback &callback, StorageEnv::Transaction &txn)
+	{
+		Marshal::OctetsStream key, value;
+		key << roleid;
+		if(pcallback->find(key, value, txn))
+		{
+			value >> callback;
+		}
+		return callback.callback_award.returnaward_num == 0 ? false : true;
+	}
+
+	void SetRecallPlayerAward(int returnplayer_roleid, const vector<int> &recaller_list, StorageEnv::Transaction &txn)
+	{
+		GMailBox box;
+		GMail mail;
+		vector<int>::const_iterator it = recaller_list.begin(), ie = recaller_list.end();
+		for(; it != ie; ++it)
+		{
+			GetMailBox(*it, box, txn);
+			// 如果发送召回邮件的玩家邮箱已满则记录到returnplayer_list中
+			// 下一次该玩家登录时如果邮箱有空间则再进行奖励发放
+			if(IsMailBoxFull(box))
+			{
+				RecordNotSuccAward(returnplayer_roleid, *it, txn);
+				LOG_TRACE("DBCheckAward, returnplayer=%d, recaller=%d, RecordNotSuccAward\n", returnplayer_roleid, *it);
+			}
+			else
+			{
+				vector<int> roleids;
+				roleids.push_back(*it);
+				roleids.push_back(returnplayer_roleid);
+				MakeAward(roleids, 1, RECALL_AWARD, mail, box, txn);
+				box.mails.push_back(mail);
+				pmailbox->insert(Marshal::OctetsStream() << *it, Marshal::OctetsStream() << box, txn);
+				LOG_TRACE("DBCheckAward, returnplayer=%d, recaller=%d, SetAward\n", returnplayer_roleid, *it);
+			}
+		}
+	}
+
+	void GetMailBox(int roleid, GMailBox &box, StorageEnv::Transaction &txn)
+	{
+		Marshal::OctetsStream key, value;
+		key << roleid;
+		if(pmailbox->find(key, value, txn))
+		{
+			value >> box;
+		}
+		else
+		{
+			box.timestamp = 0;
+			box.status = 0;
+			box.mails.clear();
+		}
+	}
+
+	bool IsMailBoxFull(GMailBox &box)
+	{
+		return box.mails.size() >= MAX_SYSTEMMAILNUM;
+	}
+
+	void RecordNotSuccAward(int returnplayer_roleid, int recallplayer_roleid, StorageEnv::Transaction &txn)
+	{
+		GFriendCallback callback;
+		Marshal::OctetsStream key, value;
+
+		key << recallplayer_roleid;
+		if(pcallback->find(key, value, txn))
+		{
+			value >> callback;
+		}
+		vector<int> &returnplayer_list = callback.callback_award.returnplayer_list;
+		vector<int>::iterator it = find(returnplayer_list.begin(), returnplayer_list.end(), returnplayer_roleid);
+		if(returnplayer_list.end() == it)
+		{
+			returnplayer_list.push_back(returnplayer_roleid);
+		}
+		pcallback->insert(key, Marshal::OctetsStream() << callback, txn);
+	}
+	
+	void MakeAward(const vector<int> &roleids, unsigned short award_num, unsigned short award_type, GMail &mail, GMailBox &box, StorageEnv::Transaction &txn)
+	{
+		mail.header.id = NextMailId(box);
+		mail.header.send_time = Timer::GetTime();
+		mail.header.receiver = mail.header.send_time;
+		mail.header.attribute = (1 << _MA_UNREAD) | (1 << _MA_ATTACH_OBJ);
+		mail.header.sender = 0;
+		mail.header.sndr_type = _MST_CALLBACK_AWARD;
+		mail.attach_obj.count = award_num;
+		mail.attach_obj.pos = 0;
+
+		std::string mail_type, context;
+		for(unsigned int i = 0; i < roleids.size(); ++i)
+		{
+			if(0 == i)
+			{
+				context += GetRoleName(roleids[i], txn);
+				context += ":\r\n";
+			}
+			else
+			{
+				context += "    ";
+				context += GetRoleName(roleids[i], txn);
+			}
+		}
+		if(RECALL_AWARD == award_type)
+		{
+			mail.attach_obj.id = RECALLAWARD_OBJID;
+			mail_type = "RecallAward";
+			if(roleids.size() == 2)
+			{
+				Log::formatlog("gamemailbox_award", "roleid=%d:item=%d:count=%d:callback_roleid=%d", roleids[0], mail.attach_obj.id, award_num, roleids[1]);
+			}
+		}
+		else
+		{
+			mail.attach_obj.id = RETURNAWARD_OBJID;
+			mail_type = "ReturnAward";
+			if(roleids.size() == 1)
+			{
+				Log::formatlog("regmailbox_award", "roleid=%d:item=%d:count=%d", roleids[0], mail.attach_obj.id, award_num);
+			}
+		}
+		if(SysMailContainer::IsMailExist(mail_type))
+		{
+			SysMailInfo &mailinfo = SysMailContainer::GetMailInfo(mail_type);
+			string sender_name = mailinfo.GetInfo("sender_name");
+			string title = mailinfo.GetInfo("title");
+			CharsetConverter::conv_charset_g2u(Octets(sender_name.c_str(), sender_name.length() + 1), mail.header.sender_name);
+			CharsetConverter::conv_charset_g2u(Octets(title.c_str(), title.length() + 1), mail.header.title);
+			context += mailinfo.GetInfo("context");
+			CharsetConverter::conv_charset_g2u(Octets(context.c_str(), context.length() + 1), mail.context);
+		}
+	}
+
+	unsigned char NextMailId(GMailBox &box)
+	{
+		unsigned char id = 0;
+		size_t size = box.mails.size();
+		if(size)
+		{
+			id = box.mails.size();
+		}
+		for(GMailVector::iterator it = box.mails.begin(); it != box.mails.end(); ++it)
+		{
+			if(it->header.id == id)
+			{
+				id++;
+				it = box.mails.begin();
+			}
+		}
+		return id;
+	}
+
+	string GetRoleName(int roleid, StorageEnv::Transaction &txn)
+	{
+		GRoleBase rolebase;
+		Marshal::OctetsStream value;
+		Octets gbk_name;
+		if(pbase->find(Marshal::OctetsStream() << roleid, value, txn))
+		{
+			value >> rolebase;
+		}
+		CharsetConverter::conv_charset_u2g(rolebase.name, gbk_name);
+		std::string str((char *)gbk_name.begin(), gbk_name.size());
+		return str;
+	}
+
+	unsigned char CheckAward(int roleid, GFriendCallback &callback, unsigned char &award_type, StorageEnv::Transaction &txn)
+	{
+		GMailBox box;
+		GMail mail;
+		unsigned char retcode = ERR_CALLBACK_SUCCESS;
+		bool ismodify = false;
+		vector<int> &recaller_list = callback.callback_award.recaller_list;
+		vector<int> &returnplayer_list = callback.callback_award.returnplayer_list;
+
+		GetMailBox(roleid, box, txn);
+		LOG_TRACE("DBCheckAward::roleid=%d, box.size=%d, recaller_list.size=%d, returnplayer_list.size=%d\n", roleid, box.mails.size(), recaller_list.size(), returnplayer_list.size());
+		// 检查是否存在回归奖励
+		if(recaller_list.size() != 0)
+		{
+			award_type |= RETURN_AWARD;
+			if(IsMailBoxFull(box))
+			{
+				retcode = ERR_CALLBACK_MAILBOXFULL;
+			}
+			else
+			{
+				int size = recaller_list.size() >= MAX_AWARDNUM ? MAX_AWARDNUM : recaller_list.size();
+				vector<int> roleids;
+				roleids.push_back(roleid);
+				MakeAward(roleids, size, RETURN_AWARD, mail, box, txn);
+				box.mails.push_back(mail);
+				recaller_list.clear();
+				ismodify = true;
+			}
+		}
+		// 检查是否存在召回奖励
+		if(returnplayer_list.size() != 0)
+		{
+			award_type |= RECALL_AWARD;
+			vector<int>::iterator it = returnplayer_list.begin();
+			for(; it != returnplayer_list.end(); )
+			{
+				if(IsMailBoxFull(box))
+				{
+					retcode = ERR_CALLBACK_MAILBOXFULL;
+					break;
+				}
+				else
+				{
+					vector<int> roleids;
+					roleids.push_back(roleid);
+					roleids.push_back(*it);
+					MakeAward(roleids, 1, RECALL_AWARD, mail, box, txn);
+					box.mails.push_back(mail);
+					it = returnplayer_list.erase(it);
+					ismodify = true;
+				}
+			}
+		}
+		if(ismodify)
+		{
+			pmailbox->insert(Marshal::OctetsStream() << roleid, Marshal::OctetsStream() << box, txn);
+			pcallback->insert(Marshal::OctetsStream() << roleid, Marshal::OctetsStream() << callback, txn);
+		}
+		return retcode;
+	}
+};
+
+};
+#endif

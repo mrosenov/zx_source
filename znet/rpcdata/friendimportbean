@@ -1,0 +1,65 @@
+#ifndef __GNET_FRIENDIMPORTBEAN_RPCDATA
+#define __GNET_FRIENDIMPORTBEAN_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "groupbean"
+
+namespace GNET
+{
+	class FriendImportBean : public GNET::Rpc::Data
+	{
+	public:
+		int64_t roleid;
+		std::vector<GroupBean> friends;
+
+	public:
+		FriendImportBean (const std::vector<GroupBean>& l_friends = std::vector<GroupBean>())
+			: friends(l_friends)
+		{
+		}
+
+		FriendImportBean(const FriendImportBean &rhs)
+			: roleid(rhs.roleid),friends(rhs.friends) { }
+
+		Rpc::Data *Clone() const { return new FriendImportBean(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FriendImportBean *r = dynamic_cast<const FriendImportBean *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				friends = r->friends;
+			}
+			return *this;
+		}
+
+		FriendImportBean& operator = (const FriendImportBean &rhs)
+		{
+			const FriendImportBean *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				friends = r->friends;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << friends;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> friends;
+			return os;
+		}
+
+	};
+};
+#endif

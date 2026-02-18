@@ -1,0 +1,64 @@
+#ifndef __GNET_DBFRIENDCALLBACKSUBSCRIBEARG_RPCDATA
+#define __GNET_DBFRIENDCALLBACKSUBSCRIBEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFriendCallbackSubscribeArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		unsigned char is_subscribe;
+
+	public:
+		DBFriendCallbackSubscribeArg (int l_roleid = 0,unsigned char l_is_subscribe = 1)
+			: roleid(l_roleid),is_subscribe(l_is_subscribe)
+		{
+		}
+
+		DBFriendCallbackSubscribeArg(const DBFriendCallbackSubscribeArg &rhs)
+			: roleid(rhs.roleid),is_subscribe(rhs.is_subscribe) { }
+
+		Rpc::Data *Clone() const { return new DBFriendCallbackSubscribeArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFriendCallbackSubscribeArg *r = dynamic_cast<const DBFriendCallbackSubscribeArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				is_subscribe = r->is_subscribe;
+			}
+			return *this;
+		}
+
+		DBFriendCallbackSubscribeArg& operator = (const DBFriendCallbackSubscribeArg &rhs)
+		{
+			const DBFriendCallbackSubscribeArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				is_subscribe = r->is_subscribe;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << is_subscribe;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> is_subscribe;
+			return os;
+		}
+
+	};
+};
+#endif

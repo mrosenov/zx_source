@@ -1,0 +1,87 @@
+
+#ifndef __GNET_DBSNSUPDATEROLEINFO_HPP
+#define __GNET_DBSNSUPDATEROLEINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsupdateroleinfoarg"
+#include "dbsnsupdateroleinfores"
+
+namespace GNET
+{
+
+class DBSNSUpdateRoleInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsupdateroleinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSNSUpdateRoleInfoArg *arg = (DBSNSUpdateRoleInfoArg *)argument;
+		DBSNSUpdateRoleInfoRes *res = (DBSNSUpdateRoleInfoRes *)result;
+
+		try
+		{
+			StorageEnv::Storage *pinfo = StorageEnv::GetStorage("snsplayerinfo");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key;
+			Octets oct_info;
+			GSNSPlayerInfoCache info;
+
+			try
+			{
+				key << arg->roleid;
+				if (pinfo->find(key, oct_info, txn))
+					Marshal::OctetsStream(oct_info) >> info;
+				info.roleinfo.level = arg->info.level;
+				info.roleinfo.sub_level = arg->info.sub_level;
+				info.roleinfo.gender = arg->info.gender;
+				info.roleinfo.occupation = arg->info.occupation;
+				info.roleinfo.spouse = arg->info.spouse;
+				if (arg->info.rolename.size() > 0)
+					info.roleinfo.rolename = arg->info.rolename;
+				if (arg->info.sectname.size() > 0)
+					info.roleinfo.sectname = arg->info.sectname;
+				if (arg->info.familyname.size() > 0)
+					info.roleinfo.familyname = arg->info.familyname;
+				if (arg->info.factionname.size() > 0)
+				{
+					info.roleinfo.factionname = arg->info.factionname;
+					info.roleinfo.factiontitle = arg->info.factiontitle;
+					info.roleinfo.faction_level = arg->info.faction_level;
+				}
+				pinfo->insert(key, Marshal::OctetsStream()<<info, txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch (DbException &e) { throw e; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException &e)
+		{
+			res->retcode = ERR_FAILED;
+			Log::log(LOG_ERR, "gamedbd:DBSNSUpdateRoleInfo error, what=%s\n", e.what());
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,56 @@
+	public:
+		int roleid;
+		int battle_type;
+		int subbattle_type;
+		int gsid;
+		int mapid;
+		int starttime;
+		int team;
+		enum { PROTOCOL_TYPE = PROTOCOL_CROSSBATTLEJOINTEAM };
+	public:
+		CrossBattleJoinTeam() { type = PROTOCOL_CROSSBATTLEJOINTEAM; }
+		CrossBattleJoinTeam(void*) : Protocol(PROTOCOL_CROSSBATTLEJOINTEAM) { }
+		CrossBattleJoinTeam (int l_roleid,int l_battle_type = 0,int l_subbattle_type = 0,
+			int l_gsid = 0,int l_mapid = 0,int l_starttime = 0,
+			int l_team = 0)
+			 : roleid(l_roleid),battle_type(l_battle_type),subbattle_type(l_subbattle_type)
+			,gsid(l_gsid),mapid(l_mapid),starttime(l_starttime)
+			,team(l_team)
+		{
+			type = PROTOCOL_CROSSBATTLEJOINTEAM;
+		}
+
+		CrossBattleJoinTeam(const CrossBattleJoinTeam &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),battle_type(rhs.battle_type),subbattle_type(rhs.subbattle_type)
+			,gsid(rhs.gsid),mapid(rhs.mapid),starttime(rhs.starttime)
+			,team(rhs.team) { }
+
+		GNET::Protocol *Clone() const { return new CrossBattleJoinTeam(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << battle_type;
+			os << subbattle_type;
+			os << gsid;
+			os << mapid;
+			os << starttime;
+			os << team;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> battle_type;
+			os >> subbattle_type;
+			os >> gsid;
+			os >> mapid;
+			os >> starttime;
+			os >> team;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

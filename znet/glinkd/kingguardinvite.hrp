@@ -1,0 +1,55 @@
+
+#ifndef __GNET_KINGGUARDINVITE_HPP
+#define __GNET_KINGGUARDINVITE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "kingguardinvitearg"
+#include "kingguardinviteres"
+#include "glinkserver.hpp"
+
+namespace GNET
+{
+
+class KingGuardInvite : public ProxyRpc
+{
+#define	RPC_BASECLASS	ProxyRpc
+	#include "kingguardinvite"
+#undef	RPC_BASECLASS
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		KingGuardInviteArg arg;
+		osArg >> arg;
+		if( GLinkServer::GetInstance()->Send(arg.localsid, *this ) )
+		{
+			return true;
+		}
+		else
+		{
+			SetResult(KingGuardInviteRes(ERR_DELIVER_SEND));
+			SendToSponsor();
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		// TODO
+		// KingGuardInviteArg arg;
+		// osArg >> arg;
+		// KingGuardInviteRes res;
+		// osRes >> res;
+		// SetResult( &res ); // if you modified res, do not forget to call this. 
+	}
+
+	void OnTimeout( )
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

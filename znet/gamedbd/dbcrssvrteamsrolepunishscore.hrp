@@ -1,0 +1,89 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSROLEPUNISHSCORE_HPP
+#define __GNET_DBCRSSVRTEAMSROLEPUNISHSCORE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsrolepunishscorearg"
+#include "dbcrssvrteamsrolepunishscoreres"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsRolePunishScore : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsrolepunishscore"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsRolePunishScoreArg *arg = (DBCrssvrTeamsRolePunishScoreArg *)argument;
+		DBCrssvrTeamsRolePunishScoreRes *res = (DBCrssvrTeamsRolePunishScoreRes *)result;
+		
+		LOG_TRACE("DBCrssvrTeamsRolePunishScore, roleid=%d, ct_last_punish_time=%d\n", 
+				arg->roleid, arg->ct_last_punish_time);
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole;
+
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				key << arg->roleid;
+				GRoleBase	base;
+				Marshal::OctetsStream(pbase->find( key, txn )) >> base;
+				if ( arg->roleid!=(int)base.id )
+				{
+					Log::log( LOG_ERR,"DBCrssvrTeamsRolePunishScore. fatal, roleid(%d)!=value.id(%d)\n",
+						arg->roleid,base.id);
+					res->retcode = ERR_FAILED;
+					return;
+				}
+			
+				// 别的字段，都统一由积分回写机制写入数据库
+				base.datagroup[KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME] = arg->ct_last_punish_time;
+
+				pbase->insert( key, Marshal::OctetsStream() << base, txn );
+				res->retcode = ERR_SUCCESS;
+				Log::formatlog("DBCrssvrTeamsRolePunishScore", "roleid=%d, ct_score=%d, ct_last_punish_time=%d, ct_last_battle_count=%d", 
+					arg->roleid, arg->ct_score, arg->ct_last_punish_time, arg->ct_last_battle_count);
+
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCrssvrTeamsRolePunishScore, roleid=%d, what=%s\n", arg->roleid, e.what() );
+			res->retcode = ERR_FAILED;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsRolePunishScoreArg *arg = (DBCrssvrTeamsRolePunishScoreArg *)argument;
+		// DBCrssvrTeamsRolePunishScoreRes *res = (DBCrssvrTeamsRolePunishScoreRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

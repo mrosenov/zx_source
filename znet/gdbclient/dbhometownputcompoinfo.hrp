@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBHOMETOWNPUTCOMPOINFO_HPP
+#define __GNET_DBHOMETOWNPUTCOMPOINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhometownputcompoinfoarg"
+
+
+namespace GNET
+{
+
+class DBHometownPutCompoInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhometownputcompoinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBHometownPutCompoInfoArg *arg = (DBHometownPutCompoInfoArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBHometownPutCompoInfoArg *arg = (DBHometownPutCompoInfoArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

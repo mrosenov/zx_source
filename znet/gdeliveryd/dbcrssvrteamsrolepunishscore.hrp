@@ -1,0 +1,53 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSROLEPUNISHSCORE_HPP
+#define __GNET_DBCRSSVRTEAMSROLEPUNISHSCORE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamsrolepunishscorearg"
+#include "dbcrssvrteamsrolepunishscoreres"
+#include "crssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsRolePunishScore : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamsrolepunishscore"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsRolePunishScoreArg *arg = (DBCrssvrTeamsRolePunishScoreArg *)argument;
+		// DBCrssvrTeamsRolePunishScoreRes *res = (DBCrssvrTeamsRolePunishScoreRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCrssvrTeamsRolePunishScoreArg *arg = (DBCrssvrTeamsRolePunishScoreArg *)argument;
+		DBCrssvrTeamsRolePunishScoreRes *res = (DBCrssvrTeamsRolePunishScoreRes *)result;
+
+		LOG_TRACE("DBCrssvrTeamsRolePunishScore roleid=%d, retcode=%d, ct_score=%d, ct_last_punish_time=%d, ct_last_battle_count=%d", 
+				arg->roleid, res->retcode, arg->ct_score, arg->ct_last_punish_time, arg->ct_last_battle_count);
+		/*if(res->retcode == ERR_SUCCESS)
+		{
+			CrssvrTeamsManager::Instance()->SetRoleDataGroup(arg->roleid, KEY_DATAGOURP_ROLE_CT_SCORE, arg->ct_score);	
+			CrssvrTeamsManager::Instance()->SetRoleDataGroup(arg->roleid, KEY_DATAGOURP_ROLE_CT_LAST_PUNISH_TIME, arg->ct_last_punish_time);
+			CrssvrTeamsManager::Instance()->SetRoleDataGroup(arg->roleid, KEY_DATAGOURP_ROLE_CT_LAST_BATTLE_COUNT, arg->ct_last_battle_count);
+
+			CrssvrTeamsManager::Instance()->UpdateRoleScore(arg->roleid, arg->ct_score);
+		}*/
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

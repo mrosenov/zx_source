@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBCRSSVRTEAMSCHGCAPTAIN_HPP
+#define __GNET_DBCRSSVRTEAMSCHGCAPTAIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbcrssvrteamschgcaptainarg"
+#include "dbcrssvrteamschgcaptainres"
+
+namespace GNET
+{
+
+class DBCrssvrTeamsChgCaptain : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcrssvrteamschgcaptain"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBCrssvrTeamsChgCaptainArg *arg = (DBCrssvrTeamsChgCaptainArg *)argument;
+		// DBCrssvrTeamsChgCaptainRes *res = (DBCrssvrTeamsChgCaptainRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCrssvrTeamsChgCaptainArg *arg = (DBCrssvrTeamsChgCaptainArg *)argument;
+		// DBCrssvrTeamsChgCaptainRes *res = (DBCrssvrTeamsChgCaptainRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

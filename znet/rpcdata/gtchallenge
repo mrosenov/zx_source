@@ -1,0 +1,88 @@
+#ifndef __GNET_GTCHALLENGE_RPCDATA
+#define __GNET_GTCHALLENGE_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GTChallenge : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int factionid;
+		int itemcount;
+		int reserved1;
+		int reserved2;
+		int reserved3;
+		int reserved4;
+
+	public:
+		GTChallenge (unsigned int l_factionid = 0,int l_itemcount = 0,int l_reserved1 = 0
+			,int l_reserved2 = 0,int l_reserved3 = 0,int l_reserved4 = 0)
+			: factionid(l_factionid),itemcount(l_itemcount),reserved1(l_reserved1)
+			,reserved2(l_reserved2),reserved3(l_reserved3),reserved4(l_reserved4)
+		{
+		}
+
+		GTChallenge(const GTChallenge &rhs)
+			: factionid(rhs.factionid),itemcount(rhs.itemcount),reserved1(rhs.reserved1),
+			reserved2(rhs.reserved2),reserved3(rhs.reserved3),reserved4(rhs.reserved4) { }
+
+		Rpc::Data *Clone() const { return new GTChallenge(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GTChallenge *r = dynamic_cast<const GTChallenge *>(&rhs);
+			if (r && r != this)
+			{
+				factionid = r->factionid;
+				itemcount = r->itemcount;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+			}
+			return *this;
+		}
+
+		GTChallenge& operator = (const GTChallenge &rhs)
+		{
+			const GTChallenge *r = &rhs;
+			if (r && r != this)
+			{
+				factionid = r->factionid;
+				itemcount = r->itemcount;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+				reserved3 = r->reserved3;
+				reserved4 = r->reserved4;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << factionid;
+			os << itemcount;
+			os << reserved1;
+			os << reserved2;
+			os << reserved3;
+			os << reserved4;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> factionid;
+			os >> itemcount;
+			os >> reserved1;
+			os >> reserved2;
+			os >> reserved3;
+			os >> reserved4;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<GTChallenge>	GTChallengeVector;
+};
+#endif

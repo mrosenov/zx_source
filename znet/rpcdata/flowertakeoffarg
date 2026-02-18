@@ -1,0 +1,64 @@
+#ifndef __GNET_FLOWERTAKEOFFARG_RPCDATA
+#define __GNET_FLOWERTAKEOFFARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class FlowerTakeOffArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int count;
+
+	public:
+		FlowerTakeOffArg (int l_roleid = 0,int l_count = 0)
+			: roleid(l_roleid),count(l_count)
+		{
+		}
+
+		FlowerTakeOffArg(const FlowerTakeOffArg &rhs)
+			: roleid(rhs.roleid),count(rhs.count) { }
+
+		Rpc::Data *Clone() const { return new FlowerTakeOffArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const FlowerTakeOffArg *r = dynamic_cast<const FlowerTakeOffArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				count = r->count;
+			}
+			return *this;
+		}
+
+		FlowerTakeOffArg& operator = (const FlowerTakeOffArg &rhs)
+		{
+			const FlowerTakeOffArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				count = r->count;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << count;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> count;
+			return os;
+		}
+
+	};
+};
+#endif

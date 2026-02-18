@@ -1,0 +1,64 @@
+#ifndef __GNET_DBHOSTILEDELETEARG_RPCDATA
+#define __GNET_DBHOSTILEDELETEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBHostileDeleteArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int factionid;
+		std::vector<unsigned int> hostile;
+
+	public:
+		DBHostileDeleteArg (unsigned int l_factionid = 0,const std::vector<unsigned int>& l_hostile = std::vector<unsigned int>() )
+			: factionid(l_factionid),hostile(l_hostile)
+		{
+		}
+
+		DBHostileDeleteArg(const DBHostileDeleteArg &rhs)
+			: factionid(rhs.factionid),hostile(rhs.hostile) { }
+
+		Rpc::Data *Clone() const { return new DBHostileDeleteArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBHostileDeleteArg *r = dynamic_cast<const DBHostileDeleteArg *>(&rhs);
+			if (r && r != this)
+			{
+				factionid = r->factionid;
+				hostile = r->hostile;
+			}
+			return *this;
+		}
+
+		DBHostileDeleteArg& operator = (const DBHostileDeleteArg &rhs)
+		{
+			const DBHostileDeleteArg *r = &rhs;
+			if (r && r != this)
+			{
+				factionid = r->factionid;
+				hostile = r->hostile;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << factionid;
+			os << hostile;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> factionid;
+			os >> hostile;
+			return os;
+		}
+
+	};
+};
+#endif

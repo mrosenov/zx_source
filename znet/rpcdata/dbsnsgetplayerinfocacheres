@@ -1,0 +1,65 @@
+#ifndef __GNET_DBSNSGETPLAYERINFOCACHERES_RPCDATA
+#define __GNET_DBSNSGETPLAYERINFOCACHERES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gsnsplayerinfocache"
+
+namespace GNET
+{
+	class DBSNSGetPlayerInfoCacheRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GSNSPlayerInfoCache info;
+
+	public:
+		DBSNSGetPlayerInfoCacheRes (int l_retcode = 0,const GSNSPlayerInfoCache& l_info = GSNSPlayerInfoCache())
+			: retcode(l_retcode),info(l_info)
+		{
+		}
+
+		DBSNSGetPlayerInfoCacheRes(const DBSNSGetPlayerInfoCacheRes &rhs)
+			: retcode(rhs.retcode),info(rhs.info) { }
+
+		Rpc::Data *Clone() const { return new DBSNSGetPlayerInfoCacheRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSNSGetPlayerInfoCacheRes *r = dynamic_cast<const DBSNSGetPlayerInfoCacheRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		DBSNSGetPlayerInfoCacheRes& operator = (const DBSNSGetPlayerInfoCacheRes &rhs)
+		{
+			const DBSNSGetPlayerInfoCacheRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				info = r->info;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << info;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> info;
+			return os;
+		}
+
+	};
+};
+#endif

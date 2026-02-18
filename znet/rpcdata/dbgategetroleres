@@ -1,0 +1,65 @@
+#ifndef __GNET_DBGATEGETROLERES_RPCDATA
+#define __GNET_DBGATEGETROLERES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "ggateroleinfo"
+
+namespace GNET
+{
+	class DBGateGetRoleRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		GGateRoleInfo roledata;
+
+	public:
+		DBGateGetRoleRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBGateGetRoleRes(const DBGateGetRoleRes &rhs)
+			: retcode(rhs.retcode),roledata(rhs.roledata) { }
+
+		Rpc::Data *Clone() const { return new DBGateGetRoleRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBGateGetRoleRes *r = dynamic_cast<const DBGateGetRoleRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				roledata = r->roledata;
+			}
+			return *this;
+		}
+
+		DBGateGetRoleRes& operator = (const DBGateGetRoleRes &rhs)
+		{
+			const DBGateGetRoleRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				roledata = r->roledata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << roledata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> roledata;
+			return os;
+		}
+
+	};
+};
+#endif

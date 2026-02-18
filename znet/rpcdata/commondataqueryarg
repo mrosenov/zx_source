@@ -1,0 +1,59 @@
+#ifndef __GNET_COMMONDATAQUERYARG_RPCDATA
+#define __GNET_COMMONDATAQUERYARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class CommonDataQueryArg : public GNET::Rpc::Data
+	{
+	public:
+		int key;
+
+	public:
+		CommonDataQueryArg (int l_key = 0)
+			: key(l_key)
+		{
+		}
+
+		CommonDataQueryArg(const CommonDataQueryArg &rhs)
+			: key(rhs.key) { }
+
+		Rpc::Data *Clone() const { return new CommonDataQueryArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const CommonDataQueryArg *r = dynamic_cast<const CommonDataQueryArg *>(&rhs);
+			if (r && r != this)
+			{
+				key = r->key;
+			}
+			return *this;
+		}
+
+		CommonDataQueryArg& operator = (const CommonDataQueryArg &rhs)
+		{
+			const CommonDataQueryArg *r = &rhs;
+			if (r && r != this)
+			{
+				key = r->key;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << key;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> key;
+			return os;
+		}
+
+	};
+};
+#endif

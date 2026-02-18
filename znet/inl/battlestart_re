@@ -1,0 +1,47 @@
+	public:
+		short retcode;
+		int gs_id;
+		int tag;
+		int map_id;
+		char battle_type;
+		enum { PROTOCOL_TYPE = PROTOCOL_BATTLESTART_RE };
+	public:
+		BattleStart_Re() { type = PROTOCOL_BATTLESTART_RE; }
+		BattleStart_Re(void*) : Protocol(PROTOCOL_BATTLESTART_RE) { }
+		BattleStart_Re (short l_retcode,int l_gs_id = 0,int l_tag = 0,
+			int l_map_id = 0,char l_battle_type = 0)
+			 : retcode(l_retcode),gs_id(l_gs_id),tag(l_tag)
+			,map_id(l_map_id),battle_type(l_battle_type)
+		{
+			type = PROTOCOL_BATTLESTART_RE;
+		}
+
+		BattleStart_Re(const BattleStart_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),gs_id(rhs.gs_id),tag(rhs.tag)
+			,map_id(rhs.map_id),battle_type(rhs.battle_type) { }
+
+		GNET::Protocol *Clone() const { return new BattleStart_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << gs_id;
+			os << tag;
+			os << map_id;
+			os << battle_type;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> gs_id;
+			os >> tag;
+			os >> map_id;
+			os >> battle_type;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

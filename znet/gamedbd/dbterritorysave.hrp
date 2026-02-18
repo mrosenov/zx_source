@@ -1,0 +1,88 @@
+
+#ifndef __GNET_DBTERRITORYSAVE_HPP
+#define __GNET_DBTERRITORYSAVE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbterritorysavearg"
+#include "dbterritorysaveres"
+
+namespace GNET
+{
+
+class DBTerritorySave : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbterritorysave"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBTerritorySaveArg *arg = (DBTerritorySaveArg *)argument;
+		DBTerritorySaveRes *res = (DBTerritorySaveRes *)result;
+		Log::formatlog("dbterritorysave", "tid=%d", arg->territory.id);
+		try
+		{
+			StorageEnv::Storage * pcity = StorageEnv::GetStorage("citystore");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, value;
+			GTerritoryStore store;
+			try{
+				key << 1;
+				Marshal::OctetsStream(pcity->find(key,txn)) >> store;
+				GTerritoryInfoVector::iterator it=store.tlist.begin(),ie=store.tlist.end();
+				for(;it!=ie;++it)
+				{
+					if(it->id == arg->territory.id)
+						break;
+				}
+				if(it==ie)
+				{
+					Log::log( LOG_ERR, "dbterritorysave, tid=%d not found.",arg->territory.id);
+					res->retcode = ERR_NOTFOUND;
+					return;
+				}
+				*it = arg->territory;
+				pcity->insert(key,Marshal::OctetsStream()<<store,txn);
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) 
+			{ 
+				throw; 
+			}
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBTerritorySave, tid=%d what=%s.\n",arg->territory.id, e.what() );
+			if(e.get_errno()==DB_LOCK_DEADLOCK)
+				res->retcode = ERR_AGAIN;
+			else
+				res->retcode = ERR_EXCEPTION;
+		}
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBTerritorySaveArg *arg = (DBTerritorySaveArg *)argument;
+		// DBTerritorySaveRes *res = (DBTerritorySaveRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

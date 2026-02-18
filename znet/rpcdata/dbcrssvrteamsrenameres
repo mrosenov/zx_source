@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCRSSVRTEAMSRENAMERES_RPCDATA
+#define __GNET_DBCRSSVRTEAMSRENAMERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCrssvrTeamsRenameRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int changetime;
+
+	public:
+		DBCrssvrTeamsRenameRes (int l_retcode = -1,int l_changetime = 0)
+			: retcode(l_retcode),changetime(l_changetime)
+		{
+		}
+
+		DBCrssvrTeamsRenameRes(const DBCrssvrTeamsRenameRes &rhs)
+			: retcode(rhs.retcode),changetime(rhs.changetime) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsRenameRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsRenameRes *r = dynamic_cast<const DBCrssvrTeamsRenameRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				changetime = r->changetime;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsRenameRes& operator = (const DBCrssvrTeamsRenameRes &rhs)
+		{
+			const DBCrssvrTeamsRenameRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				changetime = r->changetime;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << changetime;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> changetime;
+			return os;
+		}
+
+	};
+};
+#endif

@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBPUTCOMMONDATA_HPP
+#define __GNET_DBPUTCOMMONDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbputcommondataarg"
+#include "integer"
+
+namespace GNET
+{
+
+class DBPutCommonData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbputcommondata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBPutCommonDataArg *arg = (DBPutCommonDataArg *)argument;
+		// Integer *res = (Integer *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBPutCommonDataArg *arg = (DBPutCommonDataArg *)argument;
+		// Integer *res = (Integer *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

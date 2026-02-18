@@ -1,0 +1,32 @@
+	public:
+		int64_t attr;
+		enum { PROTOCOL_TYPE = PROTOCOL_ANNOUNCESERVERATTRIBUTE };
+	public:
+		AnnounceServerAttribute() { type = PROTOCOL_ANNOUNCESERVERATTRIBUTE; }
+		AnnounceServerAttribute(void*) : Protocol(PROTOCOL_ANNOUNCESERVERATTRIBUTE) { }
+		AnnounceServerAttribute (int64_t l_attr)
+			 : attr(l_attr)
+		{
+			type = PROTOCOL_ANNOUNCESERVERATTRIBUTE;
+		}
+
+		AnnounceServerAttribute(const AnnounceServerAttribute &rhs)
+			: Protocol(rhs),attr(rhs.attr) { }
+
+		GNET::Protocol *Clone() const { return new AnnounceServerAttribute(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << attr;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> attr;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 16; }

@@ -1,0 +1,32 @@
+	public:
+		int delta;
+		enum { PROTOCOL_TYPE = PROTOCOL_GKINGDOMPOINTCHANGE };
+	public:
+		GKingdomPointChange() { type = PROTOCOL_GKINGDOMPOINTCHANGE; }
+		GKingdomPointChange(void*) : Protocol(PROTOCOL_GKINGDOMPOINTCHANGE) { }
+		GKingdomPointChange (int l_delta)
+			 : delta(l_delta)
+		{
+			type = PROTOCOL_GKINGDOMPOINTCHANGE;
+		}
+
+		GKingdomPointChange(const GKingdomPointChange &rhs)
+			: Protocol(rhs),delta(rhs.delta) { }
+
+		GNET::Protocol *Clone() const { return new GKingdomPointChange(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << delta;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> delta;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

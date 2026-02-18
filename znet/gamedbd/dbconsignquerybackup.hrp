@@ -1,0 +1,82 @@
+
+#ifndef __GNET_DBCONSIGNQUERYBACKUP_HPP
+#define __GNET_DBCONSIGNQUERYBACKUP_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignquerybackuparg"
+#include "dbconsignquerybackupres"
+
+namespace GNET
+{
+
+class DBConsignQueryBackup : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignquerybackup"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignQueryBackupArg *arg = (DBConsignQueryBackupArg *)argument;
+		DBConsignQueryBackupRes *res = (DBConsignQueryBackupRes *)result;
+		try
+		{
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("finished_consign");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+			/*	if(arg->sn == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}	*/
+				Marshal::OctetsStream detailos;
+				if(pconsign->find(Marshal::OctetsStream()<<arg->sn, detailos,txn)==true)// use this find to avoid exception
+				{
+					res->detail_os = detailos;
+					res->retcode = ERR_SUCCESS;
+				}
+				else
+					res->retcode = ERR_WT_ENTRY_NOT_FOUND;
+				//GConsignDB detail;
+				//detailos >>detail 
+	/*			if(detail.seller_roleid != arg->roleid)
+                               	{
+					res->retcode = ERR_WT_DB_VERIFY_BAD;
+					return;
+				}	*/
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignQueryBackup, what=%s\n",e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignQueryBackupArg *arg = (DBConsignQueryBackupArg *)argument;
+		// DBConsignQueryBackupRes *res = (DBConsignQueryBackupRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

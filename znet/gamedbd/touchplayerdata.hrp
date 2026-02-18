@@ -1,0 +1,85 @@
+
+#ifndef __GNET_TOUCHPLAYERDATA_HPP
+#define __GNET_TOUCHPLAYERDATA_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "touchplayerdataarg"
+#include "touchplayerdatares"
+
+namespace GNET
+{
+
+class TouchPlayerData : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "touchplayerdata"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		TouchPlayerDataArg *arg = (TouchPlayerDataArg *)argument;
+		TouchPlayerDataRes *res = (TouchPlayerDataRes *)result;
+		LOG_TRACE("TouchPlayerData roleid %d userid %d", arg->roleid, arg->userid);
+		try
+		{
+			/*1 ÐÞ¸Äbase.status
+			 *2 °æ±¾ºÅ++ */
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pbase2 = StorageEnv::GetStorage("base2");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream role_key, value_base2;
+			GRoleBase base;
+			GRoleBase2 base2;
+			try
+			{
+				role_key << arg->roleid;
+				Marshal::OctetsStream(pbase->find(role_key, txn)) >> base;
+				if (base.status != _ROLE_STATUS_FROZEN)
+					Log::log(LOG_ERR, "TouchPlayerData userid %d roleid %d status %d invalid", arg->userid, arg->roleid, base.status);
+				base.status = _ROLE_STATUS_NORMAL;
+				if (pbase2->find(role_key, value_base2, txn))
+					value_base2 >> base2;
+				base2.id = arg->roleid;
+				base2.data_timestamp++;
+				Log::formatlog("TouchPlayerData", "roleid %d new stamp %d",
+					arg->roleid, base2.data_timestamp);
+				pbase->insert(role_key, Marshal::OctetsStream() << base, txn);
+				pbase2->insert(role_key, Marshal::OctetsStream() << base2, txn);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}
+		}
+		catch (DbException e)
+		{
+			Log::log(LOG_ERR, "TouchPlayerData, roleid %d what=%s", arg->roleid, e.what());
+			res->retcode = ERR_DATANOTFIND;
+			return;
+		}
+
+
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// TouchPlayerDataArg *arg = (TouchPlayerDataArg *)argument;
+		// TouchPlayerDataRes *res = (TouchPlayerDataRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

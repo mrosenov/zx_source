@@ -1,0 +1,167 @@
+
+#ifndef __GNET_DBDELETEFACTION_HPP
+#define __GNET_DBDELETEFACTION_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbdeletefactionarg"
+#include "dbdeletefactionres"
+#include "integer"
+#include "familyid"
+#include "factionid"
+#include "utilfunction.h"
+#include "familycache.h"
+#include "waitdelkey"
+#include "gterritoryinfo"
+
+namespace GNET
+{
+
+class DBDeleteFaction : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbdeletefaction"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBDeleteFactionArg * arg = (DBDeleteFactionArg *)argument;
+		DBDeleteFactionRes * res = (DBDeleteFactionRes *)result;
+
+		GFactionInfo info, cache;
+		Marshal::OctetsStream key,value;
+
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+			StorageEnv::Storage * pfamily  = StorageEnv::GetStorage("family");
+			StorageEnv::Storage * pname    = StorageEnv::GetStorage("factionname");
+			StorageEnv::Storage * pwaitdel    = StorageEnv::GetStorage("waitdel");
+			StorageEnv::Storage * pcity = StorageEnv::GetStorage("citystore");
+			StorageEnv::Storage * pfactionbase = StorageEnv::GetStorage("factionbase");
+			StorageEnv::CommonTransaction txn;
+			try{
+				key << arg->factionid;
+				if(!pfaction->find( key, value, txn ))
+				{
+					Log::log( LOG_ERR, "DBFactionDel, fid=%d, not found", arg->factionid);
+					res->retcode = ERR_SUCCESS;
+					return;
+				}
+				value >> info;
+				Log::formatlog("deletefaction","factionid=%d,master=%d,population=%d", arg->factionid,info.master, 
+						info.member.size());
+				Marshal::OctetsStream store_value;
+				if (pcity->find(Marshal::OctetsStream()<<1, store_value, txn))
+				{
+					bool city_changed = false;
+					GTerritoryInfoVector store;
+					store_value >> store;
+					GTerritoryInfoVector::iterator tit, tite = store.end();
+					for (tit = store.begin(); tit != tite; ++ tit)
+					{
+						if (tit->owner == arg->factionid)
+						{
+							tit->owner = 0;
+							tit->occupy_time = 0;
+							tit->color = 0;
+							city_changed = true;
+						}
+						else if (tit->success_challenge.factionid == arg->factionid)
+						{
+							tit->success_challenge.factionid = 0;
+							tit->success_challenge.itemcount = 0;
+							tit->start_time = 0;
+							city_changed = true;
+						}
+						else
+						{
+							GTChallengeVector::iterator cit, cite = tit->challengelist.end();
+							for (cit = tit->challengelist.begin(); cit != cite; ++cit)
+							{
+								if (cit->factionid == arg->factionid)
+								{
+									tit->challengelist.erase(cit);
+									city_changed = true;
+								}
+							}
+						}
+					}
+					if (city_changed)
+						pcity->insert(Marshal::OctetsStream()<<1, Marshal::OctetsStream()<<store, txn);
+				}
+				pfaction->del(key,txn);
+				pfactionbase->del(key,txn);
+				if (info.namehis.size())
+				{
+					try
+					{
+						Marshal::OctetsStream(info.namehis) >> res->namelist;
+					}
+					catch (...)
+					{
+						Log::log(LOG_ERR, "DBDeleteFaction fid %d namehis unmarshal err", arg->factionid);
+						res->namelist.clear();
+					}
+				}
+				res->namelist.push_back(info.name);
+				std::vector<Octets>::const_iterator nit, nite = res->namelist.end();
+				for (nit = res->namelist.begin(); nit != nite; ++nit)
+					pname->del(Marshal::OctetsStream()<<*nit, txn);
+				pwaitdel->del(Marshal::OctetsStream() << WaitDelKey(arg->factionid, TYPE_FACTION), txn);
+				GFamily family;
+				for(FamilyIdVector::iterator it=info.member.begin(); it!=info.member.end();++it)
+				{
+					Marshal::OctetsStream kfamily,value;
+					kfamily << it->fid;
+					if(pfamily->find(kfamily, value, txn))
+					{
+						value >> family;
+						if(family.factionid==arg->factionid)
+						{
+							family.factionid = 0;
+							FamilyCache::InsertFaction(it->fid, 0);
+							GFolkVector::iterator im = family.member.begin();
+							for(;im!=family.member.end();++im)
+							{
+								if(im->title!=TITLE_MEMBER)
+									im->title = TITLE_HEADER;
+							}
+							pfamily->insert(kfamily, Marshal::OctetsStream() << family, txn);
+						}else
+							Log::log(LOG_ERR, "DBDeleteFaction%d, data error fid=%d familyid=%d\n", 
+									arg->factionid,it->fid,family.id);
+					}
+				}
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBDeleteFaction, fid=%d, what=%s\n", arg->factionid, e.what() );
+			res->retcode = -1;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

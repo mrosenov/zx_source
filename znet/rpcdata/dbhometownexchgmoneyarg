@@ -1,0 +1,78 @@
+#ifndef __GNET_DBHOMETOWNEXCHGMONEYARG_RPCDATA
+#define __GNET_DBHOMETOWNEXCHGMONEYARG_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBHometownExchgMoneyArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int amount;
+		int64_t hometown_money;
+		GMailSyncData syncdata;
+
+	public:
+		DBHometownExchgMoneyArg (int l_roleid = 0,int l_amount = 0,int64_t l_hometown_money = 0
+			,const GMailSyncData& l_syncdata = GMailSyncData())
+			: roleid(l_roleid),amount(l_amount),hometown_money(l_hometown_money)
+			,syncdata(l_syncdata)
+		{
+		}
+
+		DBHometownExchgMoneyArg(const DBHometownExchgMoneyArg &rhs)
+			: roleid(rhs.roleid),amount(rhs.amount),hometown_money(rhs.hometown_money),
+			syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBHometownExchgMoneyArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBHometownExchgMoneyArg *r = dynamic_cast<const DBHometownExchgMoneyArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				amount = r->amount;
+				hometown_money = r->hometown_money;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBHometownExchgMoneyArg& operator = (const DBHometownExchgMoneyArg &rhs)
+		{
+			const DBHometownExchgMoneyArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				amount = r->amount;
+				hometown_money = r->hometown_money;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << amount;
+			os << hometown_money;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> amount;
+			os >> hometown_money;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

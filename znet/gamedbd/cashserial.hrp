@@ -1,0 +1,115 @@
+
+#ifndef __GNET_CASHSERIAL_HPP
+#define __GNET_CASHSERIAL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "cashserialarg"
+#include "cashserialres"
+
+namespace GNET
+{
+
+class CashSerial : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "cashserial"
+#undef	RPC_BASECLASS
+	//较新的充值协议
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		CashSerialArg *arg = (CashSerialArg *)argument;
+		CashSerialRes *res = (CashSerialRes *)result;
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::CommonTransaction txn;
+			Marshal::OctetsStream key, value;
+			try
+			{
+				res->zoneid = arg->zoneid;
+				res->userid = arg->userid;
+				User user;
+				key << (unsigned int)arg->userid;
+				if(puser->find(key,value,txn))
+				{
+					value >> user;
+					if((user.rolelist&0xFFFF)==0&&!arg->force&&!GameDBManager::GetInstance()->NewServer())
+					{       
+						res->retcode = -19;
+						return; 
+					}   
+					time_t left_time = 0;
+					if (GameDBManager::GetInstance()->CheckForbidUserLogin(user, left_time))
+					{
+						res->retcode = -19;
+						Log::log(LOG_ERR, "CashSerial, userid=%d, forbid login %u seconds\n", arg->userid, left_time);
+						return;
+					}
+				}
+				else if(arg->force || GameDBManager::GetInstance()->NewServer()) 
+				{
+					Log::formatlog("CashSerial","Add user[%d] while charging", arg->userid);
+					user.logicuid = 0;
+					user.rolelist = ROLELIST_DEFAULT;
+					puser->insert( key, Marshal::OctetsStream() << user, txn );
+				}
+				else    
+				{       
+					res->retcode = -19;
+					Log::log(LOG_ERR, "CashSerial, userid=%d, errcode=%d\n", arg->userid, -19);
+					return; 
+				}     
+				int total = user.cash_add + user.cash_buy - user.cash_used - user.cash_sell;
+				int total_min = -10000;
+				if(user.cash_add>MAX_USER_CASH || total<total_min || total>MAX_USER_CASH)
+				{
+					//防止整数溢出
+					Log::log( LOG_ERR, "CashSerial,userid=%d,maxinum cash_add exceeded,cash_add=%d,cash_total=%d",
+							arg->userid, user.cash_add, total);
+					res->retcode = -19;
+				}
+				else
+				{
+					//add by liuyue 20121206 服务器异常导致gdeliveryd/gs之间连接单向工作 玩家透支元宝 数据修复
+					if (total < 0)
+						Log::formatlog("cashnegserial","userid=%d,cash_total=%d,cash_add=%d,cash_buy=%d,cash_used=%d,cash_sell=%d,stock_cash=%d",
+								arg->userid, total, user.cash_add, user.cash_buy, user.cash_used, user.cash_sell, user.cash);
+					Log::formatlog("cashserial","userid=%d:cash_add=%d:serail=%d", arg->userid,user.cash_add, user.add_serial);
+					res->sn = user.add_serial+1;
+					res->retcode = ERR_SUCCESS;
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "CashSerial, userid=%d, what=%s\n", arg->userid, e.what() );
+			res->retcode = CASH_GETSERIAL_FAILED;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// CashSerialArg *arg = (CashSerialArg *)argument;
+		// CashSerialRes *res = (CashSerialRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

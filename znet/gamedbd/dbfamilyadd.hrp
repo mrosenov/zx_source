@@ -1,0 +1,128 @@
+
+#ifndef __GNET_DBFAMILYADD_HPP
+#define __GNET_DBFAMILYADD_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gfolk"
+#include "gfamily"
+#include "dbfamilyaddarg"
+#include "dbfamilyaddres"
+
+namespace GNET
+{
+
+class DBFamilyAdd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilyadd"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBFamilyAddArg *arg = (DBFamilyAddArg *)argument;
+		DBFamilyAddRes *res = (DBFamilyAddRes *)result;
+
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole;
+		try
+		{
+			StorageEnv::Storage * pfamily = StorageEnv::GetStorage("family");
+			StorageEnv::Storage * pname = StorageEnv::GetStorage("familyname");
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * puser = (arg->syncdata.data_mask&SYNC_CASHUSED)?StorageEnv::GetStorage("user"):NULL;
+//			StorageEnv::Storage * pstore = (arg->syncdata.data_mask&SYNC_STOTEHOUSE)?StorageEnv::GetStorage("storehouse"):NULL;
+			StorageEnv::Storage * pstore = StorageEnv::GetStorage("storehouse");
+
+			key << arg->fid;
+			krole << arg->rid;
+			Log::formatlog("familyadd","roleid=%d:familyid=%d:money=%d:timestamp=%d",
+				arg->rid, arg->fid, arg->syncdata.inventory.money, arg->syncdata.inventory.timestamp);
+
+			StorageEnv::CommonTransaction txn;
+			int money_delta;
+			try{
+				GRoleBase base;
+				GRolePocket pocket;
+				GFamily info;
+				GFolk master;
+
+				Marshal::OctetsStream(pinventory->find(krole, txn )) >> pocket;
+				if(arg->syncdata.inventory.timestamp-pocket.timestamp<=0)
+				{
+					Log::log(LOG_ERR,"DBFamilyAdd, timestamp mismatch. %d<%d",
+					arg->syncdata.inventory.timestamp, pocket.timestamp);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				money_delta = arg->syncdata.inventory.money - pocket.money;
+				Marshal::OctetsStream(pbase->find(krole, txn )) >> base;
+				if(base.familyid)
+				{
+					Log::log(LOG_ERR,"DBFamilyAdd, roleid=%d belongs to family %d", arg->rid, base.familyid);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				base.familyid = arg->fid;
+				base.title = TITLE_HEADER;
+				base.jointime = Timer::GetTime();
+
+				master.rid = arg->rid;
+				master.name = base.name;
+				master.level = arg->level;
+				master.jointime =  base.jointime;
+				master.occupation = arg->occupation;
+				master.title = TITLE_HEADER;
+
+				info.id = arg->fid;
+				info.name = arg->name;
+				info.master = arg->rid;
+				info.factionid = 0;
+				info.createtime = master.jointime;
+				info.member.push_back(master);
+				info.task_record.insert(info.task_record.begin(),9,0);
+
+				for(int i=1;i<=FAMILYSKILL_SUM;i++)
+					info.skills.push_back(GFamilySkill(i,1,0,0));
+				value << info;
+
+				Log::log(LOG_MONEY,"money_change:[roleid=%d,userid=%d]:moneychange=50000:type=2:reason=16:hint=%d",arg->rid,base.userid,arg->fid);
+				pfamily->insert( key, value, txn, DB_NOOVERWRITE);
+				pname->insert(Marshal::OctetsStream()<<arg->name, key, txn, DB_NOOVERWRITE);
+				pbase->insert( krole, Marshal::OctetsStream()<<base, txn );
+				pinventory->insert( krole, Marshal::OctetsStream()<<arg->syncdata.inventory, txn );
+				::UpdateCash(puser, arg->syncdata, txn);
+				::UpdateStore(arg->rid, pstore, arg->syncdata, txn, money_delta);
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				res->syncdata.data_mask = arg->syncdata.data_mask;
+				res->info = info;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBFamilyAdd, roleid=%d, familyid=%d what=%s.", arg->rid, arg->fid, e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

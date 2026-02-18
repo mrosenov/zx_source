@@ -1,0 +1,47 @@
+	public:
+		int retcode;
+		int fid;
+		int gsid;
+		int index;
+		std::set<int> mall_indexes;
+		enum { PROTOCOL_TYPE = PROTOCOL_STARTFACBASE_RE };
+	public:
+		StartFacBase_Re() { type = PROTOCOL_STARTFACBASE_RE; }
+		StartFacBase_Re(void*) : Protocol(PROTOCOL_STARTFACBASE_RE) { }
+		StartFacBase_Re (int l_retcode,int l_fid = 0,int l_gsid = 0,
+			int l_index = 0,const std::set<int>& l_mall_indexes = std::set<int>())
+			 : retcode(l_retcode),fid(l_fid),gsid(l_gsid)
+			,index(l_index),mall_indexes(l_mall_indexes)
+		{
+			type = PROTOCOL_STARTFACBASE_RE;
+		}
+
+		StartFacBase_Re(const StartFacBase_Re &rhs)
+			: Protocol(rhs),retcode(rhs.retcode),fid(rhs.fid),gsid(rhs.gsid)
+			,index(rhs.index),mall_indexes(rhs.mall_indexes) { }
+
+		GNET::Protocol *Clone() const { return new StartFacBase_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << fid;
+			os << gsid;
+			os << index;
+			os << mall_indexes;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> fid;
+			os >> gsid;
+			os >> index;
+			os >> mall_indexes;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

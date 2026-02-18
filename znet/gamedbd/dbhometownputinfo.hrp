@@ -1,0 +1,69 @@
+
+#ifndef __GNET_DBHOMETOWNPUTINFO_HPP
+#define __GNET_DBHOMETOWNPUTINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhometownputinfoarg"
+
+
+namespace GNET
+{
+
+class DBHometownPutInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhometownputinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHometownPutInfoArg *arg = (DBHometownPutInfoArg *)argument;
+		RpcRetcode *res = (RpcRetcode *)result;
+
+		LOG_TRACE("gamedbd: DBHometownPutInfo, roleid=%d, money=%lld, complist size=%d\n", arg->roleid, arg->info.player.money, arg->info.player.compo_list.size());
+
+		try     
+		{       
+			StorageEnv::Storage *pdb = StorageEnv::GetStorage("hometown");
+			StorageEnv::CommonTransaction txn;
+
+			try     
+			{       
+				int64_t key = (int64_t)arg->roleid<<32;
+				pdb->insert(Marshal::OctetsStream()<<key, Marshal::OctetsStream()<<arg->info, txn);
+				res->retcode = ERR_SUCCESS;
+			}       
+			catch (DbException &e) { throw e; }
+			catch ( ... ) 
+			{       
+				DbException ee(DB_OLD_VERSION);
+				txn.abort(ee);
+				throw ee;
+			}       
+		}       
+		catch (DbException &e)
+		{       
+			Log::log(LOG_ERR, "gamedbd: DBHometownPutInfo failed, roleid=%d, what=%s\n", arg->roleid, e.what());
+			res->retcode = ERR_FAILED;
+		}   
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBHometownPutInfoArg *arg = (DBHometownPutInfoArg *)argument;
+		// RpcRetcode *res = (RpcRetcode *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

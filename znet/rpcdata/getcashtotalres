@@ -1,0 +1,77 @@
+#ifndef __GNET_GETCASHTOTALRES_RPCDATA
+#define __GNET_GETCASHTOTALRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GetCashTotalRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int cash_total;
+		int userid;
+		int cash_add2;
+
+	public:
+		GetCashTotalRes (int l_retcode = -1,int l_cash_total = 0,int l_userid = 0
+			,int l_cash_add2 = 0)
+			: retcode(l_retcode),cash_total(l_cash_total),userid(l_userid)
+			,cash_add2(l_cash_add2)
+		{
+		}
+
+		GetCashTotalRes(const GetCashTotalRes &rhs)
+			: retcode(rhs.retcode),cash_total(rhs.cash_total),userid(rhs.userid),
+			cash_add2(rhs.cash_add2) { }
+
+		Rpc::Data *Clone() const { return new GetCashTotalRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GetCashTotalRes *r = dynamic_cast<const GetCashTotalRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				cash_total = r->cash_total;
+				userid = r->userid;
+				cash_add2 = r->cash_add2;
+			}
+			return *this;
+		}
+
+		GetCashTotalRes& operator = (const GetCashTotalRes &rhs)
+		{
+			const GetCashTotalRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				cash_total = r->cash_total;
+				userid = r->userid;
+				cash_add2 = r->cash_add2;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << cash_total;
+			os << userid;
+			os << cash_add2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> cash_total;
+			os >> userid;
+			os >> cash_add2;
+			return os;
+		}
+
+	};
+};
+#endif

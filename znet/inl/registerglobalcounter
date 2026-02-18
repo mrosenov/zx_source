@@ -1,0 +1,32 @@
+	public:
+		std::vector<GlobalCounterInfo> fields;
+		enum { PROTOCOL_TYPE = PROTOCOL_REGISTERGLOBALCOUNTER };
+	public:
+		RegisterGlobalCounter() { type = PROTOCOL_REGISTERGLOBALCOUNTER; }
+		RegisterGlobalCounter(void*) : Protocol(PROTOCOL_REGISTERGLOBALCOUNTER) { }
+		RegisterGlobalCounter (std::vector<GlobalCounterInfo> l_fields = std::vector<GlobalCounterInfo>())
+			 : fields(l_fields)
+		{
+			type = PROTOCOL_REGISTERGLOBALCOUNTER;
+		}
+
+		RegisterGlobalCounter(const RegisterGlobalCounter &rhs)
+			: Protocol(rhs),fields(rhs.fields) { }
+
+		GNET::Protocol *Clone() const { return new RegisterGlobalCounter(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fields;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fields;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 10240; }

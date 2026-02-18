@@ -1,0 +1,35 @@
+	public:
+		int gsid;
+		KingdomBattleInfoVector fields;
+		enum { PROTOCOL_TYPE = PROTOCOL_GKINGDOMBATTLEREGISTER };
+	public:
+		GKingdomBattleRegister() { type = PROTOCOL_GKINGDOMBATTLEREGISTER; }
+		GKingdomBattleRegister(void*) : Protocol(PROTOCOL_GKINGDOMBATTLEREGISTER) { }
+		GKingdomBattleRegister (int l_gsid,const KingdomBattleInfoVector& l_fields)
+			 : gsid(l_gsid),fields(l_fields)
+		{
+			type = PROTOCOL_GKINGDOMBATTLEREGISTER;
+		}
+
+		GKingdomBattleRegister(const GKingdomBattleRegister &rhs)
+			: Protocol(rhs),gsid(rhs.gsid),fields(rhs.fields) { }
+
+		GNET::Protocol *Clone() const { return new GKingdomBattleRegister(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gsid;
+			os << fields;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gsid;
+			os >> fields;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 256; }

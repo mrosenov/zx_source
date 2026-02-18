@@ -1,0 +1,147 @@
+
+#ifndef __GNET_GETUSER_HPP
+#define __GNET_GETUSER_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "dbbuffer.h"
+#include "userarg"
+#include "userres"
+
+namespace GNET
+{
+
+class GetUser : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getuser"
+#undef	RPC_BASECLASS
+
+	static void Balance(unsigned int& data, unsigned int& delta)
+	{
+		if(data>=delta)
+		{
+			data -= delta;
+			delta = 0;
+		}
+		else
+		{
+			delta -= data;
+			data = 0;
+		}
+	}
+	static unsigned int BalanceCash(User& u)
+	{
+		unsigned int threshold = MAX_USER_CASH-CASH_BALANCE_THRESHOLD;
+		if((u.cash_add>threshold || u.cash_used>threshold || u.cash_buy>threshold || u.cash_sell>threshold)
+				&&(u.cash_used>CASH_BALANCE_THRESHOLD || u.cash_sell>CASH_BALANCE_THRESHOLD))
+		{
+			unsigned int total = u.cash_used + u.cash_sell;
+			if(u.cash_used)
+			{
+				Balance(u.cash_buy,u.cash_used);
+				Balance(u.cash_add,u.cash_used);
+			}
+			if(u.cash_sell)
+			{
+				Balance(u.cash_buy,u.cash_sell);
+				Balance(u.cash_add,u.cash_sell);
+			}
+			if(total!=u.cash_used+u.cash_sell)
+				return total-u.cash_used-u.cash_sell;
+			else
+				return 0;
+		}
+		return 0;
+	}
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		UserArg *arg = (UserArg *)argument;
+		UserRes *res = (UserRes *)result;
+
+		LOG_TRACE( "GetUser, userid=%d.\n", arg->id );
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::AtomTransaction txn;
+			Marshal::OctetsStream value, data;
+			try
+			{
+				if(puser->find(Marshal::OctetsStream() << arg->id, value, txn))
+				{
+					value >> res->value; 
+					User & u = res->value;
+					if (u.money < 0)
+					{
+						Log::formatlog("GetUser", "userid=%d, money(%d) < 0, repair to 0", arg->id, u.money);
+						u.money = 0;
+					}
+					unsigned int delta = BalanceCash(u);
+					if(delta)
+						Log::formatlog("balancecash","userid=%d:add=%d:used=%d:buy=%d:sell=%d:delta=%d",
+								arg->id, u.cash_add, u.cash_used, u.cash_buy, u.cash_sell, delta);
+					int lastlogin_ip = u.lastlogin_ip;
+					u.lastlogin_ip = arg->loginip;
+					puser->insert(Marshal::OctetsStream() << arg->id, Marshal::OctetsStream() << u, txn);
+					u.lastlogin_ip = lastlogin_ip;
+					res->retcode = ERR_SUCCESS;
+				}else
+					res->retcode = ERR_DATANOTFIND;
+				//!!!与PlayerIdentityMatch保持一致
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "GetUser, userid=%d, what=%s\n", arg->id, e.what() );
+			res->retcode = -1;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		UserID *arg = (UserID *)argument;
+		UserRes *res = (UserRes *)result;
+		if(res->retcode != ERR_SUCCESS)
+		{
+			Log::log( LOG_ERR, "[NOK] GetUser, userid=%d, retcode=%d", arg->id, res->retcode);
+			return;
+		}
+		try
+		{
+			StorageEnv::Storage * puser = StorageEnv::GetStorage("user");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				puser->insert(Marshal::OctetsStream()<<*arg,Marshal::OctetsStream()<<res->value,txn);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+			Log::log( LOG_ERR, "[OK] GetUser, userid=%d", arg->id);
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "[NOK] GetUser, userid=%d, what=%s\n", arg->id, e.what() );
+		}
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

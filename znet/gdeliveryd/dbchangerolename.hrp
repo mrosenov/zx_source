@@ -1,0 +1,122 @@
+
+#ifndef __GNET_DBCHANGEROLENAME_HPP
+#define __GNET_DBCHANGEROLENAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbchangerolenamearg"
+#include "dbchangerolenameres"
+#include "postchangerolename.hrp"
+#include "gchangerolename_re.hpp"
+#include "changerolename_re.hpp"
+#include "friendnamechange.hpp"
+#include "topflowermanager.h"
+#include "crssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class DBChangeRolename : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbchangerolename"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBChangeRolenameArg *arg = (DBChangeRolenameArg *)argument;
+		// DBChangeRolenameRes *res = (DBChangeRolenameRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBChangeRolenameArg *arg = (DBChangeRolenameArg *)argument;
+		DBChangeRolenameRes *res = (DBChangeRolenameRes *)result;
+		LOG_TRACE("DBChangeRolename roleid=%d ret=%d", arg->roleid, res->retcode);
+
+		Octets oldname;
+		if (res->rolenamehis.size() > 0)
+			oldname = res->rolenamehis.GetVector().back().name;
+		GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		PostChangeRolename * rpc = (PostChangeRolename *)Rpc::Call(RPC_POSTCHANGEROLENAME,
+				PostChangeRolenameArg((char)(res->retcode==ERR_SUCCESS), dsm->zoneid, arg->roleid, arg->newname, oldname));
+		UniqueNameClient::GetInstance()->SendProtocol(rpc);
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRole(arg->roleid);
+		if (pinfo)
+			GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, GMailEndSync(0,res->retcode,arg->roleid, res->syncdata));
+		if (res->retcode == ERR_SUCCESS)
+		{
+			NameManager::GetInstance()->AddName(arg->roleid, arg->newname);
+			NameManager::GetInstance()->ClearNameHistoryCache(arg->newname);
+			GRoleNameHisVector::iterator it, ite = res->rolenamehis.end();
+			for (it = res->rolenamehis.begin(); it != ite; ++it)
+				NameManager::GetInstance()->ClearNameHistoryCache(it->name);
+			int tmpid = 0;
+			if (UserContainer::GetInstance().FindRoleId(oldname, tmpid))
+			{
+				UserContainer::GetInstance().EraseName(oldname);
+				UserContainer::GetInstance().InsertName(arg->newname, arg->roleid);
+			}
+			if (pinfo)
+			{
+				pinfo->name = arg->newname;
+				GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, GChangeRolename_Re(res->retcode, arg->roleid, arg->newname));
+				GFriendInfoVector * plist = &(pinfo->friends);
+				FriendNameChange notice(arg->roleid, oldname, arg->newname);
+				for (GFriendInfoVector::iterator i = plist->begin(); i!=plist->end(); ++i)
+				{
+					PlayerInfo * ruser = UserContainer::GetInstance().FindRoleOnline(i->rid);
+					if (NULL != ruser)
+					{
+						for (GFriendInfoVector::iterator k=ruser->friends.begin(),ke=ruser->friends.end();k!=ke;++k)
+						{
+							if (k->rid == arg->roleid)
+							{
+								k->name = arg->newname;
+								ruser->friend_ver++;
+								notice.localsid = ruser->localsid;
+								dsm->Send(ruser->linksid, notice);
+								break;
+							}
+						}
+					}
+				}
+			}
+			GRoleInfo *prole = RoleInfoCache::Instance().Get(arg->roleid);                                       
+			if (prole)
+				prole->name = arg->newname;
+			if (res->familyid > 0)
+				FamilyManager::Instance()->OnRolenameChange(res->familyid, arg->roleid, arg->newname);
+			if (res->circleid > 0)
+				CircleManager::Instance()->OnRolenameChange(res->circleid, arg->roleid, arg->newname);
+			if (res->sectid > 0)
+				SectManager::Instance()->OnRolenameChange(res->sectid, arg->roleid, oldname, arg->newname);
+			SNSPlayerInfoManager::GetInstance()->OnRolenameChange(arg->roleid, arg->newname);
+			SNSMessageManager::GetInstance()->OnRolenameChange(arg->roleid, arg->newname);
+			ConsignManager::GetInstance()->OnRolenameChange(arg->roleid, arg->newname);
+			KingdomManager::GetInstance()->OnRolenameChange(arg->roleid, arg->newname);
+			CrssvrTeamsManager::Instance()->UpdateRoleName(arg->roleid, arg->newname);	
+			// ÏÊ»¨±¦±´Ãû×ÖÐÞ¸Ä
+			Thread::RWLock::RDScoped l(TopFlowerManager::Instance()->GetLocker());  
+			TopFlowerManager::Instance()->OnRolenameChange(true, arg->roleid, oldname, arg->newname);
+			TopFlowerManager::Instance()->OnRolenameChange(false, arg->roleid, oldname, arg->newname);
+
+		}
+		else
+		{
+			if (pinfo)
+				dsm->Send(pinfo->linksid, ChangeRolename_Re(res->retcode, arg->roleid, arg->newname, pinfo->localsid));
+		}
+	}
+	void OnTimeout()
+	{
+		DBChangeRolenameArg *arg = (DBChangeRolenameArg *)argument;
+		Log::log(LOG_ERR, "DBChangeRolename timeout, roleid=%d", arg->roleid);
+	}
+
+};
+
+};
+#endif

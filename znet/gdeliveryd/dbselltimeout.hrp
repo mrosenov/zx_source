@@ -1,0 +1,44 @@
+
+#ifndef __GNET_DBSELLTIMEOUT_HPP
+#define __GNET_DBSELLTIMEOUT_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "sellid"
+#include "dbsyncsellinfores"
+#include "cardmarket.h"
+#include "announcesellresult.hpp"
+#include "gdeliveryserver.hpp"
+#include "mapuser.h"
+#include "putmessage.hrp"
+#include "gamedbclient.hpp"
+//#include "syssendmail.hpp"
+#include "conv_charset.h"
+
+namespace GNET
+{
+class DBSellTimeout : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbselltimeout"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// SellID *arg = (SellID *)argument;
+		// DBSyncSellInfoRes *res = (DBSyncSellInfoRes *)result;
+	}
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout(Rpc::Data *argument)
+	{
+	}
+
+};
+
+};
+#endif

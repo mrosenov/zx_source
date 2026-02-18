@@ -1,0 +1,63 @@
+#ifndef __GNET_CERTCHALLENGEARG_RPCDATA
+#define __GNET_CERTCHALLENGEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class CertChallengeArg : public GNET::Rpc::Data
+	{
+	public:
+		Octets challenge;
+		Octets reserved;
+
+	public:
+		CertChallengeArg ()
+		{
+		}
+
+		CertChallengeArg(const CertChallengeArg &rhs)
+			: challenge(rhs.challenge),reserved(rhs.reserved) { }
+
+		Rpc::Data *Clone() const { return new CertChallengeArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const CertChallengeArg *r = dynamic_cast<const CertChallengeArg *>(&rhs);
+			if (r && r != this)
+			{
+				challenge = r->challenge;
+				reserved = r->reserved;
+			}
+			return *this;
+		}
+
+		CertChallengeArg& operator = (const CertChallengeArg &rhs)
+		{
+			const CertChallengeArg *r = &rhs;
+			if (r && r != this)
+			{
+				challenge = r->challenge;
+				reserved = r->reserved;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << challenge;
+			os << reserved;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> challenge;
+			os >> reserved;
+			return os;
+		}
+
+	};
+};
+#endif

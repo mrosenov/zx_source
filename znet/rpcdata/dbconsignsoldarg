@@ -1,0 +1,95 @@
+#ifndef __GNET_DBCONSIGNSOLDARG_RPCDATA
+#define __GNET_DBCONSIGNSOLDARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignSoldArg : public GNET::Rpc::Data
+	{
+	public:
+		int64_t sn;
+		int roleid;
+		int seller_userid;
+		int buyer_roleid;
+		int buyer_userid;
+		int64_t orderid;
+		int64_t timestamp;
+
+	public:
+		DBConsignSoldArg (int64_t l_sn = 0,int l_roleid = 0,int l_seller_userid = 0
+			,int l_buyer_roleid = 0,int l_buyer_userid = 0,int64_t l_orderid = 0
+			,int64_t l_timestamp = 0)
+			: sn(l_sn),roleid(l_roleid),seller_userid(l_seller_userid)
+			,buyer_roleid(l_buyer_roleid),buyer_userid(l_buyer_userid),orderid(l_orderid)
+			,timestamp(l_timestamp)
+		{
+		}
+
+		DBConsignSoldArg(const DBConsignSoldArg &rhs)
+			: sn(rhs.sn),roleid(rhs.roleid),seller_userid(rhs.seller_userid),
+			buyer_roleid(rhs.buyer_roleid),buyer_userid(rhs.buyer_userid),orderid(rhs.orderid),
+			timestamp(rhs.timestamp) { }
+
+		Rpc::Data *Clone() const { return new DBConsignSoldArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignSoldArg *r = dynamic_cast<const DBConsignSoldArg *>(&rhs);
+			if (r && r != this)
+			{
+				sn = r->sn;
+				roleid = r->roleid;
+				seller_userid = r->seller_userid;
+				buyer_roleid = r->buyer_roleid;
+				buyer_userid = r->buyer_userid;
+				orderid = r->orderid;
+				timestamp = r->timestamp;
+			}
+			return *this;
+		}
+
+		DBConsignSoldArg& operator = (const DBConsignSoldArg &rhs)
+		{
+			const DBConsignSoldArg *r = &rhs;
+			if (r && r != this)
+			{
+				sn = r->sn;
+				roleid = r->roleid;
+				seller_userid = r->seller_userid;
+				buyer_roleid = r->buyer_roleid;
+				buyer_userid = r->buyer_userid;
+				orderid = r->orderid;
+				timestamp = r->timestamp;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << sn;
+			os << roleid;
+			os << seller_userid;
+			os << buyer_roleid;
+			os << buyer_userid;
+			os << orderid;
+			os << timestamp;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> sn;
+			os >> roleid;
+			os >> seller_userid;
+			os >> buyer_roleid;
+			os >> buyer_userid;
+			os >> orderid;
+			os >> timestamp;
+			return os;
+		}
+
+	};
+};
+#endif

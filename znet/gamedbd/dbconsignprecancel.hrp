@@ -1,0 +1,90 @@
+
+#ifndef __GNET_DBCONSIGNPRECANCEL_HPP
+#define __GNET_DBCONSIGNPRECANCEL_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbconsignprecancelarg"
+#include "dbconsignprecancelres"
+
+#include "consigntool.h"
+namespace GNET
+{
+
+class DBConsignPreCancel : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbconsignprecancel"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBConsignPreCancelArg *arg = (DBConsignPreCancelArg *)argument;
+		DBConsignPreCancelRes *res = (DBConsignPreCancelRes *)result;
+		try
+		{
+			StorageEnv::Storage * pconsign = StorageEnv::GetStorage("consign");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				if(arg->sn == 0)
+				{
+					res->retcode = ERR_WT_DB_KEYZERO;
+					return;
+				}
+				GConsignDB detail;
+				Marshal::OctetsStream(pconsign->find(Marshal::OctetsStream()<<arg->sn, txn)) >> detail;
+				UpdateState(detail);
+				int changeres =CheckStateChange(detail,DSTATE_PRE_CANCEL_POST);
+				if(changeres == CHANGE_REPEAT)
+				{
+					res->retcode = ERR_WT_DB_DUPLICATE_RQST;
+					res->timestamp=detail.game_timestamp;
+					return;
+				}
+				if(changeres != CHANGE_PERMIT)
+				{
+					res->retcode = ERR_WT_DB_STATEERR;
+					return;
+				}
+				detail.info.state=DSTATE_PRE_CANCEL_POST;
+				detail.game_timestamp++;
+				pconsign->insert(Marshal::OctetsStream()<<arg->sn, Marshal::OctetsStream()<<detail, txn);
+				res->retcode = ERR_SUCCESS;
+				res->timestamp=detail.game_timestamp;
+			/*	Log::formatlog("webtrade","webtradeprecancelpost:role=%d:sn=%lld:posttype=%d:money=%d:item=%d:count=%d",arg->roleid,arg->sn,detail.info.consign_type,detail.info.money/10000,detail.info.item_id,detail.info.item_cnt);*/
+				Log::formatlog("webtradeprecancelpost","roleid=%d:sn=%lld:type=%d:itemid=%d:item_count=%d:money=%d:role=0:petid=0:pet_count=0",arg->roleid,arg->sn,detail.info.consign_type,detail.info.item_id,detail.info.item_cnt,detail.info.money/10000);
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException ee( DB_OLD_VERSION );
+				txn.abort( ee );
+				throw ee;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBConsignPreCancel, what=%s\n",e.what() );
+			res->retcode = ERR_WT_DB_FAILURE;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBConsignPreCancelArg *arg = (DBConsignPreCancelArg *)argument;
+		// DBConsignPreCancelRes *res = (DBConsignPreCancelRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

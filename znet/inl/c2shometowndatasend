@@ -1,0 +1,38 @@
+	public:
+		int roleid;
+		unsigned int localsid;
+		Octets data;
+		enum { PROTOCOL_TYPE = PROTOCOL_C2SHOMETOWNDATASEND };
+	public:
+		C2SHometowndataSend() { type = PROTOCOL_C2SHOMETOWNDATASEND; }
+		C2SHometowndataSend(void*) : Protocol(PROTOCOL_C2SHOMETOWNDATASEND) { }
+		C2SHometowndataSend (int l_roleid,unsigned int l_localsid,const Octets& l_data)
+			 : roleid(l_roleid),localsid(l_localsid),data(l_data)
+		{
+			type = PROTOCOL_C2SHOMETOWNDATASEND;
+		}
+
+		C2SHometowndataSend(const C2SHometowndataSend &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),localsid(rhs.localsid),data(rhs.data) { }
+
+		GNET::Protocol *Clone() const { return new C2SHometowndataSend(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << localsid;
+			os << data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> localsid;
+			os >> data;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 100; }
+
+		bool SizePolicy(size_t size) const { return size <= 1024; }

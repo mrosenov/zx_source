@@ -1,0 +1,71 @@
+
+#ifndef __GNET_DBCHANGEFACTIONNAME_HPP
+#define __GNET_DBCHANGEFACTIONNAME_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbchangefactionnamearg"
+#include "dbchangefactionnameres"
+#include "postchangefactionname.hrp"
+//#include "gchangefactionname_re.hpp"
+#include "changefactionname_re.hpp"
+
+namespace GNET
+{
+
+class DBChangeFactionname : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbchangefactionname"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBChangeFactionnameArg *arg = (DBChangeFactionnameArg *)argument;
+		// DBChangeFactionnameRes *res = (DBChangeFactionnameRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBChangeFactionnameArg *arg = (DBChangeFactionnameArg *)argument;
+		DBChangeFactionnameRes *res = (DBChangeFactionnameRes *)result;
+		LOG_TRACE("DBChangeFactionname roleid=%d ret=%d res.oldname.size %d", arg->roleid, res->retcode, res->oldname.size());
+
+		GDeliveryServer* dsm = GDeliveryServer::GetInstance();
+		PostChangeFactionname * rpc = (PostChangeFactionname *)Rpc::Call(RPC_POSTCHANGEFACTIONNAME,
+				PostChangeFactionnameArg((char)(res->retcode==ERR_SUCCESS), dsm->zoneid, arg->fid, arg->newname, res->oldname, arg->scale));
+		UniqueNameClient::GetInstance()->SendProtocol(rpc);
+
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRole(arg->roleid);
+		if (pinfo)
+			GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, GMailEndSync(0,res->retcode,arg->roleid, res->syncdata));
+		if (res->retcode == ERR_SUCCESS)
+		{
+			if (arg->scale == 0)
+			{
+				FactionManager::Instance()->OnNameChange(arg->fid, arg->newname, arg->scale);
+				KingdomManager::GetInstance()->OnFacNameChange(arg->fid, arg->newname);
+			}
+			else
+				FamilyManager::Instance()->OnNameChange(arg->fid, arg->newname, arg->scale);
+			/*
+			if (pinfo)
+				GProviderServer::GetInstance()->DispatchProtocol(pinfo->gameid, GChangeFactionName_Re(res->retcode, arg->roleid, arg->fid, arg->newname, arg->scale));
+				*/
+		}
+		else
+			if (pinfo)
+				dsm->Send(pinfo->linksid, ChangeFactionName_Re(res->retcode, arg->roleid, arg->fid, arg->newname, arg->scale, pinfo->localsid));
+	}
+
+	void OnTimeout()
+	{
+		DBChangeFactionnameArg *arg = (DBChangeFactionnameArg *)argument;
+		Log::log(LOG_ERR, "DBChangeFactionname timeout, roleid=%d", arg->roleid);
+	}
+};
+
+};
+#endif

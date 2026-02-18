@@ -1,0 +1,70 @@
+#ifndef __GNET_DBCHANGEFACTIONNAMERES_RPCDATA
+#define __GNET_DBCHANGEFACTIONNAMERES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gmailsyncdata"
+
+namespace GNET
+{
+	class DBChangeFactionnameRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		Octets oldname;
+		GMailSyncData syncdata;
+
+	public:
+		DBChangeFactionnameRes (int l_retcode = -1,const Octets& l_oldname = Octets(0),const GMailSyncData& l_syncdata = GMailSyncData())
+			: retcode(l_retcode),oldname(l_oldname),syncdata(l_syncdata)
+		{
+		}
+
+		DBChangeFactionnameRes(const DBChangeFactionnameRes &rhs)
+			: retcode(rhs.retcode),oldname(rhs.oldname),syncdata(rhs.syncdata) { }
+
+		Rpc::Data *Clone() const { return new DBChangeFactionnameRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBChangeFactionnameRes *r = dynamic_cast<const DBChangeFactionnameRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				oldname = r->oldname;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		DBChangeFactionnameRes& operator = (const DBChangeFactionnameRes &rhs)
+		{
+			const DBChangeFactionnameRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				oldname = r->oldname;
+				syncdata = r->syncdata;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << oldname;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> oldname;
+			os >> syncdata;
+			return os;
+		}
+
+	};
+};
+#endif

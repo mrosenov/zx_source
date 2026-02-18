@@ -1,0 +1,64 @@
+#ifndef __GNET_DBFACTIONADDMONEYRES_RPCDATA
+#define __GNET_DBFACTIONADDMONEYRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFactionAddMoneyRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		unsigned int new_money;
+
+	public:
+		DBFactionAddMoneyRes (int l_retcode = -1,unsigned int l_new_money = 0)
+			: retcode(l_retcode),new_money(l_new_money)
+		{
+		}
+
+		DBFactionAddMoneyRes(const DBFactionAddMoneyRes &rhs)
+			: retcode(rhs.retcode),new_money(rhs.new_money) { }
+
+		Rpc::Data *Clone() const { return new DBFactionAddMoneyRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFactionAddMoneyRes *r = dynamic_cast<const DBFactionAddMoneyRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				new_money = r->new_money;
+			}
+			return *this;
+		}
+
+		DBFactionAddMoneyRes& operator = (const DBFactionAddMoneyRes &rhs)
+		{
+			const DBFactionAddMoneyRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				new_money = r->new_money;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << new_money;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> new_money;
+			return os;
+		}
+
+	};
+};
+#endif

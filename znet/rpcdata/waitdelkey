@@ -1,0 +1,65 @@
+#ifndef __GNET_WAITDELKEY_RPCDATA
+#define __GNET_WAITDELKEY_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class WaitDelKey : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int id;
+		unsigned char type;
+
+	public:
+		WaitDelKey (unsigned int l_id = 0,unsigned char l_type = 0)
+			: id(l_id),type(l_type)
+		{
+		}
+
+		WaitDelKey(const WaitDelKey &rhs)
+			: id(rhs.id),type(rhs.type) { }
+
+		Rpc::Data *Clone() const { return new WaitDelKey(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const WaitDelKey *r = dynamic_cast<const WaitDelKey *>(&rhs);
+			if (r && r != this)
+			{
+				id = r->id;
+				type = r->type;
+			}
+			return *this;
+		}
+
+		WaitDelKey& operator = (const WaitDelKey &rhs)
+		{
+			const WaitDelKey *r = &rhs;
+			if (r && r != this)
+			{
+				id = r->id;
+				type = r->type;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << id;
+			os << type;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> id;
+			os >> type;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<WaitDelKey>	WaitDelKeyVector;
+};
+#endif

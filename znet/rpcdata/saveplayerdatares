@@ -1,0 +1,64 @@
+#ifndef __GNET_SAVEPLAYERDATARES_RPCDATA
+#define __GNET_SAVEPLAYERDATARES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class SavePlayerDataRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		Octets oldname;
+
+	public:
+		SavePlayerDataRes (int l_retcode = 0,const Octets& l_oldname = Octets())
+			: retcode(l_retcode),oldname(l_oldname)
+		{
+		}
+
+		SavePlayerDataRes(const SavePlayerDataRes &rhs)
+			: retcode(rhs.retcode),oldname(rhs.oldname) { }
+
+		Rpc::Data *Clone() const { return new SavePlayerDataRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const SavePlayerDataRes *r = dynamic_cast<const SavePlayerDataRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				oldname = r->oldname;
+			}
+			return *this;
+		}
+
+		SavePlayerDataRes& operator = (const SavePlayerDataRes &rhs)
+		{
+			const SavePlayerDataRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				oldname = r->oldname;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << oldname;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> oldname;
+			return os;
+		}
+
+	};
+};
+#endif

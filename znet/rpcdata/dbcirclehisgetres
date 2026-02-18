@@ -1,0 +1,65 @@
+#ifndef __GNET_DBCIRCLEHISGETRES_RPCDATA
+#define __GNET_DBCIRCLEHISGETRES_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gcirclehistory"
+
+namespace GNET
+{
+	class DBCircleHisGetRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		std::vector<GCircleHistory> circlelist;
+
+	public:
+		DBCircleHisGetRes (int l_retcode = -1)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBCircleHisGetRes(const DBCircleHisGetRes &rhs)
+			: retcode(rhs.retcode),circlelist(rhs.circlelist) { }
+
+		Rpc::Data *Clone() const { return new DBCircleHisGetRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCircleHisGetRes *r = dynamic_cast<const DBCircleHisGetRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				circlelist = r->circlelist;
+			}
+			return *this;
+		}
+
+		DBCircleHisGetRes& operator = (const DBCircleHisGetRes &rhs)
+		{
+			const DBCircleHisGetRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				circlelist = r->circlelist;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << circlelist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> circlelist;
+			return os;
+		}
+
+	};
+};
+#endif

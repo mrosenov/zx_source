@@ -1,0 +1,44 @@
+	public:
+		char fieldtype;
+		int tagid;
+		char result;
+		std::vector<int> failattackers;
+		enum { PROTOCOL_TYPE = PROTOCOL_GKINGDOMBATTLEHALF };
+	public:
+		GKingdomBattleHalf() { type = PROTOCOL_GKINGDOMBATTLEHALF; }
+		GKingdomBattleHalf(void*) : Protocol(PROTOCOL_GKINGDOMBATTLEHALF) { }
+		GKingdomBattleHalf (char l_fieldtype,int l_tagid,char l_result = 0,
+			const std::vector<int>& l_failattackers = std::vector<int>())
+			 : fieldtype(l_fieldtype),tagid(l_tagid),result(l_result)
+			,failattackers(l_failattackers)
+		{
+			type = PROTOCOL_GKINGDOMBATTLEHALF;
+		}
+
+		GKingdomBattleHalf(const GKingdomBattleHalf &rhs)
+			: Protocol(rhs),fieldtype(rhs.fieldtype),tagid(rhs.tagid),result(rhs.result)
+			,failattackers(rhs.failattackers) { }
+
+		GNET::Protocol *Clone() const { return new GKingdomBattleHalf(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fieldtype;
+			os << tagid;
+			os << result;
+			os << failattackers;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fieldtype;
+			os >> tagid;
+			os >> result;
+			os >> failattackers;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

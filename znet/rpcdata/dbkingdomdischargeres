@@ -1,0 +1,59 @@
+#ifndef __GNET_DBKINGDOMDISCHARGERES_RPCDATA
+#define __GNET_DBKINGDOMDISCHARGERES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBKingdomDischargeRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+
+	public:
+		DBKingdomDischargeRes (int l_retcode = 0)
+			: retcode(l_retcode)
+		{
+		}
+
+		DBKingdomDischargeRes(const DBKingdomDischargeRes &rhs)
+			: retcode(rhs.retcode) { }
+
+		Rpc::Data *Clone() const { return new DBKingdomDischargeRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBKingdomDischargeRes *r = dynamic_cast<const DBKingdomDischargeRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		DBKingdomDischargeRes& operator = (const DBKingdomDischargeRes &rhs)
+		{
+			const DBKingdomDischargeRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			return os;
+		}
+
+	};
+};
+#endif

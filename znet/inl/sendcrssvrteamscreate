@@ -1,0 +1,38 @@
+	public:
+		int roleid;
+		Octets teamname;
+		GMailSyncData syncdata;
+		enum { PROTOCOL_TYPE = PROTOCOL_SENDCRSSVRTEAMSCREATE };
+	public:
+		SendCrssvrTeamsCreate() { type = PROTOCOL_SENDCRSSVRTEAMSCREATE; }
+		SendCrssvrTeamsCreate(void*) : Protocol(PROTOCOL_SENDCRSSVRTEAMSCREATE) { }
+		SendCrssvrTeamsCreate (int l_roleid,const Octets& l_teamname,const GMailSyncData& l_syncdata = GMailSyncData())
+			 : roleid(l_roleid),teamname(l_teamname),syncdata(l_syncdata)
+		{
+			type = PROTOCOL_SENDCRSSVRTEAMSCREATE;
+		}
+
+		SendCrssvrTeamsCreate(const SendCrssvrTeamsCreate &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),teamname(rhs.teamname),syncdata(rhs.syncdata) { }
+
+		GNET::Protocol *Clone() const { return new SendCrssvrTeamsCreate(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << teamname;
+			os << syncdata;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> teamname;
+			os >> syncdata;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 2097152; }

@@ -1,0 +1,676 @@
+//这个文件在 playerstate.cpp 中被包含 不应被其他文件引用或者包含
+#ifndef __USE_BY_PLAYER_STATE_CPP__
+#error file playerstateimp.h should be include in playerstate.cpp
+#endif
+
+#define PD_  player_state::MSG_OP_DENY
+#define PA_  player_state::MSG_OP_ACCEPT
+#define PH_  player_state::MSG_OP_HANDLE
+
+/*
+0 STATE_NORMAL,
+1 STATE_WAIT_TRADE, 
+2 STATE_TRADE, 
+3 STATE_WAIT_TRADE_COMPLETE, 
+4 STATE_WAIT_TRADE_READ, 
+5 STATE_WAIT_FACTION_TRADE, 
+6 STATE_WAIT_FACTION_TRADE_READ,
+7 STATE_DISCONNECT,         
+8 STATE_MARKET,          
+9 STATE_BIND,            
+10STATE_DEATH
+*/
+
+//这个列表定义了 player 处于正常登录状态时处理的消息和状态的组合
+int __player_msg_state[][player_state::STATE_COUNT+1] =
+{
+      //						0    1    2    3*   4*   5*   6*    7#   8   9	  10
+	{GM_MSG_ATTACK, 			PA_, PH_, PH_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_ENCHANT,			PA_, PH_, PH_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_HURT,				PA_, PH_, PH_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_DUEL_HURT,			PA_, PH_, PH_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_ENCHANT_ZOMBIE,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PD_, PA_},
+	{GM_MSG_HEARTBEAT,			PA_, PH_, PA_, PH_, PH_, PH_, PH_, PH_, PA_, PA_, PA_},
+	{GM_MSG_PICKUP_MONEY,			PA_, PH_, PH_, PH_, PH_, PH_, PH_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PICKUP_ITEM,			PA_, PH_, PH_, PH_, PH_, PH_, PH_, PA_, PA_, PA_, PA_},
+	{GM_MSG_RECEIVE_MONEY,			PA_, PH_, PH_, PH_, PH_, PH_, PH_, PA_, PA_, PA_, PD_},
+	{GM_MSG_MONSTER_MONEY,			PA_, PH_, PH_, PH_, PH_, PH_, PH_, PA_, PA_, PA_, PD_},
+	{GM_MSG_MONSTER_GROUP_MONEY,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PICKUP_TEAM_ITEM,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_ERROR_MESSAGE,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_OBJ_SESSION_END,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_OBJ_SESSION_REPEAT,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_OBJ_SESSION_REP_FORCE,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_OBJ_ZOMBIE_END,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_},
+	{GM_MSG_OBJ_ZOMBIE_SESSION_END,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_},
+	{GM_MSG_EXPERIENCE,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_GROUP_EXPERIENCE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TEAM_EXPERIENCE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_QUERY_OBJ_INFO00,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_HATE_YOU,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TEAM_INVITE,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TEAM_AGREE_INVITE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TEAM_REJECT_INVITE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_JOIN_TEAM,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_JOIN_TEAM_FAILED,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_MEMBER_NOTIFY_DATA,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_NEW_MEMBER,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_LEAVE_PARTY_REQUEST,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_LEADER_CANCEL_PARTY,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_MEMBER_NOT_IN_TEAM,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_LEADER_KICK_MEMBER,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_MEMBER_LEAVE,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_LEADER_UPDATE_MEMBER,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_GET_MEMBER_POS,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_QUERY_PLAYER_EQUIPMENT,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TEAM_PICKUP_NOTIFY,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SERVICE_REQUEST,		PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PH_, PA_, PD_},
+	{GM_MSG_SERVICE_DATA,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_SERVICE_HELLO,			PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PH_, PA_, PD_},
+	{GM_MSG_SERVICE_GREETING,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_SERVICE_QUIERY_CONTENT,		PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PH_, PA_, PD_},
+	{GM_MSG_NPC_BE_KILLED,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_TASK_TRANSFER,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_BECOME_INVADER,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_KILL_PLAYER,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_QUERY_SELECT_TARGET,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_NOTIFY_SELECT_TARGET,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SUBSCIBE_TARGET,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_UNSUBSCIBE_TARGET,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SUBSCIBE_CONFIRM,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_GATHER_REPLY,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PH_},
+	{GM_MSG_GATHER_RESULT,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PA_},	
+	{GM_MSG_EXTERN_HEAL,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_EXTERN_ADD_MANA,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_TEAM_APPLY_PARTY,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TEAM_APPLY_REPLY,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_QUERY_INFO_1,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TEAM_CHANGE_TO_LEADER,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TEAM_LEADER_CHANGED,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_QUERY_MARKET_NAME,		PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PH_, PD_, PD_},
+	{GM_MSG_DEATH,				PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLANE_SWITCH_REPLY,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PA_},
+	{GM_MSG_DBSAVE_ERROR,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_ENABLE_PVP_DURATION,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_DUEL_REQUEST,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PLAYER_DUEL_REPLY,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PLAYER_DUEL_PREPARE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PLAYER_DUEL_START,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_DUEL_CANCEL,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_DUEL_STOP,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_BIND_REQUEST,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PLAYER_BIND_INVITE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PLAYER_BIND_REQ_REPLY,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_BIND_INV_REPLY,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_BIND_PREPARE,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_BIND_LINK,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_BIND_STOP,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_BIND_FOLLOW,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_RIDE_INVITE,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_RIDE_INV_REPLY,  	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},    
+	{GM_MSG_PLAYER_LINK_RIDE_START,  	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_RIDE_STOP,   	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_RIDE_FOLLOW, 	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_RIDE_MEMBER_LEAVE,  PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_RIDE_LEAVE_REQUEST, PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_RIDE_LEADER_LEAVE,  PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},  	
+	{GM_MSG_PLAYER_LINK_RIDE_KICK_MEMBER,   PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},  	
+	{GM_MSG_QUERY_EQUIP_DETAIL,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_REMOVE_ITEM,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_REPU_CHG_STEP_1,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_REPU_CHG_STEP_2,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_REPU_CHG_STEP_3,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TEAM_MEMBER_LVLUP,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_KILL_PLAYER_IN_BATTLEGROUND, 	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_MODIFIY_BATTLE_DEATH,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_MODIFIY_BATTLE_KILL,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+
+	{GM_MSG_GM_GETPOS,			PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_GM_MQUERY_MOVE_POS,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_GM_MQUERY_MOVE_POS_RPY, 	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_GM_RECALL,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PA_},
+	{GM_MSG_GM_CHANGE_EXP,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_GM_ENDUE_ITEM,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_GM_ENDUE_SELL_ITEM,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_GM_REMOVE_ITEM,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_GM_ENDUE_MONEY,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_GM_RESURRECT,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PA_},
+	{GM_MSG_GM_OFFLINE,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PA_},
+	{GM_MSG_GM_DEBUG_COMMAND,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PA_},
+	{GM_MSG_GM_RESET_PP,			PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+
+	{GM_MSG_TURRET_NOTIFY_LEADER,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_RECALL_PET,     		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PET_RELOCATE_POS,      		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PET_NOTIFY_HP_VP,    		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PET_NOTIFY_DEATH,       	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_MASTER_INFO,    	   	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PET_SET_COOLDOWN,       	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PET_SET_AUTO_SKILL,     	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_FEED_PET,               	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PET_CAST_SKILL,         	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PET_HONOR_LEVEL_CHANGED,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PET_HUNGER_LEVEL_CHANGED,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_PET_INFO_CHANGED,       	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_MASTER_START_ATTACK,        	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_TASK_AWARD_TRANSFOR,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_KILL_PET,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_KILL_MONSTER_IN_BATTLEGROUND, 	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_CATCH_PET,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_NPC_BE_CATCHED_CONFIRM,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_QUERY_ACHIEVEMENT,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_BATTLE_INFO_CHANGE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_KILL_SUMMON,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SUMMON_NOTIFY_DEATH,       	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_SUMMON_RELOCATE_POS,    	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_ENTER_CARRIER,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+	{GM_MSG_LEAVE_CARRIER,			PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+	{GM_MSG_CARRIER_SYNC_POS,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+	{GM_MSG_SUMMON_HEARTBEAT,     		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_USE_COMBO_SKILL,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_DEC_HP, 			PA_, PH_, PH_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_EXCHANGE_SUBSCIBE, 		PA_, PH_, PH_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_QUERY_CLONE_EQUIPMENT,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PROTECTED_NPC_NOTIFY,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SYNC_BATTLE_INFO_TO_PLAYER,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TRANSFER_ATTACK,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_ROUND_START_IN_BATTLE,      PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_, PD_, PA_, PD_},
+	{GM_MSG_ROUND_END_IN_BATTLE,        PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_ATTACK_FEED_BACK,   		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},	
+	{GM_MSG_CIRCLE_OF_DOOM_PREPARE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_CIRCLE_OF_DOOM_STARTUP,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_CIRCLE_OF_DOOM_STOP,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_CIRCLE_OF_DOOM_ENTER,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_CIRCLE_OF_DOOM_LEAVE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_CIRCLE_OF_DOOM_QUERY,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},	
+	{GM_MSG_REMOVE_PERMIT_CYCLE_AREA,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},	
+	{GM_MSG_CANCEL_BE_PULLED,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},	
+	{GM_MSG_CANCEL_BE_CYCLE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},	
+	{GM_MSG_QUERY_BE_SPIRIT_DRAGGED,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},	
+	{GM_MSG_QUERY_BE_PULLED,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},	
+	{GM_MSG_TASK_SHARE_NPC_BE_KILLED,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_TASK_CHECK_STATE,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PA_},	
+	{GM_MSG_SUMMON_CAST_SKILL,    	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_SPIRIT_SESSION_END,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_SPIRIT_SESSION_REPEAT,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_SPIRIT_SESSION_REP_FORCE,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_TALISMAN_SKILL,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_KINGDOM_BATTLE_HALF,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_REQUEST_BUFFAREA_BUFF,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_, PA_, PD_},
+	{GM_MSG_KINGDOM_BATTLE_END,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_LEVEL_RAID_INFO_CHANGE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_LEVEL_RAID_START,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_LEVEL_RAID_END,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_KINGDOM_CALL_GUARD,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_KILL_PLAYER_IN_CSFLOW,  PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SYNC_CSFLOW_PLAYER_INFO,  PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_LINK_BATH_INVITE,  	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},    
+	{GM_MSG_PLAYER_LINK_BATH_INV_REPLY,  	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},    
+	{GM_MSG_PLAYER_LINK_BATH_START,  	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_BATH_STOP,   	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_BATH_LEAVE_REQUEST,  PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},  	
+	{GM_MSG_PLAYER_LINK_BATH_LEADER_LEAVE,  PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},  	
+	{GM_MSG_PLAYER_LINK_BATH_MEMBER_LEAVE,  PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},  	
+	{GM_MSG_FLOW_TEAM_SCORE,  PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SUMMON_TELEPORT_REPLY,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_SUMMON_TRY_TELEPORT,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_MOB_ACTIVE_STATE_START,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+	{GM_MSG_MOB_ACTIVE_STATE_FINISH,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_MOB_ACTIVE_STATE_CANCEL,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_MOB_ACTIVE_SYNC_POS,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_FAC_BUILDING_COMPLETE,		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_PLAYER_LINK_QILIN_INVITE,  	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},    
+	{GM_MSG_PLAYER_LINK_QILIN_INV_REPLY,  	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},    
+	{GM_MSG_PLAYER_LINK_QILIN_START,  	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_QILIN_STOP,   	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_QILIN_FOLLOW,   	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_LINK_QILIN_LEAVE_REQUEST,  PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},  	
+	{GM_MSG_PLAYER_LINK_QILIN_LEADER_LEAVE,  PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},  	
+	{GM_MSG_PLAYER_LINK_QILIN_MEMBER_LEAVE,  PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},  	
+	{GM_MSG_MOB_ACTIVE_STATE_CANCEL,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+	{GM_MSG_MOB_ACTIVE_SYNC_POS,		PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+	{GM_MSG_PLAYER_ACTIVE_EMOTE_INVITE,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+	{GM_MSG_PLAYER_ACTIVE_EMOTE_INV_REPLY,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+	{GM_MSG_PLAYER_ACTIVE_EMOTE_STOP,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_PLAYER_ACTIVE_EMOTE_LINK,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+	{GM_MSG_GET_RAID_TRANSFORM_TASK,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_},
+	{GM_MSG_PET_SAVE_COOLDOWN,       	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PD_},
+	{GM_MSG_GET_STEP_RAID_TASK,  		PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_MOB_ACTIVE_PATH_END,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_CS6V6_CHEAT_INFO,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SEEK_PREPARE,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SEEK_START,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SEEK_STOP,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SEEK_RAID_KILL,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SEEK_RAID_SKILL_LEFT,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_SEEK_TRANSFORM,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_GET_CAPTURE_MONSTER_AWARD,	PA_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PD_, PA_, PD_},
+	{GM_MSG_CLEAN_FLAG_TRANSFORM,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_CAPTURE_FORBID_MOVE,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{GM_MSG_CAPTURE_ALLOW_MOVE,	PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_, PA_},
+	{-1,},
+};
+
+class player_msg_dispatcher 
+{
+public:
+	virtual int DispatchMsg(gplayer_imp * p_imp , const player_state_imp * s_imp , const MSG & msg ) const = 0;
+	virtual ~player_msg_dispatcher() {}
+	
+	static player_msg_dispatcher * _ACCEPT_A;
+	static player_msg_dispatcher * _ACCEPT_D;
+	static player_msg_dispatcher * _ACCEPT_H;
+	static player_msg_dispatcher * _DENY;
+	static player_msg_dispatcher * _HANDLE;
+
+	static player_msg_dispatcher * ACCEPT(int cur_state, int death_op)
+	{
+		if(cur_state == player_state::STATE_DEATH)
+		{
+			//死亡的状态并无实际用途
+			return NULL;
+		}
+		switch(death_op)
+		{
+			case PA_:
+				return _ACCEPT_A;
+			case PD_:
+				return _ACCEPT_D;
+			case PH_:
+				return _ACCEPT_H;
+		}
+		return NULL;
+	}
+	
+	static player_msg_dispatcher * DENY()
+	{
+		return _DENY;
+	}
+	static player_msg_dispatcher * HANDLE()
+	{
+		return _HANDLE;
+	}
+};
+
+class player_msg_dispatcher_accept : public player_msg_dispatcher
+{
+public:
+	virtual int DispatchMsg(gplayer_imp * p_imp , const player_state_imp * s_imp , const MSG & msg) const
+	{
+		//always accept
+		return p_imp->MessageHandler(msg);
+	}
+
+};
+
+class player_msg_dispatcher_accept_deny : public player_msg_dispatcher
+{
+public:
+	virtual int DispatchMsg(gplayer_imp * p_imp , const player_state_imp * s_imp , const MSG & msg) const
+	{
+		if(p_imp->IsDead())
+			return 0;	//deny if dead
+		return p_imp->MessageHandler(msg);
+	}
+};
+
+class player_msg_dispatcher_accept_handle : public player_msg_dispatcher
+{
+public:
+	virtual int DispatchMsg(gplayer_imp * p_imp , const player_state_imp * s_imp , const MSG & msg) const
+	{
+		if(p_imp->IsDead()) return player_state_imp::DeathHandleMessage(p_imp, msg); //handle if dead
+		return p_imp->MessageHandler(msg);
+	}
+};
+
+class player_msg_dispatcher_deny : public player_msg_dispatcher
+{
+public:
+	virtual int DispatchMsg(gplayer_imp * p_imp , const player_state_imp * s_imp , const MSG & msg) const
+	{
+		//do nothing
+		return 0;
+	}
+
+};
+
+class player_msg_dispatcher_handle : public player_msg_dispatcher
+{
+public:
+	virtual int DispatchMsg(gplayer_imp * p_imp , const player_state_imp * s_imp , const MSG & msg) const
+	{
+		return s_imp->HandleMessage(p_imp, msg);
+	}
+
+};
+
+player_msg_dispatcher *  __player_msg_map[GM_MSG_MAX][player_state::STATE_COUNT];
+
+int InitPlayerMsgMap()
+{
+	size_t i = 0;
+	while(1)
+	{
+		int msg = __player_msg_state[i][0];
+		if(msg < 0) break;
+		ASSERT(msg < GM_MSG_MAX);
+		for(size_t j = 0; j < player_state::STATE_COUNT; j ++)
+		{
+			player_msg_dispatcher * dis = NULL;
+			switch(__player_msg_state[i][j + 1])
+			{
+			case PD_:
+				dis = player_msg_dispatcher::DENY();
+				break;
+			case PA_:
+				dis = player_msg_dispatcher::ACCEPT(j, 
+						__player_msg_state[i][player_state::STATE_DEATH + 1]);
+				break;
+			case PH_:
+				dis = player_msg_dispatcher::HANDLE();
+				break;
+			default:
+			ASSERT(false && "不认识的类型");
+			}
+			__player_msg_map[msg][j] =  dis;
+		}
+		i ++;
+	}
+	return 0;
+}
+
+//静态对象初始化 注意顺序是有需求的
+player_msg_dispatcher * player_msg_dispatcher::_ACCEPT_A = new player_msg_dispatcher_accept;
+player_msg_dispatcher * player_msg_dispatcher::_ACCEPT_D = new player_msg_dispatcher_accept_deny;
+player_msg_dispatcher * player_msg_dispatcher::_ACCEPT_H = new player_msg_dispatcher_accept_handle;
+player_msg_dispatcher * player_msg_dispatcher::_DENY   = new player_msg_dispatcher_deny;
+player_msg_dispatcher * player_msg_dispatcher::_HANDLE = new  player_msg_dispatcher_handle;
+int player_state_imp::__m = InitPlayerMsgMap();
+
+inline player_msg_dispatcher * GetMsgDispatcher(const MSG & msg, int state)
+{
+	size_t idx = msg.message;
+	if(idx >= GM_MSG_MAX) return player_msg_dispatcher::_DENY;
+	return __player_msg_map[idx][state];
+}
+
+#define MSG_2_STR(x) {x, #x},
+struct  MSGSTR
+{
+	int msg;
+	const char * str;
+} __msg_str[] = {
+	MSG_2_STR(GM_MSG_NULL)
+	MSG_2_STR(GM_MSG_FORWARD_USERBC)
+	MSG_2_STR(GM_MSG_FORWARD)
+	MSG_2_STR(GM_MSG_FORWARD_BROADCAST)
+	MSG_2_STR(GM_MSG_USER_GET_INFO)
+	MSG_2_STR(GM_MSG_IDENTIFICATION)
+	MSG_2_STR(GM_MSG_SWITCH_GET)
+	MSG_2_STR(GM_MSG_SWITCH_START)
+	MSG_2_STR(GM_MSG_SWITCH_NPC)
+	MSG_2_STR(GM_MSG_USER_MOVE_OUTSIDE)
+	MSG_2_STR(GM_MSG_USER_NPC_OUTSIDE)
+	MSG_2_STR(GM_MSG_ENTER_WORLD)
+	MSG_2_STR(GM_MSG_ATTACK)
+	MSG_2_STR(GM_MSG_SKILL)
+	MSG_2_STR(GM_MSG_PICKUP)
+	MSG_2_STR(GM_MSG_FORCE_PICKUP)
+	MSG_2_STR(GM_MSG_PICKUP_MONEY)
+	MSG_2_STR(GM_MSG_PICKUP_TEAM_ITEM)
+	MSG_2_STR(GM_MSG_RECEIVE_MONEY)
+	MSG_2_STR(GM_MSG_PICKUP_ITEM)
+	MSG_2_STR(GM_MSG_ERROR_MESSAGE)
+	MSG_2_STR(GM_MSG_NPC_SVR_UPDATE)
+	MSG_2_STR(GM_MSG_EXT_NPC_DEAD)
+	MSG_2_STR(GM_MSG_EXT_NPC_HEARTBEAT)
+	MSG_2_STR(GM_MSG_WATCHING_YOU)
+	MSG_2_STR(GM_MSG_GEN_AGGRO)
+	MSG_2_STR(GM_MSG_TRANSFER_AGGRO)
+	MSG_2_STR(GM_MSG_AGGRO_ALARM)
+	MSG_2_STR(GM_MSG_AGGRO_WAKEUP)
+	MSG_2_STR(GM_MSG_AGGRO_TEST)
+	MSG_2_STR(GM_MSG_OBJ_SESSION_END)
+	MSG_2_STR(GM_MSG_OBJ_SESSION_REPEAT)
+	MSG_2_STR(GM_MSG_OBJ_ZOMBIE_END)
+	MSG_2_STR(GM_MSG_EXPERIENCE)
+	MSG_2_STR(GM_MSG_GROUP_EXPERIENCE)
+	MSG_2_STR(GM_MSG_TEAM_EXPERIENCE)
+	MSG_2_STR(GM_MSG_QUERY_OBJ_INFO00)
+	MSG_2_STR(GM_MSG_HEARTBEAT)
+	MSG_2_STR(GM_MSG_HATE_YOU)
+	MSG_2_STR(GM_MSG_TEAM_INVITE)
+	MSG_2_STR(GM_MSG_TEAM_AGREE_INVITE)
+	MSG_2_STR(GM_MSG_TEAM_REJECT_INVITE)
+	MSG_2_STR(GM_MSG_JOIN_TEAM)
+	MSG_2_STR(GM_MSG_JOIN_TEAM_FAILED)
+	MSG_2_STR(GM_MSG_MEMBER_NOTIFY_DATA)
+	MSG_2_STR(GM_MSG_NEW_MEMBER)
+	MSG_2_STR(GM_MSG_LEAVE_PARTY_REQUEST)
+	MSG_2_STR(GM_MSG_LEADER_CANCEL_PARTY)
+	MSG_2_STR(GM_MSG_MEMBER_NOT_IN_TEAM)
+	MSG_2_STR(GM_MSG_LEADER_KICK_MEMBER)
+	MSG_2_STR(GM_MSG_MEMBER_LEAVE)
+	MSG_2_STR(GM_MSG_LEADER_UPDATE_MEMBER)
+	MSG_2_STR(GM_MSG_GET_MEMBER_POS)
+	MSG_2_STR(GM_MSG_QUERY_PLAYER_EQUIPMENT)
+	MSG_2_STR(GM_MSG_TEAM_PICKUP_NOTIFY)
+	MSG_2_STR(GM_MSG_TEAM_CHAT___)
+	MSG_2_STR(GM_MSG_SERVICE_REQUEST)
+	MSG_2_STR(GM_MSG_SERVICE_DATA)
+	MSG_2_STR(GM_MSG_SERVICE_HELLO)
+	MSG_2_STR(GM_MSG_SERVICE_GREETING)
+	MSG_2_STR(GM_MSG_SERVICE_QUIERY_CONTENT)
+	MSG_2_STR(GM_MSG_EXTERN_OBJECT_APPEAR_N)
+	MSG_2_STR(GM_MSG_EXTERN_OBJECT_DISAPPEAR_N)
+	MSG_2_STR(GM_MSG_EXTERN_OBJECT_REFRESH_N)
+	MSG_2_STR(GM_MSG_USER_APPEAR_OUTSIDE)
+	MSG_2_STR(GM_MSG_FORWARD_BROADCAST_SPHERE_N)
+	MSG_2_STR(GM_MSG_FORWARD_BROADCAST_CYLINDER_N)
+	MSG_2_STR(GM_MSG_PRODUCE_MONSTER_DROP)
+	MSG_2_STR(GM_MSG_ENCHANT)
+	MSG_2_STR(GM_MSG_ENCHANT_ZOMBIE)
+	MSG_2_STR(GM_MSG_OBJ_SESSION_REP_FORCE)
+	MSG_2_STR(GM_MSG_NPC_BE_KILLED)
+	MSG_2_STR(GM_MSG_NPC_CRY_FOR_HELP)
+	MSG_2_STR(GM_MSG_PLAYER_TASK_TRANSFER)
+	MSG_2_STR(GM_MSG_PLAYER_BECOME_INVADER)
+	MSG_2_STR(GM_MSG_PLAYER_KILL_PLAYER)
+	MSG_2_STR(GM_MSG_FORWARD_CHAT_MSG)
+	MSG_2_STR(GM_MSG_QUERY_SELECT_TARGET)
+	MSG_2_STR(GM_MSG_NOTIFY_SELECT_TARGET)
+	MSG_2_STR(GM_MSG_SUBSCIBE_TARGET)
+	MSG_2_STR(GM_MSG_UNSUBSCIBE_TARGET)
+	MSG_2_STR(GM_MSG_SUBSCIBE_CONFIRM)
+	MSG_2_STR(GM_MSG_MONSTER_MONEY)
+	MSG_2_STR(GM_MSG_MONSTER_GROUP_MONEY)
+	MSG_2_STR(GM_MSG_GATHER_REQUEST)
+	MSG_2_STR(GM_MSG_GATHER_REPLY)
+	MSG_2_STR(GM_MSG_GATHER_CANCEL)
+	MSG_2_STR(GM_MSG_GATHER)
+	MSG_2_STR(GM_MSG_GATHER_RESULT)
+	MSG_2_STR(GM_MSG_EXTERN_HEAL)
+	MSG_2_STR(GM_MSG_INSTANCE_SWITCH_GET)
+	MSG_2_STR(GM_MSG_INSTANCE_SWITCH_USER_DATA)
+	MSG_2_STR(GM_MSG_EXT_AGGRO_FORWARD)
+	MSG_2_STR(GM_MSG_TEAM_APPLY_PARTY)
+	MSG_2_STR(GM_MSG_TEAM_APPLY_REPLY)
+	MSG_2_STR(GM_MSG_QUERY_INFO_1)
+	MSG_2_STR(GM_MSG_CON_EMOTE_REQUEST_NULL)
+	MSG_2_STR(GM_MSG_CON_EMOTE_REPLY_NULL)
+	MSG_2_STR(GM_MSG_TEAM_CHANGE_TO_LEADER)
+	MSG_2_STR(GM_MSG_TEAM_LEADER_CHANGED)
+	MSG_2_STR(GM_MSG_OBJ_ZOMBIE_SESSION_END)
+	MSG_2_STR(GM_MSG_QUERY_MARKET_NAME)
+	MSG_2_STR(GM_MSG_HURT)
+	MSG_2_STR(GM_MSG_DEATH)
+	MSG_2_STR(GM_MSG_PLANE_SWITCH_REQUEST)
+	MSG_2_STR(GM_MSG_PLANE_SWITCH_REPLY)
+	MSG_2_STR(GM_MSG_SCROLL_RESURRECT)
+	MSG_2_STR(GM_MSG_LEAVE_COSMETIC_MODE)
+	MSG_2_STR(GM_MSG_DBSAVE_ERROR)
+	MSG_2_STR(GM_MSG_SPAWN_DISAPPEAR)
+	MSG_2_STR(GM_MSG_ENABLE_PVP_DURATION)
+	MSG_2_STR(GM_MSG_PLAYER_KILLED_BY_NPC)
+	MSG_2_STR(GM_MSG_PLAYER_DUEL_REQUEST)
+	MSG_2_STR(GM_MSG_PLAYER_DUEL_REPLY)
+	MSG_2_STR(GM_MSG_PLAYER_DUEL_PREPARE)
+	MSG_2_STR(GM_MSG_PLAYER_DUEL_START)
+	MSG_2_STR(GM_MSG_PLAYER_DUEL_CANCEL)
+	MSG_2_STR(GM_MSG_PLAYER_DUEL_STOP)
+	MSG_2_STR(GM_MSG_DUEL_HURT)
+	MSG_2_STR(GM_MSG_PLAYER_BIND_REQUEST)
+	MSG_2_STR(GM_MSG_PLAYER_BIND_INVITE)
+	MSG_2_STR(GM_MSG_PLAYER_BIND_REQ_REPLY)
+	MSG_2_STR(GM_MSG_PLAYER_BIND_INV_REPLY)
+	MSG_2_STR(GM_MSG_PLAYER_BIND_PREPARE)
+	MSG_2_STR(GM_MSG_PLAYER_BIND_LINK)
+	MSG_2_STR(GM_MSG_PLAYER_BIND_STOP)
+	MSG_2_STR(GM_MSG_PLAYER_BIND_FOLLOW)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_RIDE_INVITE)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_RIDE_INV_REPLY)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_RIDE_START)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_RIDE_STOP)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_RIDE_FOLLOW)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_RIDE_MEMBER_LEAVE)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_RIDE_LEAVE_REQUEST)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_RIDE_LEADER_LEAVE)	
+	MSG_2_STR(GM_MSG_PLAYER_LINK_RIDE_KICK_MEMBER)	
+	MSG_2_STR(GM_MSG_PLAYER_LINK_RIDE_FOLLOW)	
+	MSG_2_STR(GM_MSG_QUERY_EQUIP_DETAIL)
+	MSG_2_STR(GM_MSG_CREATE_BATTLEGROUND)
+	MSG_2_STR(GM_MSG_BECOME_TURRET_MASTER)
+	MSG_2_STR(GM_MSG_REMOVE_ITEM)
+	MSG_2_STR(GM_MSG_NPC_TRANSFORM)
+	MSG_2_STR(GM_MSG_NPC_TRANSFORM2)
+	MSG_2_STR(GM_MSG_TURRET_NOTIFY_LEADER)
+	MSG_2_STR(GM_MSG_MASTER_ASK_HELP)
+	MSG_2_STR(GM_MSG_REPU_CHG_STEP_1)
+	MSG_2_STR(GM_MSG_REPU_CHG_STEP_2)
+	MSG_2_STR(GM_MSG_REPU_CHG_STEP_3)
+	MSG_2_STR(GM_MSG_TEAM_MEMBER_LVLUP)
+	MSG_2_STR(GM_MSG_KILL_PLAYER_IN_BATTLEGROUND)
+	MSG_2_STR(GM_MSG_MODIFIY_BATTLE_DEATH)
+	MSG_2_STR(GM_MSG_MODIFIY_BATTLE_KILL)
+	MSG_2_STR(GM_MSG_GM_GETPOS)
+	MSG_2_STR(GM_MSG_GM_MQUERY_MOVE_POS)
+	MSG_2_STR(GM_MSG_GM_MQUERY_MOVE_POS_RPY)
+	MSG_2_STR(GM_MSG_GM_RECALL)
+	MSG_2_STR(GM_MSG_GM_CHANGE_EXP)
+	MSG_2_STR(GM_MSG_GM_ENDUE_ITEM)
+	MSG_2_STR(GM_MSG_GM_ENDUE_SELL_ITEM)
+	MSG_2_STR(GM_MSG_GM_REMOVE_ITEM)
+	MSG_2_STR(GM_MSG_GM_ENDUE_MONEY)
+	MSG_2_STR(GM_MSG_GM_RESURRECT)
+	MSG_2_STR(GM_MSG_GM_OFFLINE)
+	MSG_2_STR(GM_MSG_GM_DEBUG_COMMAND)
+	MSG_2_STR(GM_MSG_GM_RESET_PP)
+
+	MSG_2_STR(GM_MSG_PLAYER_RECALL_PET)
+	MSG_2_STR(GM_MSG_PET_RELOCATE_POS)
+	MSG_2_STR(GM_MSG_PET_NOTIFY_HP_VP)
+	MSG_2_STR(GM_MSG_PET_NOTIFY_DEATH)
+	MSG_2_STR(GM_MSG_MASTER_INFO)
+	MSG_2_STR(GM_MSG_PET_SET_COOLDOWN)
+	MSG_2_STR(GM_MSG_PET_SET_AUTO_SKILL)
+	MSG_2_STR(GM_MSG_FEED_PET)
+	MSG_2_STR(GM_MSG_PET_CAST_SKILL)
+	MSG_2_STR(GM_MSG_PET_HONOR_LEVEL_CHANGED)
+	MSG_2_STR(GM_MSG_PET_HUNGER_LEVEL_CHANGED)
+	MSG_2_STR(GM_MSG_PET_INFO_CHANGED)
+	MSG_2_STR(GM_MSG_MASTER_START_ATTACK)
+	MSG_2_STR(GM_MSG_TASK_AWARD_TRANSFOR)
+	MSG_2_STR(GM_MSG_PLAYER_KILL_PET)
+	MSG_2_STR(GM_MSG_KILL_MONSTER_IN_BATTLEGROUND)
+	MSG_2_STR(GM_MSG_PLAYER_CATCH_PET)
+	MSG_2_STR(GM_MSG_NPC_BE_CATCHED_CONFIRM)
+	MSG_2_STR(GM_MSG_QUERY_ACHIEVEMENT)
+	MSG_2_STR(GM_MSG_PLAYER_KILL_SUMMON)
+	MSG_2_STR(GM_MSG_SUMMON_NOTIFY_DEATH)
+	MSG_2_STR(GM_MSG_SUMMON_RELOCATE_POS)
+	MSG_2_STR(GM_MSG_ENTER_CARRIER)
+	MSG_2_STR(GM_MSG_LEAVE_CARRIER)
+	MSG_2_STR(GM_MSG_CARRIER_SYNC_POS)
+	MSG_2_STR(GM_MSG_SUMMON_HEARTBEAT)
+	MSG_2_STR(GM_MSG_USE_COMBO_SKILL)
+	MSG_2_STR(GM_MSG_EXCHANGE_SUBSCIBE)
+	MSG_2_STR(GM_MSG_QUERY_CLONE_EQUIPMENT)
+	MSG_2_STR(GM_MSG_PROTECTED_NPC_NOTIFY)
+	MSG_2_STR(GM_MSG_SYNC_BATTLE_INFO_TO_PLAYER)
+	MSG_2_STR(GM_MSG_ROUND_START_IN_BATTLE)
+	MSG_2_STR(GM_MSG_ROUND_END_IN_BATTLE)
+	MSG_2_STR(GM_MSG_CIRCLE_OF_DOOM_PREPARE)
+	MSG_2_STR(GM_MSG_CIRCLE_OF_DOOM_STARTUP)
+	MSG_2_STR(GM_MSG_CIRCLE_OF_DOOM_STOP)
+	MSG_2_STR(GM_MSG_CIRCLE_OF_DOOM_ENTER)
+	MSG_2_STR(GM_MSG_CIRCLE_OF_DOOM_LEAVE)
+	MSG_2_STR(GM_MSG_CIRCLE_OF_DOOM_QUERY)
+	MSG_2_STR(GM_MSG_REMOVE_PERMIT_CYCLE_AREA)
+	MSG_2_STR(GM_MSG_CANCEL_BE_PULLED)
+	MSG_2_STR(GM_MSG_CANCEL_BE_CYCLE)
+	MSG_2_STR(GM_MSG_QUERY_BE_SPIRIT_DRAGGED)
+	MSG_2_STR(GM_MSG_QUERY_BE_PULLED)
+	MSG_2_STR(GM_MSG_TASK_SHARE_NPC_BE_KILLED)
+	MSG_2_STR(GM_MSG_SPIRIT_SESSION_END)
+	MSG_2_STR(GM_MSG_SPIRIT_SESSION_REPEAT)
+	MSG_2_STR(GM_MSG_SPIRIT_SESSION_REP_FORCE)
+	MSG_2_STR(GM_MSG_TALISMAN_SKILL)
+	MSG_2_STR(GM_MSG_KINGDOM_BATTLE_HALF)
+	MSG_2_STR(GM_MSG_KINGDOM_BATTLE_END)
+	MSG_2_STR(GM_MSG_KINGDOM_CALL_GUARD)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_BATH_INVITE)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_BATH_INV_REPLY)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_BATH_START)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_BATH_STOP)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_BATH_LEAVE_REQUEST)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_BATH_LEADER_LEAVE)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_BATH_MEMBER_LEAVE)
+	MSG_2_STR(GM_MSG_FORBID_NPC)
+	MSG_2_STR(GM_MSG_FLOW_TEAM_SCORE)
+	MSG_2_STR(GM_MSG_SUMMON_TELEPORT_REPLY)
+	MSG_2_STR(GM_MSG_SUMMON_TRY_TELEPORT)
+	MSG_2_STR(GM_MSG_MOB_ACTIVE_STATE_START)
+	MSG_2_STR(GM_MSG_MOB_ACTIVE_STATE_FINISH)
+	MSG_2_STR(GM_MSG_MOB_ACTIVE_STATE_CANCEL)
+	MSG_2_STR(GM_MSG_MOB_ACTIVE_SYNC_POS)
+	MSG_2_STR(GM_MSG_FAC_BUILDING_COMPLETE)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_QILIN_INVITE)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_QILIN_INV_REPLY)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_QILIN_START)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_QILIN_STOP)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_QILIN_FOLLOW)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_QILIN_LEAVE_REQUEST)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_QILIN_LEADER_LEAVE)
+	MSG_2_STR(GM_MSG_PLAYER_LINK_QILIN_MEMBER_LEAVE)
+	MSG_2_STR(GM_MSG_MOB_ACTIVE_STATE_CANCEL)
+	MSG_2_STR(GM_MSG_MOB_ACTIVE_SYNC_POS)
+	MSG_2_STR(GM_MSG_PLAYER_ACTIVE_EMOTE_INVITE)
+	MSG_2_STR(GM_MSG_PLAYER_ACTIVE_EMOTE_INV_REPLY)
+	MSG_2_STR(GM_MSG_PLAYER_ACTIVE_EMOTE_STOP)
+	MSG_2_STR(GM_MSG_PLAYER_ACTIVE_EMOTE_LINK)
+	MSG_2_STR(GM_MSG_GET_RAID_TRANSFORM_TASK)
+	MSG_2_STR(GM_MSG_PET_SAVE_COOLDOWN)
+	MSG_2_STR(GM_MSG_GET_STEP_RAID_TASK)
+	MSG_2_STR(GM_MSG_MOB_ACTIVE_PATH_END)
+
+	MSG_2_STR(GM_MSG_MAX)
+};
+
+inline static bool __Compare(const MSGSTR & __lhs, const MSGSTR & __rhs)
+{
+        return __lhs.msg < __rhs.msg;
+}
+
+const char * GetMsgStr(int msg)
+{
+	size_t count = sizeof(__msg_str) / sizeof(__msg_str[0]);
+	MSGSTR dummy = {msg, ""};
+	MSGSTR * pEnt = std::lower_bound(__msg_str, __msg_str + count ,dummy ,__Compare);
+	if(pEnt != __msg_str + count && pEnt->msg == msg)
+	{
+		return pEnt->str;
+	}
+	return NULL;
+}
+

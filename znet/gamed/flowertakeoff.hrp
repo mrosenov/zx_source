@@ -1,0 +1,49 @@
+
+#ifndef __GNET_FLOWERTAKEOFF_HPP
+#define __GNET_FLOWERTAKEOFF_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "flowertakeoffarg"
+#include "flowertakeoffres"
+
+#include "localmacro.h"
+
+bool OnFlowerTakeoff(int roleid, int count);
+
+namespace GNET
+{
+
+class FlowerTakeOff : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "flowertakeoff"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		FlowerTakeOffArg *arg = (FlowerTakeOffArg *)argument;
+		FlowerTakeOffRes *res = (FlowerTakeOffRes *)result;
+		bool ret = OnFlowerTakeoff(arg->roleid, arg->count);	
+		res->retcode = 
+			ret ? TOPFLOWER_FLOWER_TAKEOFF_SUCCESS : TOPFLOWER_FLOWER_TAKEOFF_ERR;		
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// FlowerTakeOffArg *arg = (FlowerTakeOffArg *)argument;
+		// FlowerTakeOffRes *res = (FlowerTakeOffRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

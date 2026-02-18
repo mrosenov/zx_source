@@ -1,0 +1,88 @@
+#ifndef __GNET_WEBMALLGOODS_RPCDATA
+#define __GNET_WEBMALLGOODS_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class WebMallGoods : public GNET::Rpc::Data
+	{
+	public:
+		int goods_id;
+		int count;
+		int flagmask;
+		int timelimit;
+		int reserved1;
+		Octets reserved2;
+
+	public:
+		WebMallGoods (int l_goods_id = 0,int l_count = 0,int l_flagmask = 0
+			,int l_timelimit = 0,int l_reserved1 = 0,const Octets& l_reserved2 = Octets())
+			: goods_id(l_goods_id),count(l_count),flagmask(l_flagmask)
+			,timelimit(l_timelimit),reserved1(l_reserved1),reserved2(l_reserved2)
+		{
+		}
+
+		WebMallGoods(const WebMallGoods &rhs)
+			: goods_id(rhs.goods_id),count(rhs.count),flagmask(rhs.flagmask),
+			timelimit(rhs.timelimit),reserved1(rhs.reserved1),reserved2(rhs.reserved2) { }
+
+		Rpc::Data *Clone() const { return new WebMallGoods(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const WebMallGoods *r = dynamic_cast<const WebMallGoods *>(&rhs);
+			if (r && r != this)
+			{
+				goods_id = r->goods_id;
+				count = r->count;
+				flagmask = r->flagmask;
+				timelimit = r->timelimit;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		WebMallGoods& operator = (const WebMallGoods &rhs)
+		{
+			const WebMallGoods *r = &rhs;
+			if (r && r != this)
+			{
+				goods_id = r->goods_id;
+				count = r->count;
+				flagmask = r->flagmask;
+				timelimit = r->timelimit;
+				reserved1 = r->reserved1;
+				reserved2 = r->reserved2;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << goods_id;
+			os << count;
+			os << flagmask;
+			os << timelimit;
+			os << reserved1;
+			os << reserved2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> goods_id;
+			os >> count;
+			os >> flagmask;
+			os >> timelimit;
+			os >> reserved1;
+			os >> reserved2;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<WebMallGoods>	WebMallGoodsVector;
+};
+#endif

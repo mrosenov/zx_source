@@ -1,0 +1,50 @@
+	public:
+		int zoneid;
+		unsigned int version;
+		Octets edition;
+		int server_limit;
+		int server_count;
+		LinePlayerLimitVector line_status;
+		enum { PROTOCOL_TYPE = PROTOCOL_LOADEXCHANGE };
+	public:
+		LoadExchange() { type = PROTOCOL_LOADEXCHANGE; }
+		LoadExchange(void*) : Protocol(PROTOCOL_LOADEXCHANGE) { }
+		LoadExchange (int l_zoneid,unsigned int l_version,Octets l_edition,
+			int l_server_limit = 0,int l_server_count = 0,const LinePlayerLimitVector& l_line_status = LinePlayerLimitVector())
+			 : zoneid(l_zoneid),version(l_version),edition(l_edition)
+			,server_limit(l_server_limit),server_count(l_server_count),line_status(l_line_status)
+		{
+			type = PROTOCOL_LOADEXCHANGE;
+		}
+
+		LoadExchange(const LoadExchange &rhs)
+			: Protocol(rhs),zoneid(rhs.zoneid),version(rhs.version),edition(rhs.edition)
+			,server_limit(rhs.server_limit),server_count(rhs.server_count),line_status(rhs.line_status) { }
+
+		GNET::Protocol *Clone() const { return new LoadExchange(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << zoneid;
+			os << version;
+			os << edition;
+			os << server_limit;
+			os << server_count;
+			os << line_status;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> zoneid;
+			os >> version;
+			os >> edition;
+			os >> server_limit;
+			os >> server_count;
+			os >> line_status;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 16384; }

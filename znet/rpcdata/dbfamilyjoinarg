@@ -1,0 +1,77 @@
+#ifndef __GNET_DBFAMILYJOINARG_RPCDATA
+#define __GNET_DBFAMILYJOINARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBFamilyJoinArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int fid;
+		unsigned int rid;
+		unsigned char level;
+		unsigned char occupation;
+
+	public:
+		DBFamilyJoinArg (unsigned int l_fid = 0,unsigned int l_rid = 0,unsigned char l_level = 0
+			,unsigned char l_occupation = 0)
+			: fid(l_fid),rid(l_rid),level(l_level)
+			,occupation(l_occupation)
+		{
+		}
+
+		DBFamilyJoinArg(const DBFamilyJoinArg &rhs)
+			: fid(rhs.fid),rid(rhs.rid),level(rhs.level),
+			occupation(rhs.occupation) { }
+
+		Rpc::Data *Clone() const { return new DBFamilyJoinArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBFamilyJoinArg *r = dynamic_cast<const DBFamilyJoinArg *>(&rhs);
+			if (r && r != this)
+			{
+				fid = r->fid;
+				rid = r->rid;
+				level = r->level;
+				occupation = r->occupation;
+			}
+			return *this;
+		}
+
+		DBFamilyJoinArg& operator = (const DBFamilyJoinArg &rhs)
+		{
+			const DBFamilyJoinArg *r = &rhs;
+			if (r && r != this)
+			{
+				fid = r->fid;
+				rid = r->rid;
+				level = r->level;
+				occupation = r->occupation;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << rid;
+			os << level;
+			os << occupation;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> rid;
+			os >> level;
+			os >> occupation;
+			return os;
+		}
+
+	};
+};
+#endif

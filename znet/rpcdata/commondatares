@@ -1,0 +1,68 @@
+#ifndef __GNET_COMMONDATARES_RPCDATA
+#define __GNET_COMMONDATARES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class CommonDataRes : public GNET::Rpc::Data
+	{
+	public:
+		int session_key;
+		int result;
+		Octets data;
+
+	public:
+		CommonDataRes ()
+		{
+		}
+
+		CommonDataRes(const CommonDataRes &rhs)
+			: session_key(rhs.session_key),result(rhs.result),data(rhs.data) { }
+
+		Rpc::Data *Clone() const { return new CommonDataRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const CommonDataRes *r = dynamic_cast<const CommonDataRes *>(&rhs);
+			if (r && r != this)
+			{
+				session_key = r->session_key;
+				result = r->result;
+				data = r->data;
+			}
+			return *this;
+		}
+
+		CommonDataRes& operator = (const CommonDataRes &rhs)
+		{
+			const CommonDataRes *r = &rhs;
+			if (r && r != this)
+			{
+				session_key = r->session_key;
+				result = r->result;
+				data = r->data;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << session_key;
+			os << result;
+			os << data;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> session_key;
+			os >> result;
+			os >> data;
+			return os;
+		}
+
+	};
+};
+#endif

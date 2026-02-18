@@ -1,0 +1,80 @@
+
+#ifndef __GNET_DBUPDATECALLBACKINFO_HPP
+#define __GNET_DBUPDATECALLBACKINFO_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "gfriendcallback"
+#include "dbupdatecallbackinfoarg"
+#include "dbupdatecallbackinfores"
+
+namespace GNET
+{
+
+class DBUpdateCallbackInfo : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbupdatecallbackinfo"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBUpdateCallbackInfoArg *arg = (DBUpdateCallbackInfoArg *)argument;
+		DBUpdateCallbackInfoRes *res = (DBUpdateCallbackInfoRes *)result;
+		
+		Marshal::OctetsStream key, value;
+		LOG_TRACE("DBUpdateCallbackInfo, roleid=%d, mailnum=%d, timestamp=%d, is_subscribe=%d, cooldown_list.size=%d\n",
+			arg->roleid, arg->callback_info.mailnum, arg->callback_info.timestamp, arg->callback_info.is_subscribe, arg->callback_info.cooldown_list.size());
+
+		try
+		{
+			StorageEnv::Storage *pcallback = StorageEnv::GetStorage("friendcallback");
+			StorageEnv::CommonTransaction txn;
+			try
+			{
+				GFriendCallback callback;
+				key << arg->roleid;
+				if(pcallback->find(key, value, txn))
+				{
+					value >> callback;
+				}
+				callback.callback_info = arg->callback_info;
+				pcallback->insert(key, Marshal::OctetsStream() << callback, txn);
+				res->retcode = ERR_CALLBACK_SUCCESS;
+			}
+			catch(DbException e)
+			{
+				throw;
+			}
+			catch(...)
+			{
+				DbException e(DB_OLD_VERSION);
+				txn.abort(e);
+				throw e;
+			}
+		}
+		catch(DbException e)
+		{
+			Log::log(LOG_ERR, "DBUpdateCallbackInfo, roleid=%d, what=%s\n", arg->roleid, e.what());
+			res->retcode = ERR_CALLBACK_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBUpdateCallbackInfoArg *arg = (DBUpdateCallbackInfoArg *)argument;
+		// DBUpdateCallbackInfoRes *res = (DBUpdateCallbackInfoRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

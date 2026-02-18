@@ -1,0 +1,44 @@
+	public:
+		int roleid;
+		int map_id;
+		int raidroom_id;
+		unsigned char groupid;
+		enum { PROTOCOL_TYPE = PROTOCOL_GRAIDJOIN };
+	public:
+		GRaidJoin() { type = PROTOCOL_GRAIDJOIN; }
+		GRaidJoin(void*) : Protocol(PROTOCOL_GRAIDJOIN) { }
+		GRaidJoin (int l_roleid,int l_map_id = 0,int l_raidroom_id = 0,
+			unsigned char l_groupid = 0)
+			 : roleid(l_roleid),map_id(l_map_id),raidroom_id(l_raidroom_id)
+			,groupid(l_groupid)
+		{
+			type = PROTOCOL_GRAIDJOIN;
+		}
+
+		GRaidJoin(const GRaidJoin &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),map_id(rhs.map_id),raidroom_id(rhs.raidroom_id)
+			,groupid(rhs.groupid) { }
+
+		GNET::Protocol *Clone() const { return new GRaidJoin(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << map_id;
+			os << raidroom_id;
+			os << groupid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> map_id;
+			os >> raidroom_id;
+			os >> groupid;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 131072; }

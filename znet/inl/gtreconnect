@@ -1,0 +1,32 @@
+	public:
+		int dummy;
+		enum { PROTOCOL_TYPE = PROTOCOL_GTRECONNECT };
+	public:
+		GTReconnect() { type = PROTOCOL_GTRECONNECT; }
+		GTReconnect(void*) : Protocol(PROTOCOL_GTRECONNECT) { }
+		GTReconnect (int l_dummy)
+			 : dummy(l_dummy)
+		{
+			type = PROTOCOL_GTRECONNECT;
+		}
+
+		GTReconnect(const GTReconnect &rhs)
+			: Protocol(rhs),dummy(rhs.dummy) { }
+
+		GNET::Protocol *Clone() const { return new GTReconnect(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << dummy;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> dummy;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 16; }

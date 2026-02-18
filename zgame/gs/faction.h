@@ -1,0 +1,19 @@
+#ifndef __ONLINEGAME_GS_FACTION_H__
+#define __ONLINEGAME_GS_FACTION_H__
+
+//这里的定义必须和elements.data里的声明一致
+
+enum
+{
+	FACTION_WHITE		= 0x00002,		//白色名
+	FACTION_PARIAH		= 0x00004,		//红色名
+	FACTION_BLUE		= 0x00008,		//蓝色名
+	FACTION_BATTLEOFFENSE	= 0x00010,		//城战攻方
+	FACTION_BATTLEDEFENCE	= 0x00020,		//城战守方
+	FACTION_OFFENSE_FRIEND	= 0x00040,		//攻方友方
+	FACTION_DEFENCE_FRIEND	= 0x00080,		//守方友方
+
+	FACTION_DYNAMIC_MASK 	= 0x000FE
+	
+};
+#endif

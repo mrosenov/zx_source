@@ -1,0 +1,162 @@
+
+#ifndef __GNET_DBHostileAdd_HPP
+#define __GNET_DBHostileAdd_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbhostileaddarg"
+#include "dbhostileaddres"
+#include "localmacro.h"
+#include "hostilefaction"
+#include "hostileinfo"
+
+namespace GNET
+{
+
+class DBHostileAdd : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbhostileadd"
+#undef	RPC_BASECLASS
+
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBHostileAddArg *arg = (DBHostileAddArg *)argument;
+		DBHostileAddRes *res = (DBHostileAddRes *)result;
+		Marshal::OctetsStream key, khost, krole, value;
+		try
+		{
+			StorageEnv::Storage * pfaction = StorageEnv::GetStorage("faction");
+
+			key << arg->factionid;
+			khost << arg->hostile;
+			Log::formatlog("hostileadd","roleid=%d:factionid=%d:hostile=%d", arg->roleid, arg->factionid, arg->hostile);
+
+			StorageEnv::CommonTransaction txn;
+			try{
+
+				GFactionInfo faction, hostile;
+				Marshal::OctetsStream(pfaction->find(key, txn )) >> faction;
+				if (0 == faction.hostileinfo.size())
+				{
+					faction.hostileinfo.push_back(HostileInfo(Timer::GetTime(), 1, 0, 0));
+					pfaction->insert(key, Marshal::OctetsStream() << faction, txn);
+				}
+				Marshal::OctetsStream(pfaction->find(khost, txn )) >> hostile;
+				if (0 == hostile.hostileinfo.size())
+				{
+					hostile.hostileinfo.push_back(HostileInfo(Timer::GetTime(), 1, 0, 0));
+					pfaction->insert(khost, Marshal::OctetsStream() << hostile, txn);
+				}
+				
+				if (GetHostileInfo(faction).actionpoint < 1)
+				{
+					res->retcode = ERR_HOSTILE_ITEM;
+					return;
+				}
+				if (GetHostileInfo(faction).status & HOSTILE_PROTECTED != 0)
+				{
+					res->retcode = ERR_HOSTILE_PROTECTED;
+					return;
+				}
+				if (GetHostileInfo(hostile).status & HOSTILE_PROTECTED != 0 
+					&& GetHostileInfo(hostile).protecttime + PROTECT_TIMEOUT > Timer::GetTime())
+				{
+					res->retcode = ERR_HOSTILE_PEER_PROTECTED;
+					return;
+				}
+				/*
+				if (faction.level == 0 || hostile.level == 0 || std::abs(faction.level - hostile.level) > 1)
+				{
+					res->retcode = ERR_HOSTILE_LEVEL_LIMIT;
+					return;
+				}
+				*/
+				if (Hostiles(faction).size() >= 5) 
+				{
+					Log::log(LOG_ERR,"DBHostileAdd, hostile exceeds limit, factionid=%d size=%d,"
+							, arg->factionid, Hostiles(faction).size());
+					res->retcode = ERR_HOSTILE_FULL;
+					return;
+				}
+				std::vector<HostileFaction>::iterator it, ie;
+				it = Hostiles(faction).begin();
+				ie = Hostiles(faction).end();
+				for (; it != ie; ++it)
+				{
+					if (it->fid == arg->hostile)
+					{
+						Log::log(LOG_ERR,"DBHostileAdd, hostileid=%d already in hostile list, factionid=%d"
+								, arg->hostile, arg->factionid);
+						res->retcode = ERR_HOSTILE_ALREADY;
+						return;
+					}
+				}
+				it = Hostiles(hostile).begin();
+				for (; it != Hostiles(hostile).end();)
+				{
+					if (it->addtime + HOSTILE_TIMEOUT > Timer::GetTime())
+						it = Hostiles(hostile).erase(it);
+					else
+					{
+						if (it->fid == arg->factionid)
+						{
+							Log::log(LOG_ERR,"DBHostileAdd, hostileid=%d already in hostile list, "
+									"factionid=%d" , arg->factionid, arg->hostile);
+							res->retcode = ERR_HOSTILE_ALREADY;
+							return;
+						}
+						++ it;
+					}
+				}
+				if (Hostiles(hostile).size() >= 5)
+				{
+					Log::log(LOG_ERR,"DBHostileAdd, hostile exceeds limit, factionid=%d size=%d,"
+							, arg->hostile, Hostiles(hostile).size());
+					res->retcode = ERR_HOSTILE_PEER_FULL;
+					return;
+				}
+				
+				
+				time_t now = Timer::GetTime();
+				Hostiles(faction).push_back(HostileFaction(arg->hostile, hostile.name, now));
+				Hostiles(hostile).push_back(HostileFaction(arg->factionid, faction.name, now));
+				GetHostileInfo(faction).actionpoint--;
+
+				pfaction->insert( key, Marshal::OctetsStream()<<faction, txn );
+				pfaction->insert( khost, Marshal::OctetsStream()<<hostile, txn );
+
+				res->name = hostile.name;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBHostileAdd, roleid=%d, factionid=%d hostileid=%d what=%s."
+					, arg->roleid, arg->factionid, arg->hostile, e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

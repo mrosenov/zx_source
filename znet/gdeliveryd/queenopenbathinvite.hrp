@@ -1,0 +1,52 @@
+
+#ifndef __GNET_QUEENOPENBATHINVITE_HPP
+#define __GNET_QUEENOPENBATHINVITE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "queenopenbathinvitearg"
+#include "queenopenbathinviteres"
+#include "kingdommanager.h"
+#include "queenopenbath_re.hpp"
+
+namespace GNET
+{
+
+class QueenOpenBathInvite : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "queenopenbathinvite"
+#undef	RPC_BASECLASS
+	int queen_roleid;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// QueenOpenBathInviteArg *arg = (QueenOpenBathInviteArg *)argument;
+		// QueenOpenBathInviteRes *res = (QueenOpenBathInviteRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		//QueenOpenBathInviteArg *arg = (QueenOpenBathInviteArg *)argument;
+		QueenOpenBathInviteRes *res = (QueenOpenBathInviteRes *)result;
+		if (res->retcode == 0)
+			res->retcode = KingdomManager::GetInstance()->OpenBath();
+		else
+			res->retcode = ERR_KINGDOM_KING_REFUSE;
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(queen_roleid);
+		if (pinfo)
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, QueenOpenBath_Re(res->retcode, queen_roleid, pinfo->localsid));
+	}
+
+	void OnTimeout()
+	{
+		PlayerInfo * pinfo = UserContainer::GetInstance().FindRoleOnline(queen_roleid);
+		if (pinfo)
+			GDeliveryServer::GetInstance()->Send(pinfo->linksid, QueenOpenBath_Re(ERR_KINGDOM_TIMEOUT, queen_roleid, pinfo->localsid));
+	}
+
+};
+
+};
+#endif

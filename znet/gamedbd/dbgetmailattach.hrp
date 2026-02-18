@@ -1,0 +1,152 @@
+
+#ifndef __GNET_DBGETMAILATTACH_HPP
+#define __GNET_DBGETMAILATTACH_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbgetmailattacharg"
+#include "dbgetmailattachres"
+#include "localmacro.h"
+
+namespace GNET
+{
+
+class DBGetMailAttach : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbgetmailattach"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBGetMailAttachArg *arg = (DBGetMailAttachArg *)argument;
+		DBGetMailAttachRes *res = (DBGetMailAttachRes *)result;
+
+		Marshal::OctetsStream key;
+		try
+		{
+			StorageEnv::Storage * pmailbox = StorageEnv::GetStorage("mailbox");
+			StorageEnv::Storage * pinventory = StorageEnv::GetStorage("inventory");
+			StorageEnv::Storage * puser = (arg->syncdata.data_mask&SYNC_CASHUSED)?StorageEnv::GetStorage("user"):NULL;
+//			StorageEnv::Storage * pstore = (arg->syncdata.data_mask&SYNC_STOTEHOUSE)?StorageEnv::GetStorage("storehouse"):NULL;
+			StorageEnv::Storage * pstore = StorageEnv::GetStorage("storehouse");
+			StorageEnv::CommonTransaction txn;
+			int money_delta = arg->syncdata.inventory.money;
+			try{
+				GMailBox box;
+				GRolePocket bag;
+				key << arg->mail_id.roleid;
+				Marshal::OctetsStream(pmailbox->find(key,txn)) >> box;
+				GMailVector::iterator im=box.mails.begin(),ie=box.mails.end();
+				for(;im!=ie&&im->header.id!=arg->mail_id.mail_id;im++);
+				if(im==ie)
+				{
+					res->retcode = ERR_NOTFOUND;
+					return;
+				}
+				Log::formatlog("getattach","stamp=%u:src=%d:dst=%d:mid=%d:money=%d:item=%d:count=%d:pos=%d",
+						arg->syncdata.inventory.timestamp, im->header.sender, arg->mail_id.roleid, 
+						im->header.id, im->attach_money, im->attach_obj.id, im->attach_obj.count, 
+						im->attach_obj.pos);
+				res->syncdata.data_mask = arg->syncdata.data_mask;
+				if(im->header.attribute & (1<<_MA_ATTACH_MONEY))
+				{
+					if(im->attach_money > NEW_MAX_CASH_IN_POCKET - arg->syncdata.inventory.money )
+					{
+						im->attach_money -= NEW_MAX_CASH_IN_POCKET - arg->syncdata.inventory.money;
+						arg->syncdata.inventory.money = NEW_MAX_CASH_IN_POCKET;
+					}else{
+						arg->syncdata.inventory.money += im->attach_money;
+						im->attach_money = 0;
+						im->header.attribute ^= (1<<_MA_ATTACH_MONEY);
+					}
+				}
+				if(im->header.attribute & (1<<_MA_ATTACH_OBJ))
+				{
+					GRoleInventoryVector::iterator it;
+					GRoleInventoryVector& v = arg->syncdata.inventory.items;
+					std::vector<int> index;
+					index.resize(arg->syncdata.inventory.capacity,-1);
+					int i = 0;
+					for(it=v.begin();it!=v.end();it++,i++)
+						index[it->pos] = i;
+
+					int max = im->attach_obj.max_count;
+					for(i=0;im->attach_obj.count>0&&i<(int)arg->syncdata.inventory.capacity;i++)
+					{
+						int idx = index[i];
+						if(idx<0)
+						{
+							im->attach_obj.pos = i;
+							v.push_back(im->attach_obj);
+							res->syncdata.inventory.items.push_back(im->attach_obj);
+							im->attach_obj.count = 0;
+							break;
+						}
+						//堆叠也要验证绑定信息
+						if(v[idx].id==im->attach_obj.id && v[idx].proctype==im->attach_obj.proctype && v[idx].count <= max)
+						{
+							v[idx].count += im->attach_obj.count;
+							if(v[idx].count > max)
+							{
+								im->attach_obj.count = v[idx].count - max;
+								v[idx].count = max;
+							}
+							else
+								im->attach_obj.count = 0;
+							res->syncdata.inventory.items.push_back(v[idx]);
+						}
+					}
+					if(im->attach_obj.count==0)
+						im->header.attribute ^= (1<<_MA_ATTACH_OBJ);
+				}
+				if((im->header.attribute&MAIL_RESERVED)==0)
+					im->header.receiver = Timer::GetTime();
+
+				Marshal::OctetsStream(pinventory->find(key,txn)) >> bag;
+				if(arg->syncdata.inventory.timestamp-bag.timestamp<=0)
+				{
+					Log::log(LOG_ERR,"DBGetMailAttach, timestamp mismatch. %d<%d",
+						arg->syncdata.inventory.timestamp, bag.timestamp);
+					throw DbException(DB_VERIFY_BAD);
+				}
+				money_delta -= bag.money;
+				pinventory->insert(key, Marshal::OctetsStream()<<arg->syncdata.inventory, txn);
+				res->money_left = im->attach_money;
+				res->item_left = im->attach_obj.count;
+				pmailbox->insert( key, Marshal::OctetsStream()<<box, txn );
+				::UpdateCash(puser, arg->syncdata, txn);
+				::UpdateStore(arg->mail_id.roleid, pstore, arg->syncdata, txn, money_delta);
+				res->syncdata.inventory.money = arg->syncdata.inventory.money;
+				res->retcode = ERR_SUCCESS;
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBGetMailAttach, roleid=%d, mailid=%d, what=%s\n", arg->mail_id.roleid, 
+					arg->mail_id.mail_id, e.what() );
+			res->retcode = ERR_EXCEPTION;
+		}
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

@@ -1,0 +1,47 @@
+
+#ifndef __GNET_SYNCCROSSCRSSVRTEAMSUPDATE_HPP
+#define __GNET_SYNCCROSSCRSSVRTEAMSUPDATE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "synccrosscrssvrteamsupdatearg"
+#include "synccrosscrssvrteamsupdateres"
+#include "crosscrssvrteamsmanager.h"
+
+namespace GNET
+{
+
+class SyncCrossCrssvrTeamsUpdate : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "synccrosscrssvrteamsupdate"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsUpdateArg *arg = (SyncCrossCrssvrTeamsUpdateArg *)argument;
+		SyncCrossCrssvrTeamsUpdateRes *res = (SyncCrossCrssvrTeamsUpdateRes *)result;
+
+		CrossCrssvrTeamsManager::Instance()->UpdateTeamInfo(arg->teamid, arg->teaminfo, arg->zoneid);
+		LOG_TRACE("SyncCrossCrssvrTeamsUpdate, zoneid=%d, retcode=%d, teamid=%d", arg->zoneid, res->retcode, arg->teamid);
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		SyncCrossCrssvrTeamsUpdateArg *arg = (SyncCrossCrssvrTeamsUpdateArg *)argument;
+		SyncCrossCrssvrTeamsUpdateRes *res = (SyncCrossCrssvrTeamsUpdateRes *)result;
+		LOG_TRACE("SyncCrossCrssvrTeamsUpdate, zoneid=%d, retcode=%d, teamid=%d", arg->zoneid, res->retcode, arg->teamid);	
+	}
+
+	void OnTimeout()
+	{
+		SyncCrossCrssvrTeamsUpdateArg *arg = (SyncCrossCrssvrTeamsUpdateArg *)argument;
+		Log::log( LOG_ERR,"SyncCrossCrssvrTeamsUpdate: timeout,teamid=%d", arg->teamid);
+	}
+
+};
+
+};
+#endif

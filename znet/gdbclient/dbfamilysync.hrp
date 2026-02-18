@@ -1,0 +1,42 @@
+
+#ifndef __GNET_DBFAMILYSYNC_HPP
+#define __GNET_DBFAMILYSYNC_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbfamilysyncarg"
+#include "deffactionres"
+
+namespace GNET
+{
+
+class DBFamilySync : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbfamilysync"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// DBFamilySyncArg *arg = (DBFamilySyncArg *)argument;
+		// DefFactionRes *res = (DefFactionRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBFamilySyncArg *arg = (DBFamilySyncArg *)argument;
+		// DefFactionRes *res = (DefFactionRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

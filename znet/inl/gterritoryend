@@ -1,0 +1,35 @@
+	public:
+		int territoryid;
+		int result;
+		enum { PROTOCOL_TYPE = PROTOCOL_GTERRITORYEND };
+	public:
+		GTerritoryEnd() { type = PROTOCOL_GTERRITORYEND; }
+		GTerritoryEnd(void*) : Protocol(PROTOCOL_GTERRITORYEND) { }
+		GTerritoryEnd (int l_territoryid,int l_result = 0)
+			 : territoryid(l_territoryid),result(l_result)
+		{
+			type = PROTOCOL_GTERRITORYEND;
+		}
+
+		GTerritoryEnd(const GTerritoryEnd &rhs)
+			: Protocol(rhs),territoryid(rhs.territoryid),result(rhs.result) { }
+
+		GNET::Protocol *Clone() const { return new GTerritoryEnd(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << territoryid;
+			os << result;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> territoryid;
+			os >> result;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 32; }

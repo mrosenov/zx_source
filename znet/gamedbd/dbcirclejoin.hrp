@@ -1,0 +1,273 @@
+
+#ifndef __GNET_DBCIRCLEJOIN_HPP
+#define __GNET_DBCIRCLEJOIN_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include <vector>
+#include "dbcirclejoinarg"
+#include "dbcirclejoinres"
+#include "circlepool.h"
+#include "macros.h"
+
+namespace GNET
+{
+class DBCircleJoin : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbcirclejoin"
+#undef	RPC_BASECLASS
+	
+	std::vector<GCircleMemberDB>::iterator FindMember(GCircleDB& cinfo,unsigned int roleid)
+	{
+		for(std::vector<GCircleMemberDB>::iterator it=cinfo.member.begin(),ie=cinfo.member.end();it!=ie;++it)
+		{
+			if(it->roleid==roleid)
+			{	
+				return it;
+			}
+		}
+		return cinfo.member.end();
+	}
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBCircleJoinArg *arg = (DBCircleJoinArg *)argument;
+		DBCircleJoinRes *res = (DBCircleJoinRes *)result;
+	
+		Marshal::OctetsStream key, value;
+		Marshal::OctetsStream krole, kcircle;
+		//CirclePool::Instance();//for init
+		try
+		{
+			StorageEnv::Storage * pbase = StorageEnv::GetStorage("base");
+			StorageEnv::Storage * pcircle = StorageEnv::GetStorage("circle");
+
+			StorageEnv::CommonTransaction txn;
+			try{
+				GRoleBase base;
+				GCircleDB zcircleold;
+				GCircleDB zcirclenew;
+				unsigned int newcircleid;
+
+				Jointype jtype = Jointype(arg->jointype);
+		//		DEBUG_PRINT("circlejoin grade=%d:rid=%d", arg->newgrade, arg->roleid);
+                               	
+				key << arg->roleid;
+				Marshal::OctetsStream(pbase->find(key, txn)) >> base;
+				Marshal::OctetsStream hisos = base.circletrack;
+				std::vector<GCircleHistoryDB> HisVec;
+				if(hisos.size()>0)
+					hisos >> HisVec;
+	
+				bool modifyold=false;
+				bool modifynew=false;
+				if(jtype == LEAVE_CIRCLE && HisVec.size() > 0)
+ 				{
+					if(HisVec.back().circleid==0)
+					{
+						res->retcode = ERR_DUPLICATRECORD;//maybe leave circle already
+						DEBUG_PRINT("DBCircleJoin duplicate request, retcode=%d, roleid=%d, jointype=%d",\
+							       	res->retcode, arg->roleid, arg->jointype);
+						return;
+					}
+					modifyold=true;	
+				}
+				else if(jtype == LEAVE_AND_JOIN_CIRCLE && HisVec.size() > 0)
+				{
+					unsigned char oldgrade = HisVec.back().circlegrade;
+					if(oldgrade >= arg->newgrade)
+					{
+						res->retcode = ERR_DUPLICATRECORD;//maybe join new circle already
+						DEBUG_PRINT("DBCircleJoin duplicate request, retcode=%d, roleid=%d, jointype=%d",\
+							       	res->retcode, arg->roleid, arg->jointype);
+						return;	
+					}
+					modifynew=true;
+					modifyold=true;
+				}
+				else if(jtype == JOIN_CIRCLE )	
+				{
+					if(HisVec.size() > 0)
+					{
+						res->retcode = ERR_DUPLICATRECORD;//maybe join new circle already
+						DEBUG_PRINT("DBCircleJoin duplicate request, retcode=%d, roleid=%d, jointype=%d",\
+							       	res->retcode, arg->roleid, arg->jointype);
+						return;
+					}	
+					modifynew=true;
+				}
+				else
+				{
+					Log::log( LOG_ERR, "DBCircleJoin data err, jointype=%d, roleid=%d history size=%d.",\
+							jtype,arg->roleid,HisVec.size());
+					res->retcode = ERR_DATAERROR;	
+					return;
+				}
+				int now = Timer::GetTime();
+
+				if(modifyold)
+				{
+					unsigned int oldcircleid =HisVec.back().circleid;
+					if(arg->oldcircleid != oldcircleid)
+					{
+						DEBUG_PRINT( "DBCircleJoin circleid unsync, roleid=%d, dboldcircle=%d,"\
+							"argoldcircle=%d.",arg->roleid,oldcircleid,arg->oldcircleid);
+					}
+					kcircle << oldcircleid;
+					Marshal::OctetsStream(pcircle->find(kcircle, txn)) >> zcircleold;
+					std::vector< GCircleMemberDB >::iterator  it = FindMember(zcircleold,arg->roleid);
+					if(it!=zcircleold.member.end())
+					{
+						it->graduate_time = now;
+						pcircle->insert( kcircle, Marshal::OctetsStream()<<zcircleold, txn );
+					}
+					HisVec.back().graduate_time = now;
+
+					if(jtype == LEAVE_CIRCLE)
+					{
+						GCircleHistoryDB hisnode;
+						hisnode.circleid = 0;
+						hisnode.titlemask = CIRCLE_MEMBER;
+						HisVec.push_back(hisnode);
+						oldcircleid = 0;
+						res->titlemask = CIRCLE_MEMBER;
+						LOG_TRACE("leave circle newgrade=%d:rid=%d", arg->newgrade, arg->roleid);
+					}
+
+					res->cur_circleid = oldcircleid;
+					res->retcode = ERR_SUCCESS;
+				}	
+				if(modifynew)
+				{	
+					bool appoint_master=false;
+					newcircleid = CirclePool::Instance()->GetOpenCircleid(arg->newgrade,arg->occupation);
+					if(newcircleid == 0)
+					{
+						Log::log( LOG_ERR, "DBCircleJoin GetOpenCircleid equals 0");
+					//	res->retcode = ERR_DATAERROR;
+					//	return;
+						txn.abort();
+						throw DbException(WDB_VERIFY_BAD);
+					}	
+					kcircle.clear();
+					kcircle << newcircleid;
+					Marshal::OctetsStream circleos;
+					if(pcircle->find(kcircle,circleos, txn)==true)
+						circleos >> zcirclenew;
+					else
+						DEBUG_PRINT( "DBCircleJoin circle not found, roleid=%d, circle=%d",\
+							       	arg->roleid,newcircleid);
+					if(zcirclenew.member.size() ==0 ||
+					CirclePool::Instance()->CheckOpenCircle(arg->newgrade,arg->occupation,zcirclenew.member.size()) == false)
+					{
+						if(zcirclenew.member.size() !=0)
+						{
+						newcircleid = CirclePool::Instance()->NewOpenCircle(arg->newgrade,arg->occupation); 
+						kcircle.clear();
+					       	kcircle << newcircleid;
+						zcirclenew = GCircleDB();					
+						}
+						zcirclenew.circleid = newcircleid;
+						zcirclenew.circlegrade = arg->newgrade;
+						zcirclenew.createtime = now;
+						zcirclenew.circlename = CirclePool::Instance()->GetCircleCount(arg->newgrade,arg->occupation);
+						zcirclenew.tasksavetime = now;
+						
+						CirclePoolState state;
+						CirclePool::Instance()->GetCurrentState(state);
+						Marshal::OctetsStream stateos;
+					       	stateos << state;
+						Marshal::OctetsStream kstate;
+					       	kstate << CirclePool::CIRCLEID_FOR_STATE_STORAGE;
+						//GCircleDB circlestate;
+						//circlestate.circlepool_state = stateos;
+						//pcircle->insert(kstate, Marshal::OctetsStream()<<circlestate, txn );
+						pcircle->insert(kstate, stateos, txn );
+						DEBUG_PRINT( "DBCircleJoin new circle, roleid=%d, circle=%d",\
+							arg->roleid,zcirclenew.circleid);
+					
+						//Appoint as circle master
+						appoint_master = true;
+						zcirclenew.master_rid = arg->roleid;
+					}
+					if(zcirclenew.circleid == 0)
+					{
+						Log::log( LOG_ERR, "DBCircleJoin new circleid equals 0");
+						//res->retcode = ERR_DATAERROR;
+						//return;
+						txn.abort();
+						throw DbException(WDB_VERIFY_BAD);
+					}
+					
+					GCircleMemberDB cmember;
+					cmember.roleid = arg->roleid;
+					cmember.name = base.name;
+					cmember.reborn_cnt = arg->reborn_cnt;
+					cmember.level = arg->level;
+					cmember.occupation = arg->occupation;
+					cmember.jointime = now;
+					cmember.gender = base.gender;
+					zcirclenew.member.push_back(cmember);
+					pcircle->insert( kcircle, Marshal::OctetsStream()<<zcirclenew, txn );
+					
+					GCircleHistoryDB hisnode;
+					hisnode.circleid = newcircleid;
+	                                hisnode.jointime = cmember.jointime;
+	                                hisnode.circlegrade = arg->newgrade;
+					hisnode.circlename = zcirclenew.circlename;
+					if(appoint_master)
+						hisnode.titlemask = CIRCLE_MASTER;
+					HisVec.push_back(hisnode);
+			
+					res->name = base.name;
+					res->cur_circleid = newcircleid;
+					if(appoint_master)
+						res->titlemask = CIRCLE_MASTER;
+					res->gender = base.gender;
+					res->circlename = zcirclenew.circlename;
+					res->retcode = ERR_SUCCESS;
+					LOG_TRACE( "DBCircleJoin join circle, roleid=%d, grade=%d, circle=%d,size=%d",\
+						arg->roleid,arg->newgrade,zcirclenew.circleid,zcirclenew.member.size());
+				}
+				if(modifynew || modifyold)
+				{
+					hisos.clear();
+					hisos << HisVec;
+					base.circletrack = hisos;
+					res->jointime = now;
+					pbase->insert( key, Marshal::OctetsStream()<< base, txn );
+				}
+			}
+			catch ( DbException e ) { throw; }
+			catch ( ... )
+			{
+				DbException e( DB_OLD_VERSION );
+				txn.abort( e );
+				throw e;
+			}
+		}
+		catch ( DbException e )
+		{
+			Log::log( LOG_ERR, "DBCircleJoin, grade=%d, roleid=%d what=%s.",arg->newgrade,arg->roleid,e.what());
+			res->retcode = ERR_EXCEPTION;
+		}
+	 	
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// TODO
+		// DBCircleJoinArg *arg = (DBCircleJoinArg *)argument;
+		// DBCircleJoinRes *res = (DBCircleJoinRes *)result;
+	}
+
+	void OnTimeout()
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

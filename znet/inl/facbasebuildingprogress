@@ -1,0 +1,47 @@
+	public:
+		int roleid;
+		int fid;
+		int task_id;
+		int value;
+		int base_tag;
+		enum { PROTOCOL_TYPE = PROTOCOL_FACBASEBUILDINGPROGRESS };
+	public:
+		FacBaseBuildingProgress() { type = PROTOCOL_FACBASEBUILDINGPROGRESS; }
+		FacBaseBuildingProgress(void*) : Protocol(PROTOCOL_FACBASEBUILDINGPROGRESS) { }
+		FacBaseBuildingProgress (int l_roleid,int l_fid = 0,int l_task_id = 0,
+			int l_value = 0,int l_base_tag = 0)
+			 : roleid(l_roleid),fid(l_fid),task_id(l_task_id)
+			,value(l_value),base_tag(l_base_tag)
+		{
+			type = PROTOCOL_FACBASEBUILDINGPROGRESS;
+		}
+
+		FacBaseBuildingProgress(const FacBaseBuildingProgress &rhs)
+			: Protocol(rhs),roleid(rhs.roleid),fid(rhs.fid),task_id(rhs.task_id)
+			,value(rhs.value),base_tag(rhs.base_tag) { }
+
+		GNET::Protocol *Clone() const { return new FacBaseBuildingProgress(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << fid;
+			os << task_id;
+			os << value;
+			os << base_tag;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> fid;
+			os >> task_id;
+			os >> value;
+			os >> base_tag;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

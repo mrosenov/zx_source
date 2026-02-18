@@ -1,0 +1,69 @@
+#ifndef __GNET_CIRCLEASYNCDATA_RPCDATA
+#define __GNET_CIRCLEASYNCDATA_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class CircleAsyncData : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		Octets data;
+		int result;
+
+	public:
+		CircleAsyncData (int l_roleid = 0,const Octets& l_data = Octets(),int l_result = 0)
+			: roleid(l_roleid),data(l_data),result(l_result)
+		{
+		}
+
+		CircleAsyncData(const CircleAsyncData &rhs)
+			: roleid(rhs.roleid),data(rhs.data),result(rhs.result) { }
+
+		Rpc::Data *Clone() const { return new CircleAsyncData(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const CircleAsyncData *r = dynamic_cast<const CircleAsyncData *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				data = r->data;
+				result = r->result;
+			}
+			return *this;
+		}
+
+		CircleAsyncData& operator = (const CircleAsyncData &rhs)
+		{
+			const CircleAsyncData *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				data = r->data;
+				result = r->result;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << data;
+			os << result;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> data;
+			os >> result;
+			return os;
+		}
+
+	};
+};
+#endif

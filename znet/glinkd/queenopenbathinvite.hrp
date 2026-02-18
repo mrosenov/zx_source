@@ -1,0 +1,55 @@
+
+#ifndef __GNET_QUEENOPENBATHINVITE_HPP
+#define __GNET_QUEENOPENBATHINVITE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+#include "queenopenbathinvitearg"
+#include "queenopenbathinviteres"
+#include "glinkserver.hpp"
+
+namespace GNET
+{
+
+class QueenOpenBathInvite : public ProxyRpc
+{
+#define	RPC_BASECLASS	ProxyRpc
+	#include "queenopenbathinvite"
+#undef	RPC_BASECLASS
+
+	bool Delivery(Manager::Session::ID proxy_sid, const OctetsStream& osArg)
+	{
+		QueenOpenBathInviteArg arg;
+		osArg >> arg;
+		if( GLinkServer::GetInstance()->Send(arg.localsid, *this ) )
+		{
+			return true;
+		}
+		else
+		{
+			SetResult(QueenOpenBathInviteRes(ERR_DELIVER_SEND));
+			SendToSponsor();
+			return false;
+		}
+	}
+
+	void PostProcess(Manager::Session::ID proxy_sid,const OctetsStream& osArg, const OctetsStream& osRes)
+	{
+		// TODO
+		// QueenOpenBathInviteArg arg;
+		// osArg >> arg;
+		// QueenOpenBathInviteRes res;
+		// osRes >> res;
+		// SetResult( &res ); // if you modified res, do not forget to call this. 
+	}
+
+	void OnTimeout( )
+	{
+		// TODO Client Only
+	}
+
+};
+
+};
+#endif

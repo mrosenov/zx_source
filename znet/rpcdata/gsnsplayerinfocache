@@ -1,0 +1,66 @@
+#ifndef __GNET_GSNSPLAYERINFOCACHE_RPCDATA
+#define __GNET_GSNSPLAYERINFOCACHE_RPCDATA
+
+#include "rpcdefs.h"
+
+#include "gsnsroleinfo"
+#include "gsnsplayerinfo"
+
+namespace GNET
+{
+	class GSNSPlayerInfoCache : public GNET::Rpc::Data
+	{
+	public:
+		GSNSRoleInfo roleinfo;
+		GSNSPlayerInfo playerinfo;
+
+	public:
+		GSNSPlayerInfoCache (GSNSRoleInfo l_roleinfo = GSNSRoleInfo(),GSNSPlayerInfo l_playerinfo = GSNSPlayerInfo())
+			: roleinfo(l_roleinfo),playerinfo(l_playerinfo)
+		{
+		}
+
+		GSNSPlayerInfoCache(const GSNSPlayerInfoCache &rhs)
+			: roleinfo(rhs.roleinfo),playerinfo(rhs.playerinfo) { }
+
+		Rpc::Data *Clone() const { return new GSNSPlayerInfoCache(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GSNSPlayerInfoCache *r = dynamic_cast<const GSNSPlayerInfoCache *>(&rhs);
+			if (r && r != this)
+			{
+				roleinfo = r->roleinfo;
+				playerinfo = r->playerinfo;
+			}
+			return *this;
+		}
+
+		GSNSPlayerInfoCache& operator = (const GSNSPlayerInfoCache &rhs)
+		{
+			const GSNSPlayerInfoCache *r = &rhs;
+			if (r && r != this)
+			{
+				roleinfo = r->roleinfo;
+				playerinfo = r->playerinfo;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleinfo;
+			os << playerinfo;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleinfo;
+			os >> playerinfo;
+			return os;
+		}
+
+	};
+};
+#endif

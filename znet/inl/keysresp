@@ -1,0 +1,35 @@
+	public:
+		int64_t timestamp;
+		std::map<int64_t,CustomKey> keylist;
+		enum { PROTOCOL_TYPE = PROTOCOL_KEYSRESP };
+	public:
+		KeysResp() { type = PROTOCOL_KEYSRESP; }
+		KeysResp(void*) : Protocol(PROTOCOL_KEYSRESP) { }
+		KeysResp (int64_t l_timestamp,const std::map<int64_t,CustomKey>& l_keylist)
+			 : timestamp(l_timestamp),keylist(l_keylist)
+		{
+			type = PROTOCOL_KEYSRESP;
+		}
+
+		KeysResp(const KeysResp &rhs)
+			: Protocol(rhs),timestamp(rhs.timestamp),keylist(rhs.keylist) { }
+
+		GNET::Protocol *Clone() const { return new KeysResp(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << timestamp;
+			os << keylist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> timestamp;
+			os >> keylist;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 65536; }

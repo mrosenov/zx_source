@@ -1,0 +1,64 @@
+#ifndef __GNET_DBDELETEFAMILYARG_RPCDATA
+#define __GNET_DBDELETEFAMILYARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBDeleteFamilyArg : public GNET::Rpc::Data
+	{
+	public:
+		unsigned int familyid;
+		char create_rollback;
+
+	public:
+		DBDeleteFamilyArg (unsigned int l_familyid = 0,char l_create_rollback = 0)
+			: familyid(l_familyid),create_rollback(l_create_rollback)
+		{
+		}
+
+		DBDeleteFamilyArg(const DBDeleteFamilyArg &rhs)
+			: familyid(rhs.familyid),create_rollback(rhs.create_rollback) { }
+
+		Rpc::Data *Clone() const { return new DBDeleteFamilyArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBDeleteFamilyArg *r = dynamic_cast<const DBDeleteFamilyArg *>(&rhs);
+			if (r && r != this)
+			{
+				familyid = r->familyid;
+				create_rollback = r->create_rollback;
+			}
+			return *this;
+		}
+
+		DBDeleteFamilyArg& operator = (const DBDeleteFamilyArg &rhs)
+		{
+			const DBDeleteFamilyArg *r = &rhs;
+			if (r && r != this)
+			{
+				familyid = r->familyid;
+				create_rollback = r->create_rollback;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << familyid;
+			os << create_rollback;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> familyid;
+			os >> create_rollback;
+			return os;
+		}
+
+	};
+};
+#endif

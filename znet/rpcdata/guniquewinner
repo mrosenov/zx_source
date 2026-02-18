@@ -1,0 +1,96 @@
+#ifndef __GNET_GUNIQUEWINNER_RPCDATA
+#define __GNET_GUNIQUEWINNER_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class GUniqueWinner : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		Octets rolename;
+		int money;
+		int itemid;
+		int time;
+		int reserve1;
+		int reserve2;
+
+	public:
+		GUniqueWinner (int l_roleid = 0,const Octets& l_rolename = Octets(0),int l_money = 0
+			,int l_itemid = 0,int l_time = 0,int l_reserve1 = 0
+			,int l_reserve2 = 0)
+			: roleid(l_roleid),rolename(l_rolename),money(l_money)
+			,itemid(l_itemid),time(l_time),reserve1(l_reserve1)
+			,reserve2(l_reserve2)
+		{
+		}
+
+		GUniqueWinner(const GUniqueWinner &rhs)
+			: roleid(rhs.roleid),rolename(rhs.rolename),money(rhs.money),
+			itemid(rhs.itemid),time(rhs.time),reserve1(rhs.reserve1),
+			reserve2(rhs.reserve2) { }
+
+		Rpc::Data *Clone() const { return new GUniqueWinner(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const GUniqueWinner *r = dynamic_cast<const GUniqueWinner *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				rolename = r->rolename;
+				money = r->money;
+				itemid = r->itemid;
+				time = r->time;
+				reserve1 = r->reserve1;
+				reserve2 = r->reserve2;
+			}
+			return *this;
+		}
+
+		GUniqueWinner& operator = (const GUniqueWinner &rhs)
+		{
+			const GUniqueWinner *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				rolename = r->rolename;
+				money = r->money;
+				itemid = r->itemid;
+				time = r->time;
+				reserve1 = r->reserve1;
+				reserve2 = r->reserve2;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << rolename;
+			os << money;
+			os << itemid;
+			os << time;
+			os << reserve1;
+			os << reserve2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> rolename;
+			os >> money;
+			os >> itemid;
+			os >> time;
+			os >> reserve1;
+			os >> reserve2;
+			return os;
+		}
+
+	};
+	typedef GNET::RpcDataVector<GUniqueWinner>	GUniqueWinnerVector;
+};
+#endif

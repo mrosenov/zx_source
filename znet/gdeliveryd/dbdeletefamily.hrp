@@ -1,0 +1,57 @@
+
+#ifndef __GNET_DBDELETEFAMILY_HPP
+#define __GNET_DBDELETEFAMILY_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbdeletefamilyarg"
+#include "dbdeletefamilyres"
+#include "localmacro.h"
+#include "gtplatformagent.h"
+#include "postdeletefamily.hrp"
+namespace GNET
+{
+
+class DBDeleteFamily : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbdeletefamily"
+#undef	RPC_BASECLASS
+	bool isbatch;
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBDeleteFamilyArg *arg = (DBDeleteFamilyArg *)argument;
+		DBDeleteFamilyRes *res = (DBDeleteFamilyRes *)result;
+		DEBUG_PRINT("DBDeleteFamily, retcode=%d, familyid=%d res.namelist.size %d", res->retcode, arg->familyid, res->namelist.size());
+		if(res->retcode==ERR_SUCCESS)
+		{
+			PostDeleteFamilyArg argument(GDeliveryServer::GetInstance()->zoneid,arg->familyid,res->namelist);
+			PostDeleteFamily* rpc = (PostDeleteFamily*) Rpc::Call(RPC_POSTDELETEFAMILY, argument);
+			UniqueNameClient::GetInstance()->SendProtocol(rpc);
+
+			FamilyManager::Instance()->OnDelete(arg->familyid);
+			GTPlatformAgent::DeleteFaction(FAMILYTYPE,arg->familyid);
+		}
+		else if (res->retcode == ERR_FC_INFACTION)
+		{
+			FamilyManager::Instance()->SetDelete(arg->familyid, 0);
+		}
+
+		if (isbatch)
+			DeleteHelper::Instance()->DeleteNext();
+	}
+
+	void OnTimeout()
+	{
+	}
+
+};
+
+};
+#endif

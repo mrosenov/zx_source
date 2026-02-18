@@ -1,0 +1,35 @@
+	public:
+		int gs_id;
+		int base_count;
+		enum { PROTOCOL_TYPE = PROTOCOL_GFACBASESERVERREGISTER };
+	public:
+		GFacBaseServerRegister() { type = PROTOCOL_GFACBASESERVERREGISTER; }
+		GFacBaseServerRegister(void*) : Protocol(PROTOCOL_GFACBASESERVERREGISTER) { }
+		GFacBaseServerRegister (int l_gs_id,int l_base_count = 0)
+			 : gs_id(l_gs_id),base_count(l_base_count)
+		{
+			type = PROTOCOL_GFACBASESERVERREGISTER;
+		}
+
+		GFacBaseServerRegister(const GFacBaseServerRegister &rhs)
+			: Protocol(rhs),gs_id(rhs.gs_id),base_count(rhs.base_count) { }
+
+		GNET::Protocol *Clone() const { return new GFacBaseServerRegister(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << gs_id;
+			os << base_count;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> gs_id;
+			os >> base_count;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 128; }

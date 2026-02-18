@@ -1,0 +1,70 @@
+
+#ifndef __GNET_DBSNSGETPLAYERINFOCACHE_HPP
+#define __GNET_DBSNSGETPLAYERINFOCACHE_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "dbsnsgetplayerinfocachearg"
+#include "dbsnsgetplayerinfocacheres"
+
+#include "gamedbclient.hpp"
+#include "snsplayerinfomanager.h"
+#include <vector>
+using std::vector;
+
+namespace GNET
+{
+
+class DBSNSGetPlayerInfoCache : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "dbsnsgetplayerinfocache"
+#undef	RPC_BASECLASS
+
+	vector<int> roleidlist;	
+
+	static void GetNextPlayer(vector<int> & roleidlist)
+	{
+		if (roleidlist.size())
+		{
+			DBSNSGetPlayerInfoCache *rpc = (DBSNSGetPlayerInfoCache *)Rpc::Call(RPC_DBSNSGETPLAYERINFOCACHE, DBSNSGetPlayerInfoCacheArg(roleidlist.back()));
+			roleidlist.erase(roleidlist.end() - 1);
+			rpc->roleidlist.swap(roleidlist);
+			GameDBClient::GetInstance()->SendProtocol(rpc);
+		}
+	}
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		DBSNSGetPlayerInfoCacheArg *arg = (DBSNSGetPlayerInfoCacheArg *)argument;
+		DBSNSGetPlayerInfoCacheRes *res = (DBSNSGetPlayerInfoCacheRes *)result;
+
+		if (res->retcode == ERR_SUCCESS)
+		{
+			res->info.playerinfo.roleid = arg->roleid;
+			SNSPlayerInfoManager::GetInstance()->OnLoad(res->info);
+		}
+		else
+		{
+			Log::log(LOG_ERR, "gdeliveryd: DBSNSGetPlayerInfoCache failed, roleid=%d\n", res->info.playerinfo.roleid);
+		}
+		GetNextPlayer(roleidlist);
+	}
+
+	void OnTimeout()
+	{
+		DBSNSGetPlayerInfoCacheArg *arg = (DBSNSGetPlayerInfoCacheArg *)argument;
+		Log::log(LOG_ERR, "gdeliveryd: DBSNSGetPlayerInfoCache timeout, roleid=%d\n", arg->roleid);
+		GetNextPlayer(roleidlist);
+	}
+
+};
+
+};
+#endif

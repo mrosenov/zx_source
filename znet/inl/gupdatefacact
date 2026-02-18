@@ -1,0 +1,35 @@
+	public:
+		int fid;
+		int delta;
+		enum { PROTOCOL_TYPE = PROTOCOL_GUPDATEFACACT };
+	public:
+		GUpdateFacAct() { type = PROTOCOL_GUPDATEFACACT; }
+		GUpdateFacAct(void*) : Protocol(PROTOCOL_GUPDATEFACACT) { }
+		GUpdateFacAct (int l_fid,int l_delta = 0)
+			 : fid(l_fid),delta(l_delta)
+		{
+			type = PROTOCOL_GUPDATEFACACT;
+		}
+
+		GUpdateFacAct(const GUpdateFacAct &rhs)
+			: Protocol(rhs),fid(rhs.fid),delta(rhs.delta) { }
+
+		GNET::Protocol *Clone() const { return new GUpdateFacAct(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << fid;
+			os << delta;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> fid;
+			os >> delta;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 64; }

@@ -1,0 +1,46 @@
+
+#ifndef __GNET_GETDAILYTOP_HPP
+#define __GNET_GETDAILYTOP_HPP
+
+#include "rpcdefs.h"
+#include "callid.hxx"
+#include "state.hxx"
+
+#include "integer"
+#include "dailytopres"
+
+namespace GNET
+{
+
+class GetDailyTop : public Rpc
+{
+#define	RPC_BASECLASS	Rpc
+	#include "getdailytop"
+#undef	RPC_BASECLASS
+
+	void Server(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		// Integer *arg = (Integer *)argument;
+		// DailyTopRes *res = (DailyTopRes *)result;
+	}
+
+	void Client(Rpc::Data *argument, Rpc::Data *result, Manager *manager, Manager::Session::ID sid)
+	{
+		Integer *arg = (Integer *)argument;
+		DailyTopRes *res = (DailyTopRes *)result;
+		if(res->retcode)
+			Log::log(LOG_ERR,"gamed: GetDailyTop err, retcode=%d, index=%d", res->retcode,arg->value);
+		else
+			GMSV::OnLoadDailyTop(res->table);
+	}
+
+	void OnTimeout()
+	{
+		Integer *arg = (Integer *)argument;
+		Log::log(LOG_ERR,"gamed: GetDailyTop timeout, index=%d", arg->value);
+	}
+
+};
+
+};
+#endif

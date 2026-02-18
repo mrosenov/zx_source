@@ -1,0 +1,59 @@
+#ifndef __GNET_DBCONSIGNGETROLESIMPLEINFOARG_RPCDATA
+#define __GNET_DBCONSIGNGETROLESIMPLEINFOARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBConsignGetRoleSimpleInfoArg : public GNET::Rpc::Data
+	{
+	public:
+		int userid;
+
+	public:
+		DBConsignGetRoleSimpleInfoArg (int l_userid = 0)
+			: userid(l_userid)
+		{
+		}
+
+		DBConsignGetRoleSimpleInfoArg(const DBConsignGetRoleSimpleInfoArg &rhs)
+			: userid(rhs.userid) { }
+
+		Rpc::Data *Clone() const { return new DBConsignGetRoleSimpleInfoArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBConsignGetRoleSimpleInfoArg *r = dynamic_cast<const DBConsignGetRoleSimpleInfoArg *>(&rhs);
+			if (r && r != this)
+			{
+				userid = r->userid;
+			}
+			return *this;
+		}
+
+		DBConsignGetRoleSimpleInfoArg& operator = (const DBConsignGetRoleSimpleInfoArg &rhs)
+		{
+			const DBConsignGetRoleSimpleInfoArg *r = &rhs;
+			if (r && r != this)
+			{
+				userid = r->userid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << userid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> userid;
+			return os;
+		}
+
+	};
+};
+#endif

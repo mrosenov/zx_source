@@ -1,0 +1,64 @@
+#ifndef __GNET_DBCRSSVRTEAMSLEAVEARG_RPCDATA
+#define __GNET_DBCRSSVRTEAMSLEAVEARG_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBCrssvrTeamsLeaveArg : public GNET::Rpc::Data
+	{
+	public:
+		int roleid;
+		int teamid;
+
+	public:
+		DBCrssvrTeamsLeaveArg (int l_roleid = -1,int l_teamid = -1)
+			: roleid(l_roleid),teamid(l_teamid)
+		{
+		}
+
+		DBCrssvrTeamsLeaveArg(const DBCrssvrTeamsLeaveArg &rhs)
+			: roleid(rhs.roleid),teamid(rhs.teamid) { }
+
+		Rpc::Data *Clone() const { return new DBCrssvrTeamsLeaveArg(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBCrssvrTeamsLeaveArg *r = dynamic_cast<const DBCrssvrTeamsLeaveArg *>(&rhs);
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				teamid = r->teamid;
+			}
+			return *this;
+		}
+
+		DBCrssvrTeamsLeaveArg& operator = (const DBCrssvrTeamsLeaveArg &rhs)
+		{
+			const DBCrssvrTeamsLeaveArg *r = &rhs;
+			if (r && r != this)
+			{
+				roleid = r->roleid;
+				teamid = r->teamid;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << roleid;
+			os << teamid;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> roleid;
+			os >> teamid;
+			return os;
+		}
+
+	};
+};
+#endif

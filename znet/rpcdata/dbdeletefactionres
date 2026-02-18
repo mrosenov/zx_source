@@ -1,0 +1,64 @@
+#ifndef __GNET_DBDELETEFACTIONRES_RPCDATA
+#define __GNET_DBDELETEFACTIONRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBDeleteFactionRes : public GNET::Rpc::Data
+	{
+	public:
+		char retcode;
+		std::vector<Octets> namelist;
+
+	public:
+		DBDeleteFactionRes (char l_retcode = -1,const std::vector<Octets>& l_namelist = std::vector<Octets>())
+			: retcode(l_retcode),namelist(l_namelist)
+		{
+		}
+
+		DBDeleteFactionRes(const DBDeleteFactionRes &rhs)
+			: retcode(rhs.retcode),namelist(rhs.namelist) { }
+
+		Rpc::Data *Clone() const { return new DBDeleteFactionRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBDeleteFactionRes *r = dynamic_cast<const DBDeleteFactionRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				namelist = r->namelist;
+			}
+			return *this;
+		}
+
+		DBDeleteFactionRes& operator = (const DBDeleteFactionRes &rhs)
+		{
+			const DBDeleteFactionRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				namelist = r->namelist;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << namelist;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> namelist;
+			return os;
+		}
+
+	};
+};
+#endif

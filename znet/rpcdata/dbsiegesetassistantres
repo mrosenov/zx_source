@@ -1,0 +1,77 @@
+#ifndef __GNET_DBSIEGESETASSISTANTRES_RPCDATA
+#define __GNET_DBSIEGESETASSISTANTRES_RPCDATA
+
+#include "rpcdefs.h"
+
+
+namespace GNET
+{
+	class DBSiegeSetAssistantRes : public GNET::Rpc::Data
+	{
+	public:
+		int retcode;
+		int pre_assistant;
+		int assistant;
+		int master;
+
+	public:
+		DBSiegeSetAssistantRes (int l_retcode = 0,int l_pre_assistant = 0,int l_assistant = 0
+			,int l_master = 0)
+			: retcode(l_retcode),pre_assistant(l_pre_assistant),assistant(l_assistant)
+			,master(l_master)
+		{
+		}
+
+		DBSiegeSetAssistantRes(const DBSiegeSetAssistantRes &rhs)
+			: retcode(rhs.retcode),pre_assistant(rhs.pre_assistant),assistant(rhs.assistant),
+			master(rhs.master) { }
+
+		Rpc::Data *Clone() const { return new DBSiegeSetAssistantRes(*this); }
+
+		Rpc::Data& operator = (const Rpc::Data &rhs)
+		{
+			const DBSiegeSetAssistantRes *r = dynamic_cast<const DBSiegeSetAssistantRes *>(&rhs);
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				pre_assistant = r->pre_assistant;
+				assistant = r->assistant;
+				master = r->master;
+			}
+			return *this;
+		}
+
+		DBSiegeSetAssistantRes& operator = (const DBSiegeSetAssistantRes &rhs)
+		{
+			const DBSiegeSetAssistantRes *r = &rhs;
+			if (r && r != this)
+			{
+				retcode = r->retcode;
+				pre_assistant = r->pre_assistant;
+				assistant = r->assistant;
+				master = r->master;
+			}
+			return *this;
+		}
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << retcode;
+			os << pre_assistant;
+			os << assistant;
+			os << master;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> retcode;
+			os >> pre_assistant;
+			os >> assistant;
+			os >> master;
+			return os;
+		}
+
+	};
+};
+#endif

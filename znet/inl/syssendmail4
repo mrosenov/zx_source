@@ -1,0 +1,71 @@
+	public:
+		int paytype;
+		int64_t orderid;
+		int userid;
+		int64_t roleid;
+		Octets rolename;
+		Octets mail_title;
+		Octets mail_context;
+		WebMallFunctionVector functions;
+		int attach_money;
+		int reserved1;
+		Octets reserved2;
+		enum { PROTOCOL_TYPE = PROTOCOL_SYSSENDMAIL4 };
+	public:
+		SysSendMail4() { type = PROTOCOL_SYSSENDMAIL4; }
+		SysSendMail4(void*) : Protocol(PROTOCOL_SYSSENDMAIL4) { }
+		SysSendMail4 (int l_paytype,int64_t l_orderid,int l_userid,
+			int64_t l_roleid,Octets l_rolename,Octets l_mail_title,
+			Octets l_mail_context,WebMallFunctionVector l_functions,int l_attach_money = 0,
+			int l_reserved1 = 0,const Octets& l_reserved2 = Octets())
+			 : paytype(l_paytype),orderid(l_orderid),userid(l_userid)
+			,roleid(l_roleid),rolename(l_rolename),mail_title(l_mail_title)
+			,mail_context(l_mail_context),functions(l_functions),attach_money(l_attach_money)
+			,reserved1(l_reserved1),reserved2(l_reserved2)
+		{
+			type = PROTOCOL_SYSSENDMAIL4;
+		}
+
+		SysSendMail4(const SysSendMail4 &rhs)
+			: Protocol(rhs),paytype(rhs.paytype),orderid(rhs.orderid),userid(rhs.userid)
+			,roleid(rhs.roleid),rolename(rhs.rolename),mail_title(rhs.mail_title)
+			,mail_context(rhs.mail_context),functions(rhs.functions),attach_money(rhs.attach_money)
+			,reserved1(rhs.reserved1),reserved2(rhs.reserved2) { }
+
+		GNET::Protocol *Clone() const { return new SysSendMail4(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << paytype;
+			os << orderid;
+			os << userid;
+			os << roleid;
+			os << rolename;
+			os << mail_title;
+			os << mail_context;
+			os << functions;
+			os << attach_money;
+			os << reserved1;
+			os << reserved2;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> paytype;
+			os >> orderid;
+			os >> userid;
+			os >> roleid;
+			os >> rolename;
+			os >> mail_title;
+			os >> mail_context;
+			os >> functions;
+			os >> attach_money;
+			os >> reserved1;
+			os >> reserved2;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 4096; }

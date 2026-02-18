@@ -1,0 +1,119 @@
+	public:
+		int result;
+		int roleid;
+		unsigned char level;
+		unsigned char occupation;
+		int factionid;
+		int factiontitle;
+		int familyid;
+		int circleid;
+		int contribution;
+		int devotion;
+		int jointime;
+		int src_provider_id;
+		int battlescore;
+		unsigned int localsid;
+		int worldtag;
+		float x;
+		float y;
+		float z;
+		char flag;
+		int client_tag;
+		Octets roleinfo_pack;
+		int lastlogin_ip;
+		Octets checksum;
+		enum { PROTOCOL_TYPE = PROTOCOL_PLAYERLOGIN_RE };
+	public:
+		PlayerLogin_Re() { type = PROTOCOL_PLAYERLOGIN_RE; }
+		PlayerLogin_Re(void*) : Protocol(PROTOCOL_PLAYERLOGIN_RE) { }
+		PlayerLogin_Re (int l_result,int l_roleid,unsigned char l_level,
+			unsigned char l_occupation,int l_factionid,int l_factiontitle,
+			int l_familyid,int l_circleid,int l_contribution,
+			int l_devotion,int l_jointime,int l_src_provider_id = -1,
+			int l_battlescore = 0,unsigned int l_localsid = 0,int l_worldtag = 0,
+			float l_x = 0,float l_y = 0,float l_z = 0,
+			char l_flag = 0,int l_client_tag = 0,Octets l_roleinfo_pack = Octets(),
+			int l_lastlogin_ip = 0,Octets l_checksum = Octets())
+			 : result(l_result),roleid(l_roleid),level(l_level)
+			,occupation(l_occupation),factionid(l_factionid),factiontitle(l_factiontitle)
+			,familyid(l_familyid),circleid(l_circleid),contribution(l_contribution)
+			,devotion(l_devotion),jointime(l_jointime),src_provider_id(l_src_provider_id)
+			,battlescore(l_battlescore),localsid(l_localsid),worldtag(l_worldtag)
+			,x(l_x),y(l_y),z(l_z)
+			,flag(l_flag),client_tag(l_client_tag),roleinfo_pack(l_roleinfo_pack)
+			,lastlogin_ip(l_lastlogin_ip),checksum(l_checksum)
+		{
+			type = PROTOCOL_PLAYERLOGIN_RE;
+		}
+
+		PlayerLogin_Re(const PlayerLogin_Re &rhs)
+			: Protocol(rhs),result(rhs.result),roleid(rhs.roleid),level(rhs.level)
+			,occupation(rhs.occupation),factionid(rhs.factionid),factiontitle(rhs.factiontitle)
+			,familyid(rhs.familyid),circleid(rhs.circleid),contribution(rhs.contribution)
+			,devotion(rhs.devotion),jointime(rhs.jointime),src_provider_id(rhs.src_provider_id)
+			,battlescore(rhs.battlescore),localsid(rhs.localsid),worldtag(rhs.worldtag)
+			,x(rhs.x),y(rhs.y),z(rhs.z)
+			,flag(rhs.flag),client_tag(rhs.client_tag),roleinfo_pack(rhs.roleinfo_pack)
+			,lastlogin_ip(rhs.lastlogin_ip),checksum(rhs.checksum) { }
+
+		GNET::Protocol *Clone() const { return new PlayerLogin_Re(*this); }
+
+		OctetsStream& marshal(OctetsStream & os) const
+		{
+			os << result;
+			os << roleid;
+			os << level;
+			os << occupation;
+			os << factionid;
+			os << factiontitle;
+			os << familyid;
+			os << circleid;
+			os << contribution;
+			os << devotion;
+			os << jointime;
+			os << src_provider_id;
+			os << battlescore;
+			os << localsid;
+			os << worldtag;
+			os << x;
+			os << y;
+			os << z;
+			os << flag;
+			os << client_tag;
+			os << roleinfo_pack;
+			os << lastlogin_ip;
+			os << checksum;
+			return os;
+		}
+
+		const OctetsStream& unmarshal(const OctetsStream &os)
+		{
+			os >> result;
+			os >> roleid;
+			os >> level;
+			os >> occupation;
+			os >> factionid;
+			os >> factiontitle;
+			os >> familyid;
+			os >> circleid;
+			os >> contribution;
+			os >> devotion;
+			os >> jointime;
+			os >> src_provider_id;
+			os >> battlescore;
+			os >> localsid;
+			os >> worldtag;
+			os >> x;
+			os >> y;
+			os >> z;
+			os >> flag;
+			os >> client_tag;
+			os >> roleinfo_pack;
+			os >> lastlogin_ip;
+			os >> checksum;
+			return os;
+		}
+
+		int PriorPolicy( ) const { return 1; }
+
+		bool SizePolicy(size_t size) const { return size <= 8192; }
