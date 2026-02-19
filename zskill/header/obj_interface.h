@@ -623,8 +623,8 @@ public:
 	void CreateMobActiveDebug(const A3DVECTOR & pos, const minor_param & param); //在指定的位置创建互动怪
 
 	int GetGlobalValue(int lKey);
-	void PutGlobalValue(int lKey, int lValue);
-	void ModifyGlobalValue(int lKey, int lValue);
+	void PutGlobalValue(long lKey, long lValue);
+	void ModifyGlobalValue(long lKey, long lValue);
 	void AssignGlobalValue(int srcKey, int destKey);
 
 	void PlayerCatchPet(const XID& catcher);

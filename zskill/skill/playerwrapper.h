@@ -32,7 +32,8 @@ class SkillWrapper;
 
 	struct BuffLevelWrapper
 	{
-		PlayerWrapper* mPlayer = 0;
+		PlayerWrapper* mPlayer;
+		BuffLevelWrapper() : mPlayer(0) {}
 	};
 
 	class PlayerWrapper

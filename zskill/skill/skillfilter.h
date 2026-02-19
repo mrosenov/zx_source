@@ -18,10 +18,12 @@
 //haokaixin add==============================start
 struct cycle_area
 {
-	int owner = 0;
+	int owner;
 	A3DVECTOR center;
-	float radius = 0;
-	int time = 0;
+	float radius;
+	int time;
+
+	cycle_area() : owner(0), center(), radius(0.0f), time(0) {}
 };
 
 

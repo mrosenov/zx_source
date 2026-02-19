@@ -5,6 +5,7 @@
 #include "buffcondition.h"
 #include "sfilterdef.h"
 #include "statedef.h"
+#include "skillwrapper.h"   // for FEEDBACK_HIT / FEEDBACK_KILL enum
 
 #pragma pack(1)
 
@@ -20,6 +21,7 @@ enum {
 //	FEEDBACK_HIT        = 0x01, //反馈击中消息
 //	FEEDBACK_KILL       = 0x02, //反馈杀人消息 
 //};
+
 
 enum
 {
@@ -107,6 +109,12 @@ protected:
 			mask |= FEEDBACK_KILL;
 		if(condition & EFFECT_INVALID_KILL) 
 			mask |= FEEDBACK_KILL;
+	}
+
+	bool CheckBegin()
+	{
+		if (!_hc) return false;
+		return (_hc->_begincondition & EFFECT_BEGIN) != 0;
 	}
 
 	void Activate()

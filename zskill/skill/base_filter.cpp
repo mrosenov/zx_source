@@ -3,10 +3,13 @@
 
 namespace GNET
 {
+#ifndef RANGE_BROADCAST
+#define RANGE_BROADCAST 5
+#endif
 
     void base_filter::Init(object_interface object, int time, float ratio, int buffid, float amount, float value, bool tiny_time)
     {
-	SetParent(object);
+	_parent = object;
 	_time = time;
 	_ratio = ratio;
 	_buffid = buffid;
@@ -36,50 +39,55 @@ namespace GNET
 	if (CheckBegin())
 	    Activate();
 	if (_hstate)
-	    _parent.UpdateBuff(_filter_id, _hstate, 1, GetTimeout(), _hc->_polyrule==RULE_ISOLATE);
+		_parent.UpdateBuff((short)_filter_id, (short)_hstate, GetTimeout(), 1);
 	if (_vstate)
 	    _parent.IncVisibleState(_vstate);
 
+	/*
 	if (_bufftype & BUFF_TYPE_SWITCH)
 	{
-	    if(_parent.GetSkillWrapper().SwitchOn(_skillid,_filter_id,IsAura()))
-		;//_parent.SendClientSkillNotify(SNOTIFY_SWITCHON, _skillid);
+		if(_parent.GetSkillWrapper().SwitchOn(_skillid,_filter_id,IsAura()))
+			;//_parent.SendClientSkillNotify(SNOTIFY_SWITCHON, _skillid);
 	}
+	*/
     }
 
-    void base_filter::OnSavedAttach()
-    {
-	if (_is_actived)
+	void base_filter::OnSavedAttach()
 	{
-	    SavedEffect();
-	}
-	if (_hstate)
-	    _parent.UpdateBuff(_filter_id, _hstate, _polycount+1, GetTimeLeft(), _hc->_polyrule==RULE_ISOLATE);
-	if (_vstate)
-	    _parent.IncVisibleState(_vstate);
+		if (_is_actived)
+		{
+			SavedEffect();
+		}
+		if (_hstate)
+			_parent.UpdateBuff((short)_filter_id, (short)_hstate, GetTimeLeft(), _polycount + 1);
+		if (_vstate)
+			_parent.IncVisibleState(_vstate);
 
-	if (_bufftype & BUFF_TYPE_SWITCH)
-	{
-	    if(_parent.GetSkillWrapper().SwitchOn(_skillid,_filter_id,IsAura()))
-		;//_parent.SendClientSkillNotify(SNOTIFY_SWITCHON, _skillid);
+		/*
+		if (_bufftype & BUFF_TYPE_SWITCH)
+		{
+			if(_parent.GetSkillWrapper().SwitchOn(_skillid,_filter_id,IsAura()))
+				;//_parent.SendClientSkillNotify(SNOTIFY_SWITCHON, _skillid);
+		}
+		*/
 	}
-    }
-
     // 结束时调用
     void base_filter::OnDetach()
     {
 	if (_is_actived)
 	    UndoEffect();
 	if (_hstate)
-	    _parent.RemoveBuff(_filter_id, _hc->_polyrule==RULE_ISOLATE);
+		_parent.RemoveBuff((short)_filter_id, (short)_hstate);
 	if (_vstate)
 	    _parent.DecVisibleState(_vstate);
 
+	/*
 	if (_bufftype & BUFF_TYPE_SWITCH)
 	{
-	    if (_parent.GetSkillWrapper().SwitchOff(_skillid, _filter_id))
-		;//_parent.SendClientSkillNotify(SNOTIFY_SWITCHOFF, _skillid);
+		if (_parent.GetSkillWrapper().SwitchOff(_skillid, _filter_id))
+			;//_parent.SendClientSkillNotify(SNOTIFY_SWITCHOFF, _skillid);
 	}
+	*/
     }
 
 };
