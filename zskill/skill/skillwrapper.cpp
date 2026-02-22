@@ -13,6 +13,36 @@
 
 namespace GNET
 {
+    static FILE* g_skill_log = NULL;
+
+    // Usage: skill_log("LoadDatabase: version=%d size=%lu", (int)version, (unsigned long)size);
+    static void skill_log(const char* fmt, ...)
+    {
+        if (!g_skill_log)
+        {
+            g_skill_log = fopen("/root/1378/libskill.log", "a");
+            if (!g_skill_log)
+                return;
+        }
+
+        // timestamp
+        time_t t = time(NULL);
+        struct tm* tm_info = localtime(&t);
+
+        fprintf(g_skill_log, "[%02d:%02d:%02d][pid=%d] ",
+            tm_info->tm_hour,
+            tm_info->tm_min,
+            tm_info->tm_sec,
+            (int)getpid());
+
+        va_list args;
+        va_start(args, fmt);
+        vfprintf(g_skill_log, fmt, args);
+        va_end(args);
+
+        fprintf(g_skill_log, "\n");
+        fflush(g_skill_log);
+    }
 
 	SkillWrapper::SkillWrapper()
 	{
