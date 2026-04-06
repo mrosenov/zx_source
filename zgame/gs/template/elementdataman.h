@@ -253,6 +253,18 @@ protected:
 			if(s>0)		fwrite(&(_v[0]), sizeof(T), s, file);
 			return 0;
 		}
+		unsigned int peek_stored_sizeof(FILE * file) const
+		{
+			long pos = ftell(file);
+			unsigned int ts = 0;
+			fread(&ts, sizeof(unsigned int), 1, file);
+			fseek(file, pos, SEEK_SET);
+			return ts;
+		}
+		unsigned int get_element_sizeof() const
+		{
+			return (unsigned int)sizeof(T);
+		}
 		int load(FILE * file)
 		{
 			size_t ts;

@@ -4,12 +4,38 @@ using namespace abase;
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
+#include <stdarg.h>
+#include <unistd.h>
 
 #ifdef _WINDOWS
 
 #include "EC_MD5Hash.h"
 
 #endif
+
+// ---- gs debug logger (writes to /root/1378/gs_debug.log) ----
+static FILE* g_gs_log = NULL;
+static void gs_log(const char* fmt, ...)
+{
+    if (!g_gs_log)
+    {
+        g_gs_log = fopen("/root/1378/gs_debug.log", "a");
+        if (!g_gs_log)
+            return;
+    }
+    time_t t = time(NULL);
+    struct tm* tm_info = localtime(&t);
+    fprintf(g_gs_log, "[%02d:%02d:%02d][pid=%d] ",
+        tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec,
+        (int)getpid());
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(g_gs_log, fmt, args);
+    va_end(args);
+    fprintf(g_gs_log, "\n");
+    fflush(g_gs_log);
+}
+// ---- end logger ----
 
 const char * DataTypeName[DT_MAX+1] =
 {
@@ -569,153 +595,153 @@ void elementdataman::add_structure(unsigned int id, LOTTERY3_ESSENCE & data)
 //Added 2011-03-14.
 void elementdataman::add_structure(unsigned int id,  GEM_CONFIG & data)
 {
-	//Ê×ÏÈ½«Ä£°ådata²åÈëµ½¶ÔÓ¦µÄÊý×égem_config_arrayÖÐ
+	//ï¿½ï¿½ï¿½È½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gem_config_arrayï¿½ï¿½
 	gem_config_array.push_back(data);
 	unsigned int pos = gem_config_array.size() - 1;
 
-	//È»ºóÌí¼ÓË÷Òý£¬¼ÇÂ¼¸ÃconfigÄ£°ådataµÄidËù¶ÔÓ¦µÄpos
+	//È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½configÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½pos
 	add_id_index(ID_SPACE_CONFIG, id, DT_GEM_CONFIG, pos, &(gem_config_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,  GEM_ESSENCE & data)
 {
-	//Ê×ÏÈ´¦ÀíÒ»Ð©»ù±¾µÄÊý¾ÝÂß¼­
+	//ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½Ò»Ð©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
 	if( data.pile_num_max == 0 )
 	{
 		data.pile_num_max = 1;
 	}
 	data.proc_type &= ~(1<<7);
 
-	//È»ºó½«Ä£°ådata²åÈëµ½ÏàÓ¦µÄÊý×égem_essence_arrayÖÐ
+	//È»ï¿½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gem_essence_arrayï¿½ï¿½
 	gem_essence_array.push_back(data);
 	unsigned int pos = gem_essence_array.size() - 1;
 
-	//×îºóÌí¼ÓË÷Òý£¬¼ÇÂ¼¸ÃessenceÄ£°ådataµÄidËù¶ÔÓ¦µÄpos
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½essenceÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½pos
 	add_id_index(ID_SPACE_ESSENCE, id, DT_GEM_ESSENCE, pos, &(gem_essence_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,  GEM_SEAL_ESSENCE & data)
 {
-	//Ê×ÏÈ´¦ÀíÒ»Ð©»ù±¾µÄÊý¾ÝÂß¼­
+	//ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½Ò»Ð©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
 	if( data.pile_num_max == 0 )
 	{
 		data.pile_num_max = 1;
 	}
 	data.proc_type &= ~(1<<7);
 
-	//È»ºó½«Ä£°ådata²åÈëµ½ÏàÓ¦µÄÊý×égem_seal_essence_arrayÖÐ
+	//È»ï¿½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gem_seal_essence_arrayï¿½ï¿½
 	gem_seal_essence_array.push_back(data);
 	unsigned int pos = gem_seal_essence_array.size() - 1;
 
-	//×îºóÌí¼ÓË÷Òý£¬½«¼ÇÂ¼¸ÃessenceÄ£°ådataµÄidËù¶ÔÓ¦µÄpos
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½essenceÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½pos
 	add_id_index(ID_SPACE_ESSENCE, id, DT_GEM_SEAL_ESSENCE, pos, &(gem_seal_essence_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,  GEM_DUST_ESSENCE & data)
 {
-	//Ê×ÏÈ´¦ÀíÒ»Ð©»ù±¾µÄÊý¾ÝÂß¼­
+	//ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½Ò»Ð©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
 	if( data.pile_num_max == 0 )
 	{
 		data.pile_num_max = 1;
 	}
 	data.proc_type &= ~(1<<7);
 
-	//È»ºó½«Ä£°ådata²åÈëµ½ÏàÓ¦µÄÊý×égem_dust_essence_arrayÖÐ
+	//È»ï¿½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gem_dust_essence_arrayï¿½ï¿½
 	gem_dust_essence_array.push_back(data);
 	unsigned int pos = gem_dust_essence_array.size() - 1;
 
-	//×îºóÌí¼ÓË÷Òý£¬¼ÇÂ¼¸ÃessenceÄ£°ådataµÄidËù¶ÔÓ¦µÄpos
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½essenceÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½pos
 	add_id_index(ID_SPACE_ESSENCE, id, DT_GEM_DUST_ESSENCE, pos, &(gem_dust_essence_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,  GEM_EXTRACT_CONFIG & data)
 {
-	//Ê×ÏÈ£¬½«Ä£°ådata²åÈëµ½ÏàÓ¦µÄÊý×égem_extract_config_arrayÖÐ
+	//ï¿½ï¿½ï¿½È£ï¿½ï¿½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gem_extract_config_arrayï¿½ï¿½
 	gem_extract_config_array.push_back(data);
 	unsigned int pos = gem_extract_config_array.size() - 1;
 
-	//×îºóÌí¼ÓË÷Òý£¬¼ÇÂ¼¸ÃconfigÄ£°ådataµÄidËù¶ÔÓ¦µÄpos
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½configÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½pos
 	add_id_index(ID_SPACE_CONFIG, id, DT_GEM_EXTRACT_CONFIG, pos, &(gem_extract_config_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,  GENERAL_ARTICLE_ESSENCE & data)
 {
-	//Ê×ÏÈ£¬½«Ä£°ådata²åÈëµ½ÏàÓ¦µÄÊý×égeneral_article_essence_arrayÖÐ
+	//ï¿½ï¿½ï¿½È£ï¿½ï¿½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½general_article_essence_arrayï¿½ï¿½
 	general_article_essence_array.push_back(data);
 	unsigned int pos = general_article_essence_array.size() - 1;
 
-	//×îºóÌí¼ÓË÷Òý£¬¼ÇÂ¼¸ÃessenceÄ£°ådataµÄidËù¶ÔÓ¦µÄpos
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½essenceÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½pos
 	add_id_index(ID_SPACE_ESSENCE, id, DT_GENERAL_ARTICLE_ESSENCE, pos, &(general_article_essence_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id, SMALL_ONLINE_GIFT_BAG_ESSENCE & data)
 {
-	//Ê×ÏÈ´¦ÀíÒ»Ð©»ù±¾µÄÊý¾ÝÂß¼­
+	//ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½Ò»Ð©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
 	if( data.pile_num_max == 0 )
 	{
 		data.pile_num_max = 1;
 	}
 	data.proc_type &= ~(1<<7);
 
-	//Æä´Î£¬½«Ä£°ådata²åÈëµ½ÏàÓ¦µÄÊý×ésmall_online_gift_bag_essence_arrayÖÐ
+	//ï¿½ï¿½Î£ï¿½ï¿½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½small_online_gift_bag_essence_arrayï¿½ï¿½
 	small_online_gift_bag_essence_array.push_back(data);
 	unsigned int pos = small_online_gift_bag_essence_array.size() - 1;
 
-	//×îºóÌí¼ÓË÷Òý£¬¼ÇÂ¼¸ÃessenceÄ£°ådataµÄidËù¶ÔÓ¦µÄÎ»ÖÃpos
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½essenceÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Î»ï¿½ï¿½pos
 	add_id_index(ID_SPACE_ESSENCE, id, DT_SMALL_ONLINE_GIFT_BAG_ESSENCE, pos, &(small_online_gift_bag_essence_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id, SCROLL_UNLOCK_ESSENCE & data)
 {
-	//Ê×ÏÈ´¦ÀíÒ»Ð©»ù±¾µÄÊý¾ÝÂß¼­
+	//ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½Ò»Ð©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
 	if( data.pile_num_max == 0 )
 	{
 		data.pile_num_max = 1;
 	}
 	data.proc_type &= ~(1<<7);
 
-	//Æä´Î£¬½«Ä£°ådata²åÈëµ½ÏàÓ¦µÄÊý×éscroll_unlock_essence_arrayÖÐ
+	//ï¿½ï¿½Î£ï¿½ï¿½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½scroll_unlock_essence_arrayï¿½ï¿½
 	scroll_unlock_essence_array.push_back(data);
 	unsigned int pos = scroll_unlock_essence_array.size() - 1;
 
-	//×îºóÌí¼ÓË÷Òý£¬¼ÇÂ¼¸ÃessenceÄ£°ådataµÄidËù¶ÔÓ¦µÄÎ»ÖÃpos
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½essenceÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Î»ï¿½ï¿½pos
 	add_id_index(ID_SPACE_ESSENCE, id, DT_SCROLL_UNLOCK_ESSENCE, pos, &(scroll_unlock_essence_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id, SCROLL_DIG_COUNT_INC_ESSENCE & data)
 {
-	//Ê×ÏÈ´¦ÀíÒ»Ð©»ù±¾µÄÊý¾ÝÂß¼­
+	//ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½Ò»Ð©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
 	if( data.pile_num_max == 0 )
 	{
 		data.pile_num_max = 1;
 	}
 	data.proc_type &= ~(1<<7);
 
-	//Æä´Î£¬½«Ä£°ådata²åÈëµ½ÏàÓ¦µÄÊý×éscroll_dig_count_inc_essence_arrayÖÐ
+	//ï¿½ï¿½Î£ï¿½ï¿½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½scroll_dig_count_inc_essence_arrayï¿½ï¿½
 	scroll_dig_count_inc_essence_array.push_back(data);
 	unsigned int pos = scroll_dig_count_inc_essence_array.size() - 1;
 
-	//×îºóÌí¼ÓË÷Òý£¬¼ÇÂ¼¸ÃessenceÄ£°ådataµÄidËù¶ÔÓ¦µÄÎ»ÖÃpos
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½essenceÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Î»ï¿½ï¿½pos
 	add_id_index(ID_SPACE_ESSENCE, id, DT_SCROLL_DIG_COUNT_INC_ESSENCE, pos, &(scroll_dig_count_inc_essence_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id, ONLINE_GIFT_BAG_CONFIG & data)
 {
-	//Ê×ÏÈ£¬½«Ä£°ådata²åÈëµ½ÏàÓ¦µÄÊý×éonline_gift_bag_config_arrayÖÐ
+	//ï¿½ï¿½ï¿½È£ï¿½ï¿½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½online_gift_bag_config_arrayï¿½ï¿½
 	online_gift_bag_config_array.push_back(data);
 	unsigned int pos = online_gift_bag_config_array.size() - 1;
 
-	//×îºóÌí¼ÓË÷Òý£¬¼ÇÂ¼¸ÃconfigÄ£°ådataµÄidËù¶ÔÓ¦µÄÎ»ÖÃpos
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½configÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Î»ï¿½ï¿½pos
 	add_id_index(ID_SPACE_CONFIG, id, DT_ONLINE_GIFT_BAG_CONFIG, pos, &(online_gift_bag_config_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id, SCROLL_REGION_CONFIG & data)
 {
-	//Ê×ÏÈ£¬½«Ä£°ådata²åÈëµ½ÏàÓ¦µÄÊý×éscroll_region_config_arrayÖÐ
+	//ï¿½ï¿½ï¿½È£ï¿½ï¿½ï¿½Ä£ï¿½ï¿½dataï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½scroll_region_config_arrayï¿½ï¿½
 	scroll_region_config_array.push_back(data);
 	unsigned int pos = scroll_region_config_array.size() - 1;
 
-	//×îºóÌí¼ÓË÷Òý£¬¼ÇÂ¼¸ÃconfigÄ£°ådataµÄidËù¶ÔÓ¦µÄÎ»ÖÃpos
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½configÄ£ï¿½ï¿½dataï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Î»ï¿½ï¿½pos
 	add_id_index(ID_SPACE_CONFIG, id, DT_SCROLL_REGION_CONFIG, pos, &(scroll_region_config_array[0]));
 }
 
@@ -1860,55 +1886,55 @@ void elementdataman::add_structure(unsigned int id,	 INSTANCING_BATTLE_CONFIG & 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//Ìí¼Ó¸±±¾Ä£°åÊý¾Ýµ½Ä£°åÁÐ±íÖÐ£¬²¢½¨Á¢ÏàÓ¦µÄË÷Òý¡£
+//ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½Ä£ï¿½ï¿½ï¿½Ð±ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //Added 2011-07-13.
 ///////////////////////////////////////////////////////////////////////////////
 void elementdataman::add_structure(unsigned int id,	 TRANSCRIPTION_CONFIG & data)
 {
-	//½«¸±±¾Ä£°åÊý¾Ý´æÈëÄ£°åÁÐ±íÖÐ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½
 	transcription_config_array.push_back(data);
 
-	//´´½¨ÏàÓ¦µÄË÷ÒýÐÅÏ¢
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	unsigned int pos = transcription_config_array.size() - 1;
 	add_id_index(ID_SPACE_CONFIG, id, DT_TRANSCRIPTION_CONFIG, pos, &(transcription_config_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,	 TOWER_TRANSCRIPTION_CONFIG & data)
 {
-	//½«¸±±¾Ä£°åÊý¾Ý´æÈëÄ£°åÁÐ±íÖÐ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½
 	tower_transcription_config_array.push_back(data);
 
-	//´´½¨ÏàÓ¦µÄË÷ÒýÐÅÏ¢
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	unsigned int pos = tower_transcription_config_array.size() - 1;
 	add_id_index(ID_SPACE_CONFIG, id, DT_TOWER_TRANSCRIPTION_CONFIG, pos, &(tower_transcription_config_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,	 TOWER_TRANSCRIPTION_PROPERTY_CONFIG & data)
 {
-	//½«¸±±¾Ä£°åÊý¾Ý´æÈëÄ£°åÁÐ±íÖÐ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½
 	tower_transcription_property_config_array.push_back(data);
 
-	//´´½¨ÏàÓ¦µÄË÷ÒýÐÅÏ¢
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	unsigned int pos = tower_transcription_property_config_array.size() - 1;
 	add_id_index(ID_SPACE_CONFIG, id, DT_TOWER_TRANSCRIPTION_PROPERTY_CONFIG, pos, &(tower_transcription_property_config_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,	 LITTLE_PET_UPGRADE_CONFIG & data)
 {
-	//½«ÖïÐ¡ÏÉÄ£°åÊý¾Ý´æÈëÄ£°åÁÐ±íÖÐ
+	//ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½
 	little_pet_upgrade_config_array.push_back(data);
 
-	//´´½¨ÏàÓ¦µÄË÷ÒýÐÅÏ¢
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	unsigned int pos = little_pet_upgrade_config_array.size() - 1;
 	add_id_index(ID_SPACE_CONFIG, id, DT_LITTLE_PET_UPGRADE_CONFIG, pos, &(little_pet_upgrade_config_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,	 COLLISION_RAID_TRANSFIGURE_CONFIG & data)
 {
-	//½«Åö×²¸±±¾±äÉíÅäÖÃÄ£°åÊý¾Ý´æÈëÄ£°åÁÐ±íÖÐ
+	//ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½
 	collision_raid_transfigure_config_array.push_back(data);
 
-	//´´½¨ÏàÓ¦µÄË÷ÒýÐÅÏ¢
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	unsigned int pos = collision_raid_transfigure_config_array.size() - 1;
 	add_id_index(ID_SPACE_CONFIG, id, DT_COLLISION_RAID_TRANSFIGURE_CONFIG, pos, &(collision_raid_transfigure_config_array[0]));
 }
@@ -1917,27 +1943,27 @@ void elementdataman::add_structure(unsigned int id,	 UI_TRANSFER_CONFIG & data)
 {
 	ui_transfer_config_array.push_back(data);
 	
-	//´´½¨ÏàÓ¦µÄË÷ÒýÐÅÏ¢
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	unsigned int pos = ui_transfer_config_array.size() - 1;
 	add_id_index(ID_SPACE_CONFIG, id, DT_UI_TRANSFER_CONFIG, pos, &(ui_transfer_config_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,	 DROP_INTERNAL_CONFIG & data)
 {
-	//½«ÖïÐ¡ÏÉÄ£°åÊý¾Ý´æÈëÄ£°åÁÐ±íÖÐ
+	//ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½
 	drop_interval_config_array.push_back(data);
 	
-	//´´½¨ÏàÓ¦µÄË÷ÒýÐÅÏ¢
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	unsigned int pos = drop_interval_config_array.size() - 1;
 	add_id_index(ID_SPACE_CONFIG, id, DT_DROP_INTERNAL_CONFIG, pos, &(drop_interval_config_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,	 PK2012_GUESS_CONFIG & data)
 {
-	//½«ÖïÐ¡ÏÉÄ£°åÊý¾Ý´æÈëÄ£°åÁÐ±íÖÐ
+	//ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½
 	pk2012_guess_config_array.push_back(data);
 	
-	//´´½¨ÏàÓ¦µÄË÷ÒýÐÅÏ¢
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	unsigned int pos = pk2012_guess_config_array.size() - 1;
 	add_id_index(ID_SPACE_CONFIG, id, DT_PK2012_GUESS_CONFIG, pos, &(pk2012_guess_config_array[0]));
 }
@@ -3279,45 +3305,64 @@ int elementdataman::load_data(const char * pathname)
 {
 	long md5pos[5];
 
+	gs_log("load_data: opening '%s'", pathname);
 	FILE * file;
 	file = fopen(pathname, "rb");
-	if(file == NULL)		return -1;
+	if(file == NULL)
+	{
+		gs_log("load_data: fopen failed");
+		return -1;
+	}
 
 	unsigned int version = 0;
 	fread(&version, sizeof(unsigned int), 1, file);
+	gs_log("load_data: file version=0x%x expected=0x%x", version, (unsigned int)ELEMENTDATA_VERSION);
 	if( version != ELEMENTDATA_VERSION )
+	{
+		gs_log("load_data: version mismatch - aborting");
+		fclose(file);
 		return -1;
-					 
+	}
+
 	time_t t;		// #define _USE_32BIT_TIME_T sizeof(time_t)=4
 	fread(&t, sizeof(time_t), 1, file);
+	gs_log("load_data: version OK, beginning array loads");
 
-	if(equipment_addon_array.load(file) != 0) return -1;
-	if(equipment_major_type_array.load(file) != 0) return -1;
-	if(equipment_sub_type_array.load(file) != 0) return -1;
-	if(equipment_essence_array.load(file) != 0) return -1;
-	if(medicine_major_type_array.load(file) != 0) return -1;
-	if(medicine_sub_type_array.load(file) != 0) return -1;
-	if(medicine_essence_array.load(file) != 0) return -1;
-	if(material_major_type_array.load(file) != 0) return -1;
-	if(material_sub_type_array.load(file) != 0) return -1;
-	if(material_essence_array.load(file) != 0) return -1;
-	if(refine_ticket_essence_array.load(file) != 0) return -1;
-	if(skilltome_sub_type_array.load(file) != 0) return -1;
-	if(skilltome_essence_array.load(file) != 0) return -1;
+#define LOAD_ARRAY(arr) \
+	{ \
+		unsigned int _stored = (arr).peek_stored_sizeof(file); \
+		unsigned int _expected = (arr).get_element_sizeof(); \
+		gs_log("load_data: loading " #arr " at offset %ld  stored_sizeof=%u  expected_sizeof=%u", ftell(file), _stored, _expected); \
+		if((arr).load(file) != 0) { gs_log("load_data: FAILED " #arr "  stored_sizeof=%u  expected_sizeof=%u  diff=%d", _stored, _expected, (int)_stored - (int)_expected); fclose(file); return -1; } \
+	}
+
+	LOAD_ARRAY(equipment_addon_array)
+	LOAD_ARRAY(equipment_major_type_array)
+	LOAD_ARRAY(equipment_sub_type_array)
+	LOAD_ARRAY(equipment_essence_array)
+	LOAD_ARRAY(medicine_major_type_array)
+	LOAD_ARRAY(medicine_sub_type_array)
+	LOAD_ARRAY(medicine_essence_array)
+	LOAD_ARRAY(material_major_type_array)
+	LOAD_ARRAY(material_sub_type_array)
+	LOAD_ARRAY(material_essence_array)
+	LOAD_ARRAY(refine_ticket_essence_array)
+	LOAD_ARRAY(skilltome_sub_type_array)
+	LOAD_ARRAY(skilltome_essence_array)
 
 	md5pos[0] = ftell(file);
 	fseek(file, 8, SEEK_CUR);
 
-	if(transmitroll_essence_array.load(file) != 0) return -1;
-	if(luckyroll_essence_array.load(file) != 0 ) return -1;
-	if(townscroll_essence_array.load(file) != 0) return -1;
-	if(revivescroll_essence_array.load(file) != 0) return -1;
-	if(taskmatter_essence_array.load(file) != 0) return -1;
-	if(droptable_type_array.load(file) != 0 ) return -1;
-	if(droptable_essence_array.load(file) != 0 ) return -1;
-	if(monster_type_array.load(file) != 0) return -1;
-	if(monster_essence_array.load(file) != 0) return -1;
-	if(offline_trustee_essence_array.load(file) != 0) return -1;
+	LOAD_ARRAY(transmitroll_essence_array)
+	LOAD_ARRAY(luckyroll_essence_array)
+	LOAD_ARRAY(townscroll_essence_array)
+	LOAD_ARRAY(revivescroll_essence_array)
+	LOAD_ARRAY(taskmatter_essence_array)
+	LOAD_ARRAY(droptable_type_array)
+	LOAD_ARRAY(droptable_essence_array)
+	LOAD_ARRAY(monster_type_array)
+	LOAD_ARRAY(monster_essence_array)
+	LOAD_ARRAY(offline_trustee_essence_array)
 
 	// skip the computer's name of the exporter
 	unsigned int tag;
@@ -3328,195 +3373,203 @@ int elementdataman::load_data(const char * pathname)
 	fread(buffer, len, 1, file);
 	fread(&t, sizeof(int), 1, file);
 	
-	if(npc_talk_service_array.load(file) != 0) return -1;
-	if(npc_sell_service_array.load(file) != 0) return -1;
-	if(npc_buy_service_array.load(file) != 0) return -1;
-	if(npc_task_in_service_array.load(file) != 0) return -1;
-	if(npc_task_out_service_array.load(file) != 0) return -1;
-	if(npc_task_matter_service_array.load(file) != 0) return -1;
-	if(npc_heal_service_array.load(file) != 0) return -1;
-	if(npc_transmit_service_array.load(file) != 0) return -1;
-	if(npc_proxy_service_array.load(file) != 0) return -1;
-	if(npc_storage_service_array.load(file) != 0) return -1;
-	if(npc_type_array.load(file) != 0) return -1;
-	if(npc_essence_array.load(file) != 0) return -1;
-	if(recipe_major_type_array.load(file) != 0) return -1;
+	LOAD_ARRAY(npc_talk_service_array)
+	LOAD_ARRAY(npc_sell_service_array)
+	LOAD_ARRAY(npc_buy_service_array)
+	LOAD_ARRAY(npc_task_in_service_array)
+	LOAD_ARRAY(npc_task_out_service_array)
+	LOAD_ARRAY(npc_task_matter_service_array)
+	LOAD_ARRAY(npc_heal_service_array)
+	LOAD_ARRAY(npc_transmit_service_array)
+	LOAD_ARRAY(npc_proxy_service_array)
+	LOAD_ARRAY(npc_storage_service_array)
+	LOAD_ARRAY(npc_type_array)
+	LOAD_ARRAY(npc_essence_array)
+	LOAD_ARRAY(recipe_major_type_array)
 
 	md5pos[1] = ftell(file);
 	fseek(file, 8, SEEK_CUR);
 
-	if(recipe_sub_type_array.load(file) != 0) return -1;
-	if(recipe_essence_array.load(file) != 0) return -1;
-	if(enemy_faction_config_array.load(file) != 0) return -1;
-	if(character_class_config_array.load(file) != 0) return -1;
-	if(param_adjust_config_array.load(file) != 0) return -1;
-	if(pie_love_config_array.load(file) != 0) return -1;
-	if(taskdice_essence_array.load(file) != 0) return -1;
-	if(tasknormalmatter_essence_array.load(file) != 0) return -1;
-	if(mine_type_array.load(file) != 0) return -1;
-	if(mine_essence_array.load(file) != 0) return -1;
-	if(gm_generator_type_array.load(file) != 0) return -1;
-	if(gm_generator_essence_array.load(file) != 0) return -1;
-	if(fireworks_essence_array.load(file) != 0) return -1;
-	if(player_levelexp_config_array.load(file) != 0) return -1;
-	if(npc_war_towerbuild_service_array.load(file) != 0) return -1;
-	if(player_secondlevel_config_array.load(file) != 0) return -1;
-	if(npc_resetprop_service_array.load(file) != 0) return -1;
-	if(estone_essence_array.load(file) != 0) return -1;
-	if(pstone_essence_array.load(file) != 0) return -1;
-	if(sstone_essence_array.load(file) != 0) return -1;
+	LOAD_ARRAY(recipe_sub_type_array)
+	LOAD_ARRAY(recipe_essence_array)
+	LOAD_ARRAY(enemy_faction_config_array)
+	LOAD_ARRAY(character_class_config_array)
+	LOAD_ARRAY(param_adjust_config_array)
+	LOAD_ARRAY(pie_love_config_array)
+	LOAD_ARRAY(taskdice_essence_array)
+	LOAD_ARRAY(tasknormalmatter_essence_array)
+	LOAD_ARRAY(mine_type_array)
+	LOAD_ARRAY(mine_essence_array)
+	LOAD_ARRAY(gm_generator_type_array)
+	LOAD_ARRAY(gm_generator_essence_array)
+	LOAD_ARRAY(fireworks_essence_array)
+	LOAD_ARRAY(player_levelexp_config_array)
+	LOAD_ARRAY(npc_war_towerbuild_service_array)
+	LOAD_ARRAY(player_secondlevel_config_array)
+	LOAD_ARRAY(npc_resetprop_service_array)
+	LOAD_ARRAY(estone_essence_array)
+	LOAD_ARRAY(pstone_essence_array)
+	LOAD_ARRAY(sstone_essence_array)
 
 	fread(&tag, sizeof(unsigned int), 1, file);
 	fread(&len, sizeof(unsigned int), 1, file);
 	fread(buffer, len, 1, file);
-	
-	if(reciperoll_major_type_array.load(file) != 0) return -1;
-	if(reciperoll_sub_type_array.load(file) != 0) return -1;
-	if(reciperoll_essence_array.load(file) != 0) return -1;
-	if(suite_essence_array.load(file) != 0) return -1;
-	if(double_exp_essence_array.load(file) != 0) return -1;
-	if(destroying_essence_array.load(file) != 0) return -1;
+
+	LOAD_ARRAY(reciperoll_major_type_array)
+	LOAD_ARRAY(reciperoll_sub_type_array)
+	LOAD_ARRAY(reciperoll_essence_array)
+	LOAD_ARRAY(suite_essence_array)
+	LOAD_ARRAY(double_exp_essence_array)
+	LOAD_ARRAY(destroying_essence_array)
 
 	md5pos[2] = ftell(file);
 	fseek(file, 8, SEEK_CUR);
 
-	if(npc_equipbind_service_array.load(file) != 0) return -1;
-	if(npc_equipdestroy_service_array.load(file) != 0) return -1;
-	if(npc_equipundestroy_service_array.load(file) != 0) return -1;
-	if(skillmatter_essence_array.load(file) != 0) return -1;
-	if(vehicle_essence_array.load(file) != 0) return -1;
-	if(couple_jumpto_essence_array.load(file) != 0) return -1;
-	if(lottery_essence_array.load(file) != 0) return -1;
-	if(camrecorder_essence_array.load(file) != 0) return -1;
-	if(title_prop_config_array.load(file) != 0) return -1;
-	if(special_id_config_array.load(file) != 0) return -1;
-	if(text_fireworks_essence_array.load(file) != 0) return -1;
-	if(talisman_mainpart_essence_array.load(file) != 0) return -1;
-	if(talisman_expfood_essence_array.load(file) != 0) return -1;
-	if(talisman_mergekatalyst_essence_array.load(file) != 0) return -1;
-	if(talisman_energyfood_essence_array.load(file) != 0 ) return -1;
-	if(speaker_essence_array.load(file) != 0) return -1;
-	if(player_talent_config_array.load(file) != 0) return -1;
-	if(player_skill_point_config_array.load(file) != 0) return -1;
-	if(potential_tome_essence_array.load(file) != 0) return -1;
-	if(war_role_config_array.load(file) != 0) return -1;
-	if(npc_war_buy_archer_service_array.load(file) != 0) return -1;
-	if(siege_artillery_scroll_essence_array.load(file) != 0) return -1;
-	if(pet_bedge_essence_array.load(file) != 0) return -1;
-	if(pet_food_essence_array.load(file) != 0) return -1;
-	if(pet_skill_essence_array.load(file) != 0) return -1;
-	if(pet_armor_essence_array.load(file) != 0) return -1;
-	if(pet_auto_food_essence_array.load(file) != 0) return -1;
-	if(pet_refine_essence_array.load(file) != 0) return -1;
-	if(pet_assist_refine_essence_array.load(file) != 0) return -1;
-	if(renasence_skill_config_array.load(file) != 0) return -1;
-	if(renasence_prop_config_array.load(file) != 0) return -1;
-	if(aircraft_essence_array.load(file) != 0) return -1;
-	if(fly_energyfood_essence_array.load(file) != 0) return -1;
-	if(item_trade_config_array.load(file) != 0) return -1;
-	if(book_essence_array.load(file) != 0) return -1;
-	if(equip_soul_essence_array.load(file) !=0) return -1;
-	if(equip_soul_meld_service_array.load(file) != 0) return -1;
-	if(special_name_item_essence_array.load(file) != 0) return -1;
-	if(recycle_item_config_array.load(file) != 0) return -1;
-	if(score_to_rank_config_array.load(file) != 0) return -1;
-	if(battle_drop_config_array.load(file) != 0) return -1;
+	LOAD_ARRAY(npc_equipbind_service_array)
+	LOAD_ARRAY(npc_equipdestroy_service_array)
+	LOAD_ARRAY(npc_equipundestroy_service_array)
+	LOAD_ARRAY(skillmatter_essence_array)
+	LOAD_ARRAY(vehicle_essence_array)
+	LOAD_ARRAY(couple_jumpto_essence_array)
+	LOAD_ARRAY(lottery_essence_array)
+	LOAD_ARRAY(camrecorder_essence_array)
+	LOAD_ARRAY(title_prop_config_array)
+	LOAD_ARRAY(special_id_config_array)
+	LOAD_ARRAY(text_fireworks_essence_array)
+	LOAD_ARRAY(talisman_mainpart_essence_array)
+	LOAD_ARRAY(talisman_expfood_essence_array)
+	LOAD_ARRAY(talisman_mergekatalyst_essence_array)
+	LOAD_ARRAY(talisman_energyfood_essence_array)
+	LOAD_ARRAY(speaker_essence_array)
+	LOAD_ARRAY(player_talent_config_array)
+	LOAD_ARRAY(player_skill_point_config_array)
+	LOAD_ARRAY(potential_tome_essence_array)
+	LOAD_ARRAY(war_role_config_array)
+	LOAD_ARRAY(npc_war_buy_archer_service_array)
+	LOAD_ARRAY(siege_artillery_scroll_essence_array)
+	LOAD_ARRAY(pet_bedge_essence_array)
+	LOAD_ARRAY(pet_food_essence_array)
+	LOAD_ARRAY(pet_skill_essence_array)
+	LOAD_ARRAY(pet_armor_essence_array)
+	LOAD_ARRAY(pet_auto_food_essence_array)
+	LOAD_ARRAY(pet_refine_essence_array)
+	LOAD_ARRAY(pet_assist_refine_essence_array)
+	LOAD_ARRAY(renasence_skill_config_array)
+	LOAD_ARRAY(renasence_prop_config_array)
+	LOAD_ARRAY(aircraft_essence_array)
+	LOAD_ARRAY(fly_energyfood_essence_array)
+	LOAD_ARRAY(item_trade_config_array)
+	LOAD_ARRAY(book_essence_array)
+	LOAD_ARRAY(equip_soul_essence_array)
+	LOAD_ARRAY(equip_soul_meld_service_array)
+	LOAD_ARRAY(special_name_item_essence_array)
+	LOAD_ARRAY(recycle_item_config_array)
+	LOAD_ARRAY(score_to_rank_config_array)
+	LOAD_ARRAY(battle_drop_config_array)
 
 	md5pos[3] = ftell(file);
 	fseek(file, 8, SEEK_CUR);
 
-	if(battle_deprive_config_array.load(file) != 0) return -1;
-	if(battle_score_config_array.load(file) != 0) return -1;
-	if(gift_bag_essence_array.load(file) != 0) return -1;
-	if(vip_card_essence_array.load(file) != 0) return -1;
-	if(instancing_battle_config_array.load(file) != 0) return -1;
-	if(change_shape_card_essence_array.load(file) != 0) return -1;
-	if(change_shape_stone_essence_array.load(file) != 0) return -1;
-	if(change_shape_prop_config_array.load(file)!= 0) return -1;
-	if(original_shape_config_array.load(file)!=0) return -1;
-	if(life_skill_config_array.load(file)!=0) return -1;
-	if(arena_droptable_config_array.load(file)!=0) return -1;
-	if(mercenary_credential_essence_array.load(file)!=0) return -1;
-	if(teleportation_essence_array.load(file)!=0) return -1;
-	if(teleportation_stone_essence_array.load(file)!=0) return -1;
-	if(combine_skill_edit_config_array.load(file)!=0) return -1;
-	if(upgrade_equip_config_array.load(file)!=0) return -1;
-	if(upgrade_equip_config_1_array.load(file)!=0) return -1;
-	if(upgrade_equip_stone_essence_array.load(file)!=0) return -1;
-	if(npc_consign_service_array.load(file) != 0) return -1;
-	if(deity_character_config_array.load(file) != 0) return -1;
-	if(lottery2_essence_array.load(file) != 0) return -1;
-	if(gem_config_array.load(file) != 0) return -1;//Added 2011-03-14.
-	if(gem_essence_array.load(file) != 0) return -1;
-	if(gem_seal_essence_array.load(file) != 0) return -1;
-	if(gem_dust_essence_array.load(file) != 0) return -1;
-	if(gem_extract_config_array.load(file) != 0) return -1;
-	if(general_article_essence_array.load(file) != 0) return -1;
-	if(lottery3_essence_array.load(file) != 0) return -1; //Added 2011-07-01.
-	if(transcription_config_array.load(file) != 0) return -1; //Added 2011-07-13.
-	if(online_gift_bag_config_array.load(file) != 0) return -1; //Added 2011-12-06.
-	if(small_online_gift_bag_essence_array.load(file) != 0) return -1; //Added 2011-12-06.
-	if(scroll_region_config_array.load(file) != 0) return -1;	//Added 2012-03-20.
-	if(scroll_unlock_essence_array.load(file) != 0) return -1;	//Added 2012-03-20.
-	if(scroll_dig_count_inc_essence_array.load(file) != 0) return -1;	//Added 2012-03-22.
-	if(tower_transcription_config_array.load(file) != 0) return -1;		//Added 2012-03-31.
-	if(tower_transcription_property_config_array.load(file) != 0) return -1;//Added 2012-03-31.
-	if(rune_data_config_array.load(file) != 0) return -1;//Added 2012.04.17
-	if(rune_comb_property_array.load(file) != 0) return -1;//Added 2012.04.17
-	if(rune_equip_array.load(file) != 0) return -1;//Added 2012.04.17
-	if(little_pet_upgrade_config_array.load(file) != 0) return -1; //Added 2012-04-19.
-	if(rune_slot_array.load(file) != 0) return -1; //Added 2012-04-21.
-	if(drop_interval_config_array.load(file) != 0) return -1;
-	if(pk2012_guess_config_array.load(file) != 0) return -1;
-	if(collision_raid_transfigure_config_array.load(file) != 0) return -1;	//Added 2012-08-02.
-	if(booth_figure_item_array.load(file) != 0) return -1;	
-	if(flag_buff_item_array.load(file) != 0) return -1;	
-	if(npc_reputation_shop_service_array.load(file) != 0) return -1;
-	if(npc_ui_transfer_service_array.load(file) != 0) return -1;
-	if(ui_transfer_config_array.load(file) != 0) return -1;
-	if(xingzuo_item_essence_array.load(file) != 0) return -1;
-	if(xingzuo_energy_item_essence_array.load(file) != 0) return -1;
-	if(collision_raid_award_config_array.load(file) != 0) return -1;
-	if(cash_medic_merge_item_essence_array.load(file) != 0) return -1;
-	if(buff_area_config_array.load(file) != 0) return -1;
-	if(liveness_config_array.load(file) != 0) return -1;
-	if(challenge_2012_config_array.load(file) != 0) return -1;
-	if(sale_promotion_item_essence_array.load(file) != 0) return -1;
-	if(gift_bag_lottery_deliver_essence_array.load(file) != 0) return -1;
-	if(lottery_tangyuan_item_essence_array.load(file) != 0) return -1;
-	if(task_special_award_config_array.load(file) != 0) return -1;
-	if(gift_pack_item_essence_array.load(file) != 0) return -1;
-	if(prop_add_config_array.load(file) != 0) return -1;
-	if(prop_add_material_item_essence_array.load(file) != 0) return -1;
-	if(prop_add_item_essence_array.load(file) != 0) return -1;
-	if(king_war_config_array.load(file) != 0) return -1;
-	if(jinfashen_to_money_config_array.load(file) != 0) return -1;
-	if(battle_201304_config_array.load(file) != 0) return -1;
-	if(rune2013_item_essence_array.load(file) != 0) return -1;
-	if(rune2013_config_array.load(file) != 0) return -1;
-	if(bashe_award_config_array.load(file) != 0) return -1;
-	if(arena_season_time_config_array.load(file) != 0) return -1;
-	if(personal_level_award_config_array.load(file) != 0) return -1;
-	if(team_season_award_config_array.load(file) != 0) return -1;
-	if(week_currency_award_config_array.load(file) != 0) return -1;
-	if(colorant_item_essence_array.load(file) != 0) return -1;
-	if(interaction_object_essence_array.load(file) != 0) return -1;
-	if(interaction_object_hook_config_array.load(file) != 0) return -1;
-	if(colorant_config_array.load(file) != 0) return -1;
-	if(faction_transfer_config_array.load(file)  != 0) return -1;
-	if(building_region_config_array.load(file) != 0) return -1;
-	if(building_essence_array.load(file) != 0) return -1;
-	if(region_block_essence_array.load(file) != 0) return -1;
-	if(phase_config_array.load(file) != 0) return -1;
-	if(cross6v6_item_exchange_config_array.load(file) != 0) return -1;
-	if(transcript_strategy_config_array.load(file) != 0) return -1;
-	if(faction_shop_config_array.load(file) != 0) return -1;
-	if(faction_auction_config_array.load(file) != 0) return -1;
-	if(faction_money_shop_config_array.load(file) != 0) return -1;
-	if(compound_mine_essence_array.load(file) != 0) return -1;
-	if(colorant_default_config_array.load(file) != 0) return -1;
+	LOAD_ARRAY(battle_deprive_config_array)
+	LOAD_ARRAY(battle_score_config_array)
+	LOAD_ARRAY(gift_bag_essence_array)
+	LOAD_ARRAY(vip_card_essence_array)
+	LOAD_ARRAY(instancing_battle_config_array)
+	LOAD_ARRAY(change_shape_card_essence_array)
+	LOAD_ARRAY(change_shape_stone_essence_array)
+	LOAD_ARRAY(change_shape_prop_config_array)
+	LOAD_ARRAY(original_shape_config_array)
+	LOAD_ARRAY(life_skill_config_array)
+	LOAD_ARRAY(arena_droptable_config_array)
+	LOAD_ARRAY(mercenary_credential_essence_array)
+	LOAD_ARRAY(teleportation_essence_array)
+	LOAD_ARRAY(teleportation_stone_essence_array)
+	LOAD_ARRAY(combine_skill_edit_config_array)
+	LOAD_ARRAY(upgrade_equip_config_array)
+	LOAD_ARRAY(upgrade_equip_config_1_array)
+	LOAD_ARRAY(upgrade_equip_stone_essence_array)
+	LOAD_ARRAY(npc_consign_service_array)
+	LOAD_ARRAY(deity_character_config_array)
+	LOAD_ARRAY(lottery2_essence_array)
+	LOAD_ARRAY(gem_config_array)
+	LOAD_ARRAY(gem_essence_array)
+	LOAD_ARRAY(gem_seal_essence_array)
+	LOAD_ARRAY(gem_dust_essence_array)
+	LOAD_ARRAY(gem_extract_config_array)
+	LOAD_ARRAY(general_article_essence_array)
+	LOAD_ARRAY(lottery3_essence_array)
+	LOAD_ARRAY(transcription_config_array)
+	LOAD_ARRAY(online_gift_bag_config_array)
+	LOAD_ARRAY(small_online_gift_bag_essence_array)
+	LOAD_ARRAY(scroll_region_config_array)
+	LOAD_ARRAY(scroll_unlock_essence_array)
+	LOAD_ARRAY(scroll_dig_count_inc_essence_array)
+	LOAD_ARRAY(tower_transcription_config_array)
+	LOAD_ARRAY(tower_transcription_property_config_array)
+	LOAD_ARRAY(rune_data_config_array)
+	LOAD_ARRAY(rune_comb_property_array)
+	LOAD_ARRAY(rune_equip_array)
+	LOAD_ARRAY(little_pet_upgrade_config_array)
+	LOAD_ARRAY(rune_slot_array)
+	LOAD_ARRAY(drop_interval_config_array)
+	LOAD_ARRAY(pk2012_guess_config_array)
+	LOAD_ARRAY(collision_raid_transfigure_config_array)
+	LOAD_ARRAY(booth_figure_item_array)
+	LOAD_ARRAY(flag_buff_item_array)
+	LOAD_ARRAY(npc_reputation_shop_service_array)
+	LOAD_ARRAY(npc_ui_transfer_service_array)
+	LOAD_ARRAY(ui_transfer_config_array)
+	LOAD_ARRAY(xingzuo_item_essence_array)
+	LOAD_ARRAY(xingzuo_energy_item_essence_array)
+	LOAD_ARRAY(collision_raid_award_config_array)
+	LOAD_ARRAY(cash_medic_merge_item_essence_array)
+	LOAD_ARRAY(buff_area_config_array)
+	LOAD_ARRAY(liveness_config_array)
+	LOAD_ARRAY(challenge_2012_config_array)
+	LOAD_ARRAY(sale_promotion_item_essence_array)
+	LOAD_ARRAY(gift_bag_lottery_deliver_essence_array)
+	LOAD_ARRAY(lottery_tangyuan_item_essence_array)
+	LOAD_ARRAY(task_special_award_config_array)
+	LOAD_ARRAY(gift_pack_item_essence_array)
+	LOAD_ARRAY(prop_add_config_array)
+	LOAD_ARRAY(prop_add_material_item_essence_array)
+	LOAD_ARRAY(prop_add_item_essence_array)
+	LOAD_ARRAY(king_war_config_array)
+	LOAD_ARRAY(jinfashen_to_money_config_array)
+	LOAD_ARRAY(battle_201304_config_array)
+	LOAD_ARRAY(rune2013_item_essence_array)
+	LOAD_ARRAY(rune2013_config_array)
+	LOAD_ARRAY(bashe_award_config_array)
+	LOAD_ARRAY(arena_season_time_config_array)
+	LOAD_ARRAY(personal_level_award_config_array)
+	LOAD_ARRAY(team_season_award_config_array)
+	LOAD_ARRAY(week_currency_award_config_array)
+	LOAD_ARRAY(colorant_item_essence_array)
+	LOAD_ARRAY(interaction_object_essence_array)
+	LOAD_ARRAY(interaction_object_hook_config_array)
+	LOAD_ARRAY(colorant_config_array)
+	LOAD_ARRAY(faction_transfer_config_array)
+	LOAD_ARRAY(building_region_config_array)
+	LOAD_ARRAY(building_essence_array)
+	LOAD_ARRAY(region_block_essence_array)
+	LOAD_ARRAY(phase_config_array)
+	LOAD_ARRAY(cross6v6_item_exchange_config_array)
+	LOAD_ARRAY(transcript_strategy_config_array)
+	LOAD_ARRAY(faction_shop_config_array)
+	LOAD_ARRAY(faction_auction_config_array)
+	LOAD_ARRAY(faction_money_shop_config_array)
+	LOAD_ARRAY(compound_mine_essence_array)
+	LOAD_ARRAY(colorant_default_config_array)
+
+	gs_log("load_data: loading talk_proc entries");
 	size_t sz = 0;
-	if(fread(&sz, sizeof(size_t), 1, file) != 1)	return -1;
+	if(fread(&sz, sizeof(size_t), 1, file) != 1)
+	{
+		gs_log("load_data: FAILED reading talk_proc count");
+		fclose(file);
+		return -1;
+	}
+	gs_log("load_data: talk_proc count=%lu", (unsigned long)sz);
 	size_t i;
 	for(i=0; i<sz; i++)
 	{
@@ -3557,6 +3610,7 @@ int elementdataman::load_data(const char * pathname)
 		return -1;
 #endif
 
-	fclose(file);	
-	return 0;	
+	gs_log("load_data: all arrays loaded successfully");
+	fclose(file);
+	return 0;
 }
