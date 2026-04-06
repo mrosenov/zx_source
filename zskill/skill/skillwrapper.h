@@ -86,6 +86,7 @@ public:
 	typedef unsigned int	ID;
 
 protected:
+#pragma pack(push, 1)
 	struct PersistentData
 	{
 		char	baselevel;  // »ù´¡¼¶±ð
@@ -95,7 +96,7 @@ protected:
 		int     cooltime;
 		PersistentData(char _base = 0):baselevel(_base), reallevel(0),actilevel(0),mask(0),cooltime(0){ }
 	};
-
+#pragma pack(pop) // Restore default alignment
 	struct WeaponAddonTalent
 	{
 		int value1;

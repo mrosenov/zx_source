@@ -5,6 +5,12 @@
 #include <map>
 #include <queue>
 
+/* GCC 3.3 / FC2 compatibility: explicit POSIX and C runtime includes */
+#include <stdio.h>
+#include <stdarg.h>
+#include <time.h>
+#include <unistd.h>
+
 #include <ASSERT.h>
 #include "playerwrapper.h"
 #include "skill.h"
@@ -58,6 +64,7 @@ namespace GNET
 
 	char SkillWrapper::GetType(unsigned int id)
 	{
+		skill_log("ENTER: SkillWrapper::GetType id=%u", id);
 		const SkillStub* stub = GNET::SkillStub::GetStub(id);
 		if (stub)
 			return stub->GetType();
@@ -67,6 +74,7 @@ namespace GNET
 
 	char SkillWrapper::RangeType(unsigned int id)
 	{
+		skill_log("ENTER: SkillWrapper::RangeType id=%u", id);
 		const SkillStub*  stub = GNET::SkillStub::GetStub(id);
 		if (stub)
 			return stub->rangetype;
@@ -76,6 +84,7 @@ namespace GNET
 
     int SkillWrapper::Learn(unsigned int id, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::Learn id=%u", id);
         Skill* skill = Skill::Create(id);
         if (!skill)
             return -1;
@@ -98,32 +107,30 @@ namespace GNET
             SetSkillTalent(skill, player, 0);
             PlayerWrapper w_player(player, 2, skill, 0, 0);
             if (skill->Learn())
-            {           
+            {
                 if (it == this->map.end())
                 {
-                    //¸Ð¾õÊÇÕâÑù  ²ÂµÄ   haokaixin
+                    // First time learning this skill â€” create the map entry
                     PersistentData data(0);
                     it = map.insert(std::make_pair(id, data)).first;
-                    return -1;
+                    // fall through to finish learn
                 }
-                else
+                it->second.baselevel = level;
+                it->second.mask = 0;
+                int real = this->commonlevel + level + it->second.actilevel;
+                if (real > max)
+                    real = max;
+                int oldlevel = it->second.reallevel;
+                it->second.reallevel = real;
+                player.SendClientLearnSkill(id, level);
+                skill_log("Learn: id=%u level=%d real=%d oldlevel=%d", id, level, real, oldlevel);
+                OnTalentChange(player, id, oldlevel, real);
+                if (skill->GetLevel() == skill->GetMaxLearn())
                 {
-                    it->second.baselevel = level;
-                    it->second.mask = 0;
-                    int real = this->commonlevel + level + it->second.actilevel;
-                    if (real > max)
-                        real = max;
-                    int oldlevel = it->second.reallevel;
-                    it->second.reallevel = real;
-                    player.SendClientLearnSkill(id, level);
-                    OnTalentChange(player, id, oldlevel, real);
-                    if (skill->GetLevel() == skill->GetMaxLearn())
-                    {
-                        OnAddSkill(skill->GetId(), player);
-                    }
-                    skill->Destroy();
-                    return level;
+                    OnAddSkill(skill->GetId(), player);
                 }
+                skill->Destroy();
+                return level;
             }
             else
             {
@@ -140,6 +147,7 @@ namespace GNET
 
     int SkillWrapper::Forget(bool all, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::Forget all=%d", (int)all);
         int sp_0 = 0;
         std::map<unsigned int, GNET::SkillWrapper::PersistentData>::iterator it= map.begin();
         while (it != map.end())
@@ -185,6 +193,7 @@ namespace GNET
     //5
     int SkillWrapper::ForgetTalent(object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::ForgetTalent");
         int tp = 0;
         std::map<unsigned int, GNET::SkillWrapper::PersistentData>::iterator it = map.begin();
         while (it != map.end())
@@ -222,6 +231,7 @@ namespace GNET
 
     void SkillWrapper::ForgetCulSkills(object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::ForgetCulSkills");
         std::map<unsigned int, GNET::SkillWrapper::PersistentData>::iterator it = map.begin();
         while (it != map.end())
         {
@@ -252,6 +262,7 @@ namespace GNET
 
     void SkillWrapper::ForgetDeitySkills(object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::ForgetDeitySkills");
         std::map<unsigned int, GNET::SkillWrapper::PersistentData>::iterator it = map.begin();
         while (it != map.end())
         {
@@ -283,6 +294,7 @@ namespace GNET
 
     void SkillWrapper::OnAddSkill(ID skill_id, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::OnAddSkill skill_id=%u", (unsigned int)skill_id);
         switch (skill_id)
         {
         case 0xF9:
@@ -306,7 +318,8 @@ namespace GNET
     }
 
     void SkillWrapper::OnRemoveSkill(ID skill_id, object_interface player)
-    {        
+    {
+        skill_log("ENTER: SkillWrapper::OnRemoveSkill skill_id=%u", (unsigned int)skill_id);
         switch (skill_id)
         {
         case 0xF9u:
@@ -332,6 +345,7 @@ namespace GNET
     //10
     int SkillWrapper::Upgrade(ID id, unsigned int level, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::Upgrade id=%u level=%u", (unsigned int)id, level);
         if (!id)
             return 0;
 
@@ -378,6 +392,7 @@ namespace GNET
 
     int SkillWrapper::Degrade(ID id, unsigned int level, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::Degrade id=%u level=%u", (unsigned int)id, level);
         if (id)
         {
             std::map<unsigned int,PersistentData>::iterator it = map.find(id);
@@ -402,6 +417,7 @@ namespace GNET
 
     int SkillWrapper::InsertSkill(ID id, unsigned int level, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::InsertSkill id=%u level=%u", (unsigned int)id, level);
         const SkillStub* stub = SkillStub::GetStub(id);
         if (!stub)
             return -1;
@@ -443,6 +459,7 @@ namespace GNET
 
     int SkillWrapper::RemoveSkill(ID id, unsigned int level, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::RemoveSkill id=%u level=%u", (unsigned int)id, level);
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (1)
         {
@@ -464,6 +481,7 @@ namespace GNET
 
     int SkillWrapper::InsertSkillPermament(ID id, unsigned int level, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::InsertSkillPermament id=%u level=%u", (unsigned int)id, level);
         const SkillStub *stub = SkillStub::GetStub(id);
         if (!stub)
             return -1;
@@ -509,6 +527,7 @@ namespace GNET
     //15
     int SkillWrapper::InsertTriggerSkill(ID id, unsigned int level, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::InsertTriggerSkill id=%u level=%u", (unsigned int)id, level);
         const SkillStub* stub = SkillStub::GetStub(id);
         if (!stub || !stub->trigger)
             return -1;
@@ -568,6 +587,7 @@ namespace GNET
 
     int SkillWrapper::ClearTriggerSkill(ID id, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::ClearTriggerSkill id=%u", (unsigned int)id);
         const SkillStub* stub = SkillStub::GetStub(id);
         if (!stub || !stub->trigger)
             return -1;
@@ -601,6 +621,7 @@ namespace GNET
 
     int SkillWrapper::InsertSysDeliveredSkill(ID id, unsigned int level, object_interface player, bool sendClient)
     {
+        skill_log("ENTER: SkillWrapper::InsertSysDeliveredSkill id=%u level=%u", (unsigned int)id, level);
         const SkillStub* stub = SkillStub::GetStub(id);
         if (!stub)
             return -1;
@@ -644,6 +665,7 @@ namespace GNET
 
     int SkillWrapper::ClearSysDeliveredSkill(ID id, object_interface player, bool sendClient)
     {
+        skill_log("ENTER: SkillWrapper::ClearSysDeliveredSkill id=%u", (unsigned int)id);
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (1)
         {
@@ -665,6 +687,7 @@ namespace GNET
 
     int SkillWrapper::ClearSpouseSkill(object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::ClearSpouseSkill");
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (1)
         {
@@ -689,6 +712,7 @@ namespace GNET
     //20
     int SkillWrapper::Condition(ID id, object_interface player, const XID* target, int size)
     {
+        skill_log("ENTER: SkillWrapper::Condition id=%u", (unsigned int)id);
         int level = GetSkillLevel(id);
         if (level <= 0)
             return -1;
@@ -713,24 +737,34 @@ namespace GNET
 
     int SkillWrapper::StartSkill(SKILL::Data& skilldata, object_interface player, const XID* target, int size, int& next)
     {
+        skill_log("ENTER: SkillWrapper::StartSkill(XID) id=%u", (unsigned int)skilldata.id);
         next = -1;
         int level = 0;
         if (skilldata.item_id < 0 || skilldata.item_index < 0)
             level = GetSkillData(skilldata.id, skilldata.level, skilldata.cooltime, player);
         else
             level = skilldata.level;
+        skill_log("StartSkill: GetSkillData returned level=%d", level);
         if (level <= 0)
             return -1;
+        skill_log("StartSkill: calling Skill::Create id=%u", (unsigned int)skilldata.id);
         Skill* skill = Skill::Create(skilldata.id);
+        skill_log("StartSkill: Skill::Create returned %s", skill ? "ok" : "null");
         if (!skill)
             return -1;
         PlayerWrapper w_player(player, 0, skill, target, size);
         skill->SetLevel(level);
         skill->SetData(&skilldata);
+        skill_log("StartSkill: calling SetSkillTalent, skill=%p", (void*)skill);
         SetSkillTalent( skill, player, 1);
+        skill_log("StartSkill: SetSkillTalent returned");
         int Occupation = skill->GetOccupation();
-        if (IsDiffrentOccupClass(w_player.GetOccupation(), Occupation))
+        skill_log("StartSkill: Occupation=%d", Occupation);
+        int playerOccup = w_player.GetOccupation();
+        skill_log("StartSkill: playerOccup=%d skillOccup=%d IsDiffrent=%d", playerOccup, Occupation, (int)IsDiffrentOccupClass(playerOccup, Occupation));
+        if (IsDiffrentOccupClass(playerOccup, Occupation))
         {
+            skill_log("StartSkill: return -1 IsDiffrentOccupClass");
             skill->Destroy();
             return -1;
         }
@@ -741,18 +775,24 @@ namespace GNET
                 std::map<unsigned int, bool>::iterator it = trigger_active_map.find(skilldata.id);
                 if (it == trigger_active_map.end())
                 {
+                    skill_log("StartSkill: return -1 IsTrigger not in map");
                     return -1;
                 }
             }
             int ret = skill->Condition();
-            if (ret || ! player.TestCoolDown(skilldata.id + 1024))
+            int coolOk = player.TestCoolDown(skilldata.id + 1024);
+            skill_log("StartSkill: Condition=%d TestCoolDown=%d", ret, coolOk);
+            if (ret || !coolOk)
             {
+                skill_log("StartSkill: return -1 Condition or CoolDown");
                 skill->Destroy();
                 return -1;
             }
+            skill_log("StartSkill: IsCycle=%d IsInCircleOfDoom=%d", (int)skill->IsCycle(), (int)player.IsInCircleOfDoom());
             if ( (skill->IsCycle() && player.IsInCircleOfDoom())
-                || (skill->IsCycle() && player.CircleOfDoomPrepare( skill->GetRadius(), 1, skill->GetCoverage(), skilldata.id)) == 0)
+                || (skill->IsCycle() && player.CircleOfDoomPrepare( skill->GetRadius(), 1, skill->GetCoverage(), skilldata.id) == 0))
             {
+                skill_log("StartSkill: return -1 IsCycle check");
                 return -1;
             }
             SetSucceedSkillColor( skill, player);
@@ -766,7 +806,9 @@ namespace GNET
                 }
             }
             this->curr_cast_speed_rate = this->prayspeed;
+            skill_log("StartSkill: calling FirstRun");
             ret = skill->FirstRun(next, 0);
+            skill_log("StartSkill: FirstRun returned ret=%d next=%d", ret, next);
             if (curr_cast_speed_rate > 70)
                 curr_cast_speed_rate = 70;
             ret = ret * 0.01 * (100 - curr_cast_speed_rate) + 0.01;
@@ -816,6 +858,7 @@ namespace GNET
 
     int SkillWrapper::Run(SKILL::Data& skilldata, object_interface player, const XID* target, int size, int& next)
     {
+        skill_log("ENTER: SkillWrapper::Run(XID) id=%u", (unsigned int)skilldata.id);
         Skill* skill = GNET::Skill::Create(skilldata.id);
         if (!skill)
             return -1;
@@ -834,7 +877,7 @@ namespace GNET
             }
         }
         const SkillStub *Stub = skill->GetStub();
-        if (Stub->ItemCondition(skill))
+        if (!Stub || Stub->ItemCondition(skill))
         {
             int elems = skill->Run(next);
             curr_cast_speed_rate = this->curr_cast_speed_rate;
@@ -869,6 +912,7 @@ namespace GNET
 
     int SkillWrapper::StartSkill(SKILL::Data& skilldata, object_interface player, const A3DVECTOR& target, int& next)
     {
+        skill_log("ENTER: SkillWrapper::StartSkill(A3DVECTOR) id=%u", (unsigned int)skilldata.id);
         int level = 0;
         if (skilldata.item_id < 0 || skilldata.item_index < 0)
             level = GetSkillData(skilldata.id, skilldata.level, skilldata.cooltime, player);
@@ -920,6 +964,7 @@ namespace GNET
 
     int SkillWrapper::Run(SKILL::Data& skilldata, object_interface player, const A3DVECTOR& target, int& next)
     {
+        skill_log("ENTER: SkillWrapper::Run(A3DVECTOR) id=%u", (unsigned int)skilldata.id);
         Skill* skill = GNET::Skill::Create(skilldata.id);
         if (!skill)
             return -1;
@@ -938,7 +983,7 @@ namespace GNET
             }
         }
         const SkillStub* Stub = skill->GetStub();
-        if (Stub->ItemCondition(skill))
+        if (!Stub || Stub->ItemCondition(skill))
         {
             int elems = skill->Run(next);
             skill->Destroy();
@@ -960,10 +1005,11 @@ namespace GNET
     //25
     bool SkillWrapper::Interrupt(SKILL::Data& skilldata, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::Interrupt id=%u", (unsigned int)skilldata.id);
         Skill* skill = Skill::Create(skilldata.id);
         if (!skill)
             return 1;
-        PlayerWrapper w_player(player, 0, skill, 0, 0);  //Õâ¸öÍæÒâ¶ù¶¼Ã»Ê¹ÓÃ  £¿    haokaixin
+        PlayerWrapper w_player(player, 0, skill, 0, 0);  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»Ê¹ï¿½ï¿½  ï¿½ï¿½    haokaixin
         skill->SetLevel(skilldata.level);
         skill->SetData(&skilldata);
         bool ret = skill->Interrupt();
@@ -976,6 +1022,7 @@ namespace GNET
 
     bool SkillWrapper::Cancel(SKILL::Data& skilldata, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::Cancel id=%u", (unsigned int)skilldata.id);
         Skill* skill = Skill::Create(skilldata.id);
         if (!skill)
             return 1;
@@ -993,6 +1040,7 @@ namespace GNET
 
     int SkillWrapper::Continue(SKILL::Data& skilldata, object_interface player, const XID* target, int size, int& next, int elapse)
     {
+        skill_log("ENTER: SkillWrapper::Continue id=%u elapse=%d", (unsigned int)skilldata.id, elapse);
         Skill* skill = Skill::Create(skilldata.id);
         if (!skill)
             return 1;
@@ -1043,6 +1091,7 @@ namespace GNET
 
     int SkillWrapper::InstantSkill(SKILL::Data& skilldata, object_interface player, const XID* target, int size, const A3DVECTOR& chargeDestPos, const XID& chargeTarget)
     {
+        skill_log("ENTER: SkillWrapper::InstantSkill id=%u", (unsigned int)skilldata.id);
         int level = 0;
         if (skilldata.item_id < 0 || skilldata.item_index < 0)
             level = GetSkillData(skilldata.id, skilldata.level, skilldata.cooltime, player);
@@ -1114,6 +1163,7 @@ namespace GNET
 
     int SkillWrapper::CastRune(SKILL::Data& skilldata, object_interface player, int level, int coolid)
     {
+        skill_log("ENTER: SkillWrapper::CastRune id=%u level=%d", (unsigned int)skilldata.id, level);
         Skill* skill = GNET::Skill::Create(skilldata.id);
         if (!skill || !skill->IsRune())
             return -1;
@@ -1138,6 +1188,7 @@ namespace GNET
     //30
     int SkillWrapper::CastExtraSkillToSelf(SKILL::Data& skilldata, object_interface player, int level, const attack_msg* original_attack)
     {
+        skill_log("ENTER: SkillWrapper::CastExtraSkillToSelf id=%u level=%d", (unsigned int)skilldata.id, level);
         Skill* skill = Skill::Create(skilldata.id);
         if (!skill)
             return -1;
@@ -1156,69 +1207,97 @@ namespace GNET
 
     void SkillWrapper::LoadDatabase(object_interface player, archive& ar)
     {
-        char version;
-        unsigned long size;
+        skill_log("ENTER: SkillWrapper::LoadDatabase");
+        char version = 0;
+        unsigned int size = 0;
         unsigned int id;
         map.clear();
         ar >> version >> size;
+		skill_log("Load skill data, version=%d, size=%u", version, size);
         int forbidSp = 0;
         while (size)
         {
             PersistentData data(0);
             ar >> id;
-            ar.pop_back(&data,sizeof(data));
+            skill_log("Load skill data, id: %d", id);
+            // FIX: StoreDatabase writes only baselevel as char (1 byte).
+            // The old pop_back(&data, sizeof(data)) read 8 bytes and overran into
+            // adjacent skill records, corrupting every subsequent id.
+            ar >> data.baselevel;
             data.reallevel = data.baselevel;
             if (GNET::IsForbidSkill(id))
             {
+                skill_log("GNET::IsForbidSkill(%d)", id);
                 forbidSp += data.baselevel;
             }
             else
             {
+                skill_log("GNET::IsForbidSkill Else");
                 const SkillStub *stub = SkillStub::GetStub(id);
                 if (!stub || IsSkillValidClass(player.GetClass(), stub->skill_class))
                 {
+                    skill_log("IsSkillValidClass class: %d", player.GetClass());
                     if (stub)
                     {
+                        skill_log("Stub is TRUE");
                         if (stub->maxlearn == data.baselevel)
+                        {
+                            skill_log("Stub MaxLearn");
                             OnAddSkill(id, player);
+                        }
                     }
                     map[id].baselevel = data.baselevel;
+                    map[id].reallevel = data.reallevel;
                     map[id].cooltime = data.cooltime;
                 }
                 else
                 {
+                    skill_log("Stub Else");
                     forbidSp += data.baselevel;
                 }
             }
             --size;
+            skill_log("size: %d", size);
         }
+
         if (forbidSp > 0)
         {
             player.ModifySkillPoint(forbidSp);
             player.UpdateAllProp();
         }
+        skill_log("forbidSp > 0");
+
         PersistentData data(0);
         data.baselevel = 1;
         data.reallevel = 1;
         data.actilevel = 0;
         data.mask = 1;
 
+        skill_log("Teleport Assign");
         map[389].baselevel = data.baselevel;
+        map[389].reallevel = data.reallevel;
         map[389].cooltime = data.cooltime;
+        map[389].mask = data.mask;
 
         map[2354].baselevel = data.baselevel;
+        map[2354].reallevel = data.reallevel;
         map[2354].cooltime = data.cooltime;
+        map[2354].mask = data.mask;
 
         int stub = player.GetClass();
         if ((int)stub > 38 && (int)stub <= 43)
         {
             map[2356].baselevel = data.baselevel;
+            map[2356].reallevel = data.reallevel;
             map[2356].cooltime = data.cooltime;
+            map[2356].mask = data.mask;
         }
         if ((int)stub > 107 && (int)stub <= 112)
         {
             map[4934].baselevel = data.baselevel;
+            map[4934].reallevel = data.reallevel;
             map[4934].cooltime = data.cooltime;
+            map[4934].mask = data.mask;
         }
         if (version == 1)
         {
@@ -1232,34 +1311,45 @@ namespace GNET
         }
         else if (version == 2)
         {
+            skill_log("Version 2");
             ar >> size;
+            skill_log("Version 2 after size");
             while (size)
             {
+                skill_log("Version 2 while(size)");
                 ar >> id;
+                skill_log("Version 2 while(size) id: %d", id);
                 ar >> prfmap[id];
                 --size;
             }
+            skill_log("Sled pyrvi while");
             ar >> size;
             while (size)
             {
                 PersistentData data(0);
                 ar >> id;
-                ar.pop_back(&data,sizeof(data));
+                // FIX: same as above â€” StoreDatabase writes 1 byte (char baselevel).
+                ar >> data.baselevel;
                 data.reallevel = data.baselevel;
                 data.mask = 32;
                 map[id].baselevel = data.baselevel;
                 map[id].cooltime = data.cooltime;
                 --size;
             }
+            skill_log("Sled vtori while");
         }
+        skill_log("Before XPSet");
         SetXPSkill(player.GetXPSkill());
     }
 
     void SkillWrapper::StoreDatabase(archive& ar)
     {
+        skill_log("ENTER: SkillWrapper::StoreDatabase");
         size_t size = 0;
         size_t pskillSize = 0;
-        ar << 2;
+        // FIX: write version as char (1 byte) to match "ar >> (char)version" in LoadDatabase.
+        // Original "ar << 2" wrote an int (4 bytes), misaligning all subsequent reads.
+        ar << (char)2;
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (1)
         {
@@ -1293,6 +1383,8 @@ namespace GNET
                     if (!IsForbidSkill(it->first))
                     {
                         ar << it->first;
+                        // Store only baselevel (1 byte char) â€” matches "ar >> data.baselevel"
+                        // in LoadDatabase. Cooltime is runtime state, not persisted.
                         ar << it->second.baselevel;
                     }
                 }
@@ -1307,7 +1399,7 @@ namespace GNET
                 break;
             if (it1->second)
                 ++size;
-            ++it;
+            ++it1; // FIX: was "++it" (wrong iterator â†’ infinite loop when prfmap non-empty)
         }
         ar << size;
         it1 = prfmap.begin();
@@ -1317,10 +1409,13 @@ namespace GNET
                 break;
             if (it1->second)
             {
-                ar << it->first;
-                ar.push_back(&it->second,sizeof(it->second));
+                // FIX: was "ar << it->first; ar.push_back(&it->second, ...)"
+                // Wrong iterator (it vs it1) and wrong type (PersistentData vs int).
+                // LoadDatabase reads: ar >> id; ar >> prfmap[id] (int).
+                ar << it1->first;
+                ar << it1->second;
             }
-            ++it;
+            ++it1; // FIX: was "++it"
         }
         ar << pskillSize;
         it = map.begin();
@@ -1335,7 +1430,7 @@ namespace GNET
                     if (!IsForbidSkill(it->first))
                     {
                         ar << it->first;
-                        ar << it->second.baselevel;
+                        ar << it->second.baselevel; // same 1-byte char format
                     }
                 }
             }
@@ -1345,6 +1440,7 @@ namespace GNET
 
     void SkillWrapper::StorePartial(archive& ar)
     {
+        skill_log("ENTER: SkillWrapper::StorePartial");
         size_t size = 0;
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (1)
@@ -1357,16 +1453,18 @@ namespace GNET
             }
             ++it;
         }
-        ar << size; 
-        
+        skill_log("StorePartial: writing skill count=%u", (unsigned)size);
+        ar << size;
+
         it = map.begin();
         while (1)
         {
             if (it == map.end())
                 break;
-            if (it->second.baselevel && (it->second.mask || it->second.mask == 1))
+            if (it->second.baselevel && (!it->second.mask || it->second.mask == 1))
             {
-                ar << it->first;
+                skill_log("StorePartial: writing skill id=%u baselevel=%d mask=%d", it->first, (int)it->second.baselevel, (int)it->second.mask);
+                ar << (unsigned short)it->first;
                 ar << it->second.baselevel;
             }
             ++it;
@@ -1401,6 +1499,7 @@ namespace GNET
 
     void SkillWrapper::StorePartialAddonPermanent(archive& ar)
     {
+        skill_log("ENTER: SkillWrapper::StorePartialAddonPermanent");
         size_t size = 0;
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (1)
@@ -1423,7 +1522,7 @@ namespace GNET
                 break;
             if (it->second.baselevel && it->second.mask == 32)
             {
-                ar << it->first;
+                ar << (unsigned short)it->first;
                 ar << it->second.baselevel;
             }
             ++it;
@@ -1433,6 +1532,7 @@ namespace GNET
     //35
     int SkillWrapper::GetBaseLevel(ID id)
     {
+        skill_log("ENTER: SkillWrapper::GetBaseLevel id=%u", (unsigned int)id);
         std::map<unsigned int, PersistentData>::iterator it = map.find(id);
         if (it != map.end())
         {
@@ -1446,6 +1546,7 @@ namespace GNET
 
     int SkillWrapper::GetLevelSum(int cls)
     {
+        skill_log("ENTER: SkillWrapper::GetLevelSum cls=%d", cls);
         int sum = 0;
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (1)
@@ -1464,6 +1565,7 @@ namespace GNET
 
     bool SkillWrapper::Attack(object_interface victim, const XID& attacker, const A3DVECTOR& src, attack_msg& msg, bool inv, int damage, int is_crit)
     {
+        skill_log("ENTER: SkillWrapper::Attack(attack_msg) skill=%d", msg.attached_skill.skill);
         int id = msg.attached_skill.skill;
         Skill* skill = Skill::Create(id);
         if (!skill)
@@ -1551,6 +1653,7 @@ namespace GNET
 
     bool SkillWrapper::Attack(object_interface victim, const XID& attacker, const A3DVECTOR& src, enchant_msg& msg, bool inv)
     {
+        skill_log("ENTER: SkillWrapper::Attack(enchant_msg) skill=%d", msg.skill);
         Skill* skill = Skill::Create(msg.skill);
         if (!skill)
             return 0;
@@ -1642,6 +1745,7 @@ namespace GNET
 
     bool SkillWrapper::EventReset(object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::EventReset");
         PlayerWrapper w_player( player, 2, 0, 0, 0);
         int cul = player.GetCultivation();
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
@@ -1683,6 +1787,7 @@ namespace GNET
     //40
     bool SkillWrapper::EventChange(object_interface player, int form)
     {
+        skill_log("ENTER: SkillWrapper::EventChange form=%d", form);
         PlayerWrapper w_player(player, 2, 0, 0, 0);
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (1)
@@ -1716,6 +1821,7 @@ namespace GNET
 
     bool SkillWrapper::EventCloneExist(object_interface player, bool isCloneExist)
     {
+        skill_log("ENTER: SkillWrapper::EventCloneExist isCloneExist=%d", (int)isCloneExist);
         PlayerWrapper w_player(player, 2, 0, 0, 0);
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (1)
@@ -1750,6 +1856,7 @@ namespace GNET
 
     bool SkillWrapper::EventAfterEnterWorld(object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::EventAfterEnterWorld");
         PlayerWrapper w_player(player, 4, 0, 0, 0);
         int cul = player.GetCultivation();
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
@@ -1792,6 +1899,7 @@ namespace GNET
 
     void SkillWrapper::CultivationChange(object_interface player, int culold, int culnew)
     {
+        skill_log("ENTER: SkillWrapper::CultivationChange culold=%d culnew=%d", culold, culnew);
         if ((culold & culnew) == 0)
         {
             PlayerWrapper w_player(player, 2, 0, 0, 0);
@@ -1915,6 +2023,7 @@ namespace GNET
 
     int  SkillWrapper::NpcStart(ID id, object_interface npc, const XID* target, int size, int& next)
     {
+        skill_log("ENTER: SkillWrapper::NpcStart id=%u", (unsigned int)id);
         const SkillStub* stub = SkillStub::GetStub(id);
         if (!stub)
             return -1;
@@ -1944,6 +2053,7 @@ namespace GNET
     //45
     void SkillWrapper::NpcEnd(ID id, object_interface npc, int level, const XID* target, int size)
     {
+        skill_log("ENTER: SkillWrapper::NpcEnd id=%u level=%d", (unsigned int)id, level);
         Skill* skill = Skill::Create(id);
         if (skill && !skill->IsTalisman())
         {
@@ -1960,6 +2070,7 @@ namespace GNET
 
     bool SkillWrapper::NpcInterrupt(ID id, object_interface npc, int level)
     {
+        skill_log("ENTER: SkillWrapper::NpcInterrupt id=%u level=%d", (unsigned int)id, level);
         Skill* skill = Skill::Create(id);
         if (!skill)
             return 1;
@@ -1983,6 +2094,7 @@ namespace GNET
 
     float SkillWrapper::NpcCastRange(ID id, object_interface npc, int level)
     {
+        skill_log("ENTER: SkillWrapper::NpcCastRange id=%u level=%d", (unsigned int)id, level);
         Skill* skill = Skill::Create(id);
         if (skill)
         {
@@ -2000,12 +2112,14 @@ namespace GNET
 
     int SkillWrapper::IncPrayTime(int inc)
     {
+        skill_log("ENTER: SkillWrapper::IncPrayTime inc=%d", inc);
         this->prayspeed -= inc;
         return 0;
     }
 
     int SkillWrapper::DecPrayTime(int dec)
     {
+        skill_log("ENTER: SkillWrapper::DecPrayTime dec=%d", dec);
         this->prayspeed += dec;
         return 0;
     }
@@ -2013,6 +2127,7 @@ namespace GNET
     //50
     int SkillWrapper::IncCoolTime(ID id, int inc)
     {
+        skill_log("ENTER: SkillWrapper::IncCoolTime id=%u inc=%d", (unsigned int)id, inc);
         if (inc)
         {
             std::map<unsigned int, PersistentData>::iterator it = map.begin();
@@ -2033,6 +2148,7 @@ namespace GNET
 
     int SkillWrapper::DecCoolTime(ID id, int dec)
     {
+        skill_log("ENTER: SkillWrapper::DecCoolTime id=%u dec=%d", (unsigned int)id, dec);
         if (dec)
         {
             std::map<unsigned int, PersistentData>::iterator it = map.begin();
@@ -2089,6 +2205,7 @@ namespace GNET
 
     void SkillWrapper::RemoveAura(object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::RemoveAura");
         if (player.IsFilterExist(FILTER_HOLYAURA))
             player.RemoveFilter(FILTER_HOLYAURA);
         if (player.IsFilterExist(FILTER_EVILAURA))
@@ -2097,6 +2214,7 @@ namespace GNET
 
     void SkillWrapper::UndoPassive(ID id, int level, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::UndoPassive id=%u level=%d", (unsigned int)id, level);
         Skill* skill = GNET::Skill::Create(id);
         if (skill)
         {
@@ -2113,6 +2231,7 @@ namespace GNET
     //60
     int SkillWrapper::GetTalentSum()
     {
+        skill_log("ENTER: SkillWrapper::GetTalentSum");
         int sum = 0;
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (it != map.end())
@@ -2138,6 +2257,7 @@ namespace GNET
     
     int SkillWrapper::GetSpSum()
     {
+        skill_log("ENTER: SkillWrapper::GetSpSum");
         int sum = 0;
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (it != map.end())
@@ -2170,6 +2290,12 @@ namespace GNET
     void SkillWrapper::SetSkillTalent(Skill* skill)
     {
         const SkillStub* stub = skill->GetStub();
+        if (!stub)
+        {
+            skill->SetTalent(6, 0);
+            skill->SetTalent(7, 0);
+            return;
+        }
         int n = stub->talent_size;
         if (n > 6)
             n = 6;
@@ -2203,7 +2329,20 @@ namespace GNET
 
     void SkillWrapper::SetSkillTalent(Skill* skill, object_interface player, bool adjustLevel)
     {
+        skill_log("SetSkillTalent(player): entered, skill=%p", (void*)skill);
         const SkillStub* stub = skill->GetStub();
+        skill_log("SetSkillTalent(player): stub=%p (null=%d)", (void*)stub, (stub==NULL)?1:0);
+        if (!stub)
+        {
+            skill_log("SetSkillTalent(player): stub null branch");
+            skill_log("SetSkillTalent(player): calling SetTalent(6,0) on skill=%p", (void*)skill);
+            skill->SetTalent(6, 0);
+            skill_log("SetSkillTalent(player): SetTalent(6) done, calling SetTalent(7,0)");
+            skill->SetTalent(7, 0);
+            skill_log("SetSkillTalent(player): SetTalent(7) done, returning");
+            return;
+        }
+        skill_log("SetSkillTalent(player): stub non-null, talent_size=%d", (int)stub->talent_size);
         int n = stub->talent_size;
         if (n > 6)
             n = 6;
@@ -2417,6 +2556,7 @@ namespace GNET
 
     void SkillWrapper::SaveSkillElems(archive& ar)
     {
+        skill_log("ENTER: SkillWrapper::SaveSkillElems");
         ar << semap.size();
         std::map<unsigned int, SkillElems>::iterator it = semap.begin();
         while (1)
@@ -2433,9 +2573,11 @@ namespace GNET
 
     void SkillWrapper::LoadSkillElems(archive& ar)
     {
+        skill_log("ENTER: SkillWrapper::LoadSkillElems");
         SkillElems elems;
-        size_t  size;
+        size_t size;
         ar >> size;
+        skill_log("ENTER: SkillWrapper::LoadSkillElems size: %d", size);
         for (int i = 0; i < size; ++i)
         {
             memset(&elems, 0, sizeof(elems));
@@ -2451,6 +2593,7 @@ namespace GNET
 
     void SkillWrapper::SaveSkillElemsClient(archive& ar)
     {
+        skill_log("ENTER: SkillWrapper::SaveSkillElemsClient");
         ar << semap.size();
         std::map<unsigned int, SkillElems>::iterator it = semap.begin();
         while (1)
@@ -2465,6 +2608,7 @@ namespace GNET
 
     bool SkillWrapper::OnTalentChange(object_interface player, int talent_skill_id, int old_talent_skill_lvl, int new_talent_skill_lvl)
     {
+        skill_log("ENTER: SkillWrapper::OnTalentChange talent_skill_id=%d old=%d new=%d", talent_skill_id, old_talent_skill_lvl, new_talent_skill_lvl);
         int cul = player.GetCultivation();
         const SkillStub* stub = SkillStub::GetStub(talent_skill_id);
         if (stub && stub->type == 11)
@@ -2590,6 +2734,7 @@ namespace GNET
     //75
     bool SkillWrapper::CheckConsistency()
     {
+        skill_log("ENTER: SkillWrapper::CheckConsistency");
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (it != map.end())
         {
@@ -2623,11 +2768,13 @@ namespace GNET
 
     int SkillWrapper::GetCooldownId(ID id)
     {
+        skill_log("ENTER: SkillWrapper::GetCooldownId id=%u", (unsigned int)id);
         return id + 1024;
     }
 
     int SkillWrapper::GetMpCost(ID id, int level)
     {
+        skill_log("ENTER: SkillWrapper::GetMpCost id=%u level=%d", (unsigned int)id, level);
         Skill* skill = Skill::Create(id);
         if (!skill)
             return 0;
@@ -2682,37 +2829,39 @@ namespace GNET
 
     void SkillWrapper::SetDecSkillLevel(int level)
     {
+        skill_log("ENTER: SkillWrapper::SetDecSkillLevel level=%d", level);
         this->dec_skill_level = level;
     }
 
     void SkillWrapper::RecordPos(object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::RecordPos");
         this->record_map_id = player.GetTag();
         this->record_pos = player.GetPos();
     }
 
     void SkillWrapper::ClearRecordPos()
     {
+        skill_log("ENTER: SkillWrapper::ClearRecordPos");
         this->record_map_id = -1;
     }
 
     //85
     bool SkillWrapper::SetXPSkill(int id)
     {
-        const SkillStub* stub = SkillStub::GetStub(id);
-        if (!stub || stub->occupation != 187)
+        skill_log("setXPSkill Bool");
+        skill_log("setXPSkill SkillID: %d", id);
+        if (id <= 0)
             return 0;
-        std::map<unsigned int, PersistentData>::iterator it = map.find(id);
-        if (it == map.end())
-        {
-            return 0;
-        }
         PersistentData data(0);
         data.baselevel = 1;
         data.reallevel = 1;
         data.actilevel = 0;
         data.mask = 1;
         map[id].baselevel = data.baselevel;
+        map[id].reallevel = data.reallevel;
+        map[id].actilevel = data.actilevel;
+        map[id].mask = data.mask;
         map[id].cooltime = data.cooltime;
         return 1;
 
@@ -2720,6 +2869,7 @@ namespace GNET
 
     bool SkillWrapper::ClearXPSkill(object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::ClearXPSkill");
         int id = player.GetXPSkill();
         if (id <= 0)
             return 0;
@@ -2737,6 +2887,7 @@ namespace GNET
 
     bool SkillWrapper::ClearXPSkillCoolTime(object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::ClearXPSkillCoolTime");
         int id = player.GetXPSkill();
         if (id <= 0)
             return 0;
@@ -2754,6 +2905,7 @@ namespace GNET
 
     void SkillWrapper::Swap(SkillWrapper& sw)
     {
+        skill_log("ENTER: SkillWrapper::Swap");
         sw.map.swap(map);
         sw.wamap.swap(wamap);
         sw.prfmap.swap(prfmap);
@@ -2770,32 +2922,36 @@ namespace GNET
 
     int SkillWrapper::GetSkillLevel(ID id)
     {
+        skill_log("ENTER: SkillWrapper::GetSkillLevel id=%u", (unsigned int)id);
         std::map<unsigned int, PersistentData>::iterator it = map.find(id);
         if (it == map.end())
-        {
-            return it->second.reallevel;
-        }
-        else
-        {
             return 0;
-        }
+        return it->second.reallevel;
     }
 
     //90
     short SkillWrapper::GetSkillData(ID id, short& level, int& cooltime, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::GetSkillData id=%u", (unsigned int)id);
         std::map<unsigned int, PersistentData>::iterator it = map.find(id);
         if (it == map.end())
+        {
+            skill_log("GetSkillData: skill not in map");
             return 0;
+        }
         level = it->second.reallevel;
+        skill_log("GetSkillData: reallevel=%d", (int)level);
         if (!level)
             return 0;
         level -= this->dec_skill_level;
         if (level <= 0)
             level = 1;
         cooltime = it->second.cooltime;
+        skill_log("GetSkillData: calling AdjustSkill");
         player.AdjustSkill(id, level);
+        skill_log("GetSkillData: calling GetStub");
         const SkillStub* stub = SkillStub::GetStub(id);
+        skill_log("GetSkillData: stub=%s", stub ? "found" : "null");
         if (stub)
         {
             if (level > stub->maxlevel)
@@ -2803,12 +2959,14 @@ namespace GNET
             if (level < 0)
                 level = 0;
         }
+        skill_log("GetSkillData: returning level=%d", (int)level);
         return level;
 
     }
 
     void SkillWrapper::SetFamilySkill(int* pairs, int size, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::SetFamilySkill size=%d", size);
         if (pairs && size)
         {
             for (int i = 0; i < size - 1; i += 2)
@@ -2844,6 +3002,7 @@ namespace GNET
 
     void SkillWrapper::SetSectSkill(int* pairs, int size, object_interface player)
     {
+        skill_log("ENTER: SkillWrapper::SetSectSkill size=%d", size);
         if (pairs && size)
         {
             for (int i = 0; i < size - 1; i += 2)
@@ -2878,6 +3037,7 @@ namespace GNET
 
     void SkillWrapper::GetSectSkill(int* pairs, int& size)
     {
+        skill_log("ENTER: SkillWrapper::GetSectSkill");
         size = 0;
         int n = 0;
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
@@ -2906,6 +3066,7 @@ namespace GNET
 
     int  SkillWrapper::Forget(object_interface player, int mask)
     {
+        skill_log("ENTER: SkillWrapper::Forget(mask) mask=%d", mask);
         std::map<unsigned int, PersistentData>::iterator it = map.begin();
         while (it != map.end())
         {
@@ -2936,6 +3097,7 @@ namespace GNET
     //95
     void SkillWrapper::WeaponAddon(ID id, int value1, int value2)
     {
+        skill_log("ENTER: SkillWrapper::WeaponAddon id=%u v1=%d v2=%d", (unsigned int)id, value1, value2);
         std::map<unsigned int, WeaponAddonTalent>::iterator it = wamap.find(id);
         if (it == wamap.end())
         {
@@ -2966,6 +3128,7 @@ namespace GNET
     
     void SkillWrapper::AddProficiency(object_interface player, ID skillid, int add)
     {
+        skill_log("ENTER: SkillWrapper::AddProficiency skillid=%u add=%d", (unsigned int)skillid, add);
         const SkillStub* stub = GNET::SkillStub::GetStub(skillid);
         if (stub)
         {
@@ -2987,6 +3150,7 @@ namespace GNET
 
     bool SkillWrapper::DecProficiency(object_interface player, ID skillid, int dec)
     {
+        skill_log("ENTER: SkillWrapper::DecProficiency skillid=%u dec=%d", (unsigned int)skillid, dec);
         if (dec <= 0)
             return 1;
         std::map<unsigned int, int>::iterator it = prfmap.find(skillid);
@@ -3153,12 +3317,8 @@ namespace GNET
         return 0;
     }
 
+} // namespace GNET
 
 
 
 
-
-
-
-
-}

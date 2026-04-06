@@ -206,7 +206,7 @@ public:
 	int Condition(Skill*) const;
 	bool DoBless(void) const;
 	int GetEventFlag(void) const;
-	static std::map<unsigned int, const GNET::SkillStub*> GetMap(void);
+	static std::map<unsigned int, const GNET::SkillStub*>& GetMap(void);
 	int GetOccupation(void) const;
 	int GetPreskillNum(void) const;
 	State* GetState(int) const;

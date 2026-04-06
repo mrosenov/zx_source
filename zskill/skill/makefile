@@ -1,12 +1,16 @@
 CPP = g++
 
-DEFINES  = -D_SKILL_SERVER 
-CPPFLAGS = -Wall -g -ggdb -O0 -fPIC -shared
+DEFINES  = -D_SKILL_SERVER -DLINUX
+# GCC 3.3 / FC2: removed -shared from compile flags (link-only flag),
+# kept -fPIC for position-independent code required by shared libs.
+# -Wno-deprecated silences hash_map/ext warnings on older STL headers.
+# -fno-strict-aliasing avoids UB-related miscompiles with older GCC.
+CPPFLAGS = -Wall -Wno-deprecated -g -ggdb -O0 -fPIC -fno-strict-aliasing
 
 HEADERS = *.h
-CPPFILES = playerwrapper.cpp  skill.cpp  skillfilter.cpp  skillwrapper.cpp skillfunction.cpp #base_filter.cpp 
-OBJS = skill.o skillwrapper.o playerwrapper.o skillfilter.o skillfunction.o #base_filter.o 
-INCLUDES = -I. -I../header -I../header/include -I../common
+CPPFILES = playerwrapper.cpp  skill.cpp  skillfilter.cpp  skillwrapper.cpp skillfunction.cpp #base_filter.cpp
+OBJS = skill.o skillwrapper.o playerwrapper.o skillfilter.o skillfunction.o #base_filter.o
+INCLUDES = -I. -I../header -I../header/include
 STUBOBJS := $(patsubst %.cpp,%.o,$(wildcard ../skills/stubs*.cpp))
 #STUBOBJS += $(patsubst %.cpp,%.o,$(wildcard ))
 LIB = libskill.so
@@ -22,5 +26,5 @@ $(OBJS) : $(HEADERS)
 	$(CPP) -c $(DEFINES) $(INCLUDES) $(CPPFLAGS) $< -o $@
 
 clean:
-	rm -rf $(OBJS) $(STUBOBJS) $(LIB) $(CLEAN) 
+	rm -rf $(OBJS) $(STUBOBJS) $(LIB) $(CLEAN)
 

@@ -177,7 +177,7 @@ namespace GNET
 
 	int SkillStub::Condition(Skill* skill) const
 	{
-		if (GetType() > 12)   //wulin : TYPE_RUNE¡¢TYPE_BLESS ..
+		if (GetType() > 12)   //wulin : TYPE_RUNEï¿½ï¿½TYPE_BLESS ..
 			return 2;
 		PlayerWrapper* Player = skill->GetPlayer();
 		if (skill->GetPlayer()->IsRenMa())
@@ -404,9 +404,9 @@ namespace GNET
 		return 0;
 	}
 
-	std::map<unsigned int, const GNET::SkillStub*> SkillStub::GetMap(void)
+	std::map<unsigned int, const GNET::SkillStub*>& SkillStub::GetMap(void)
 	{
-		static Map map; 
+		static Map map;
 		return map;
 
 	}
