@@ -220,6 +220,44 @@ public:
 	void add_structure(unsigned int id,  FACTION_MONEY_SHOP_CONFIG & data);
 	void add_structure(unsigned int id,  COMPOUND_MINE_ESSENCE & data);
 	void add_structure(unsigned int id,  COLORANT_DEFAULT_CONFIG & data);
+	// v158 new data tables (loaded after talk_proc)
+	void add_structure(unsigned int id,  SIGN_IN_CONFIG & data);
+	void add_structure(unsigned int id,  BABY_ESSENCE & data);
+	void add_structure(unsigned int id,  CLASS_BABY_RELATION_CONFIG & data);
+	void add_structure(unsigned int id,  BABY_CONFIG & data);
+	void add_structure(unsigned int id,  BABY_PROPERTY_CONFIG & data);
+	void add_structure(unsigned int id,  BABY_UPGRADE_CONFIG & data);
+	void add_structure(unsigned int id,  BABY_FASHION_ESSENCE & data);
+	void add_structure(unsigned int id,  BABY_TOY_ESSENCE & data);
+	void add_structure(unsigned int id,  BABY_BOOK_ESSENCE & data);
+	void add_structure(unsigned int id,  MATRIX_CARD_ESSENCE & data);
+	void add_structure(unsigned int id,  MATRIX_EQUIP_ESSENCE & data);
+	void add_structure(unsigned int id,  MATRIX_EXP_CONFIG & data);
+	void add_structure(unsigned int id,  MATRIX_COLLECT_CONFIG & data);
+	void add_structure(unsigned int id,  MATRIX_CARD_UPGREAD_CONFIG & data);
+	void add_structure(unsigned int id,  MATRIX_COMBINE_CONFIG & data);
+	void add_structure(unsigned int id,  BABY_FOOD_ESSENCE & data);
+	void add_structure(unsigned int id, BABY_TITLE_ESSENCE& data);
+	void add_structure(unsigned int id, BABY_TITLE_LIST& data);
+	void add_structure(unsigned int id, VEHICLE_ENHANCE_ESSENCE& data);
+	void add_structure(unsigned int id, TALENT_SCROLL_ESSENCE& data);
+	void add_structure(unsigned int id, TALENT_SCROLL_CONFIG& data);
+	void add_structure(unsigned int id, TALENT_SCROLL_SKILL_CONFIG& data);
+	void add_structure(unsigned int id, SKILL_REPLACE_CONFIG& data);
+	void add_structure(unsigned int id, HILL_TRANSCRIPTION_CONFIG& data);
+	void add_structure(unsigned int id, CONSUME_AWARD_CONFIG& data);
+	void add_structure(unsigned int id, MULTI_TOWER_PROPERTY_CONFIG& data);
+	void add_structure(unsigned int id, RAID18V18_AWARD_CONFIG& data);
+	void add_structure(unsigned int id, EGGS_GIFT_BAG_ESSENCE& data);
+	void add_structure(unsigned int id, ITEM_TRADE2_CONFIG& data);
+	void add_structure(unsigned int id, GUESS_ESSENCE& data);
+	void add_structure(unsigned int id, ELITE_GAME_RESULT_CONFIG& data);
+	void add_structure(unsigned int id, ELITE_GAME_AWARD_CONFIG& data);
+	void add_structure(unsigned int id, TITLE_ITEM_ESSENCE& data);
+	void add_structure(unsigned int id, SOUL_ENHANCE_CONFIG& data);
+	void add_structure(unsigned int id, SOUL_EXCHANGE_CONFIG& data);
+	void add_structure(unsigned int id, SOUL_DROP_CONFIG& data);
+	void add_structure(unsigned int id, DAILY_SIGN_CONFIG& data);
 	//////////////////////////////////////////////////////////////////////////
 public:
 	unsigned int get_data_id(ID_SPACE idspace, unsigned int index, DATA_TYPE & datatype);
@@ -497,6 +535,45 @@ protected:
 	array<FACTION_MONEY_SHOP_CONFIG>		faction_money_shop_config_array;
 	array<COMPOUND_MINE_ESSENCE>			compound_mine_essence_array;
 	array<COLORANT_DEFAULT_CONFIG>          colorant_default_config_array;
+	// v158 new data tables (loaded after talk_proc)
+	array<SIGN_IN_CONFIG>                   sign_in_config_array;
+	array<BABY_ESSENCE>                     baby_essence_array;
+	array<CLASS_BABY_RELATION_CONFIG>       class_baby_relation_config_array;
+	array<BABY_CONFIG>                      baby_config_array;
+	array<BABY_PROPERTY_CONFIG>             baby_property_config_array;
+	array<BABY_UPGRADE_CONFIG>              baby_upgrade_config_array;
+	array<BABY_FASHION_ESSENCE>             baby_fashion_essence_array;
+	array<BABY_TOY_ESSENCE>                 baby_toy_essence_array;
+	array<BABY_BOOK_ESSENCE>                baby_book_essence_array;
+	array<MATRIX_CARD_ESSENCE>              matrix_card_essence_array;
+	array<MATRIX_EQUIP_ESSENCE>             matrix_equip_essence_array;
+	array<MATRIX_EXP_CONFIG>                matrix_exp_config_array;
+	array<MATRIX_COLLECT_CONFIG>            matrix_collect_config_array;
+	array<MATRIX_CARD_UPGREAD_CONFIG>       matrix_card_upgread_config_array;
+	array<MATRIX_COMBINE_CONFIG>            matrix_combine_config_array;
+	array<BABY_FOOD_ESSENCE>                baby_food_essence_array;
+	array<BABY_TITLE_ESSENCE>               baby_title_essence_array;
+	array<BABY_TITLE_LIST>					baby_title_list_array;
+	array<VEHICLE_ENHANCE_ESSENCE>			vehicle_enhance_essence_array;
+	array<TALENT_SCROLL_ESSENCE>			talent_scroll_essence_array;
+	array<TALENT_SCROLL_CONFIG>				talent_scroll_config_array;
+	array<TALENT_SCROLL_SKILL_CONFIG>		talent_scroll_skill_config_array;
+	array<SKILL_REPLACE_CONFIG>				skill_replace_config_array;
+	array<HILL_TRANSCRIPTION_CONFIG>		hill_transcription_config_array;
+	array<CONSUME_AWARD_CONFIG>				consume_award_config_array;
+	array<MULTI_TOWER_PROPERTY_CONFIG>		multi_tower_property_config_array;
+	array<RAID18V18_AWARD_CONFIG>			raid18v18_award_config_array;
+	array<EGGS_GIFT_BAG_ESSENCE> 			eggs_gift_bag_essence_array;
+	array<ITEM_TRADE2_CONFIG> 				item_trade2_config_array;
+	array<GUESS_ESSENCE> 					guess_essence_array;
+	array<ELITE_GAME_RESULT_CONFIG>			elite_game_result_config_array;
+	array<ELITE_GAME_AWARD_CONFIG> 			elite_game_award_config_array;
+	array<TITLE_ITEM_ESSENCE> 				title_item_essence_array;
+	array<SOUL_ENHANCE_CONFIG> 				soul_enhance_config_array;
+	array<SOUL_EXCHANGE_CONFIG> 			soul_exchange_config_array;
+	array<SOUL_DROP_CONFIG> 				soul_drop_config_array;
+	array<DAILY_SIGN_CONFIG> 				daily_sign_config_array;
+
 	// the global hash_map for each id space
 private:
 	struct LOCATION

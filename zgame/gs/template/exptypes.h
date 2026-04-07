@@ -5422,6 +5422,895 @@ struct COLORANT_DEFAULT_CONFIG
 
 //=============================================================================
 
+// Mitkos Changes elements.data v158
+
+// List[193]
+struct SIGN_IN_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+	int				sign_start_time;
+	int				sign_end_time;
+	int				exchange_end_time;
+	int				sign_score;
+	int				sign_package;
+
+	struct package_list
+	{
+		int			package_id;
+		int			score_consume;
+		int			exchange_count;
+	} package_list_info[4];
+};
+
+// List[194]
+struct BABY_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+	int				file_model;
+	int				initweapon_model;
+	int				initbody_model;
+	int				init_foot_model;
+	int				init_hat_model;
+	int				file_model_normal;
+	int				file_model_tetra;
+	int				file_model_left;
+	int				file_model_back;
+	int				file_model_changdao;
+	int				file_model_judao;
+	int				file_model_gong;
+	int				file_model_sha_back;
+	int				file_model_sha_01;
+	int				file_model_sha_02;
+	int				gender;
+	int				sect_mask;
+	float			attack_range;
+	int				skill_id_1;
+	int				skill_id_2;
+	int				skill_id_3;
+	int				skill_id_4;
+	int				skill_id_5;
+	int				skill_id_6;
+	int				skill_id_7;
+	int				skill_id_8;
+	int				skill_id_9;
+	int				skill_id_10;
+	int				skill_id_11;
+	int				skill_id_12;
+	int				skill_id_13;
+	int				skill_id_14;
+	int				skill_id_15;
+	namechar		description[100];
+};
+
+// List[195]
+struct CLASS_BABY_RELATION_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	struct class_baby_relation
+	{
+		int			character_class_id;
+		int			malerole_baby_id;
+		int			femalerole_baby_id;
+	} class_baby_relation_list[100];
+};
+
+// List[196]
+struct BABY_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+	int				pick_range;
+	int				name_color;
+	float			sight_range;
+	float			aggro_range;
+	int				hunger_speed;
+	int				stand_mode;
+	float			move_speed;
+	int				percopperhp;
+	int				persilverhp;
+	int				hp_limit;
+	int				percoppermp;
+	int				persilvermp;
+	int				mp_limit;
+
+	struct skill_deity_reg
+	{
+		int			skill_id[10];
+	} skill_deity_reg_info[15];
+};
+
+// List[197]
+struct BABY_PROPERTY_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				perception_ratio[100];
+	int				charm_ratio[100];
+
+	struct deity_ratio
+	{
+		int			attack_ratio;
+		int			defence_ratio;
+		int			hit_ratio;
+		int			evade_ratio;
+		int			crit_damage_ratio;
+		int			crit_ratio;
+	} deity_ratio_info[100];
+};
+
+// List[198]
+struct BABY_UPGRADE_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				upqrade_exp_req[10];
+
+	struct baby_upqrade
+	{
+		int			exp_req;
+		int			success_prob;
+	} baby_upqrade_list[100];
+};
+
+// List[199]
+struct BABY_FASHION_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+	int				equip_mask;
+	int				equip_location;
+	int				action_type;
+
+	int				file_model_normal;
+	int				file_model_tetra;
+	int				file_model_left;
+	int				file_model_back;
+	int				file_model_changdao;
+	int				file_model_judao;
+	int				file_model_gong;
+	int				file_model_sha_back;
+	int				file_model_sha_01;
+	int				file_model_sha_02;
+
+	int				require_gender;
+	int				require_level;
+	int				sect_mask;
+	int				title_require;
+
+	int				hp;
+	int				mp;
+	int				min_dmg;
+	int				max_dmg;
+	int				defence;
+	int				attack;
+	int				armor;
+	float			attack_range;
+
+	int				id_addon_1;
+	int				id_addon_2;
+	int				id_addon_3;
+	int				id_addon_4;
+	int				id_addon_5;
+
+	int				fee_install_sstone;
+	int				fee_uninstall_sstone;
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[200]
+struct BABY_TOY_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+	int				equip_mask;
+	int				init_time_points;
+	int				toy_level;
+
+	int				added_attack_ratio;
+	int				added_defense_ratio;
+	int				added_hit_ratio;
+	int				added_evade_ratio;
+	int				added_crit_damage_ratio;
+	int				added_crit_ratio;
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[201]
+struct BABY_BOOK_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+	int				equip_mask;
+	int				init_time_points;
+	int				toy_level;
+
+	int				added_prop_ratio;
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[202]
+struct MATRIX_CARD_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+	int				normal_icon;
+	int				big_icon;
+	int				quality;
+
+	struct base_addon
+	{
+		int			addon_id;
+		float		coefficient;
+	} base_addon[3];
+
+	struct addon
+	{
+		int			id;
+		int			level;
+	} addons[6];
+
+	struct intimate
+	{
+		namechar	name[16];   // wstring:32
+		int			id;
+		int			active_id[3];
+	} intimates[4];
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[203]
+struct MATRIX_EQUIP_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+	int				normal_icon;
+	int				big_icon;
+	int				quality;
+
+	struct base_addon
+	{
+		int			addon_id;
+		float		coefficient;
+	} base_addon[3];
+
+	struct addon
+	{
+		int			id;
+		int			level;
+	} addons[6];
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[204]
+struct MATRIX_EXP_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	struct config
+	{
+		namechar	name[16];   // wstring:32
+		int			num;
+		int			exp;
+	} config[7];
+};
+
+// List[205]
+struct MATRIX_COLLECT_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	struct matrix_set
+	{
+		namechar	name[16];   // wstring:32
+		int			addon;
+		int			cards[30];
+	} matrixsets[4];
+};
+
+// List[206]
+struct MATRIX_CARD_UPGREAD_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				exp[59];
+	float			val[4];
+};
+
+// List[207]
+struct MATRIX_COMBINE_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	struct material
+	{
+		int			id;
+		int			num;
+	};
+
+	struct recipe
+	{
+		int			card;
+		int			decompose_id;
+		int			decompose_num;
+		material	materials[2];
+	} recipes[220];
+};
+
+// List[208]
+struct BABY_FOOD_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+	int				equip_mask;
+	int				init_fatique_value;
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[209]
+struct BABY_TITLE_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+	int				type;
+	int				title_id;
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[210]
+struct BABY_TITLE_LIST
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				title_list[100];
+};
+
+// List[211]
+struct VEHICLE_ENHANCE_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+
+	float			increased_speed;
+	int				moment;
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[212]
+struct TALENT_SCROLL_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+	int				big_icon;
+
+	int				talent_scroll_config;
+	int				position;
+
+	int				decomposition_id;
+	int				decomposition_num;
+
+	int				refine_id;
+	int				refine_fee;
+
+	int				refine_num[10];
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[213]
+struct TALENT_SCROLL_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	float			prop_prob[4];      // Prop_2_Prob ... Prop_5_Prob
+	float			spe_prob;
+
+	struct property_info
+	{
+		int			prop_id;
+		float		max_value;
+		float		min_value;
+		float		add_value;
+		float		prob;
+	} property[32];
+
+	float			level_prob[5];
+
+	int				profession_addon_skill[15];
+};
+
+// List[214]
+struct TALENT_SCROLL_SKILL_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	struct skill_info
+	{
+		int			id;
+		int			level;
+		float		prob;
+		namechar	desc[256];
+	} skill[16];
+};
+
+// List[215]
+struct SKILL_REPLACE_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	struct skill_replace_info
+	{
+		int			original_skill_id;
+		int			addon_skill_id;
+	} skill[168];
+};
+
+// List[216]
+struct HILL_TRANSCRIPTION_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				max_finish_count;
+	int				map_id;
+
+	int				open_room_item_id;
+	int				open_room_item_count;
+
+	int				room_active_time;
+
+	int				player_min_level;
+	int				player_max_level;
+
+	long long		character_combo_id;
+	long long		character_combo_id_2;
+
+	int				god_devil_mask;
+	int				renascence_count;
+	int				required_race;
+
+	int				required_money;
+
+	struct reputation
+	{
+		int			type;
+		int			value;
+	} required_reputation[4];
+
+	int				required_item_id;
+	int				required_item_count;
+	int				is_item_need_consumed;
+
+	int				min_player_num;
+	int				max_player_num;
+
+	int				invincible_time;
+	int				wait_time_before_leave;
+	int				total_exist_time;
+
+	int				controller_id;
+	int				award_task_id;
+
+	int				forbidden_items_id[10];
+	int				forbidden_skill_id[10];
+
+	int				map_variable_id[20];
+	int				level_controller_id[10];
+
+	int				strategy[10];
+
+	int				difficulty;
+};
+
+// List[217]
+struct CONSUME_AWARD_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	struct award_item_info
+	{
+		int			item_id;
+		int			item_num;
+	};
+
+	struct consume_award_info
+	{
+		int				amount;
+		award_item_info	award_item_info[8];
+	} consume_award_info[7];
+};
+
+// List[218]
+struct MULTI_TOWER_PROPERTY_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				tower_layer;
+
+	float			monster_gen_prob[4];
+	float			monster_range_center[3];
+	int				monster_range_radius;
+
+	float			renascence_pos[3];
+
+	int				success_controller_id;
+
+	struct monster_addon_property
+	{
+		int			hp;
+		int			mp;
+		int			attack;
+		int			defence;
+		int			addon_damage;
+		int			damage_resistance;
+		int			hit;
+		int			evade;
+		int			critical_rate;
+		float		critical_damage;
+		int			resist[6];
+		int			anti_critical_rate;
+		float		anti_critical_damage;
+		int			skill_armor_rate;
+		int			skill_attack_rate;
+	} monster_addon_property[3];
+
+	int				monster_id_list[32];
+
+	struct award_item
+	{
+		int			item_id;
+		int			item_count;
+	};
+
+	award_item		life_time_award[5];
+	award_item		single_time_award[5];
+};
+
+// List[219]
+struct RAID18V18_AWARD_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				first_win_award;
+
+	struct award_info
+	{
+		int			item_id;
+		int			item_num;
+		int			score_1_num;
+		int			score_2_num;
+		int			win_num;
+		int			time_limit;
+		int			num_limit;
+	} award_list[20];
+};
+
+// List[220]
+struct EGGS_GIFT_BAG_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+
+	int				level_everlimit;
+	int				level_required;
+	int				level_upperlimit;
+	int				require_gender;
+	int				renascence_count;
+
+	long long		character_combo_id;
+	long long		character_combo_id_2;
+
+	int				god_devil_mask;
+	int				open_time;
+	float			probability;
+	int				success_disappear;
+	int				faliure_disappear;
+
+	struct object_need
+	{
+		int			object_need;
+		int			object_num;
+	} object_need[2];
+
+	int				money_need;
+	int				num_object;
+
+	struct gift_info
+	{
+		int			id_object;
+		float		probability;
+		int			num_min;
+		int			num_max;
+		int			is_bind;
+		int			effect_time;
+	} gifts[16];
+
+	int				normalize_group[4];
+
+	int				world_id;
+
+	struct position
+	{
+		float		x;
+		float		y;
+		float		z;
+	} pos[2];
+
+	int				logic;
+	int				type;
+
+	struct time_info
+	{
+		int			year;
+		int			month;
+		int			day;
+		int			hour;
+		int			min;
+		int			wday;
+	} time_info[2];
+
+	int				spe_award_1;
+	float			factor;
+	namechar		spe_words_1[100];
+	int				spe_award_2;
+	namechar		spe_words_2[100];
+
+	namechar		award_words[6][100];
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[221]
+struct ITEM_TRADE2_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	struct required_item_info
+	{
+		int			required_item;
+		int			required_item_quantity;
+	};
+
+	struct trade_item_info
+	{
+		int					item_id;
+		int					item_quantity;
+		required_item_info	required_item_info[3];
+	};
+
+	struct trade_page
+	{
+		namechar			title[8];	// wstring:16
+		trade_item_info		item[30];
+	} trade_page[2];
+
+	int				dialog_id;
+};
+
+// List[222]
+struct GUESS_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[223]
+struct ELITE_GAME_RESULT_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				result;
+};
+
+// List[224]
+struct ELITE_GAME_AWARD_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				deliver_award_time;
+	int				guess_end_time;
+
+	struct award_item
+	{
+		int			item_id;
+		int			item_num;
+	};
+
+	struct award_info
+	{
+		int			start;
+		int			end;
+		award_item	item[20];
+	} award_info[6];
+};
+
+// List[225]
+struct TITLE_ITEM_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				model_path_id;
+	int				icon_path_id;
+
+	int				title;
+	namechar		speak[100];
+
+	int				sell_price;
+	int				buy_price;
+	int				stack_amt;
+	int				trade_behavior;
+};
+
+// List[226]
+struct SOUL_ENHANCE_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				per_point_soul_req;
+
+	float			props_list[24];
+
+	int				level_limit;
+
+	struct level_up_info
+	{
+		int			points_req;
+		float		success_prob;
+		float		failed_return_ratio;
+	} level_up_list[50];
+};
+
+// List[227]
+struct SOUL_EXCHANGE_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	struct exchange_info
+	{
+		int			item_id;
+		int			soul_req;
+	} exchange_list[10];
+};
+
+// List[228]
+struct SOUL_DROP_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				monster_id;
+
+	struct soul_drop_info
+	{
+		int			min_count;
+		int			max_count;
+		float		probability;
+		int			value;
+	} soul_drop_list[4];
+};
+
+// List[229]
+struct DAILY_SIGN_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				start_time;
+
+	struct award_info
+	{
+		int			item_id;
+		int			count;
+	} awards[120];
+
+	int				cost_list[30];
+};
+
+// Mitkos Changes elements.data v158 END
+
+
+//=============================================================================
+// ID space and data type enumerations (must come after all struct definitions)
+//=============================================================================
+
 enum ID_SPACE
 {
 	ID_SPACE_ESSENCE	= 0,
@@ -5431,7 +6320,7 @@ enum ID_SPACE
 	ID_SPACE_CONFIG		= 4,
 };
 
-//���������ͱ����������μ�
+//数据类型标志，以下枚举项目顺序不能更改
 enum DATA_TYPE
 {
 	DT_INVALID = 0,
@@ -5447,7 +6336,7 @@ enum DATA_TYPE
 	DT_MATERIAL_SUB_TYPE,
 	DT_MATERIAL_ESSENCE,
 	DT_SKILLTOME_SUB_TYPE,
-	DT_SKILLTOME_ESSENCE,		
+	DT_SKILLTOME_ESSENCE,
 	DT_TRANSMITROLL_ESSENCE,
 	DT_LUCKYROLL_ESSENCE,
 	DT_TOWNSCROLL_ESSENCE,
@@ -5456,7 +6345,7 @@ enum DATA_TYPE
 	DT_DROPTABLE_TYPE,
 	DT_DROPTABLE_ESSENCE,
 	DT_MONSTER_TYPE,
-	DT_MONSTER_ESSENCE,	
+	DT_MONSTER_ESSENCE,
 	DT_NPC_TALK_SERVICE,
 	DT_NPC_SELL_SERVICE,
 	DT_NPC_BUY_SERVICE,
@@ -5472,7 +6361,7 @@ enum DATA_TYPE
 	DT_TALK_PROC,
 	DT_RECIPE_MAJOR_TYPE,
 	DT_RECIPE_SUB_TYPE,
-	DT_RECIPE_ESSENCE,	
+	DT_RECIPE_ESSENCE,
 	DT_ENEMY_FACTION_CONFIG,
 	DT_CHARACTER_CLASS_CONFIG,
 	DT_PARAM_ADJUST_CONFIG,
@@ -5575,14 +6464,14 @@ enum DATA_TYPE
 	DT_SCROLL_DIG_COUNT_INC_ESSENCE,	//Added 2012-03-22.
 	DT_TOWER_TRANSCRIPTION_CONFIG,		//Added 2012-03-31.
 	DT_TOWER_TRANSCRIPTION_PROPERTY_CONFIG,	//Added 2012-03-31.
-	DT_RUNE_DATA_CONFIG,				// Ԫ��ϵͳ�����ֵ���� 2012.4.16
-	DT_RUNE_COMB_PROPERTY,				// Ԫ��ϵͳ����֮��ģ�� 2012.4.16
-	DT_RUNE_EQUIP_ESSENCE,				// Ԫ�����װ��			2012.4.16
-	DT_LITTLE_PET_UPGRADE_CONFIG,		//��С�������������ñ� Added 2012-04-19.
+	DT_RUNE_DATA_CONFIG,
+	DT_RUNE_COMB_PROPERTY,
+	DT_RUNE_EQUIP_ESSENCE,
+	DT_LITTLE_PET_UPGRADE_CONFIG,		//Added 2012-04-19.
 	DT_RUNE_SLOT_ESSENCE,
-	DT_DROP_INTERNAL_CONFIG,			// ��ʱ�����������ñ� 2012.6.19
-	DT_PK2012_GUESS_CONFIG,				// ���PK�������ñ�
-	DT_COLLISION_RAID_TRANSFIGURE_CONFIG,//��ײ�����������ñ� Added 2012-08-02.
+	DT_DROP_INTERNAL_CONFIG,
+	DT_PK2012_GUESS_CONFIG,
+	DT_COLLISION_RAID_TRANSFIGURE_CONFIG,//Added 2012-08-02.
 	DT_BOOTH_FIGURE_ITEM_ESSENCE,
 	DT_FLAG_BUFF_ITEM_ESSENCE,
 	DT_NPC_REPUTATION_SHOP_SERVICE,
@@ -5599,7 +6488,7 @@ enum DATA_TYPE
 	DT_GIFT_BAG_LOTTERY_DELIVER_ESSENCE,
 	DT_LOTTERY_TANGYUAN_ITEM_ESSENCE,
 	DT_TASK_SPECIAL_AWARD_CONFIG,
-	DT_GIFT_PACK_ITEM_ESSENCE,	
+	DT_GIFT_PACK_ITEM_ESSENCE,
 	DT_PROP_ADD_MATERIAL_ITEM_ESSENCE,
 	DT_PROP_ADD_ITEM_ESSENCE,
 	DT_PROP_ADD_CONFIG,
@@ -5629,10 +6518,46 @@ enum DATA_TYPE
 	DT_FACTION_MONEY_SHOP_CONFIG,
 	DT_COMPOUND_MINE_ESSENCE,
 	DT_COLORANT_DEFAULT_CONFIG,
-	DT_MAX,              //���������ͱ����������μ�
+	// v158 new data tables (loaded after talk_proc)
+	DT_SIGN_IN_CONFIG,
+	DT_BABY_ESSENCE,
+	DT_CLASS_BABY_RELATION_CONFIG,
+	DT_BABY_CONFIG,
+	DT_BABY_PROPERTY_CONFIG,
+	DT_BABY_UPGRADE_CONFIG,
+	DT_BABY_FASHION_ESSENCE,
+	DT_BABY_TOY_ESSENCE,
+	DT_BABY_BOOK_ESSENCE,
+	DT_MATRIX_CARD_ESSENCE,
+	DT_MATRIX_EQUIP_ESSENCE,
+	DT_MATRIX_EXP_CONFIG,
+	DT_MATRIX_COLLECT_CONFIG,
+	DT_MATRIX_CARD_UPGREAD_CONFIG,
+	DT_MATRIX_COMBINE_CONFIG,
+	DT_BABY_FOOD_ESSENCE,
+	DT_BABY_TITLE_ESSENCE,
+	DT_BABY_TITLE_LIST,
+	DT_VEHICLE_ENHANCE_ESSENCE,
+	DT_TALENT_SCROLL_ESSENCE,
+	DT_TALENT_SCROLL_CONFIG,
+	DT_TALENT_SCROLL_SKILL_CONFIG,
+	DT_SKILL_REPLACE_CONFIG,
+	DT_HILL_TRANSCRIPTION_CONFIG,
+	DT_CONSUME_AWARD_CONFIG,
+	DT_MULTI_TOWER_PROPERTY_CONFIG,
+	DT_RAID18V18_AWARD_CONFIG,
+	DT_EGGS_GIFT_BAG_ESSENCE,
+	DT_ITEM_TRADE2_CONFIG,
+	DT_GUESS_ESSENCE,
+	DT_ELITE_GAME_RESULT_CONFIG,
+	DT_ELITE_GAME_AWARD_CONFIG,
+	DT_TITLE_ITEM_ESSENCE,
+	DT_SOUL_ENHANCE_CONFIG,
+	DT_SOUL_EXCHANGE_CONFIG,
+	DT_SOUL_DROP_CONFIG,
+	DT_DAILY_SIGN_CONFIG,
+	DT_MAX,              //数据类型标志，以下枚举项目顺序不能更改
 };
 
 #pragma pack(pop, EXP_TYPES_INC)
 #endif//_EXP_TYPES_H_
-
-
