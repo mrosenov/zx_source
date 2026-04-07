@@ -262,13 +262,13 @@ gmatrix::InitScriptSystem(const char * filename, const int * index_list, size_t 
 		{
 			const char * str = lua_tostring(L,-i);
 			if(str == NULL) continue;
-			printf("装载并执行lua脚本'%s'...",str);  fflush(stdout);
+			printf("Load and execute Lua scripts '%s'...",str);  fflush(stdout);
 			if(luaL_dofile(L,str))
 			{
-				printf("失败\n");
+				printf("Failed to load LUA script\n");
 				return false;
 			}
-			printf("完成\n");
+			printf("Loaded successfully the LUA scripts\n");
 		}
 		lua_pop(L,10);
 
@@ -302,7 +302,7 @@ gmatrix::InitDisableSpawnerCtrl(const char * str)
 	{
 		if(!*token) continue;
 		int id = atoi(token);
-		printf("控制器%s('%d')被取消\n",token, id);
+		printf("The controller %s('%d') was canceled.\n",token, id);
 		_spawner_ctrl_disable_list.insert(id);
 	}
 	return true;
@@ -314,14 +314,14 @@ gmatrix::InitPocketItemList(const char *filename)
 	std::ifstream in(filename);
 	if(!in) return false;
 	std::string str;
-	printf("初始化随身包裹允许物品列表\t");
+	printf("Initialize the list of allowed items in your personal inventory.\t");
 	while(in)
 	{
 		in >> str;
 		_pocket_item_list.insert(atoi(str.c_str()));
 			
 	}
-	printf("物品数量:  %d\n", _pocket_item_list.size());
+	printf("Item quantity: %d\n", _pocket_item_list.size());
 	in.close();
 	return true;
 	
@@ -340,12 +340,12 @@ gmatrix::LoadLuaVersion(const char * filename)
 		sscanf(buf, "--%d", &version);
 		if(version <= 0)
 		{
-			printf("LUA腳本錯誤%d '%s'\n", version, buf);
+			printf("LUA script error %d '%s'\n", version, buf);
 		}
 		else
 		{
 			_lua_data_version = version;
-			printf("LUA腳本版本%d\n", version);
+			printf("LUA script version %d\n", version);
 			bRst = true;
 		}
 	}
@@ -384,23 +384,23 @@ bool gmatrix::InitWallowParam()
 	heavy = atoi(conf->find("WallowTime", "TimeHeavy").c_str());
 	clear = atoi(conf->find("WallowTime", "TimeClear").c_str());
 	bool mode = strcmp(conf->find("WallowTime", "ClearMode").c_str(), "TimeOfDay") == 0;
-	printf("沉迷的三个时间参数为%d,%d,%d ,沉迷恢复方式为:'%s'\n",light,heavy, clear,mode?"每天零点":"休息时间到达");
+	printf("The three time parameters for Wallow are %d, %d, %d, and the method to recover from Wallow is '%s'\n",light,heavy, clear,mode?"Every day at midnight":"Rest time has arrived");
 	wallow_object::SetParam(light,heavy,clear,mode?1:0);
 
 	std::string str = conf->find("General", "AntiWallow");
 	if(strcmp(str.c_str() , "true") == 0)
 	{
 		_world_param.anti_wallow = 1;
-		printf("防沉溺功能系统开启\n");
+		printf("AntiWallow is activated\n");
 	}
 	else if(strcmp(str.c_str(), "false") == 0)
 	{
 		_world_param.anti_wallow = 0;
-		printf("防沉溺功能系统关闭\n");
+		printf("AntiWallow system is turned off\n");
 	}
 	else
 	{
-		printf("未找到防沉迷开关状态 默认关闭\n");
+		printf("AntiWallow switch not found. Default is off.\n");
 	}
 	
 	return true;
@@ -532,7 +532,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 			LUA_ENV_MAGIC, LUA_ENV_TRANSFORM, LUA_ENV_MISC, LUA_ENV_RUNE, LUA_ENV_ASTROLOGY};
 		if(!InitScriptSystem(global_lua.c_str(), script_list, sizeof(script_list)/sizeof(int)))
 		{	
-			printf("初始化LUA脚本系统失败\n");
+			printf("Lua script system initialization failed.\n");
 			return -11;
 		}
 	}
@@ -546,20 +546,20 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 
 	if(!LoadSpiritConfig("script/soulpowerdata.lua"))
 	{	
-		printf("初始化魂力配置LUA脚本系统失败\n");
+		printf("Initialization of Soul Power Configuration LUA Script System Failed.\n");
 		return -11;
 	}
 	
 	if(!LoadMenologyConfig())
 	{	
-		printf("初始化活动配置LUA脚本系统失败\n");
+		printf("Initializing the activity configuration LUA script system failed.\n");
 		return -12;
 	}
 
 	//读取防沉迷数据
 	if(!gmatrix::InitWallowParam())
 	{
-		printf("读取防沉迷数据失败\n");
+		printf("Failed to read AntiWallow data\n");
 		return -122;
 	}
 
@@ -568,7 +568,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	if(strcmp(korea_version.c_str() , "true") == 0)
 	{
 		_world_param.billing_shop= true;
-		printf("开启韩国billing元宝交易系统\n");
+		printf("Launching the Korean Billing Gold Ingot Trading System\n");
 	}
 	else if(strcmp(korea_version.c_str(), "false") == 0)
 	{
@@ -583,7 +583,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	if(strcmp(pk_setting.c_str() , "true") == 0)
 	{
 		_world_param.pk_forbidden = true;
-		printf("开启PK保护\n");
+		printf("Enable PvP protection\n");
 	}
 	else if(strcmp(pk_setting.c_str(), "false") == 0)
 	{
@@ -597,7 +597,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	if(strcmp(zoneserver.c_str() , "true") == 0)
 	{
 		_is_zone_server = true;
-		printf("跨服服务器启动");
+		printf("Cross server start up");
 	}
 	else if(strcmp(zoneserver.c_str(), "false") == 0)
 	{
@@ -623,12 +623,12 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	}
 
 	g_config.long_offline_bonus = atoi(conf->find("General", "OfflineBonus").c_str());
-	printf("老玩家回归类别一为：%s\n", (g_config.long_offline_bonus & 0x01)?"开启":"关闭");
-	printf("老玩家回归类别二为：%s\n", (g_config.long_offline_bonus & 0x02)?"开启":"关闭");
-	printf("老玩家回归类别三为：%s\n", (g_config.long_offline_bonus & 0x04)?"开启":"关闭");
+	printf("Category One Returning Players: %s\n", (g_config.long_offline_bonus & 0x01)?"True":"False");
+	printf("Category Two Returning Players: %s\n", (g_config.long_offline_bonus & 0x02)?"True":"False");
+	printf("Category Three Returning Players: %s\n", (g_config.long_offline_bonus & 0x04)?"True":"False");
 
 	g_config.item_broken_active = atoi(conf->find("General", "BreakDropItem").c_str());
-	printf("红名掉落物品破损：%s\n", g_config.item_broken_active?"开启":"关闭");
+	printf("Red-named players drop damaged items: %s\n", g_config.item_broken_active?"True":"False");
 	g_config.gshop_bonus_ratio = atoi(conf->find("General", "GShopBonusRatio").c_str());
 
 	//从世界中读取NPC,PLAYER和物品限制
@@ -649,13 +649,13 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	_server_index = atoi(conf->find("Identify","ServerID").c_str());
 	if(_server_index <= 0) 
 	{
-		printf("未找到正确的Server ID\n");
+		printf("The correct ServerID was not found.\n");
 		return -10;
 	}
 
 	_server_name = strdup(conf->find("Identify","Name").c_str());
 	
-	printf("服务器ID %d ， 服务器名称 '%s'\n",_server_index, _server_name);
+	printf("ServerID: %d , Server name: '%s'\n",_server_index, _server_name);
 
 	
 	time_t ct = time(NULL);
@@ -666,7 +666,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	std::string consign_path = root + conf->find("Template", "ConsignItemListFile");
 	if(!InitConsignItemList(consign_path.c_str()))
 	{
-		printf("无法读物寄售物品立标文件: '%s'\n", consign_path.c_str());
+		printf("Unreadable consignment item bidding documents: '%s'\n", consign_path.c_str());
 		return -21; 
 	}
 
@@ -682,7 +682,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	std::string lottery_prob_path = root + conf->find("Template", "LotteryProbFile");
 	if(!InitLotteryGiveItemProb(lottery_prob_path.c_str()))
 	{
-		printf("无法读取使用彩票给予奖励物品概率配置文件: '%s'\n", lottery_prob_path.c_str());
+		printf("Unable to read the probability configuration file for reward items given by lottery: '%s'\n", lottery_prob_path.c_str());
 		return -22;
 	}
 
@@ -692,7 +692,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 		consumption_path = root + consumption_path;
 		if(!InitConsumptionValueList(consumption_path.c_str()))
 		{
-			printf("读取消费值对照表的配置文件有误: '%s'\n", consumption_path.c_str());
+			printf("There is an error in the configuration file that reads the consumption value lookup table: '%s'\n", consumption_path.c_str());
 			return -321; 
 		}
 	}
@@ -701,10 +701,10 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	{
 		extern int g_use_old_move_policy;
 		g_use_old_move_policy = 1;
-		printf("使用旧式的移动策略\n");
+		printf("Using the old-fashioned movement strategy\n");
 	}
 
-	//装载物品和数据模板
+	
 	if(_dataman.load_data(path.c_str()))
 	{
 		printf("Unabled to read item and monster data:'%s'\n", "elements.data");
@@ -721,7 +721,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	std::string fuwen_compose_path = root + conf->find("Template", "FuwenComposeFile");
 	if(!InitFuwenComposeInfo(fuwen_compose_path.c_str()))
 	{
-		printf("读取符文合成的功能配置的时候发生错误 '%s'\n", fuwen_compose_path.c_str());
+		printf("An error occurred while reading the rune synthesis configuration: '%s'\n", fuwen_compose_path.c_str());
 		return -24;
 	}
 
@@ -729,22 +729,22 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	std::string gt_buff_path = root + "gt_buff.txt";
 	if(!InitGTBuffInfo(gt_buff_path.c_str()))
 	{
-		printf("读取GT buff配置的时候发生错误'%s'\n", gt_buff_path.c_str());
+		printf("An error occurred while reading the GT buff configuration: '%s'\n", gt_buff_path.c_str());
 		return -25;
 	}
        	
 
-	//装载全局掉落表
+	
 	path = root + conf->find("Template","DropData");
 	if(load_extra_drop_tables(path.c_str()))
 	{
-		printf("读取全局掉落表失败:'%s'\n",path.c_str());
+		printf("Failed to read global drop table: '%s'\n",path.c_str());
 		return -5;
 	}
 
 	if(!player_template::Load("ptemplate.conf",&GetDataMan()))
 	{
-		__PRINTF("无法装载 'ptemplate.conf' 或者elementdata的config有误\n");
+		__PRINTF("Unable to load 'ptemplate.conf' or there is an error in the elementdata configuration.\n");
 		return -7;
 	}
 
@@ -756,40 +756,40 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	}
 	*/
 
-	//这里进行策略装载
+	
 	path = root + conf->find("Template","PolicyData");
 	if(!LoadAIPolicy(path.c_str()))
 	{
-		printf("装载策略文件失败:'%s'\n",path.c_str());
+		printf("Failed to load AIPolicy file: '%s'\n",path.c_str());
 		return -300;
 	}
 
 	if(!drop_template::LoadDropList())
 	{
-		printf("初始化全局掉落表失败\n");
+		printf("Failed to initialize global drop table.\n");
 		return -6;
 	}
 
-	//装载控制器取消列表
+	
 	InitDisableSpawnerCtrl(conf->find("SpawnController","disable").c_str());
 
 
-	//装载任务系统
+	
 	std::string path1 = root + conf->find("Template","QuestPackage");
 	std::string path2 = root + conf->find("Template","QuestPackage2");
 	std::string path3 = root + conf->find("Template","QuestForbid");
 	std::string path4 = root + conf->find("Template","QuestNPCInfo");
 	if(!InitQuestSystem(path1.c_str(),path2.c_str(),path3.c_str(),path4.c_str()))
 	{
-		printf("读取任务系统失败:'%s','%s','%s','%s'' \n",path1.c_str(), path2.c_str(), path3.c_str(), path4.c_str());
+		printf("Failed to read task system: '%s','%s','%s','%s'' \n",path1.c_str(), path2.c_str(), path3.c_str(), path4.c_str());
 		return -4;
 	}
 	
-	//初始化随身包裹允许的物品列表
+	
 	path1 = root + conf->find("Template", "PocketItemFile");
 	if(!InitPocketItemList(path1.c_str()))
 	{
-		printf("读取随身包裹允许物品列表失败: %s\n", path1.c_str());
+		printf("Failed to read the list of allowed items in your personal inventory: %s\n", path1.c_str());
 		return -20;
 	}
 
@@ -800,55 +800,55 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	std::string path5 = root + conf->find("Template", "VipAwardData");
 	if(!globaldata_loadserver(path1.c_str(),path2.c_str(), path3.c_str(), path4.c_str(), path5.c_str()))
 	{
-		printf("初始化全局数据失败:'%s', '%s', '%s', '%s', '%s'\n",path1.c_str(),path2.c_str(),path3.c_str(), path4.c_str(), path5.c_str());
+		printf("Failed to initialize global data: '%s', '%s', '%s', '%s', '%s'\n",path1.c_str(),path2.c_str(),path3.c_str(), path4.c_str(), path5.c_str());
 		return -18;
 	}
 
-	//装载NPC MATTER DYN_OBJECT的凸包数据
+	
 	path = root + conf->find("Template","CollisionElement");
 	if(!trace_manager::LoadElement(path.c_str()))
 	{
-		printf("加载元素凸包数据据失败'%s'",path.c_str());
+		printf("Failed to load CollisionElement '%s'",path.c_str());
 		return - 19;
 	}
 
 	
-	//初始化物品管理器 这个应该在 初始化全局数据后面，因为需要装载百宝阁数据 
+	
 	if(!item_manager::InitFromDataMan(GetDataMan()))
 	{
-		__PRINTF("item_manager::初始化物品管理器失败\n");
+		__PRINTF("item_manager:: failed to initialize item manager\n");
 		return -8;
 	}
 
 	if(!_reborn_bonus.InitFromDataMan(GetDataMan()))
 	{
-		__PRINTF("reborn_bonus_manager::初始化转生奖励失败\n");
+		__PRINTF("reborn_bonus_manager::initialization of rebirth rewards failed\n");
 		return -9;
 	}
 
 	if(!InitNPCTemplate())
 	{
-		printf("初始化配方和NPC失败\n");
+		printf("NPC initialization failed\n");
 		return -17;
 	}
 
 	if(!InitTagList())
 	{
-		printf("读取副本标识失败\n");
+		printf("Failed to read replica identifier.\n");
 		return -123;
 	}
 
-	//读取打卡时间参数
+	
 	std::string str = conf->find("DoubleExp","clear_day");
 	int min,hours,mday;
 	sscanf(str.c_str(),"%d %d %d",&min,&hours,&mday);
 	if(min < 0 || min >= 60 || hours <0 || hours >= 24 || mday < 0 || mday>=7) 
 	{
-		printf("双倍打卡时间起始时间不正确\n");
+		printf("The start time for double attendance tracking is incorrect.\n");
 		return -18;
 	}
 	char *weeks[] ={"日","一","二","三","四","五","六"};
-	printf("双倍经验时间每周起始时间为:星期%s %02d:%02d\n",weeks[mday],hours,min);
+	printf("Double XP period starts at the following time each week: Week %s %02d:%02d\n",weeks[mday],hours,min);
 
 	int first_rest_time = atoi(conf->find("DoubleExp","first_rest_time").c_str());
 	int rest_period = atoi(conf->find("DoubleExp","rest_period").c_str());
@@ -857,24 +857,24 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 
 	if(first_rest_time < 0 || rest_period <= 0 || rest_time_unit < 0 || max_rest_time <= 0 || max_rest_time > 3600*200)
 	{
-		printf("双倍时间参数不正确 \n");
+		printf("Double time parameter is incorrect.\n");
 		return -19;
 	}
 	rest_time_ctrl ctrl = {{min,hours,mday},first_rest_time,rest_period*3600,rest_time_unit,max_rest_time};
 	_rest_ctrl = ctrl;
 
-	//读取脚本文件版本
+	
 	path = root + conf->find("Template","LuaData");
 	if(!LoadLuaVersion(path.c_str()))
 	{
-		printf("无法读取LUA脚本文件'%s'\n", path.c_str());
+		printf("Unable to read LUA script file: '%s'\n", path.c_str());
 		return -18;
 	}
 
-	//得到重新启动的操作
+	
 	_restart_shell  = conf->find("Template","RestartShell");
 
-	//得到生成称谓列表的shell
+	
 	_toplist_script  = conf->find("Template","TopListScript");
 	char cur_path[1024];
 	if(getcwd(cur_path, sizeof(cur_path) -1 ))
@@ -890,14 +890,14 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 
 	if(access(_toplist_script.c_str(), R_OK|X_OK|F_OK) != 0)
 	{
-		printf("toplistsrcipt:'%s'不满足执行需求\n", _toplist_script.c_str());
+		printf("toplistsrcipt: '%s' Unable to meet execution requirements.\n", _toplist_script.c_str());
 		return -102;
 	}
 	
 	path = root + conf->find("Template","AchievementFile");
 	if (!Achievement::LoadConfig(path.c_str()))
 	{
-		printf("读取成就配置文件失败，!\n");
+		printf("Failed to read achievement configuration file!\n");
 		return -103;
 	}
 
@@ -920,37 +920,37 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 		map_name = zone_name;
 	}
 
-	//城战GS
+	
 	if(atoi(conf->find("General","is_battlefield").c_str()))
 	{
 		for(;*map_name;map_name ++)
 		{
 			const char* servername = *map_name;
 			global_world_manager* gwm = bf_world_manager_base::new_bf_world_manager(gmconf_file,servername);
-			printf("-----------------初始化battlefield世界 %s -------------------\n",servername);
+			printf("-----------------Initialize the Battlefield world %s -------------------\n",servername);
 			if(int rst = gwm->Init(gmconf_file,servername, -1, -1))
 			{
-				printf("世界%s初始化失败%d\n",servername,rst);
+				printf("World %s initialization failed: %d\n",servername,rst);
 				return -111;
 			}
 			int tag = gwm->GetWorldTag();
 			if( tag >MAX_WORLD_TAG)
 			{
-				printf("非法的World_tag=%d 在 _world %s\n", gwm->GetWorldTag(), servername);
+				printf("The illegal World_tag=%d is in _world %s\n", gwm->GetWorldTag(), servername);
 				return -1;
 			}
 			//if(_worlds[tag] != NULL)
 			if(FindWorld(tag) != NULL)
 			{
-				printf("重名的World_tag=%d 在 world %s\n", gwm->GetWorldTag(), servername);
+				printf("Duplicate World_tag=%d in world %s\n", gwm->GetWorldTag(), servername);
 				return -2;
 			}
 			InsertWorldManager(tag, gwm);
 		}
 		_is_battle_field_server = 1;
 	}
-	//领土战GS
-	//帮派基地地图放在领土战gs上 因基地地图与副本类似有多个实例，所以基地地图应该配置在最后面
+	
+	
 	else if(atoi(conf->find("General","is_territory").c_str()))
 	{
 		for(;*map_name;map_name ++)
@@ -966,13 +966,13 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 			{
 				if (_facbase_info.world_tag != 0 || _facbase_info.max_instance != 0)
 				{
-					printf("帮派基地地图配置重复\n");
+					printf("Faction base map configuration duplicate\n");
 					return -28;
 				}
 				int max_count = atoi(conf->find(section, "max_instance_num").c_str());
 				if (max_count <= 0)
 				{
-					printf("帮派基地实例个数 %d 非法\n", max_count);
+					printf("Number of faction base instances %d Illegal\n", max_count);
 					return -27;
 				}
 				int tag = atoi(conf->find(section, "tag").c_str());
@@ -982,51 +982,51 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 
 				if (!w_fbase_controller.Init(servername, tag))
 				{
-					printf("基地地图共享资源初始化错误");
+					printf("Base map shared resource initialization error.");
 					return -29;
 				}
 
 				if (w_max_raid_or_fbase_tag == 0)
 					w_max_raid_or_fbase_tag = w_max_tag;
-				printf("-----初始化帮派基地空对象 tag %d max_num %d\n", tag, max_count);
+				printf("-----Initialize an empty faction base object tag: %d max_num: %d\n", tag, max_count);
 				for (int i = 0; i < max_count; i++)
 				{
 					printf("create facbase index %d\n", w_max_raid_or_fbase_tag + 1);
 					gwm = new facbase_world_manager();
 					InsertRaidOrFBaseManager(gwm);
 				}
-				break; //认为基地地图为最后一个配置 后面不再有其他地图配置
+				break;
 			}
 			if(kingdom_type == 1)
 			{
-				printf("-----------------初始化国王战主战场地图 %s -------------------\n",servername);
+				printf("----------------- Init Coronation Main Battlefield %s -------------------\n",servername);
 				gwm = new kingdom_world_manager(); 
 			}
 			else if(kingdom_type == 2)
 			{
-				printf("-----------------初始化国王战辅战场地图%s -------------------\n",servername);
+				printf("----------------- Init Corotnation Battlefield %s -------------------\n",servername);
 				gwm = new kingdom2_world_manager();
 			}
 			else
 			{
-				printf("-----------------初始化领土战地图 %s -------------------\n",servername);
+				printf("----------------- Init Territory Battlefield %s -------------------\n",servername);
 				gwm = new tr_world_manager();
 			}
 			if(int rst = gwm->Init(gmconf_file,servername, -1, -1))
 			{
-				printf("世界%s初始化失败%d\n",servername,rst);
+				printf("World %s initialization failed: %d\n",servername,rst);
 				return -111;
 			}
 			int tag = gwm->GetWorldTag();
 			if( tag >MAX_WORLD_TAG)
 			{
-				printf("非法的World_tag=%d 在 _world %s\n", gwm->GetWorldTag(), servername);
+				printf("The illegal World_tag=%d is in world: %s\n", gwm->GetWorldTag(), servername);
 				return -1;
 			}
 			//if(_worlds[tag] != NULL)
 			if(FindWorld(tag) != NULL)
 			{
-				printf("重名的World_tag=%d 在 world %s\n", gwm->GetWorldTag(), servername);
+				printf("Duplicate World_tag=%d in world: %s\n", gwm->GetWorldTag(), servername);
 				return -2;
 			}
 			InsertWorldManager(tag, gwm);
@@ -1043,13 +1043,13 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 			const char* servername = *ins_map_name;
 			ONET::Conf::section_type section = "World_";
 			section += servername;
-			printf("-----------------初始化Raid副本世界模板 %s -------------------\n",servername);
+			printf("----------------- Initialize Raid World Template %s -------------------\n",servername);
 			raid_world_template* t = new raid_world_template();
 			if(!t->Init(servername, atoi(conf->find(section, "raid_id").c_str())))
 			{
 				delete t;
 				t = NULL;
-				printf("副本模板初始化错误\n");
+				printf("Copy template initialization error.\n");
 				return -1113;
 			}
 			t->rwinfo.raid_template_id = atoi(conf->find(section, "raid_template_id").c_str());
@@ -1060,7 +1060,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 			const void* config = _dataman.get_data_ptr(t->rwinfo.raid_template_id, ID_SPACE_CONFIG, dt);
 			if((dt != DT_TRANSCRIPTION_CONFIG && dt != DT_TOWER_TRANSCRIPTION_CONFIG)|| !config)
 			{
-				printf("无效的副本模板: %d\n", t->rwinfo.raid_template_id);
+				printf("Invalid copy template: %d\n", t->rwinfo.raid_template_id);
 				delete t;
 				t = NULL;
 				return -1112;
@@ -1084,7 +1084,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 
 			if(!w_raid_controller.AddRaidWorldTemplate(t))
 			{
-				printf("重复的raid_id=%d 在 Raid %s\n", t->rwinfo.raid_id, servername);
+				printf("Duplicate raid_id=%d in Raid: %s\n", t->rwinfo.raid_id, servername);
 				delete t;
 				t = NULL;
 				return  -1111;
@@ -1098,10 +1098,10 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 		for(; it != w_raid_controller.GetRaidWorldInfoMap().end(); ++ it)
 		{
 			const raid_world_template* t = it->second;
-			printf("-----------------初始化普通副本空对象, raid_id=%d, raid_type=%d, max_num=%d-------------------\n", t->rwinfo.raid_id, t->rwinfo.raid_type, t->rwinfo.raid_max_instance);
+			printf("-----------------Initialize a normal copy of an empty object, raid_id=%d, raid_type=%d, max_num=%d-------------------\n", t->rwinfo.raid_id, t->rwinfo.raid_type, t->rwinfo.raid_max_instance);
 			for(int i = 0; i < t->rwinfo.raid_max_instance; i ++)
 			{
-				printf("--raid_instance_world_tag=%d初始化--\n", w_max_raid_or_fbase_tag + 1);
+				printf("--raid_instance_world_tag=%d initialization--\n", w_max_raid_or_fbase_tag + 1);
 				global_world_manager* gwm = NULL;
 				if(t->rwinfo.raid_type == RT_COMMON)
 				{
@@ -1149,10 +1149,10 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 		}
 		_is_raid_server = 1;
 	}
-	//普通GS
+	
 	else
 	{
-		//开始创建每个世界
+		
 		for(;*map_name;map_name ++)
 		{
 			const char * servername = *map_name;
@@ -1204,22 +1204,22 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 			{
 				gwm = new global_world_manager();
 			}
-			printf("-----------------初始化世界 %s -------------------\n",servername);
+			printf("-----------------Initialize the world %s -------------------\n",servername);
 			if(int rst = gwm->Init(gmconf_file,servername, -1, -1))
 			{
-				printf("世界%s初始化失败%d\n",servername,rst);
+				printf("World: %s initialization failed: %d\n",servername,rst);
 				return -111;
 			}
 			int tag = gwm->GetWorldTag();
 			if( tag >MAX_WORLD_TAG)
 			{
-				printf("非法的World_tag=%d 在 world %s\n", gwm->GetWorldTag(), servername);
+				printf("An illegal World_tag=%d is found in world: %s\n", gwm->GetWorldTag(), servername);
 				return -1;
 			}
 			//if(_worlds[tag] != NULL)
 			if(FindWorld(tag) != NULL)
 			{
-				printf("重名的World_tag=%d 在 world %s\n", gwm->GetWorldTag(), servername);
+				printf("Duplicate World_tag=%d in world: %s\n", gwm->GetWorldTag(), servername);
 				return -2;
 			}
 			InsertWorldManager(tag, gwm);
@@ -1251,7 +1251,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 		InsertWorldManager(tag, gwm);
 	}
 	*/
-	printf("-----------------所有世界管理器初始化完成-------------------\n");
+	printf("----------------- All world managers have completed initialization -------------------\n");
 
 	trace_manager::ReleaseElement();	//释放所有的小凸包数据
 
@@ -1361,7 +1361,7 @@ gmatrix::InitNetClient(const char * gmconf)
    
 	GMSV::InitGSP(gmconf,_server_index,_server_name,server_attr,version, pksetting);
 	GDB::init_gamedb();
-        printf("---------------------InitNetClient初始化完成-------------------\n");
+        printf("--------------------- InitNetClient initialization complete -------------------\n");
 	return true;
 }
 
@@ -1503,7 +1503,7 @@ gmatrix::SendMultiMessage(abase::vector<gobject*,abase::fast_alloc<> > &list, co
 	size_t t = list.size();
 	if(t > limit)
 	{
-		//考虑是否进行打乱操作
+		
 		list.erase(list.begin() + limit, list.end());
 	}
 	Instance()->_msg_queue.AddMultiMsg(list, msg);
@@ -1520,7 +1520,7 @@ gmatrix::DispatchWorldMessage(int tag, const MSG & msg)
 
 static inline void call_message_handler(gobject * obj, const MSG &msg)
 {
-	//obj在外面lock
+	
 	int rst = 0;
 #ifdef _DEBUG
 	obj->cur_msg = msg.message;
@@ -1528,12 +1528,12 @@ static inline void call_message_handler(gobject * obj, const MSG &msg)
 	if(obj->imp) rst = obj->imp->DispatchMessage(msg);
 	if(!rst)
 	{
-		ASSERT(obj->spinlock && "这里必须是上锁状态");
+		ASSERT(obj->spinlock && "This area must be locked.");
 		obj->Unlock();
 	}
 	else
 	{
-		ASSERT(!obj->spinlock && "没有解开锁，可能是时序问题，但更可能是错误");
+		ASSERT(!obj->spinlock && "The inability to unlock could be a timing issue, but it's more likely an error.");
 	}
 }
 
@@ -1555,8 +1555,8 @@ gmatrix::locate_object_from_msg(const MSG & msg)
 				size_t index = ID2IDX(id);
 				if(index >= GetMaxNPCCount())
 				{
-					//这里是有可能的 因为有时 这个ID来源有时来自客户端
-					//所以不再报告ASSERT了
+					
+					
 					return NULL;
 				}
 				gnpc *pNPC = GetNPCByIndex(index);
@@ -1569,8 +1569,8 @@ gmatrix::locate_object_from_msg(const MSG & msg)
 				size_t index = ID2IDX(id);
 				if(index >= GetMaxMatterCount())
 				{
-					//这里是有可能的 因为有时 这个ID来源有时来自客户端
-					//所以不再报告ASSERT了
+					
+					
 					return NULL;
 				}
 				gmatter *pMatter = GetMatterByIndex(index);
@@ -1629,15 +1629,15 @@ gmatrix::UserLogin(int cs_index,int cs_sid,int uid,const void * auth_data, size_
 	if(int rindex = FindPlayer(uid) >= 0)
 	{
 		GMSV::SendLoginRe(cs_index,uid,cs_sid,3,flag);       // login failed
-		GLog::log(GLOG_WARNING,"用户%d已经登录(%d,%d)(%d)",uid,cs_index,cs_sid,GetPlayerByIndex(rindex)->login_state);
-		return ;
+		GLog::log(GLOG_WARNING,"User %d is already logged in.(%d,%d)(%d)",uid,cs_index,cs_sid,GetPlayerByIndex(rindex)->login_state);
+		return;
 	}
 }
 
 void 
 gmatrix::RestartProcess()
 {
-	//考虑让所有人都断线 
+	
 	gplayer * pPool = GetPlayerPool();
 	for(size_t i = 0; i<GetMaxPlayerCount(); i ++)
 	{
@@ -1747,11 +1747,11 @@ gmatrix::TriggerSpawn(int ctrl_id, bool active)
 	
 	if(active)
 	{
-		GLog::action("trigeron,triggerid=%d", ctrl_id);
+		GLog::action("trigerON,triggerid=%d", ctrl_id);
 	}
 	else
 	{
-		GLog::action("trigeroff,triggerid=%d", ctrl_id);
+		GLog::action("trigerOFF,triggerid=%d", ctrl_id);
 	}
 
 	CheckCtrlID(ctrl_id, active);
@@ -1935,7 +1935,7 @@ bool gmatrix::InitConsignItemList(const char* filepath)
 		if(id < 0 || type <=0 || it != _consign_item_list.end())
 		{
 			fclose(file);
-			printf("寄售物品列表数据错误, [Line %d]: %s", cnt, buf);
+			printf("Consignment item list data error, [Line %d]: %s", cnt, buf);
 			return false;
 		}
 		_consign_item_list[id] = type;
@@ -1946,9 +1946,9 @@ bool gmatrix::InitConsignItemList(const char* filepath)
 }
 
 /**
- *@Brief: 	Add By Houjun 2010-08-11, 
- *@Return: 	物品存在, 返回>0的物品ID; 物品不存在, 返回-1;
- */
+*@Brief: Add By Houjun 2010-08-11,
+*@Return: If the item exists, return the item ID > 0; if the item does not exist, return -1;
+*/
 int gmatrix::GetConsignItemType(int item_id)
 {
 	std::map<int, int>::iterator it = _consign_item_list.find(item_id);
@@ -2016,13 +2016,13 @@ bool gmatrix::InitCashGiftInfo(const char * filepath)
 	int gift_id2;
 	int gift_award_id;
 	char timestamp[32];
-	bool cur_flag = false;			//是否配置了当期的奖励物品
-	std::set<int> item_list;		//检查id不能重复
+	bool cur_flag = false;
+	std::set<int> item_list;
 	
 	while(fgets(buf,sizeof(buf), file))
 	{
 		if(buf[0] == '\n') continue;
-		//赠品1ID 赠品2ID 消费礼包ID
+		
 		int ret = sscanf(buf, "%d,%d,%d,%s", &gift_id1, &gift_id2, &gift_award_id, timestamp);
 		if(ret != 4 || gift_id1 <= 0 || gift_id2 <= 0 || gift_award_id < 0)
 		{
@@ -2030,14 +2030,14 @@ bool gmatrix::InitCashGiftInfo(const char * filepath)
 			return false;
 		}	
 
-		//检查是否有重复的物品id
+		
 		if(!CheckGiftItem(item_list, gift_id1) || !CheckGiftItem(item_list, gift_id2) || !CheckGiftItem(item_list, gift_award_id)) 
 		{
 			printf("Duplicate item IDs were found during the purchase bonus in the store.\n");
 			return false;
 		}
 
-		//检查是否是当期，当期没有奖励配置
+		
 		if(gift_award_id <= 0)	
 		{
 			if(cur_flag)
@@ -2052,7 +2052,7 @@ bool gmatrix::InitCashGiftInfo(const char * filepath)
 			continue;
 		}
 
-		//检查礼包id类型是否正确 
+		
 		DATA_TYPE dt;
 		const GIFT_PACK_ITEM_ESSENCE &ess= *(const GIFT_PACK_ITEM_ESSENCE*)gmatrix::GetDataMan().get_data_ptr(gift_award_id, ID_SPACE_ESSENCE,dt); 
 		if(dt != DT_GIFT_PACK_ITEM_ESSENCE|| &ess == NULL)
@@ -2110,10 +2110,10 @@ bool gmatrix::InitCashGiftInfo(const char * filepath)
 }
 
 
-//检查配置的商城返赠物品id不能重复
-//赠品1ID和赠品2ID在每一期都不能重复
-//消费礼包ID不能和赠品ID一样
-//消费礼包每一期的ID也不一样
+// Check that the IDs of the store's rebate items in the configuration cannot be duplicated.
+// Gift 1 ID and Gift 2 ID cannot be duplicated in each period.
+// The consumption gift pack ID cannot be the same as the gift ID.
+// The consumption gift pack ID is also different in each period.
 bool gmatrix::CheckGiftItem(std::set<int> & item_list, int item_id)
 {
 	if(item_list.find(item_id) != item_list.end()) 
@@ -2258,7 +2258,7 @@ bool gmatrix::ReadConsumpConfigfile(const char * filename, const std::string & k
 	std::ifstream ifs(filename);
 	if(!ifs.is_open())
 	{
-		printf("无法打开配置文件consumptione_value_list.txt\n");
+		printf("Unable to open configuration file consumption_value_list.txt\n");
 		return false;
 	}
 
@@ -2301,7 +2301,7 @@ bool gmatrix::ReadConsumpConfigfile(const char * filename, const std::string & k
 
 				if((pos = line.find(',')) == std::string::npos)
 				{
-					printf("ERR:消费值对照表格式不对\n");
+					printf("ERR: Consumption Value Reference Table Format Incorrect\n");
 					return false;
 				}
 				
@@ -2310,19 +2310,19 @@ bool gmatrix::ReadConsumpConfigfile(const char * filename, const std::string & k
 				sscanf(line.c_str(), "%d,%f", &item_id, &ivalue);
 				if(item_id < 0 || ivalue < 1/CONSUMPTION_SCALE || ((ivalue >= -0.00001) && (ivalue <= 0.00001)))
 				{
-					printf("ERR:消费值或者item_type小于零，是非法值！\n");
+					printf("ERR: The consumption value or item_type is less than zero, which is an illegal value!");
 					return false;
 				}
 
 				ConsumptionValueConfigMap::iterator it = options.find(item_id);
 				if(it != options.end())
 				{
-					printf("ERR:消费值有重复的item_type:%d\n", item_id);
+					printf("ERR: Duplicate consumption value item_type:%d\n", item_id);
 					return false;
 				}
 
-				//消费值配置表里的数据最小能支持到0.0001的精度
-				//调整为整形
+				//The data in the consumption value configuration table can support a minimum precision of 0.0001
+				//Adjust to integer
 				options[item_id] = (int)(ivalue * CONSUMPTION_SCALE);
 			}
 
@@ -2392,16 +2392,16 @@ bool gmatrix::InitFuwenComposeInfo(const char * filepath)
 		int ret = sscanf(buf, "%d %f", &fuwen_id, &prob);
 		if(ret != 2 || fuwen_id <= 0 || prob < 0)
 		{
-			printf("读取符文碎片合成的配置的时候发生错误\n");
+			printf("An error occurred while reading the rune shard crafting configuration.\n");
 			return false;
 		}	
 
-		//检查礼包id类型是否正确 
+		// Check if the gift pack ID type is correct
 		DATA_TYPE dt;
 		const RUNE2013_ITEM_ESSENCE &ess= *(const RUNE2013_ITEM_ESSENCE*)gmatrix::GetDataMan().get_data_ptr(fuwen_id, ID_SPACE_ESSENCE,dt); 
 		if(dt != DT_RUNE2013_ITEM_ESSENCE|| &ess == NULL)
 		{
-			printf("读取符文碎片合成的配置的时候发生错误, 符文id的类型不正确, id=%d\n", fuwen_id);
+			printf("An error occurred while reading the rune shard crafting configuration: the rune ID type is incorrect, id=%d\n", fuwen_id);
 			return false;
 		}
 
@@ -2414,7 +2414,7 @@ bool gmatrix::InitFuwenComposeInfo(const char * filepath)
 
 	if(fabs(1.0f - total_prob) > 1e-6)
 	{
-		printf("读取符文碎片合成的配置的时候发生错误, 总概率不为1, total_prob=%f\n", total_prob); 
+		printf("An error occurred while reading the rune shard synthesis configuration; the total probability is not 1, total_prob=%f\n", total_prob); 
 		return false;
 	}	
 	return true;
@@ -2442,7 +2442,7 @@ bool gmatrix::InitGTBuffInfo(const char * filepath)
 		int ret = sscanf(buf, "%d,%d", &skill_id, &buff_id);
 		if(ret != 2 || buff_id <= 0 || skill_id < 0)
 		{
-			printf("读取GT buff配置的时候发生错误\n"); 
+			printf("An error occurred while reading the GT buff configuration.\n"); 
 			return false;
 		}	
 
@@ -2454,7 +2454,7 @@ bool gmatrix::InitGTBuffInfo(const char * filepath)
 	return false;
 }
 
-//创建副本世界管理器
+// Create a dungeon world manager
 int gmatrix::CreateRaidWorldManager(int raid_id, int raidroom_id, const std::vector<int>& roleid_list, int& world_tag, const void* buf, size_t size, char difficulty)
 {
 	spin_autolock alock(_raid_lock);
@@ -2463,14 +2463,14 @@ int gmatrix::CreateRaidWorldManager(int raid_id, int raidroom_id, const std::vec
 	const raid_world_template* t = w_raid_controller.GetRaidWorldTemplate(raid_id);
 	if(!t)
 	{
-		__PRINTF("副本raid_id=%d实例创建失败，raid_id无效\n", raid_id);
-		GLog::log( GLOG_INFO, "副本raid_id=%d实例创建失败，raid_id无效\n", raid_id);
+		__PRINTF("Instance creation failed because raid_id=%d was invalid.\n", raid_id);
+		GLog::log( GLOG_INFO, "Instance creation failed because raid_id=%d was invalid.\n", raid_id);
 		return -50001;
 	}	
 	if(t->cur_instance_num >= t->rwinfo.raid_max_instance)
 	{
-		__PRINTF("副本raid_id=%d实例创建失败，实例数已经到达上限%d\n", raid_id, t->rwinfo.raid_max_instance);
-		GLog::log( GLOG_INFO, "副本raid_id=%d实例创建失败，实例数已经到达上限%d\n", raid_id, t->rwinfo.raid_max_instance);
+		__PRINTF("Replica raid_id=%d instance creation failed, instance count has reached the limit %d\n", raid_id, t->rwinfo.raid_max_instance);
+		GLog::log( GLOG_INFO, "Replica raid_id=%d instance creation failed, instance count has reached the limit %d\n", raid_id, t->rwinfo.raid_max_instance);
 		return -50002;
 	}
 	raid_world_manager* rwm = NULL;
@@ -2482,7 +2482,7 @@ int gmatrix::CreateRaidWorldManager(int raid_id, int raidroom_id, const std::vec
 			if(rwm)
 			{
 				int tag = i + RAID_OR_FBASE_TAG_BEGIN;
-				printf("-----------------创建Raid副本 %s 实例 world_tag=%d-------------------\n",t->servername.c_str(), tag);
+				printf("----------------- Create a Raid instance %s world_tag=%d -------------------\n",t->servername.c_str(), tag);
 				int rst = rwm->TestCreateRaid(*t, tag, tag, roleid_list, buf, size, difficulty);
 				if(rst == -1)
 				{
@@ -2490,16 +2490,16 @@ int gmatrix::CreateRaidWorldManager(int raid_id, int raidroom_id, const std::vec
 				}
 				else if(rst == -2)
 				{
-					__PRINTF("副本raid_id=%d实例创建失败，初始化失败rst=%d\n", raid_id, rst);
-					GLog::log( GLOG_INFO, "副本raid_id=%d实例创建失败，初始化失败\n", raid_id);
+					__PRINTF("Replica raid_id=%d instance creation failed, initialization failed rst=%d\n", raid_id, rst);
+					GLog::log( GLOG_INFO, "Instance creation failed due to raid_id=%d, initialization failed.\n", raid_id);
 					return -50006;
 				}
 				rst = rwm->CreateRaid(raidroom_id, *t, tag, tag, roleid_list, buf, size, difficulty);
 				if(rst)
 				{
 					rwm->Release();
-					__PRINTF("副本raid_id=%d实例创建失败，初始化失败rst=%d\n", raid_id, rst);
-					GLog::log( GLOG_INFO, "副本raid_id=%d实例创建失败，初始化失败\n", raid_id);
+					__PRINTF("Replica raid_id=%d instance creation failed, initialization failed rst=%d\n", raid_id, rst);
+					GLog::log( GLOG_INFO, "Instance creation failed due to raid_id=%d, initialization failed.", raid_id);
 					return -50005;
 				}
 				world_tag = tag;
@@ -2508,12 +2508,12 @@ int gmatrix::CreateRaidWorldManager(int raid_id, int raidroom_id, const std::vec
 			}
 		}
 	}
-	__PRINTF("没有空闲的副本世界管理器创建副本实例raid_id=%d, raid_type=%d\n", raid_id, t->rwinfo.raid_type);
-	GLog::log( GLOG_INFO, "没有空闲的副本世界管理器创建副本实例raid_id=%d, raid_type=%d\n", raid_id, t->rwinfo.raid_type);
+	__PRINTF("Without available replicas, the World Manager creates a replica instance: raid_id=%d, raid_type=%d\n", raid_id, t->rwinfo.raid_type);
+	GLog::log( GLOG_INFO, "Without available replicas, the World Manager creates a replica instance: raid_id=%d, raid_type=%d\n", raid_id, t->rwinfo.raid_type);
 	return -50004;
 }
 
-//释放副本世界管理器
+//Release the dungeon world manager
 int gmatrix::ReleaseRaidWorldManager(int tag)
 {
 	world_manager* wm = FindWorld(tag);
@@ -2527,7 +2527,7 @@ int gmatrix::ReleaseRaidWorldManager(int tag)
 	{
 		return -1;
 	}
-	printf("##############找到副本%d,卸载实例###############\n", tag);
+	printf("-------------- Found copy %d, uninstall instance --------------\n", tag);
 	rwm->ForceCloseRaid();
 	return 0;
 }
@@ -2588,17 +2588,17 @@ bool mafia_free_battle::InsertBattle(int attacker, int defender, int end_time)
 {
 	spin_autolock keeper(_battle_lock);
 	if(_table.nGet(attacker) ) return false;
-	if(_table.nGet(defender) ) return false;		//判断两个帮都不在战斗中
-	if(end_time <= g_timer.get_systime()) return false; 	//未开始就已经结?
+	if(_table.nGet(defender) ) return false;
+	if(end_time <= g_timer.get_systime()) return false;
 	node_t  node = {attacker, defender, end_time};
 	hash_node_t hn = {-1, end_time};
 
 	UpdateEndTime(end_time);
 	_battle_counter = SECOND_TO_TICK(5.0f);	
-	//5秒内每个玩家都要进行帮派是否在战斗的检查，每个不符合帮派玩家会被检查五次
-	//这个开销应当不算太大
+	//Within 5 seconds, each player must undergo a check to see if their guild is in combat. Each player who does not belong to a guild will be checked five times.
+	//This expense shouldn't be too large.
 
-	//加入至列表
+	//Add to list
 	_list.push_back(node);
 	bool bRst = _table.put(attacker, (hn.enemy=defender, hn)) && _table.put(defender, (hn.enemy=attacker, hn));
 	ASSERT(bRst);
@@ -2609,7 +2609,7 @@ void mafia_free_battle::Heartbeat()
 {
 	spin_autolock keeper(_battle_lock);
 	if(_battle_counter > 0) _battle_counter --;
-	//每次都判断是否过快了？实际上每1秒判断一次即可，不过先不管了
+	// Should we check if it's too fast every time? Actually, checking once per second would suffice, but let's leave that aside for now.
 	if(_list.empty()) return;
 	int t = g_timer.get_systime();
 	if(!TestEndTime(t)) return;
@@ -2619,7 +2619,7 @@ void mafia_free_battle::Heartbeat()
 	{
 		if(_list[i].end_time <= t)
 		{
-			//删除战斗信息
+			// Delete battle information
 			_table.erase(_list[i].attacker);
 			_table.erase(_list[i].defender);
 			_list.erase(_list.begin() + i);
@@ -2671,20 +2671,20 @@ namespace abase
 {
 	void _t_RecordTimer(int index, abase::timer_task* t, int tx1, int rst)
 	{
-		return ;	//$$$$$$现在不记录timer的调用情况了
+		return ;	//Timer calls are no longer being recorded.
 		const char * name = typeid(*t).name();
 		if(strstr(name,"npc")) return;
 		if(tx1 == 0)
 		{
-			GLog::log(GLOG_INFO, "分配定时器%d到%p(%s),结果%d",index, t, name, rst);
+			GLog::log(GLOG_INFO, "Assign timer %d to %p(%s), result %d",index, t, name, rst);
 		}
 		else if(tx1 == 1)
 		{
-			GLog::log(GLOG_INFO, "释放定时器%d为%p(%s),结果%d",index, t, name, rst);
+			GLog::log(GLOG_INFO, "Releasing timer %d as %p(%s), the result is %d",index, t, name, rst);
 		}
 		else if(tx1 == 2)
 		{
-			GLog::log(GLOG_INFO, "自放定时器%d为%p(%s),结果%d",index, t, name, rst);
+			GLog::log(GLOG_INFO, "The self-play timer %d is %p(%s), and the result is %d.",index, t, name, rst);
 		}
 	}
 }
@@ -2696,7 +2696,7 @@ bool faction_hostiles_manager::RefreshHostileInfo( unsigned int faction_id, int&
 	spin_autolock alock( _map_lock );
 	if( _refresh_seq == refresh_seq && !bForce )
 	{
-		// 列表没有更新，并且不要求强制更新
+		// The list has not been updated, and a forced update is not required.
 		return false;
 	}
 	refresh_seq = _refresh_seq;
@@ -2726,7 +2726,7 @@ void faction_hostiles_manager::SyncFactionHostile( unsigned int faction_id, unsi
 	_fh_map[faction_id].insert( hostile );
 	if( _fh_map[faction_id].size() > 5 )
 	{
-		GLog::log( GLOG_INFO, "同一帮派的敌对帮派超过5个，不该收到这样的delivery消息，查delivery日志,%d-%d",
+		GLog::log( GLOG_INFO, "If there are more than 5 rival gangs within the same gang, you shouldn't receive such a delivery message. Check the delivery logs.",
 				faction_id, hostile );
 	}
 	++_refresh_seq;
@@ -2753,25 +2753,25 @@ void faction_hostiles_manager::Heartbeat()
 		FH_MAP::iterator it;
 		abase::static_set<unsigned int>::iterator set_it;
 		spin_autolock alock( _map_lock );
-		__PRINTF( "帮派敌对信息:\n" );
+		__PRINTF( "Faction rivalry information:\n" );
 		for( it = _fh_map.begin(); it != _fh_map.end(); ++it )
 		{
-			__PRINTF( "\t帮派 %d 的敌对帮派有:  ", it->first );
+			__PRINTF( "\tGang %d's rival gangs are:  ", it->first );
 			for( set_it = it->second.begin(); set_it != it->second.end(); ++ set_it )
 			{
 				__PRINTF( "%d  ", *set_it );
 			}
 			__PRINTF( "\n" );
 		}
-		// 校验数据完整性
+		
 		for( it = _fh_map.begin(); it != _fh_map.end(); ++it )
 		{
 			for( set_it = it->second.begin(); set_it != it->second.end(); ++ set_it )
 			{
 				if( _fh_map[*set_it].find( it->first ) == _fh_map[*set_it].end() )
 				{
-					// 有问题了
-					__PRINTF( "敌对帮派数据不一致 %d -- %d\n", it->first, *set_it );
+					
+					__PRINTF( "Inconsistent data between rival gangs %d -- %d\n", it->first, *set_it );
 				}
 			}
 		}
@@ -2783,7 +2783,7 @@ int gmatrix::CreateFacBaseManager(int fid)
 {
 	if (_facbase_info.world_tag <= 0 || _facbase_info.max_instance <= 0)
 	{
-		GLog::log(GLOG_INFO, "帮派 %d 基地创建失败， 未配置基地", fid);
+		GLog::log(GLOG_INFO, "Gang base creation failed; base not configured.\n", fid);
 		return -2;
 	}
 	/*
@@ -2802,7 +2802,7 @@ int gmatrix::CreateFacBaseManager(int fid)
 			if(fwm)
 			{
 //				int tag = i + FACBASE_TAG_BEGIN;
-				printf("创建基地实例 fid %d tag %d\n", fid, i);
+				printf("Create a base instance fid %d tag %d\n", fid, i);
 				int rst = fwm->TestAllocBase(i, fid);
 				if (rst == -1)
 					continue;
@@ -2833,7 +2833,7 @@ int gmatrix::CreateFacBaseManager(int fid)
 			}
 		}
 	}
-	GLog::log(GLOG_ERR, "没有空闲的基地可创建 fid %d", fid);
+	GLog::log(GLOG_ERR, "No available bases to create fid %d", fid);
 	return -4;
 }
 
