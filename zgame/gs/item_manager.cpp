@@ -1453,7 +1453,7 @@ item_manager::__InitMall(itemdataman & dataman)
 
 		if(id <= 0 || count <= 0) 
 		{
-			printf("百宝阁中物品id为%d及其数量为%d\n",id, count);
+			printf("InitMall: ItemID: %d ItemQuantity: %d\n",id, count);
 			bRst = false;
 			continue;
 		}
@@ -1461,13 +1461,13 @@ item_manager::__InitMall(itemdataman & dataman)
 		int pile_limit = dataman.get_item_pile_limit(id);
 		if(pile_limit <= 0 || count > pile_limit) 
 		{
-			printf("百宝阁中物品%d数量为%d，堆叠上限为%d\n",id, count, pile_limit);
+			printf("InitMall: ItemID: %d ItemCount: %d ItemStack: %d\n",id, count, pile_limit);
 			bRst = false;
 			continue;
 		}
 		if(discount > 100)
 		{
-			printf("百宝阁中物品%d的折扣率为%d, 上限为100", id, discount);
+			printf("InitMall: ItemID: %d Discount: %d MaxDiscount: 100\n", id, discount);
 			bRst = false;
 			continue;
 		}
@@ -1475,13 +1475,13 @@ item_manager::__InitMall(itemdataman & dataman)
 		unsigned int present_pile_limit = dataman.get_item_pile_limit(present_id);
 		if(present_time && present_pile_limit != 1)
 		{
-			printf("百宝阁中物品%d的赠品%u堆叠上限不为1,但是有过期时间\n", id, present_id); 
+			printf("InitMall: ItemID: %d has a gift %u whose stack limit is not 1, but it has an expiration time\n", id, present_id);
 			bRst = false;
 			continue;
 		}
 		if(has_present && present_count == 0)
 		{
-			printf("百宝阁中物品%d的赠品%u数量为0\n", id, present_id);
+			printf("InitMall: ItemID %d has a gift %u with a quantity of 0\n", id, present_id);
 			bRst = false;
 			continue;
 		}
@@ -1543,14 +1543,14 @@ item_manager::__InitMall(itemdataman & dataman)
 
 		if(slot_count == 0)
 		{
-			printf("百宝阁中物品%d不存在可用的条目索引%d\n", id, i);
+			printf("InitMall: ItemID: %d does not have a valid entry index %d", id, i);
 			bRst = false;
 			continue;
 		}
 		
 		if(bExpire && pile_limit != 1)
 		{
-			printf("百宝阁中物品存在可堆叠但存在有效期的物品%d，无法进行初始化操作 索引%d\n", id, i);
+			printf("InitMall: Contains a stackable ItemID: %d that has an expiration time; initialization cannot be performed. Index %d\n", id, i);
 			bRst = false;
 			continue;
 		}
@@ -1562,7 +1562,7 @@ item_manager::__InitMall(itemdataman & dataman)
 		}
 		//printf("加入%d个%d到白宝阁中\n",count,id);
 	}
-	printf("百宝阁内共有%d样货物\n",list.size());
+	printf("InitMall: There are %d items in the marketplace\n",list.size());
 	_mall_timestamp = globaldata_getmalltimestamp();
 	return bRst;
 }

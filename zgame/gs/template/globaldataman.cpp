@@ -135,7 +135,7 @@ static bool load_vipaward_data(const char * pfile)
 	FILE * fpServer = fopen(pfile, "rb");
 	if(!fpServer) 
 	{
-		fprintf(stderr, "\n\n打开VIPAward.data文件失败！\n");
+		fprintf(stderr, "\n\nFailed to open the VIPAward.data file!\n");
 		return false;
 	}
 
@@ -181,7 +181,7 @@ static bool load_vipaward_data(const char * pfile)
 	}
 	catch(...)
 	{
-		fprintf(stderr, "\n\nVIP奖励数据读入有误，检查gs.conf中的VipAwardData项！\n");
+		fprintf(stderr, "\n\nThe VIP reward data was read incorrectly. Please check the VipAwardData item in gs.conf!\n");
 		bRst = false;
 	}
 
