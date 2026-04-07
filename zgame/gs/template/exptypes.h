@@ -5992,7 +5992,7 @@ struct CONSUME_AWARD_CONFIG
 	struct consume_award_info
 	{
 		int				amount;
-		award_item_info	award_item_info[8];
+		award_item_info	items[8];
 	} consume_award_info[7];
 };
 
@@ -6160,7 +6160,7 @@ struct ITEM_TRADE2_CONFIG
 	{
 		int					item_id;
 		int					item_quantity;
-		required_item_info	required_item_info[3];
+		required_item_info	items[3];
 	};
 
 	struct trade_page
@@ -6561,3 +6561,5 @@ enum DATA_TYPE
 
 #pragma pack(pop, EXP_TYPES_INC)
 #endif//_EXP_TYPES_H_
+
+
