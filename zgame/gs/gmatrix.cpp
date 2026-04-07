@@ -675,7 +675,7 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	{
 
 
-		printf("无法读取整理物品顺序文件:'%s'\n", order_item_path.c_str());
+		printf("Unable to read the sorting order file: '%s'\n", order_item_path.c_str());
 		return -23; 
 	}
 
@@ -707,14 +707,14 @@ gmatrix::Init(const char * gmconf_file, char ** world_name, char ** ins_name, ch
 	//装载物品和数据模板
 	if(_dataman.load_data(path.c_str()))
 	{
-		printf("无法读取物品和怪物的模板文件:'%s'\n", "elements.data");
+		printf("Unabled to read item and monster data:'%s'\n", "elements.data");
 		return -3;
 	}
 
 	std::string cash_gift_path = root + conf->find("Template", "CashGiftFile");
 	if(!InitCashGiftInfo(cash_gift_path.c_str()))
 	{
-		printf("读取商城买赠功能配置的时候发生错误 '%s'\n", cash_gift_path.c_str());
+		printf("Error occured while reading '%s'\n", cash_gift_path.c_str());
 		return -23;
 	}
 
@@ -1910,7 +1910,7 @@ bool gmatrix::InitOrderItemList(const char* filepath)
 		if(item_type < 0 || it != _order_item_list.end())
 		{
 			fclose(file);
-			printf("整理物品顺序列表数据错误, [Line %d]: %s", line, buf);
+			printf("The item sorting list data is incorrect, [Line %d]: %s", line, buf);
 			return false;
 		}
 		_order_item_list.insert(std::make_pair(item_type,line));
@@ -2026,14 +2026,14 @@ bool gmatrix::InitCashGiftInfo(const char * filepath)
 		int ret = sscanf(buf, "%d,%d,%d,%s", &gift_id1, &gift_id2, &gift_award_id, timestamp);
 		if(ret != 4 || gift_id1 <= 0 || gift_id2 <= 0 || gift_award_id < 0)
 		{
-			printf("读取商城买赠配置发生错误,请确保为逗号分隔格式\n");
+			printf("An error occurred while reading the store's buy-one-get-one-free configuration. Please ensure that the format is comma-separated.\n");
 			return false;
 		}	
 
 		//检查是否有重复的物品id
 		if(!CheckGiftItem(item_list, gift_id1) || !CheckGiftItem(item_list, gift_id2) || !CheckGiftItem(item_list, gift_award_id)) 
 		{
-			printf("商城买赠发现重复的物品id\n");
+			printf("Duplicate item IDs were found during the purchase bonus in the store.\n");
 			return false;
 		}
 
@@ -2042,7 +2042,7 @@ bool gmatrix::InitCashGiftInfo(const char * filepath)
 		{
 			if(cur_flag)
 			{
-				printf("当期商城买赠奖品已经配置 \n");
+				printf("The current store's buy-one-get-one-free prizes have been configured.\n");
 				return false;
 			}
 
@@ -2057,7 +2057,7 @@ bool gmatrix::InitCashGiftInfo(const char * filepath)
 		const GIFT_PACK_ITEM_ESSENCE &ess= *(const GIFT_PACK_ITEM_ESSENCE*)gmatrix::GetDataMan().get_data_ptr(gift_award_id, ID_SPACE_ESSENCE,dt); 
 		if(dt != DT_GIFT_PACK_ITEM_ESSENCE|| &ess == NULL)
 		{
-			printf("商城买赠信息里面的礼包id类型不正确, id=%d\n", gift_award_id);
+			printf("The gift pack %d type in the store's purchase bonus information is incorrect.\n", gift_award_id);
 			return false;
 		}
 	
@@ -2067,12 +2067,12 @@ bool gmatrix::InitCashGiftInfo(const char * filepath)
 		int day;
 		if(sscanf(timestamp, "%d-%d-%d", &year, &month, &day) != 3)
 		{
-			printf("读取商城买赠配置的奖品发放时间的时候发生错误\n");
+			printf("An error occurred while reading the prize distribution time configured in the online store's buy one get one free promotion.\n");
 			return false;
 		}
 		if(year < 2013 || year > 3000 || month <= 0 || month > 12 || day <= 0 || day > 31)
 		{
-			printf("读取商城买赠配置的奖品发放时间的时候发生错误,年月日不符合规范\n");
+			printf("An error occurred while retrieving the prize distribution time from the online store's buy-one-get-one-free configuration; the year, month, and day do not conform to the specifications.\n");
 			return false;
 		}
 		
@@ -2085,7 +2085,7 @@ bool gmatrix::InitCashGiftInfo(const char * filepath)
 		time_t award_timestamp = mktime(&tt);
 		if(award_timestamp == -1)
 		{
-			printf("读取商城买赠配置的奖品发放时间的时候发生错误,秌time错误\n");
+			printf("An error occurred while reading the prize distribution time configured in the online store's buy one get one free promotion; error message: TIME_ERROR.\n");
 			return false;
 		}
 
@@ -2101,7 +2101,7 @@ bool gmatrix::InitCashGiftInfo(const char * filepath)
 
 	if(!cur_flag)
 	{
-		printf("没有配置当期商城买赠赠品id\n");
+		printf("No ID configured for the free gifts purchased during the current shopping mall period.\n");
 		return false;
 	}
 	
