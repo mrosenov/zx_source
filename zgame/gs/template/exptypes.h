@@ -5606,7 +5606,7 @@ struct BABY_FASHION_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -5631,7 +5631,7 @@ struct BABY_TOY_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -5651,7 +5651,7 @@ struct BABY_BOOK_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -5688,7 +5688,7 @@ struct MATRIX_CARD_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -5718,7 +5718,7 @@ struct MATRIX_EQUIP_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -5778,7 +5778,7 @@ struct MATRIX_COMBINE_CONFIG
 		int			decompose_id;
 		int			decompose_num;
 		material	materials[2];
-	} recipes[220];
+	} recipes[120];
 };
 
 // List[208]
@@ -5794,7 +5794,7 @@ struct BABY_FOOD_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -5811,7 +5811,7 @@ struct BABY_TITLE_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -5838,7 +5838,7 @@ struct VEHICLE_ENHANCE_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -5865,7 +5865,7 @@ struct TALENT_SCROLL_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -6140,7 +6140,7 @@ struct EGGS_GIFT_BAG_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -6183,7 +6183,7 @@ struct GUESS_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -6233,7 +6233,7 @@ struct TITLE_ITEM_ESSENCE
 
 	int				sell_price;
 	int				buy_price;
-	int				stack_amt;
+	int				pile_num_max;
 	int				trade_behavior;
 };
 
@@ -6561,5 +6561,3 @@ enum DATA_TYPE
 
 #pragma pack(pop, EXP_TYPES_INC)
 #endif//_EXP_TYPES_H_
-
-

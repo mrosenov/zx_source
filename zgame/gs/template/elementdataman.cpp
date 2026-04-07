@@ -3935,24 +3935,7 @@ int elementdataman::load_data(const char * pathname)
 	LOAD_ARRAY(compound_mine_essence_array)
 	LOAD_ARRAY(colorant_default_config_array)
 
-	gs_log("load_data: loading talk_proc entries");
-	size_t sz = 0;
-	if(fread(&sz, sizeof(size_t), 1, file) != 1)
-	{
-		gs_log("load_data: FAILED reading talk_proc count");
-		fclose(file);
-		return -1;
-	}
-	gs_log("load_data: talk_proc count=%lu", (unsigned long)sz);
-	size_t i;
-	for(i=0; i<sz; i++)
-	{
-		talk_proc * tp = new talk_proc;
-		tp->load(file);
-		add_structure(tp->id_talk, tp);
-	}
-
-	// v158 new data tables (after talk_proc)
+	// v158 new data tables (before talk_proc, matching editor file layout)
 	LOAD_ARRAY(sign_in_config_array)
 	LOAD_ARRAY(baby_essence_array)
 	LOAD_ARRAY(class_baby_relation_config_array)
@@ -3991,39 +3974,25 @@ int elementdataman::load_data(const char * pathname)
 	LOAD_ARRAY(soul_drop_config_array)
 	LOAD_ARRAY(daily_sign_config_array)
 
-	setup_hash_map();
-
-	md5pos[4] = ftell(file);
-
-#ifdef _WINDOWS
-	fseek(file, 0, SEEK_SET);
-	long fstart = 0;
-	char buf[8192];
-	char md5[50];
-	for(i = 0; i < 5; i++)
+	gs_log("load_data: loading talk_proc entries");
+	size_t sz = 0;
+	if(fread(&sz, sizeof(size_t), 1, file) != 1)
 	{
-		while(fstart < md5pos[i])
-		{
-			int readsize = 8192;
-			if( md5pos[i] - fstart < readsize )
-				readsize = md5pos[i] - fstart;
-			fread(buf, 1, readsize, file);
-			g_MD5Hash.Update(buf, readsize);
-			fstart += readsize;
-		}
-		if( i < 4 )
-			fread(md5 + i * 8, 1, 8, file);
-		fstart += 8;
+		gs_log("load_data: FAILED reading talk_proc count");
+		fclose(file);
+		return -1;
+	}
+	gs_log("load_data: talk_proc count=%lu", (unsigned long)sz);
+	size_t i;
+	for(i=0; i<sz; i++)
+	{
+		talk_proc * tp = new talk_proc;
+		tp->load(file);
+		add_structure(tp->id_talk, tp);
 	}
 
-	g_MD5Hash.Final();
-	unsigned int size = 50;
-	g_MD5Hash.GetString(buf, size);
-	if( memcmp(buf, md5, 32) != 0 )
-		return -1;
-#endif
+	setup_hash_map();
 
-	gs_log("load_data: all arrays loaded successfully");
 	fclose(file);
 	return 0;
 }
