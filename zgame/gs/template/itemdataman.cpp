@@ -275,6 +275,22 @@ int itemdataman::get_item_pile_limit(unsigned int id)
 		CASE_GET_ITEM_PILE_LIMIT(RUNE_SLOT_ESSENCE);
 		CASE_GET_ITEM_PILE_LIMIT(SCROLL_DIG_COUNT_INC_ESSENCE);
 		CASE_GET_ITEM_PILE_LIMIT(PROP_ADD_MATERIAL_ITEM_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(GIFT_PACK_ITEM_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(PROP_ADD_ITEM_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(RUNE2013_ITEM_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(COLORANT_ITEM_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(BABY_FASHION_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(BABY_TOY_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(BABY_BOOK_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(MATRIX_CARD_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(MATRIX_EQUIP_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(BABY_FOOD_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(BABY_TITLE_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(VEHICLE_ENHANCE_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(TALENT_SCROLL_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(EGGS_GIFT_BAG_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(GUESS_ESSENCE);
+		CASE_GET_ITEM_PILE_LIMIT(TITLE_ITEM_ESSENCE);
 
 	default:
 		return 0;
@@ -349,7 +365,11 @@ int itemdataman::get_item_proc_type(unsigned int id)
 		CASE_GET_ITEM_PROC_TYPE(RUNE_SLOT_ESSENCE);
 		CASE_GET_ITEM_PROC_TYPE(SCROLL_DIG_COUNT_INC_ESSENCE);
 		CASE_GET_ITEM_PROC_TYPE(PROP_ADD_MATERIAL_ITEM_ESSENCE);
-		
+		CASE_GET_ITEM_PROC_TYPE(GIFT_PACK_ITEM_ESSENCE);
+		CASE_GET_ITEM_PROC_TYPE(PROP_ADD_ITEM_ESSENCE);
+		CASE_GET_ITEM_PROC_TYPE(RUNE2013_ITEM_ESSENCE);
+		CASE_GET_ITEM_PROC_TYPE(COLORANT_ITEM_ESSENCE);
+
 	default:
 		return 0;
 	}
@@ -389,7 +409,7 @@ int itemdataman::generate_item_from_monster(unsigned int id, int * list,  size_t
 	const MONSTER_ESSENCE * mon = (const MONSTER_ESSENCE*) get_data_ptr(id, ID_SPACE_ESSENCE, datatype);
 	if(datatype == DT_NPC_ESSENCE && mon)
 	{
-		//如果是NPC，则再取一遍数据
+		// If it's an NPC, then retrieve the data again.
 		const NPC_ESSENCE *npc = (const NPC_ESSENCE*)mon;
 		if(npc->id_src_monster == 0) return -1;
 		
@@ -405,7 +425,7 @@ int itemdataman::generate_item_from_monster(unsigned int id, int * list,  size_t
 	size_t mcount = mon->drop_times;
 	if(mcount == 0) return 0;
 
-	//查找掉落表
+	// Find the drop table
 	if(mon->drop_table[0].id_drop_table == 0 && mon->drop_table[1].id_drop_table == 0) return 0;
 	int index = abase::RandSelect(&mon->drop_table[0].prop_drop_table, sizeof(int)+sizeof(float), 2);
 	int drop_id = mon->drop_table[index].id_drop_table;
@@ -425,7 +445,7 @@ int itemdataman::generate_item_from_monster(unsigned int id, int * list,  size_t
 		for(size_t i=0; i<drop_num; i++)
 		{
 			int index = abase::RandSelect(&(table->drops[0].probability), sizeof(unsigned int)+sizeof(float), 64);
-			if(j && index >= 32) continue;	//如果是多次丢出则只有一次能生成后面的物品
+			if(j && index >= 32) continue;
 			int item_id = table->drops[index].id_obj;
 			if(item_id > 0)
 			{
@@ -459,16 +479,16 @@ int itemdataman::generate_talisman_stamina_potion(unsigned int id, ID_SPACE idsp
 	*data = (char *)abase::fastalloc(size);	
 	char * buf = *data;
 	
-	*(unsigned int*)buf = id;			buf += sizeof(unsigned int);		//物品的模板ID
-	*(size_t*)buf = 1;				buf += sizeof(size_t);			//物品的数量
-	*(size_t*)buf = ess->pile_num_max;		buf += sizeof(size_t);			//物品的堆叠上限
-	*(int*)buf = ess->proc_type;			buf += sizeof(int);			//物品的处理方式
-	*(int*)buf = 0;					buf += sizeof(int);			//GUID
-	*(int*)buf = 0;					buf += sizeof(int);			//GUID	
-	*(int*)buf = ess->price;			buf += sizeof(int);			//物品的价格
-	*(int*)buf = 0;					buf += sizeof(int);			//物品的到期时间
-	size_t* content_length = (size_t*)buf;		buf += sizeof(size_t);			//记住buf的指针，以后再填
-	char ** item_content = (char **)buf;		buf += sizeof(char *);			//记住buf的指针，以后再填
+	*(unsigned int*)buf = id;			buf += sizeof(unsigned int);
+	*(size_t*)buf = 1;				buf += sizeof(size_t);
+	*(size_t*)buf = ess->pile_num_max;		buf += sizeof(size_t);
+	*(int*)buf = ess->proc_type;			buf += sizeof(int);
+	*(int*)buf = 0;					buf += sizeof(int);
+	*(int*)buf = 0;					buf += sizeof(int);
+	*(int*)buf = ess->price;			buf += sizeof(int);
+	*(int*)buf = 0;					buf += sizeof(int);
+	size_t* content_length = (size_t*)buf;		buf += sizeof(size_t);
+	char ** item_content = (char **)buf;		buf += sizeof(char *);
 	*content_length = (char *)(*data)+size-buf;
 	*item_content = buf;
 
@@ -706,7 +726,7 @@ int itemdataman::generate_item(unsigned int id, item_data ** item, size_t& size,
 
 int itemdataman::generate_item_from_droptable(unsigned int id, int * list,  size_t list_size)
 {
-	//查找到掉落表
+	// Drop list found
 	int drop_id = id;
 	if(drop_id <= 0) return 0;
 	DATA_TYPE datatype2;
