@@ -8,7 +8,7 @@
 #include <memory.h>
 #endif
 
-#define ELEMENTDATA_VERSION			0x1000009e
+#define ELEMENTDATA_VERSION			0x100000b0
 
 #define SPECIAL_ID_CONFIG_TEMPLID	7	// 689
 
@@ -245,6 +245,26 @@ struct EQUIPMENT_ESSENCE
 	int				file_model_reserved4;				// reserved
 	int				file_model_reserved5;				// reserved
 	int				file_model_reserved6;				// reserved
+	int				file_model_reserved7;				// reserved
+	int				file_model_reserved8;				// reserved
+	int				file_model_reserved9;				// reserved
+	int				file_model_reserved10;				// reserved
+	int				file_model_reserved11;				// reserved
+	int				file_model_reserved12;				// reserved
+	int				file_model_reserved13;				// reserved
+	int				file_model_reserved14;				// reserved
+	int				file_model_reserved15;				// reserved
+	int				file_model_reserved16;				// reserved
+	int				file_model_reserved17;				// reserved
+	int				file_model_reserved18;				// reserved
+	int				file_model_reserved19;				// reserved
+	int				file_model_reserved20;				// reserved
+	int				file_model_reserved21;				// reserved
+	int				file_model_reserved22;				// reserved
+	int				file_model_reserved23;				// reserved
+	int				file_model_reserved24;				// reserved
+	int				file_model_reserved25;				// reserved
+	int				file_model_reserved26;				// reserved
 
 	int				file_matter;				// ���ڵ��ϵ�ģ��·��
 	int				file_icon;					// ͼ��·��
@@ -257,9 +277,14 @@ struct EQUIPMENT_ESSENCE
 
 	namechar		show_level[16];				// װ��Ʒ������
 	int				level;						// װ���ȼ�
+	int				grade;
+	int				unknown_1;
+	int				unknown_2;
+	int				unknown_3;
 
 	UInt64			character_combo_id;			// ְҵ����, �ӵ�λ����λ�ĺ���Ϊ��0-����, 1-��ʿ, 2-��ʿ, 3-սʿ, 4-��ʿ, 5-��ʦ, 6-��ʦ, 7-����, 8-����ʿ, 9-�̿�, 10-��ʥ, 11-����, 12-��˾, 13-�ط�ʦ, 14-�ٻ�ʹ
 	UInt64			character_combo_id2;		// ְҵ���ƣ���չְҵID�������ӵ�ְҵ��Added 2011-07-14
+	UInt64			character_combo_id3;		// ְҵ���ƣ���չְҵID�������ӵ�ְҵ��Added 2011-07-14
 	UInt64			char_lev_1;
 	UInt64			char_lev_1_2;				// תְҵʱ��ְҵ���ƣ���չְҵID�����ְҵ���ƣ�Added 2011-07-15. 
 	UInt64			char_lev_2;
@@ -333,6 +358,12 @@ struct EQUIPMENT_ESSENCE
 	int				id_addon3;					// ��3�ָ������Ե�����ID
 	int				id_addon4;					// ��4�ָ������Ե�����ID
 	int				id_addon5;					// ��5�ָ������Ե�����ID
+	int				id_addon6;
+	int				id_addon7;
+	int				id_addon8;
+	int				id_addon9;
+	int				id_addon10;
+	int				id_addon11;
 
 	int				fee_estone;					// ����ǿ��������
 	int				fee_install_pstone;			// ����׷��������
@@ -372,12 +403,24 @@ struct EQUIPMENT_ESSENCE
 	}hidden_addon[3];
 
 	int				gem_slot_identify;		//����Ʒ�Ƿ��ܽ��б�ʯ��ۼ����� 0��ʾ���������༭����Ե�ʶ�ʹ��int
+	
+	int				unknown_4;
+	int				unknown_5;
+	int				unknown_6;
+	int				unknown_7;
+	int				unknown_8;
 
 	// �ѵ���Ϣ
 	int				pile_num_max;				// �ѵ�����
 
 	// ������ʽ
 	unsigned int	proc_type;					// �����¼��ַ�ʽ�����: ����ʱ�Ƿ���䣬�Ƿ�������ڵ��ϣ��Ƿ��������NPC�����������Ʒ���Ƿ������Ҽ佻�ף��Ƿ����������Ʒ���Ƿ�װ����󶨣�������ѡ�У�����GUID
+
+	int				unknown_9;
+	int				unknown_10;
+	int				unknown_11;
+	int				unknown_12;
+	int				unknown_13;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1134,6 +1177,19 @@ struct REVIVESCROLL_ESSENCE
 
 	float			use_time;					// ʹ��ʱ�䣨�룩
 	int				cool_time;					// ��ȴʱ�䣨���룩
+
+	int unknown_1;
+	int unknown_2;
+	int unknown_3;
+	int unknown_4;
+	int unknown_5;
+	int unknown_6;
+	int unknown_7;
+	int unknown_8;
+	int unknown_9;
+	int unknown_10;
+	int unknown_11;
+	int unknown_12;
 
 	int				price;						// �����
 	int				shop_price;					// ������
@@ -1897,6 +1953,8 @@ struct MONSTER_ESSENCE
 	int				file_model;					// ģ��·����
 	int				head_icon;					// ͷ��
 	int				big_icon;					// ����ͼ������ͼ�꣬������ſ��������Added 2012-04-23.
+	int unknown_1;
+	int unknown_2;
 	
 	float			size;						// ��С
 
@@ -1923,6 +1981,7 @@ struct MONSTER_ESSENCE
 	int				level;						// ����ȼ�
 	int				show_level;					// ��ʾ�ȼ�
 	unsigned int	is_boss;					// �Ƿ�BOSS
+	int unknown_3;
 	unsigned int	killed_exp;					// ����ɱ���Ƿ���ʧ����
 	unsigned int	killed_drop;				// ����ɱ���Ƿ������Ʒ
 	int				is_drop_adjustby_skill;		// �����Ƿ��ܼ���Ӱ�� Ĭ��ֵΪ0����ʾ���䲻�ܼ��ܵ�Ӱ�죻1����ʾ������ܵ�����Ӱ��
@@ -1932,6 +1991,7 @@ struct MONSTER_ESSENCE
 												// ����ѣ�Ρ��������������߻��������߳�Ĭ������˯�ߡ����߲��ơ����߽�ʳ�����߿���
 												// ���߳����˺������߳���������Ԫ���ɢ��������ħ�����߱������������ա�����Ѫ��
 												// ���߽��ͷ���%
+	int unknown_4;
 
 	float			sight_range;				// ��Ұ
 	float			attack_range;				// ��������
@@ -1949,6 +2009,9 @@ struct MONSTER_ESSENCE
 
 	float			walk_speed;					// �����ƶ��ٶ�(M/S)
 	float			run_speed;					// �����ƶ��ٶ�(M/S)
+
+	int unknown_5;
+	int unknown_6;
 	
 	unsigned int	common_strategy;			// �������
 
@@ -1960,6 +2023,7 @@ struct MONSTER_ESSENCE
 	int				exp;						// ��ʼ����
 	int 			money_average;				// ��ʼǮ����׼ֵ
 	int				money_var;					// ��ʼǮ������ֵ
+	int unknown_7;
 	int				hp;							// ��ʼ������
 	int				hp_disp_lv;					// Ѫ������
 	int				mp;							// ��ʼħ��
@@ -2017,7 +2081,7 @@ struct MONSTER_ESSENCE
 	{
 		unsigned int	id_skill;				// ����ļ�������ID
 		int				level;					// ���ܵļ���
-	} skills[32];
+	} skills[13];
 
 	float			dec_crit_rate;
 	float			dec_crit_dmg;
@@ -2028,6 +2092,42 @@ struct MONSTER_ESSENCE
 	unsigned int	task_share;					// �ù����Ƿ����Ϊ���������ɱ�֣������󣬷��������¿ɹ���ɱ�� Added 2012-04-09.
 	unsigned int	item_drop_share;			// �ù��ﱻɱ�����Ƿ���������� Added 2012-04-09.
 	unsigned int	buff_area_id;				// ������ص�buff��������id
+	int unknown_8;
+	int unknown_9;
+	int unknown_10;
+	int unknown_11;
+	int unknown_12;
+	int unknown_13;
+	int unknown_14;
+	int unknown_15;
+	int unknown_16;
+	int unknown_17;
+	int unknown_18;
+	int unknown_19;
+	int unknown_20;
+	int unknown_21;
+	int unknown_22;
+	int unknown_23;
+	int unknown_24;
+	int unknown_25;
+	int unknown_26;
+	int unknown_27;
+	int unknown_28;
+	int unknown_29;
+	int unknown_30;
+	int unknown_31;
+	int unknown_32;
+	int unknown_33;
+	int unknown_34;
+	int unknown_35;
+	int unknown_36;
+	int unknown_37;
+	int unknown_38;
+	int unknown_39;
+	int unknown_40;
+	int unknown_41;
+	int unknown_42;
+	int unknown_43;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -2119,7 +2219,7 @@ struct NPC_TASK_IN_SERVICE
 	unsigned int	id;							// ����(����)ID
 	namechar		name[32];					// ����, ���15������	
 
-	unsigned int	id_tasks[256];				// ���Դ����������б�
+	unsigned int	id_tasks[512];				// ���Դ����������б�
 };
 
 // ����������Ʒ����
@@ -2162,8 +2262,12 @@ struct NPC_TRANSMIT_SERVICE
 		float		y;							// Ŀ���y����
 		float		z;							// Ŀ���z����
 		int			fee;						// ����
+		int unknown_1;
+		int unknown_2;
+		int unknown_3;
+		int unknown_4;
 		int			required_level;				// �ȼ�Ҫ��
-	} targets[16];
+	} targets[25];
 
 	unsigned int	id_dialog;					// �Ի�ID
 };
