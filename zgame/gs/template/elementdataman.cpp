@@ -13,13 +13,13 @@ using namespace abase;
 
 #endif
 
-// ---- gs debug logger (writes to /root/1378/gs_debug.log) ----
+// ---- gs debug logger (writes to /root/gs_debug.log) ----
 static FILE* g_gs_log = NULL;
 static void gs_log(const char* fmt, ...)
 {
     if (!g_gs_log)
     {
-        g_gs_log = fopen("/root/1378/gs_debug.log", "a");
+        g_gs_log = fopen("/root/gs_debug.log", "a");
         if (!g_gs_log)
             return;
     }
@@ -219,6 +219,7 @@ const char * DataTypeName[DT_MAX+1] =
 	"DT_TEAM_SEASON_AWARD_CONFIG",
 	"DT_WEEK_CURRNCY_AWARD_CONFIG",
 	"DT_COLORANT_ITEM_ESSENCE"
+	"DT_COLORANT2_ITEM_ESSENCE"
 	"DT_INTERACTION_OBJECT_ESSENCE",
 	"DT_INTERACTION_OBJECT_HOOK_CONFIG",
 	"DT_COLORANT_CONFIG",
@@ -272,6 +273,91 @@ const char * DataTypeName[DT_MAX+1] =
 	"DT_SOUL_EXCHANGE_CONFIG",
 	"DT_SOUL_DROP_CONFIG",
 	"DT_DAILY_SIGN_CONFIG",
+	"DT_RED_PACKETS_ESSENCE",
+	"DT_FORBID_COMMON_SKILL_CONFIG",
+	"DT_FORBID_GODEVIL_SKILL_CONFIG",
+	"DT_FORCE_CD_SKILL_CONFIG",
+	"DT_TALENT_SCROLL_REFINE_ESSENCE",
+	"DT_FACTION_BASE_ACTIVITY_CONFIG",
+	"DT_AMULET_ESSENCE",
+	"DT_AMULET_CONFIG",
+	"DT_AMULET_STONE_ESSENCE",
+	"DT_SPECIAL_VIP_CONFIG",
+	"DT_CHARGE_AWARD_CONFIG",
+	"DT_NEW_TOWNSCROLL_ESSENCE",
+	"DT_EQUIPMENT_RANDOMEXT_CONFIG",
+	"DT_INDISCRIMINATION_BATTLE_CONFIG",
+	"DT_GROUPRAID_EVALAWARD_CONFIG",
+	"DT_EQUIPMENT_IDENTIFY_CONFIG",
+	"DT_HEADFRAME_ESSENCE",
+	"DT_CONVERT_EQUIP_CONFIG",
+	"DT_AUSPICIOUS_HALL_CONFIG",
+	"DT_DIVINE_ACCESSORY_IMBUE_CONFIG",
+	"DT_LEVEL_UP_REWARD_CONFIG",
+	"DT_NEW_BOX_ESSENCE",
+	"DT_NEW_FASHION_PACK_ESSENCE",
+	"DT_NEW_CRAFTING_CONFIG",
+	"DT_FAIRYHOUSE_GENERAL_CONFIG",
+	"DT_FAIRYHOUSE_PROBABILITY_CONFIG",
+	"DT_FAIRYHOUSE_BABY_TRAIT_CONFIG",
+	"DT_FAIRYHOUSE_PET_TRAIT_CONFIG",
+	"DT_FAIRYHOUSE_CHALLENGE_CONFIG",
+	"DT_FAIRYHOUSE_BABY_GEAR_ESSENCE",
+	"DT_FAIRYHOUSE_PET_GEAR_ESSENCE",
+	"DT_FAIRYHOUSE_TRAIT_LEARN_ESSENCE",
+	"DT_PREPAID_BOOK_ESSENCE",
+	"DT_TOKEN_BAG_CONFIG",
+	"DT_TIMELIMIT_BEAD_ESSENCE",
+	"DT_EXTRA_TIMELIMIT_BEAD_ESSENCE",
+	"DT_CONSTELLATIONEXP_CONFIG",
+	"DT_CONSTELLATION_SKILL_CONFIG",
+	"DT_CONSTELLATION_CONFIG",
+	"DT_CONSTELLATION_STARS_ESSENCE",
+	"DT_CONSTELLATION_SKILL_RELATION_CONFIG",
+	"DT_TALENT_SCROLL_TRIGGER_CONFIG",
+	"DT_EVENT_REWARD_SET_CONFIG",
+	"DT_EXTRA_LOTTERY_ESSENCE",
+	"DT_SKILL_SET_CONFIG",
+	"DT_GEAR_SCRIPTURE_CONFIG",
+	"DT_FIREWORK_ARRAY_ESSENCE",
+	"DT_RESET_ITEM_ESSENCE",
+	"DT_MARRIAGE_REWARD_CONFIG",
+	"DT_MYSTIC_ENHANCE_MATERIAL_CONFIG",
+	"DT_LUCK_VALUE_CONFIG",
+	"DT_CLASS_ITEM_CONFIG",
+	"DT_NEW_GEAR_IDENTIFY_CONFIG",
+	"DT_NEW_GEAR_LIST_CONFIG",
+	"DT_INSTANCE_INTERCHANGE_CONFIG",
+	"DT_SPIRIT_STONE_ESSENCE",
+	"DT_VALUE_COST_CONFIG",
+	"DT_ANNIVERSARY_ITEM_ESSENCE",
+	"DT_SPIRIT_EXRACTION_CONFIG",
+	"DT_NEW_DOTA_SKILL_CONFIG",
+	"DT_ANOTHER_DOTA_SKILL_CONFIG",
+	"DT_EXTRA_DOTA_SKILL_CONFIG",
+	"DT_WARDOBE_FASHION_CONFIG",
+	"DT_NEW_DYE_CONFIG",
+	"DT_EMBROIDERY_CONFIG",
+	"DT_MERGED_STAR_SOUL_LIMIT_CONFIG",
+	"DT_MERGED_STAR_SOUL_GROWTH_CONFIG",
+	"DT_MERGED_STAR_SOUL_SLOT_CONFIG",
+	"DT_RUNE2013_MATERIAL_CONFIG",
+	"DT_NEW_VIP_CONFIG",
+	"DT_RUNE2013_CONSUMPTION_CONFIG",
+	"DT_FORBID_DIVINE_SKILL_CONFIG",
+	"DT_GIFT_LETTER_ESSENCE",
+	"DT_WARDOBE_WEAPON_CONFIG",
+	"DT_WARDOBE_FOOTPRINT_CONFIG",
+	//"DT_WARDOBE_PET_CONFIG",
+	"DT_FOOTPRINT_ESSENCE",
+	"DT_FORTUNE_GIFT_PACK_ESSENCE",
+	"DT_CANTEEN_EVENT_CONFIG",
+	"DT_RETURN_AWARD_CONFIG",
+	"DT_MOBILE_PHONE_INFO_CONFIG",
+	"DT_BEGINNER_ONLINE_REWARD_CONFIG",
+	"DT_MONTHLY_RETURN_AWARD_CONFIG",
+	"DT_INSTANT_TIER_CONFIG",
+	"DT_PLOT_REWARD_CONFIG",
 	"DT_MAX",
 };
 
@@ -513,6 +599,7 @@ elementdataman::elementdataman()
 	type_size_array.push_back(sizeof(TEAM_SEASON_AWARD_CONFIG));
 	type_size_array.push_back(sizeof(WEEK_CURRNCY_AWARD_CONFIG));
 	type_size_array.push_back(sizeof(COLORANT_ITEM_ESSENCE));
+	type_size_array.push_back(sizeof(COLORANT2_ITEM_ESSENCE));
 	type_size_array.push_back(sizeof(INTERACTION_OBJECT_ESSENCE));
 	type_size_array.push_back(sizeof(INTERACTION_OBJECT_HOOK_CONFIG));
 	type_size_array.push_back(sizeof(COLORANT_CONFIG));
@@ -566,6 +653,90 @@ elementdataman::elementdataman()
 	type_size_array.push_back(sizeof(SOUL_EXCHANGE_CONFIG));
 	type_size_array.push_back(sizeof(SOUL_DROP_CONFIG));
 	type_size_array.push_back(sizeof(DAILY_SIGN_CONFIG));
+	type_size_array.push_back(sizeof(RED_PACKETS_ESSENCE));
+	type_size_array.push_back(sizeof(FORBID_COMMON_SKILL_CONFIG));
+	type_size_array.push_back(sizeof(FORBID_GODEVIL_SKILL_CONFIG));
+	type_size_array.push_back(sizeof(FORCE_CD_SKILL_CONFIG));
+	type_size_array.push_back(sizeof(TALENT_SCROLL_REFINE_ESSENCE));
+	type_size_array.push_back(sizeof(FACTION_BASE_ACTIVITY_CONFIG));
+	type_size_array.push_back(sizeof(AMULET_ESSENCE));
+	type_size_array.push_back(sizeof(AMULET_CONFIG));
+	type_size_array.push_back(sizeof(AMULET_STONE_ESSENCE));
+	type_size_array.push_back(sizeof(SPECIAL_VIP_CONFIG));
+	type_size_array.push_back(sizeof(CHARGE_AWARD_CONFIG));
+	type_size_array.push_back(sizeof(NEW_TOWNSCROLL_ESSENCE));
+	type_size_array.push_back(sizeof(EQUIPMENT_RANDOMEXT_CONFIG));
+	type_size_array.push_back(sizeof(INDISCRIMINATION_BATTLE_CONFIG));
+	type_size_array.push_back(sizeof(GROUPRAID_EVALAWARD_CONFIG));
+	type_size_array.push_back(sizeof(EQUIPMENT_IDENTIFY_CONFIG));
+	type_size_array.push_back(sizeof(HEADFRAME_ESSENCE));
+	type_size_array.push_back(sizeof(CONVERT_EQUIP_CONFIG));
+	type_size_array.push_back(sizeof(AUSPICIOUS_HALL_CONFIG));
+	type_size_array.push_back(sizeof(DIVINE_ACCESSORY_IMBUE_CONFIG));
+	type_size_array.push_back(sizeof(LEVEL_UP_REWARD_CONFIG));
+	type_size_array.push_back(sizeof(NEW_BOX_ESSENCE));
+	type_size_array.push_back(sizeof(NEW_FASHION_PACK_ESSENCE));
+	type_size_array.push_back(sizeof(NEW_CRAFTING_CONFIG));
+	type_size_array.push_back(sizeof(FAIRYHOUSE_GENERAL_CONFIG));
+	type_size_array.push_back(sizeof(FAIRYHOUSE_PROBABILITY_CONFIG));
+	type_size_array.push_back(sizeof(FAIRYHOUSE_BABY_TRAIT_CONFIG));
+	type_size_array.push_back(sizeof(FAIRYHOUSE_PET_TRAIT_CONFIG));
+	type_size_array.push_back(sizeof(FAIRYHOUSE_CHALLENGE_CONFIG));
+	type_size_array.push_back(sizeof(FAIRYHOUSE_BABY_GEAR_ESSENCE));
+	type_size_array.push_back(sizeof(FAIRYHOUSE_PET_GEAR_ESSENCE));
+	type_size_array.push_back(sizeof(FAIRYHOUSE_TRAIT_LEARN_ESSENCE));
+	type_size_array.push_back(sizeof(PREPAID_BOOK_ESSENCE));
+	type_size_array.push_back(sizeof(TOKEN_BAG_CONFIG));
+	type_size_array.push_back(sizeof(TIMELIMIT_BEAD_ESSENCE));
+	type_size_array.push_back(sizeof(EXTRA_TIMELIMIT_BEAD_ESSENCE));
+	type_size_array.push_back(sizeof(CONSTELLATIONEXP_CONFIG));
+	type_size_array.push_back(sizeof(CONSTELLATION_SKILL_CONFIG));
+	type_size_array.push_back(sizeof(CONSTELLATION_CONFIG));
+	type_size_array.push_back(sizeof(CONSTELLATION_STARS_ESSENCE));
+	type_size_array.push_back(sizeof(CONSTELLATION_SKILL_RELATION_CONFIG));
+	type_size_array.push_back(sizeof(TALENT_SCROLL_TRIGGER_CONFIG));
+	type_size_array.push_back(sizeof(EVENT_REWARD_SET_CONFIG));
+	type_size_array.push_back(sizeof(EXTRA_LOTTERY_ESSENCE));
+	type_size_array.push_back(sizeof(SKILL_SET_CONFIG));
+	type_size_array.push_back(sizeof(GEAR_SCRIPTURE_CONFIG));
+	type_size_array.push_back(sizeof(FIREWORK_ARRAY_ESSENCE));
+	type_size_array.push_back(sizeof(RESET_ITEM_ESSENCE));
+	type_size_array.push_back(sizeof(MARRIAGE_REWARD_CONFIG));
+	type_size_array.push_back(sizeof(MYSTIC_ENHANCE_MATERIAL_CONFIG));
+	type_size_array.push_back(sizeof(LUCK_VALUE_CONFIG));
+	type_size_array.push_back(sizeof(CLASS_ITEM_CONFIG));
+	type_size_array.push_back(sizeof(NEW_GEAR_IDENTIFY_CONFIG));
+	type_size_array.push_back(sizeof(NEW_GEAR_LIST_CONFIG));
+	type_size_array.push_back(sizeof(INSTANCE_INTERCHANGE_CONFIG));
+	type_size_array.push_back(sizeof(SPIRIT_STONE_ESSENCE));
+	type_size_array.push_back(sizeof(VALUE_COST_CONFIG));
+	type_size_array.push_back(sizeof(ANNIVERSARY_ITEM_ESSENCE));
+	type_size_array.push_back(sizeof(SPIRIT_EXRACTION_CONFIG));
+	type_size_array.push_back(sizeof(NEW_DOTA_SKILL_CONFIG));
+	type_size_array.push_back(sizeof(ANOTHER_DOTA_SKILL_CONFIG));
+	type_size_array.push_back(sizeof(EXTRA_DOTA_SKILL_CONFIG));
+	type_size_array.push_back(sizeof(WARDOBE_FASHION_CONFIG));
+	type_size_array.push_back(sizeof(NEW_DYE_CONFIG));
+	type_size_array.push_back(sizeof(EMBROIDERY_CONFIG));
+	type_size_array.push_back(sizeof(MERGED_STAR_SOUL_LIMIT_CONFIG));
+	type_size_array.push_back(sizeof(MERGED_STAR_SOUL_GROWTH_CONFIG));
+	type_size_array.push_back(sizeof(MERGED_STAR_SOUL_SLOT_CONFIG));
+	type_size_array.push_back(sizeof(RUNE2013_MATERIAL_CONFIG));
+	type_size_array.push_back(sizeof(NEW_VIP_CONFIG));
+	type_size_array.push_back(sizeof(RUNE2013_CONSUMPTION_CONFIG));
+	type_size_array.push_back(sizeof(FORBID_DIVINE_SKILL_CONFIG));
+	type_size_array.push_back(sizeof(GIFT_LETTER_ESSENCE));
+	type_size_array.push_back(sizeof(WARDOBE_WEAPON_CONFIG));
+	type_size_array.push_back(sizeof(WARDOBE_FOOTPRINT_CONFIG));
+	type_size_array.push_back(sizeof(FOOTPRINT_ESSENCE));
+	type_size_array.push_back(sizeof(FORTUNE_GIFT_PACK_ESSENCE));
+	type_size_array.push_back(sizeof(CANTEEN_EVENT_CONFIG));
+	type_size_array.push_back(sizeof(RETURN_AWARD_CONFIG));
+	type_size_array.push_back(sizeof(MOBILE_PHONE_INFO_CONFIG));
+	type_size_array.push_back(sizeof(BEGINNER_ONLINE_REWARD_CONFIG));
+	type_size_array.push_back(sizeof(MONTHLY_RETURN_AWARD_CONFIG));
+	type_size_array.push_back(sizeof(INSTANT_TIER_CONFIG));
+	type_size_array.push_back(sizeof(PLOT_REWARD_CONFIG));
 	type_size_array.push_back(sizeof(0));	//DT_MAX
 }
 
@@ -1379,6 +1550,14 @@ void elementdataman::add_structure(unsigned int id, COLORANT_ITEM_ESSENCE & data
 	add_id_index(ID_SPACE_ESSENCE, id, DT_COLORANT_ITEM_ESSENCE, pos, &(colorant_item_essence_array[0]));
 }
 
+void elementdataman::add_structure(unsigned int id, COLORANT2_ITEM_ESSENCE& data)
+{
+	colorant2_item_essence_array.push_back(data);
+
+	unsigned int pos = colorant2_item_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_COLORANT2_ITEM_ESSENCE, pos, &(colorant2_item_essence_array[0]));
+}
+
 void elementdataman::add_structure(unsigned int id, INTERACTION_OBJECT_ESSENCE& data)
 {
 	interaction_object_essence_array.push_back(data);
@@ -1772,6 +1951,27 @@ void elementdataman::add_structure(unsigned int id, DAILY_SIGN_CONFIG& data)
 	daily_sign_config_array.push_back(data);
 	unsigned int pos = daily_sign_config_array.size() - 1;
 	add_id_index(ID_SPACE_CONFIG, id, DT_DAILY_SIGN_CONFIG, pos, &(daily_sign_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, RED_PACKETS_ESSENCE& data)
+{
+	red_packets_essence_array.push_back(data);
+	unsigned int pos = red_packets_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_RED_PACKETS_ESSENCE, pos, &(red_packets_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FORBID_COMMON_SKILL_CONFIG& data)
+{
+	forbid_common_skill_config_array.push_back(data);
+	unsigned int pos = forbid_common_skill_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_FORBID_COMMON_SKILL_CONFIG, pos, &(forbid_common_skill_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FORBID_GODEVIL_SKILL_CONFIG& data)
+{
+	forbid_godevil_skill_config_array.push_back(data);
+	unsigned int pos = forbid_godevil_skill_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_FORBID_GODEVIL_SKILL_CONFIG, pos, &(forbid_godevil_skill_config_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id, COMPOUND_MINE_ESSENCE & data)
@@ -2678,6 +2878,722 @@ void elementdataman::add_structure(unsigned int id, PET_ARMOR_ESSENCE & data)
 	add_id_index(ID_SPACE_ESSENCE, id, DT_PET_ARMOR_ESSENCE, pos, &(pet_armor_essence_array[0]));
 }
 
+///  NEW
+void elementdataman::add_structure(unsigned int id, FORCE_CD_SKILL_CONFIG& data)
+{
+	force_cd_skill_config_array.push_back(data);
+
+	unsigned int pos = force_cd_skill_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_FORCE_CD_SKILL_CONFIG, pos, &(force_cd_skill_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, TALENT_SCROLL_REFINE_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	talent_scroll_refine_essence_array.push_back(data);
+
+	unsigned int pos = talent_scroll_refine_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_TALENT_SCROLL_REFINE_ESSENCE, pos, &(talent_scroll_refine_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FACTION_BASE_ACTIVITY_CONFIG& data)
+{
+	faction_base_activity_config_array.push_back(data);
+
+	unsigned int pos = faction_base_activity_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_FACTION_BASE_ACTIVITY_CONFIG, pos, &(faction_base_activity_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, AMULET_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	amulet_essence_array.push_back(data);
+
+	unsigned int pos = amulet_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_AMULET_ESSENCE, pos, &(amulet_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, AMULET_CONFIG& data)
+{
+	amulet_config_array.push_back(data);
+
+	unsigned int pos = amulet_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_AMULET_CONFIG, pos, &(amulet_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, AMULET_STONE_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	amulet_stone_essence_array.push_back(data);
+
+	unsigned int pos = amulet_stone_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_AMULET_STONE_ESSENCE, pos, &(amulet_stone_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, SPECIAL_VIP_CONFIG& data)
+{
+	special_vip_config_array.push_back(data);
+
+	unsigned int pos = special_vip_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_SPECIAL_VIP_CONFIG, pos, &(special_vip_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, CHARGE_AWARD_CONFIG& data)
+{
+	charge_award_config_array.push_back(data);
+
+	unsigned int pos = charge_award_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_CHARGE_AWARD_CONFIG, pos, &(charge_award_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, NEW_TOWNSCROLL_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	new_townscroll_essence_array.push_back(data);
+
+	unsigned int pos = new_townscroll_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_NEW_TOWNSCROLL_ESSENCE, pos, &(new_townscroll_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, EQUIPMENT_RANDOMEXT_CONFIG& data)
+{
+	equipment_randomext_config_array.push_back(data);
+
+	unsigned int pos = equipment_randomext_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_EQUIPMENT_RANDOMEXT_CONFIG, pos, &(equipment_randomext_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, INDISCRIMINATION_BATTLE_CONFIG& data)
+{
+	indiscrimination_battle_config_array.push_back(data);
+
+	unsigned int pos = indiscrimination_battle_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_INDISCRIMINATION_BATTLE_CONFIG, pos, &(indiscrimination_battle_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, GROUPRAID_EVALAWARD_CONFIG& data)
+{
+	groupraid_evalaward_config_array.push_back(data);
+
+	unsigned int pos = groupraid_evalaward_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_GROUPRAID_EVALAWARD_CONFIG, pos, &(groupraid_evalaward_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, EQUIPMENT_IDENTIFY_CONFIG& data)
+{
+	equipment_identify_config_array.push_back(data);
+
+	unsigned int pos = equipment_identify_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_EQUIPMENT_IDENTIFY_CONFIG, pos, &(equipment_identify_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, HEADFRAME_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	headframe_essence_array.push_back(data);
+
+	unsigned int pos = headframe_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_HEADFRAME_ESSENCE, pos, &(headframe_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, CONVERT_EQUIP_CONFIG& data)
+{
+	convert_equip_config_array.push_back(data);
+
+	unsigned int pos = convert_equip_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_CONVERT_EQUIP_CONFIG, pos, &(convert_equip_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, AUSPICIOUS_HALL_CONFIG& data)
+{
+	auspicious_hall_config_array.push_back(data);
+
+	unsigned int pos = auspicious_hall_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_AUSPICIOUS_HALL_CONFIG, pos, &(auspicious_hall_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, DIVINE_ACCESSORY_IMBUE_CONFIG& data)
+{
+	divine_accessory_imbue_config_array.push_back(data);
+
+	unsigned int pos = divine_accessory_imbue_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_DIVINE_ACCESSORY_IMBUE_CONFIG, pos, &(divine_accessory_imbue_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, LEVEL_UP_REWARD_CONFIG& data)
+{
+	level_up_reward_config_array.push_back(data);
+
+	unsigned int pos = level_up_reward_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_LEVEL_UP_REWARD_CONFIG, pos, &(level_up_reward_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, NEW_BOX_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	new_box_essence_array.push_back(data);
+
+	unsigned int pos = new_box_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_NEW_BOX_ESSENCE, pos, &(new_box_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, NEW_FASHION_PACK_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	new_fashion_pack_essence_array.push_back(data);
+
+	unsigned int pos = new_fashion_pack_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_NEW_FASHION_PACK_ESSENCE, pos, &(new_fashion_pack_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, NEW_CRAFTING_CONFIG& data)
+{
+	new_crafting_config_array.push_back(data);
+
+	unsigned int pos = new_crafting_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_NEW_CRAFTING_CONFIG, pos, &(new_crafting_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FAIRYHOUSE_GENERAL_CONFIG& data)
+{
+	fairyhouse_general_config_array.push_back(data);
+
+	unsigned int pos = fairyhouse_general_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_FAIRYHOUSE_GENERAL_CONFIG, pos, &(fairyhouse_general_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FAIRYHOUSE_PROBABILITY_CONFIG& data)
+{
+	fairyhouse_probability_config_array.push_back(data);
+
+	unsigned int pos = fairyhouse_probability_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_FAIRYHOUSE_PROBABILITY_CONFIG, pos, &(fairyhouse_probability_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FAIRYHOUSE_BABY_TRAIT_CONFIG& data)
+{
+	fairyhouse_baby_trait_config_array.push_back(data);
+
+	unsigned int pos = fairyhouse_baby_trait_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_FAIRYHOUSE_BABY_TRAIT_CONFIG, pos, &(fairyhouse_baby_trait_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FAIRYHOUSE_PET_TRAIT_CONFIG& data)
+{
+	fairyhouse_pet_trait_config_array.push_back(data);
+
+	unsigned int pos = fairyhouse_pet_trait_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_FAIRYHOUSE_PET_TRAIT_CONFIG, pos, &(fairyhouse_pet_trait_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FAIRYHOUSE_CHALLENGE_CONFIG& data)
+{
+	fairyhouse_challenge_config_array.push_back(data);
+
+	unsigned int pos = fairyhouse_challenge_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_FAIRYHOUSE_CHALLENGE_CONFIG, pos, &(fairyhouse_challenge_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FAIRYHOUSE_BABY_GEAR_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	fairyhouse_baby_gear_essence_array.push_back(data);
+
+	unsigned int pos = fairyhouse_baby_gear_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_FAIRYHOUSE_BABY_GEAR_ESSENCE, pos, &(fairyhouse_baby_gear_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FAIRYHOUSE_PET_GEAR_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	fairyhouse_pet_gear_essence_array.push_back(data);
+
+	unsigned int pos = fairyhouse_pet_gear_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_FAIRYHOUSE_PET_GEAR_ESSENCE, pos, &(fairyhouse_pet_gear_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FAIRYHOUSE_TRAIT_LEARN_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	fairyhouse_trait_learn_essence_array.push_back(data);
+
+	unsigned int pos = fairyhouse_trait_learn_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_FAIRYHOUSE_TRAIT_LEARN_ESSENCE, pos, &(fairyhouse_trait_learn_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, PREPAID_BOOK_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	prepaid_book_essence_array.push_back(data);
+
+	unsigned int pos = prepaid_book_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_PREPAID_BOOK_ESSENCE, pos, &(prepaid_book_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, TOKEN_BAG_CONFIG& data)
+{
+	token_bag_config_array.push_back(data);
+
+	unsigned int pos = token_bag_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_TOKEN_BAG_CONFIG, pos, &(token_bag_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, TIMELIMIT_BEAD_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	timelimit_bead_essence_array.push_back(data);
+
+	unsigned int pos = timelimit_bead_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_TIMELIMIT_BEAD_ESSENCE, pos, &(timelimit_bead_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, EXTRA_TIMELIMIT_BEAD_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	extra_timelimit_bead_essence_array.push_back(data);
+
+	unsigned int pos = extra_timelimit_bead_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_EXTRA_TIMELIMIT_BEAD_ESSENCE, pos, &(extra_timelimit_bead_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, CONSTELLATIONEXP_CONFIG& data)
+{
+	constellationexp_config_array.push_back(data);
+
+	unsigned int pos = constellationexp_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_CONSTELLATIONEXP_CONFIG, pos, &(constellationexp_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, CONSTELLATION_SKILL_CONFIG& data)
+{
+	constellation_skill_config_array.push_back(data);
+
+	unsigned int pos = constellation_skill_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_CONSTELLATION_SKILL_CONFIG, pos, &(constellation_skill_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, CONSTELLATION_CONFIG& data)
+{
+	constellation_config_array.push_back(data);
+
+	unsigned int pos = constellation_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_CONSTELLATION_CONFIG, pos, &(constellation_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, CONSTELLATION_STARS_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	constellation_stars_essence_array.push_back(data);
+
+	unsigned int pos = constellation_stars_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_CONSTELLATION_STARS_ESSENCE, pos, &(constellation_stars_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, CONSTELLATION_SKILL_RELATION_CONFIG& data)
+{
+	constellation_skill_relation_config_array.push_back(data);
+
+	unsigned int pos = constellation_skill_relation_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_CONSTELLATION_SKILL_RELATION_CONFIG, pos, &(constellation_skill_relation_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, TALENT_SCROLL_TRIGGER_CONFIG& data)
+{
+	talent_scroll_trigger_config_array.push_back(data);
+
+	unsigned int pos = talent_scroll_trigger_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_TALENT_SCROLL_TRIGGER_CONFIG, pos, &(talent_scroll_trigger_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, EVENT_REWARD_SET_CONFIG& data)
+{
+	event_reward_set_config_array.push_back(data);
+
+	unsigned int pos = event_reward_set_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_EVENT_REWARD_SET_CONFIG, pos, &(event_reward_set_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, EXTRA_LOTTERY_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	extra_lottery_essence_array.push_back(data);
+
+	unsigned int pos = extra_lottery_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_EXTRA_LOTTERY_ESSENCE, pos, &(extra_lottery_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, SKILL_SET_CONFIG& data)
+{
+	skill_set_config_array.push_back(data);
+
+	unsigned int pos = skill_set_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_SKILL_SET_CONFIG, pos, &(skill_set_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, GEAR_SCRIPTURE_CONFIG& data)
+{
+	gear_scripture_config_array.push_back(data);
+
+	unsigned int pos = gear_scripture_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_GEAR_SCRIPTURE_CONFIG, pos, &(gear_scripture_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FIREWORK_ARRAY_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	firework_array_essence_array.push_back(data);
+
+	unsigned int pos = firework_array_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_FIREWORK_ARRAY_ESSENCE, pos, &(firework_array_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, RESET_ITEM_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	reset_item_essence_array.push_back(data);
+
+	unsigned int pos = reset_item_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_RESET_ITEM_ESSENCE, pos, &(reset_item_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, MARRIAGE_REWARD_CONFIG& data)
+{
+	marriage_reward_config_array.push_back(data);
+
+	unsigned int pos = marriage_reward_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_MARRIAGE_REWARD_CONFIG, pos, &(marriage_reward_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, MYSTIC_ENHANCE_MATERIAL_CONFIG& data)
+{
+	mystic_enhance_material_config_array.push_back(data);
+
+	unsigned int pos = mystic_enhance_material_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_MYSTIC_ENHANCE_MATERIAL_CONFIG, pos, &(mystic_enhance_material_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, LUCK_VALUE_CONFIG& data)
+{
+	luck_value_config_array.push_back(data);
+
+	unsigned int pos = luck_value_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_LUCK_VALUE_CONFIG, pos, &(luck_value_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, CLASS_ITEM_CONFIG& data)
+{
+	class_item_config_array.push_back(data);
+
+	unsigned int pos = class_item_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_CLASS_ITEM_CONFIG, pos, &(class_item_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, NEW_GEAR_IDENTIFY_CONFIG& data)
+{
+	new_gear_identify_config_array.push_back(data);
+
+	unsigned int pos = new_gear_identify_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_NEW_GEAR_IDENTIFY_CONFIG, pos, &(new_gear_identify_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, NEW_GEAR_LIST_CONFIG& data)
+{
+	new_gear_list_config_array.push_back(data);
+
+	unsigned int pos = new_gear_list_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_NEW_GEAR_LIST_CONFIG, pos, &(new_gear_list_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, INSTANCE_INTERCHANGE_CONFIG& data)
+{
+	instance_interchange_config_array.push_back(data);
+
+	unsigned int pos = instance_interchange_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_INSTANCE_INTERCHANGE_CONFIG, pos, &(instance_interchange_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, SPIRIT_STONE_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	spirit_stone_essence_array.push_back(data);
+
+	unsigned int pos = spirit_stone_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_SPIRIT_STONE_ESSENCE, pos, &(spirit_stone_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, VALUE_COST_CONFIG& data)
+{
+	value_cost_config_array.push_back(data);
+
+	unsigned int pos = value_cost_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_VALUE_COST_CONFIG, pos, &(value_cost_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, ANNIVERSARY_ITEM_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	anniversary_item_essence_array.push_back(data);
+
+	unsigned int pos = anniversary_item_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_ANNIVERSARY_ITEM_ESSENCE, pos, &(anniversary_item_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, SPIRIT_EXRACTION_CONFIG& data)
+{
+	spirit_exraction_config_array.push_back(data);
+
+	unsigned int pos = spirit_exraction_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_SPIRIT_EXRACTION_CONFIG, pos, &(spirit_exraction_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, NEW_DOTA_SKILL_CONFIG& data)
+{
+	new_dota_skill_config_array.push_back(data);
+
+	unsigned int pos = new_dota_skill_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_NEW_DOTA_SKILL_CONFIG, pos, &(new_dota_skill_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, ANOTHER_DOTA_SKILL_CONFIG& data)
+{
+	another_dota_skill_config_array.push_back(data);
+
+	unsigned int pos = another_dota_skill_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_ANOTHER_DOTA_SKILL_CONFIG, pos, &(another_dota_skill_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, EXTRA_DOTA_SKILL_CONFIG& data)
+{
+	extra_dota_skill_config_array.push_back(data);
+
+	unsigned int pos = extra_dota_skill_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_EXTRA_DOTA_SKILL_CONFIG, pos, &(extra_dota_skill_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, WARDOBE_FASHION_CONFIG& data)
+{
+	wardobe_fashion_config_array.push_back(data);
+
+	unsigned int pos = wardobe_fashion_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_WARDOBE_FASHION_CONFIG, pos, &(wardobe_fashion_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, NEW_DYE_CONFIG& data)
+{
+	new_dye_config_array.push_back(data);
+
+	unsigned int pos = new_dye_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_NEW_DYE_CONFIG, pos, &(new_dye_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, EMBROIDERY_CONFIG& data)
+{
+	embroidery_config_array.push_back(data);
+
+	unsigned int pos = embroidery_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_EMBROIDERY_CONFIG, pos, &(embroidery_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, MERGED_STAR_SOUL_LIMIT_CONFIG& data)
+{
+	merged_star_soul_limit_config_array.push_back(data);
+
+	unsigned int pos = merged_star_soul_limit_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_MERGED_STAR_SOUL_LIMIT_CONFIG, pos, &(merged_star_soul_limit_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, MERGED_STAR_SOUL_GROWTH_CONFIG& data)
+{
+	merged_star_soul_growth_config_array.push_back(data);
+
+	unsigned int pos = merged_star_soul_growth_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_MERGED_STAR_SOUL_GROWTH_CONFIG, pos, &(merged_star_soul_growth_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, MERGED_STAR_SOUL_SLOT_CONFIG& data)
+{
+	merged_star_soul_slot_config_array.push_back(data);
+
+	unsigned int pos = merged_star_soul_slot_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_MERGED_STAR_SOUL_SLOT_CONFIG, pos, &(merged_star_soul_slot_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, RUNE2013_MATERIAL_CONFIG& data)
+{
+	rune2013_material_config_array.push_back(data);
+
+	unsigned int pos = rune2013_material_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_RUNE2013_MATERIAL_CONFIG, pos, &(rune2013_material_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, NEW_VIP_CONFIG& data)
+{
+	new_vip_config_array.push_back(data);
+
+	unsigned int pos = new_vip_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_NEW_VIP_CONFIG, pos, &(new_vip_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, RUNE2013_CONSUMPTION_CONFIG& data)
+{
+	rune2013_consumption_config_array.push_back(data);
+
+	unsigned int pos = rune2013_consumption_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_RUNE2013_CONSUMPTION_CONFIG, pos, &(rune2013_consumption_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FORBID_DIVINE_SKILL_CONFIG& data)
+{
+	forbid_divine_skill_config_array.push_back(data);
+
+	unsigned int pos = forbid_divine_skill_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_FORBID_DIVINE_SKILL_CONFIG, pos, &(forbid_divine_skill_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, GIFT_LETTER_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	gift_letter_essence_array.push_back(data);
+
+	unsigned int pos = gift_letter_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_GIFT_LETTER_ESSENCE, pos, &(gift_letter_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, WARDOBE_WEAPON_CONFIG& data)
+{
+	wardobe_weapon_config_array.push_back(data);
+
+	unsigned int pos = wardobe_weapon_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_WARDOBE_WEAPON_CONFIG, pos, &(wardobe_weapon_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, WARDOBE_FOOTPRINT_CONFIG& data)
+{
+	wardobe_footprint_config_array.push_back(data);
+
+	unsigned int pos = wardobe_footprint_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_WARDOBE_FOOTPRINT_CONFIG, pos, &(wardobe_footprint_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FOOTPRINT_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	footprint_essence_array.push_back(data);
+
+	unsigned int pos = footprint_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_FOOTPRINT_ESSENCE, pos, &(footprint_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, FORTUNE_GIFT_PACK_ESSENCE& data)
+{
+	if (data.pile_num_max == 0)		data.pile_num_max = 1;
+	data.proc_type &= ~(1 << 7);
+
+	fortune_gift_pack_essence_array.push_back(data);
+
+	unsigned int pos = fortune_gift_pack_essence_array.size() - 1;
+	add_id_index(ID_SPACE_ESSENCE, id, DT_FORTUNE_GIFT_PACK_ESSENCE, pos, &(fortune_gift_pack_essence_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, CANTEEN_EVENT_CONFIG& data)
+{
+	canteen_event_config_array.push_back(data);
+
+	unsigned int pos = canteen_event_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_CANTEEN_EVENT_CONFIG, pos, &(canteen_event_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, RETURN_AWARD_CONFIG& data)
+{
+	return_award_config_array.push_back(data);
+
+	unsigned int pos = return_award_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_RETURN_AWARD_CONFIG, pos, &(return_award_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, MOBILE_PHONE_INFO_CONFIG& data)
+{
+	mobile_phone_info_config_array.push_back(data);
+
+	unsigned int pos = mobile_phone_info_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_MOBILE_PHONE_INFO_CONFIG, pos, &(mobile_phone_info_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, BEGINNER_ONLINE_REWARD_CONFIG& data)
+{
+	beginner_online_reward_config_array.push_back(data);
+
+	unsigned int pos = beginner_online_reward_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_BEGINNER_ONLINE_REWARD_CONFIG, pos, &(beginner_online_reward_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, MONTHLY_RETURN_AWARD_CONFIG& data)
+{
+	monthly_return_award_config_array.push_back(data);
+
+	unsigned int pos = monthly_return_award_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_MONTHLY_RETURN_AWARD_CONFIG, pos, &(monthly_return_award_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, INSTANT_TIER_CONFIG& data)
+{
+	instant_tier_config_array.push_back(data);
+
+	unsigned int pos = instant_tier_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_INSTANT_TIER_CONFIG, pos, &(instant_tier_config_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, PLOT_REWARD_CONFIG& data)
+{
+	plot_reward_config_array.push_back(data);
+
+	unsigned int pos = plot_reward_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_PLOT_REWARD_CONFIG, pos, &(plot_reward_config_array[0]));
+}
+
+// END NEW
 void elementdataman::add_id_index_essence(unsigned int id, DATA_TYPE type, unsigned int pos, void * start)
 {
 	LOCATION p;
@@ -3318,6 +4234,7 @@ for(i=0; i<arr.size(); i++)\
 	ADD_HASH_MAP(config, DT_TEAM_SEASON_AWARD_CONFIG, team_season_award_config_array);
 	ADD_HASH_MAP(config, DT_WEEK_CURRNCY_AWARD_CONFIG, week_currency_award_config_array);
 	ADD_HASH_MAP(essence, DT_COLORANT_ITEM_ESSENCE, colorant_item_essence_array);
+	ADD_HASH_MAP(essence, DT_COLORANT2_ITEM_ESSENCE, colorant2_item_essence_array);
 	ADD_HASH_MAP(essence, DT_INTERACTION_OBJECT_ESSENCE,interaction_object_essence_array);
 	ADD_HASH_MAP(config,  DT_INTERACTION_OBJECT_HOOK_CONFIG, interaction_object_hook_config_array);
 	ADD_HASH_MAP(config,  DT_COLORANT_CONFIG, colorant_config_array);
@@ -3371,6 +4288,90 @@ for(i=0; i<arr.size(); i++)\
 	ADD_HASH_MAP(config, DT_SOUL_EXCHANGE_CONFIG, soul_exchange_config_array);
 	ADD_HASH_MAP(config, DT_SOUL_DROP_CONFIG, soul_drop_config_array);
 	ADD_HASH_MAP(config, DT_DAILY_SIGN_CONFIG, daily_sign_config_array);
+	ADD_HASH_MAP(essence, DT_RED_PACKETS_ESSENCE, red_packets_essence_array);
+	ADD_HASH_MAP(essence, DT_FORBID_COMMON_SKILL_CONFIG, forbid_common_skill_config_array);
+	ADD_HASH_MAP(essence, DT_FORBID_GODEVIL_SKILL_CONFIG, forbid_godevil_skill_config_array);
+	ADD_HASH_MAP(essence, DT_FORCE_CD_SKILL_CONFIG, force_cd_skill_config_array);
+	ADD_HASH_MAP(essence, DT_TALENT_SCROLL_REFINE_ESSENCE, talent_scroll_refine_essence_array);
+	ADD_HASH_MAP(config, DT_FACTION_BASE_ACTIVITY_CONFIG, faction_base_activity_config_array);
+	ADD_HASH_MAP(essence, DT_AMULET_ESSENCE, amulet_essence_array);
+	ADD_HASH_MAP(config, DT_AMULET_CONFIG, amulet_config_array);
+	ADD_HASH_MAP(essence, DT_AMULET_STONE_ESSENCE, amulet_stone_essence_array);
+	ADD_HASH_MAP(config, DT_SPECIAL_VIP_CONFIG, special_vip_config_array);
+	ADD_HASH_MAP(config, DT_CHARGE_AWARD_CONFIG, charge_award_config_array);
+	ADD_HASH_MAP(essence, DT_NEW_TOWNSCROLL_ESSENCE, new_townscroll_essence_array);
+	ADD_HASH_MAP(config, DT_EQUIPMENT_RANDOMEXT_CONFIG, equipment_randomext_config_array);
+	ADD_HASH_MAP(config, DT_INDISCRIMINATION_BATTLE_CONFIG, indiscrimination_battle_config_array);
+	ADD_HASH_MAP(config, DT_GROUPRAID_EVALAWARD_CONFIG, groupraid_evalaward_config_array);
+	ADD_HASH_MAP(config, DT_EQUIPMENT_IDENTIFY_CONFIG, equipment_identify_config_array);
+	ADD_HASH_MAP(essence, DT_HEADFRAME_ESSENCE, headframe_essence_array);
+	ADD_HASH_MAP(config, DT_CONVERT_EQUIP_CONFIG, convert_equip_config_array);
+	ADD_HASH_MAP(config, DT_AUSPICIOUS_HALL_CONFIG, auspicious_hall_config_array);
+	ADD_HASH_MAP(config, DT_DIVINE_ACCESSORY_IMBUE_CONFIG, divine_accessory_imbue_config_array);
+	ADD_HASH_MAP(config, DT_LEVEL_UP_REWARD_CONFIG, level_up_reward_config_array);
+	ADD_HASH_MAP(essence, DT_NEW_BOX_ESSENCE, new_box_essence_array);
+	ADD_HASH_MAP(essence, DT_NEW_FASHION_PACK_ESSENCE, new_fashion_pack_essence_array);
+	ADD_HASH_MAP(config, DT_NEW_CRAFTING_CONFIG, new_crafting_config_array);
+	ADD_HASH_MAP(config, DT_FAIRYHOUSE_GENERAL_CONFIG, fairyhouse_general_config_array);
+	ADD_HASH_MAP(config, DT_FAIRYHOUSE_PROBABILITY_CONFIG, fairyhouse_probability_config_array);
+	ADD_HASH_MAP(config, DT_FAIRYHOUSE_BABY_TRAIT_CONFIG, fairyhouse_baby_trait_config_array);
+	ADD_HASH_MAP(config, DT_FAIRYHOUSE_PET_TRAIT_CONFIG, fairyhouse_pet_trait_config_array);
+	ADD_HASH_MAP(config, DT_FAIRYHOUSE_CHALLENGE_CONFIG, fairyhouse_challenge_config_array);
+	ADD_HASH_MAP(essence, DT_FAIRYHOUSE_BABY_GEAR_ESSENCE, fairyhouse_baby_gear_essence_array);
+	ADD_HASH_MAP(essence, DT_FAIRYHOUSE_PET_GEAR_ESSENCE, fairyhouse_pet_gear_essence_array);
+	ADD_HASH_MAP(essence, DT_FAIRYHOUSE_TRAIT_LEARN_ESSENCE, fairyhouse_trait_learn_essence_array);
+	ADD_HASH_MAP(essence, DT_PREPAID_BOOK_ESSENCE, prepaid_book_essence_array);
+	ADD_HASH_MAP(config, DT_TOKEN_BAG_CONFIG, token_bag_config_array);
+	ADD_HASH_MAP(essence, DT_TIMELIMIT_BEAD_ESSENCE, timelimit_bead_essence_array);
+	ADD_HASH_MAP(essence, DT_EXTRA_TIMELIMIT_BEAD_ESSENCE, extra_timelimit_bead_essence_array);
+	ADD_HASH_MAP(config, DT_CONSTELLATIONEXP_CONFIG, constellationexp_config_array);
+	ADD_HASH_MAP(config, DT_CONSTELLATION_SKILL_CONFIG, constellation_skill_config_array);
+	ADD_HASH_MAP(config, DT_CONSTELLATION_CONFIG, constellation_config_array);
+	ADD_HASH_MAP(essence, DT_CONSTELLATION_STARS_ESSENCE, constellation_stars_essence_array);
+	ADD_HASH_MAP(config, DT_CONSTELLATION_SKILL_RELATION_CONFIG, constellation_skill_relation_config_array);
+	ADD_HASH_MAP(config, DT_TALENT_SCROLL_TRIGGER_CONFIG, talent_scroll_trigger_config_array);
+	ADD_HASH_MAP(config, DT_EVENT_REWARD_SET_CONFIG, event_reward_set_config_array);
+	ADD_HASH_MAP(essence, DT_EXTRA_LOTTERY_ESSENCE, extra_lottery_essence_array);
+	ADD_HASH_MAP(config, DT_SKILL_SET_CONFIG, skill_set_config_array);
+	ADD_HASH_MAP(config, DT_GEAR_SCRIPTURE_CONFIG, gear_scripture_config_array);
+	ADD_HASH_MAP(essence, DT_FIREWORK_ARRAY_ESSENCE, firework_array_essence_array);
+	ADD_HASH_MAP(essence, DT_RESET_ITEM_ESSENCE, reset_item_essence_array);
+	ADD_HASH_MAP(config, DT_MARRIAGE_REWARD_CONFIG, marriage_reward_config_array);
+	ADD_HASH_MAP(config, DT_MYSTIC_ENHANCE_MATERIAL_CONFIG, mystic_enhance_material_config_array);
+	ADD_HASH_MAP(config, DT_LUCK_VALUE_CONFIG, luck_value_config_array);
+	ADD_HASH_MAP(config, DT_CLASS_ITEM_CONFIG, class_item_config_array);
+	ADD_HASH_MAP(config, DT_NEW_GEAR_IDENTIFY_CONFIG, new_gear_identify_config_array);
+	ADD_HASH_MAP(config, DT_NEW_GEAR_LIST_CONFIG, new_gear_list_config_array);
+	ADD_HASH_MAP(config, DT_INSTANCE_INTERCHANGE_CONFIG, instance_interchange_config_array);
+	ADD_HASH_MAP(essence, DT_SPIRIT_STONE_ESSENCE, spirit_stone_essence_array);
+	ADD_HASH_MAP(config, DT_VALUE_COST_CONFIG, value_cost_config_array);
+	ADD_HASH_MAP(essence, DT_ANNIVERSARY_ITEM_ESSENCE, anniversary_item_essence_array);
+	ADD_HASH_MAP(config, DT_SPIRIT_EXRACTION_CONFIG, spirit_exraction_config_array);
+	ADD_HASH_MAP(config, DT_NEW_DOTA_SKILL_CONFIG, new_dota_skill_config_array);
+	ADD_HASH_MAP(config, DT_ANOTHER_DOTA_SKILL_CONFIG, another_dota_skill_config_array);
+	ADD_HASH_MAP(config, DT_EXTRA_DOTA_SKILL_CONFIG, extra_dota_skill_config_array);
+	ADD_HASH_MAP(config, DT_WARDOBE_FASHION_CONFIG, wardobe_fashion_config_array);
+	ADD_HASH_MAP(config, DT_NEW_DYE_CONFIG, new_dye_config_array);
+	ADD_HASH_MAP(config, DT_EMBROIDERY_CONFIG, embroidery_config_array);
+	ADD_HASH_MAP(config, DT_MERGED_STAR_SOUL_LIMIT_CONFIG, merged_star_soul_limit_config_array);
+	ADD_HASH_MAP(config, DT_MERGED_STAR_SOUL_GROWTH_CONFIG, merged_star_soul_growth_config_array);
+	ADD_HASH_MAP(config, DT_MERGED_STAR_SOUL_SLOT_CONFIG, merged_star_soul_slot_config_array);
+	ADD_HASH_MAP(config, DT_RUNE2013_MATERIAL_CONFIG, rune2013_material_config_array);
+	ADD_HASH_MAP(config, DT_NEW_VIP_CONFIG, new_vip_config_array);
+	ADD_HASH_MAP(config, DT_RUNE2013_CONSUMPTION_CONFIG, rune2013_consumption_config_array);
+	ADD_HASH_MAP(config, DT_FORBID_DIVINE_SKILL_CONFIG, forbid_divine_skill_config_array);
+	ADD_HASH_MAP(essence, DT_GIFT_LETTER_ESSENCE, gift_letter_essence_array);
+	ADD_HASH_MAP(config, DT_WARDOBE_WEAPON_CONFIG, wardobe_weapon_config_array);
+	ADD_HASH_MAP(config, DT_WARDOBE_FOOTPRINT_CONFIG, wardobe_footprint_config_array);
+	ADD_HASH_MAP(essence, DT_FOOTPRINT_ESSENCE, footprint_essence_array);
+	ADD_HASH_MAP(essence, DT_FORTUNE_GIFT_PACK_ESSENCE, fortune_gift_pack_essence_array);
+	ADD_HASH_MAP(config, DT_CANTEEN_EVENT_CONFIG, canteen_event_config_array);
+	ADD_HASH_MAP(config, DT_RETURN_AWARD_CONFIG, return_award_config_array);
+	ADD_HASH_MAP(config, DT_MOBILE_PHONE_INFO_CONFIG, mobile_phone_info_config_array);
+	ADD_HASH_MAP(config, DT_BEGINNER_ONLINE_REWARD_CONFIG, beginner_online_reward_config_array);
+	ADD_HASH_MAP(config, DT_MONTHLY_RETURN_AWARD_CONFIG, monthly_return_award_config_array);
+	ADD_HASH_MAP(config, DT_INSTANT_TIER_CONFIG, instant_tier_config_array);
+	ADD_HASH_MAP(config, DT_PLOT_REWARD_CONFIG, plot_reward_config_array);
 #undef ADD_HASH_MAP
 }
 
@@ -3618,6 +4619,7 @@ int elementdataman::save_data(const char * pathname)
 	team_season_award_config_array.save(file);
 	week_currency_award_config_array.save(file);
 	colorant_item_essence_array.save(file);
+	colorant2_item_essence_array.save(file);
 	interaction_object_essence_array.save(file);
 	interaction_object_hook_config_array.save(file);
 	colorant_config_array.save(file);
@@ -3919,6 +4921,7 @@ int elementdataman::load_data(const char * pathname)
 	LOAD_ARRAY(team_season_award_config_array)
 	LOAD_ARRAY(week_currency_award_config_array)
 	LOAD_ARRAY(colorant_item_essence_array)
+	LOAD_ARRAY(colorant2_item_essence_array)
 	LOAD_ARRAY(interaction_object_essence_array)
 	LOAD_ARRAY(interaction_object_hook_config_array)
 	LOAD_ARRAY(colorant_config_array)
@@ -3973,6 +4976,94 @@ int elementdataman::load_data(const char * pathname)
 	LOAD_ARRAY(soul_exchange_config_array)
 	LOAD_ARRAY(soul_drop_config_array)
 	LOAD_ARRAY(daily_sign_config_array)
+	LOAD_ARRAY(red_packets_essence_array)
+	LOAD_ARRAY(forbid_common_skill_config_array)
+	LOAD_ARRAY(forbid_godevil_skill_config_array)
+	LOAD_ARRAY(force_cd_skill_config_array)
+	LOAD_ARRAY(talent_scroll_refine_essence_array);
+	LOAD_ARRAY(faction_base_activity_config_array);
+	LOAD_ARRAY(amulet_essence_array);
+	LOAD_ARRAY(amulet_config_array);
+	LOAD_ARRAY(amulet_stone_essence_array);
+	LOAD_ARRAY(special_vip_config_array);
+	LOAD_ARRAY(charge_award_config_array);
+	LOAD_ARRAY(new_townscroll_essence_array);
+	LOAD_ARRAY(equipment_randomext_config_array);
+	LOAD_ARRAY(indiscrimination_battle_config_array);
+	LOAD_ARRAY(groupraid_evalaward_config_array);
+	LOAD_ARRAY(equipment_identify_config_array);
+	LOAD_ARRAY(headframe_essence_array);
+	LOAD_ARRAY(convert_equip_config_array);
+	LOAD_ARRAY(auspicious_hall_config_array);
+	LOAD_ARRAY(divine_accessory_imbue_config_array);
+	LOAD_ARRAY(level_up_reward_config_array);
+	LOAD_ARRAY(new_box_essence_array);
+	LOAD_ARRAY(new_fashion_pack_essence_array);
+	LOAD_ARRAY(new_crafting_config_array);
+	LOAD_ARRAY(fairyhouse_general_config_array);
+	LOAD_ARRAY(fairyhouse_probability_config_array);
+	LOAD_ARRAY(fairyhouse_baby_trait_config_array);
+	LOAD_ARRAY(fairyhouse_pet_trait_config_array);
+	LOAD_ARRAY(fairyhouse_challenge_config_array);
+	LOAD_ARRAY(fairyhouse_baby_gear_essence_array);
+	LOAD_ARRAY(fairyhouse_pet_gear_essence_array);
+	LOAD_ARRAY(fairyhouse_trait_learn_essence_array);
+	LOAD_ARRAY(prepaid_book_essence_array);
+	LOAD_ARRAY(token_bag_config_array);
+	LOAD_ARRAY(timelimit_bead_essence_array);
+	LOAD_ARRAY(extra_timelimit_bead_essence_array);
+	LOAD_ARRAY(constellationexp_config_array);
+	LOAD_ARRAY(constellation_skill_config_array);
+	LOAD_ARRAY(constellation_config_array);
+	LOAD_ARRAY(constellation_stars_essence_array);
+	LOAD_ARRAY(constellation_skill_relation_config_array);
+	LOAD_ARRAY(talent_scroll_trigger_config_array);
+	LOAD_ARRAY(event_reward_set_config_array);
+	LOAD_ARRAY(extra_lottery_essence_array);
+	LOAD_ARRAY(skill_set_config_array);
+	LOAD_ARRAY(gear_scripture_config_array);
+	LOAD_ARRAY(firework_array_essence_array);
+	LOAD_ARRAY(reset_item_essence_array);
+	LOAD_ARRAY(marriage_reward_config_array);
+	LOAD_ARRAY(mystic_enhance_material_config_array);
+	LOAD_ARRAY(luck_value_config_array);
+	LOAD_ARRAY(class_item_config_array);
+	LOAD_ARRAY(new_gear_identify_config_array);
+	LOAD_ARRAY(new_gear_list_config_array);
+	LOAD_ARRAY(instance_interchange_config_array);
+	LOAD_ARRAY(spirit_stone_essence_array);
+	LOAD_ARRAY(value_cost_config_array);
+	LOAD_ARRAY(anniversary_item_essence_array);
+	LOAD_ARRAY(spirit_exraction_config_array);
+	LOAD_ARRAY(new_dota_skill_config_array);
+	LOAD_ARRAY(another_dota_skill_config_array);
+	LOAD_ARRAY(extra_dota_skill_config_array);
+	LOAD_ARRAY(wardobe_fashion_config_array);
+	LOAD_ARRAY(new_dye_config_array);
+	LOAD_ARRAY(embroidery_config_array);
+	LOAD_ARRAY(merged_star_soul_limit_config_array);
+	LOAD_ARRAY(merged_star_soul_growth_config_array);
+	LOAD_ARRAY(merged_star_soul_slot_config_array);
+
+	md5pos[4] = ftell(file);
+	fseek(file, 8, SEEK_CUR);
+
+	LOAD_ARRAY(rune2013_material_config_array);
+	LOAD_ARRAY(new_vip_config_array);
+	LOAD_ARRAY(rune2013_consumption_config_array);
+	LOAD_ARRAY(forbid_divine_skill_config_array);
+	LOAD_ARRAY(gift_letter_essence_array);
+	LOAD_ARRAY(wardobe_weapon_config_array);
+	LOAD_ARRAY(wardobe_footprint_config_array);
+	LOAD_ARRAY(footprint_essence_array);
+	LOAD_ARRAY(fortune_gift_pack_essence_array);
+	LOAD_ARRAY(canteen_event_config_array);
+	LOAD_ARRAY(return_award_config_array);
+	LOAD_ARRAY(mobile_phone_info_config_array);
+	LOAD_ARRAY(beginner_online_reward_config_array);
+	LOAD_ARRAY(monthly_return_award_config_array);
+	LOAD_ARRAY(instant_tier_config_array);
+	LOAD_ARRAY(plot_reward_config_array);
 
 	gs_log("load_data: loading talk_proc entries");
 	size_t sz = 0;

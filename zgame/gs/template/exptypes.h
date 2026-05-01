@@ -8,7 +8,7 @@
 #include <memory.h>
 #endif
 
-#define ELEMENTDATA_VERSION			0x100000b0
+#define ELEMENTDATA_VERSION			0x100000a5
 
 #define SPECIAL_ID_CONFIG_TEMPLID	7	// 689
 
@@ -180,135 +180,80 @@ struct EQUIPMENT_SUB_TYPE
 	namechar		name[32];					// װ��С�������
 };
 
-// װ����������
 struct EQUIPMENT_ESSENCE
 {
-	// ������Ϣ
-	unsigned int	id;							// װ��(����)ID
-	unsigned int	id_major_type;				// װ�������ID
-	unsigned int	id_sub_type;				// װ��С���ID
-	namechar		name[32];					// װ������, ���15������
-
-	unsigned int	equip_type;					// װ����𣬿��ܵ��� 0-������1-���ߣ�2-��Ʒ��3-ʱװ��4-���5-��������
-	unsigned int	equip_mask;					// �߼��Ͽ���װ���Ĳ�λ���ɲ�ͬ��λMask��ɣ�ʹ�õĲ�λ����Ϊ��
-												// EQUIP_MASK_WEAPON         = 0x0001,
-												// EQUIP_MASK_HEAD           = 0x0002,
-												// EQUIP_MASK_BODY           = 0x0004,
-												// EQUIP_MASK_FOOT           = 0x0008,
-												// EQUIP_MASK_NECK           = 0x0010,
-												// EQUIP_MASK_FINGER1        = 0x0020,
-												// EQUIP_MASK_FINGER2        = 0x0040,
-												// EQUIP_MASK_FASHION_EYE    = 0x0080,
-												// EQUIP_MASK_FASHION_NOSE   = 0x0100,
-												// EQUIP_MASK_FASHION_LIP    = 0x0200,
-												// EQUIP_MASK_FASHION_HEAD   = 0x0400,
-												// EQUIP_MASK_FASHION_BODY   = 0x0800,
-												// EQUIP_MASK_FASHION_LEG    = 0x1000,
-												// EQUIP_MASK_FASHION_FOOT   = 0x2000,
-												// EQUIP_MASK_FASHION_BACK   = 0x4000,
-												// EQUIP_MASK_WING			 = 0x8000,
-												// EQUIP_MASK_MAIN_TALISMAN	 = 0x10000,
-												// EQUIP_MASK_SUB_TALISMAN1	 = 0x20000,
-												// EQUIP_MASK_SUB_TALISMAN2	 = 0x40000,
-												
-	
-	int				file_model_male;			// ��ģ��·��
-	int				file_model_female;			// Ůģ��·��
-	
-	int				file_model_male_armor_xuanyuan;	//��ԯ��ñ��ģ��·������ϵ�� pathid ռλ�ã�Added 2012-07-24.
-	int				file_model_female_armor_xuanyuan;//��ԯ Ůñ��ģ��·������ϵ��pathid ռλ�ã�Added 2012-07-24.
-	int				file_model_big_male;		// ��������ģ��·��
-	int				file_model_big_female;		// ������Ůģ��·��
-	int				file_model_small_male;		// С������ģ��·��
-	int				file_model_small_female;	// С����Ůģ��·��
-	int				file_model_tiny_male;		// ΢������ģ��·��
-	int				file_model_tiny_female;		// ΢����Ůģ��·��
-	int				file_model_tetrapod_male;	// ����������ģ��·��
-	int				file_model_big_male_left;	// �����������ֱ�ģ��·�� ��Ҫ����̫�˫�ֲ�ͬ����Added 2011-08-09.
-	int				file_model_big_female_left;	// ������Ů���ֱ�ģ��·�� ��Ҫ����̫�˫�ֲ�ͬ����Added 2011-08-09.
-	int				file_model_back_male;		// ������ģ��·���� ��Ҫ����̫�/���㱳��ģ��Ч��Added 2011-08-09.
-	int				file_model_back_female;		// ����Ůģ��·���� ��Ҫ����̫�/���㱳��ģ��Ч��Added 2011-08-09.
-	int				file_model_female_taihao;	// ̫�Ůʱװ·���� ר������̫�Ůʱװ��ģ��·�� Added 2011-08-09.
-
-	// Added version 158
-	int				file_model_back_female_fash;		// Back_Female fashion model path
-	int				file_model_female_taihao_fash;		// Forta_Female_Fash model path
-	int				file_model_big_male_sword;			// Hydran_Male sword weapon model
-	int				file_model_big_female_sword;		// Hydran_Female sword weapon model
-	int				file_model_big_male_scythe;			// Hydran_Male scythe weapon model
-	int				file_model_big_female_scythe;		// Hydran_Female scythe weapon model
-	int				file_model_big_male_bow;			// Hydran_Male bow weapon model
-	int				file_model_big_female_bow;			// Hydran_Female bow weapon model
-	int				file_model_reserved1;				// reserved
-	int				file_model_reserved2;				// reserved
-	int				file_model_reserved3;				// reserved
-	int				file_model_reserved4;				// reserved
-	int				file_model_reserved5;				// reserved
-	int				file_model_reserved6;				// reserved
-	int				file_model_reserved7;				// reserved
-	int				file_model_reserved8;				// reserved
-	int				file_model_reserved9;				// reserved
-	int				file_model_reserved10;				// reserved
-	int				file_model_reserved11;				// reserved
-	int				file_model_reserved12;				// reserved
-	int				file_model_reserved13;				// reserved
-	int				file_model_reserved14;				// reserved
-	int				file_model_reserved15;				// reserved
-	int				file_model_reserved16;				// reserved
-	int				file_model_reserved17;				// reserved
-	int				file_model_reserved18;				// reserved
-	int				file_model_reserved19;				// reserved
-	int				file_model_reserved20;				// reserved
-	int				file_model_reserved21;				// reserved
-	int				file_model_reserved22;				// reserved
-	int				file_model_reserved23;				// reserved
-	int				file_model_reserved24;				// reserved
-	int				file_model_reserved25;				// reserved
-	int				file_model_reserved26;				// reserved
-
-	int				file_matter;				// ���ڵ��ϵ�ģ��·��
-	int				file_icon;					// ͼ��·��
-
-
-
-	unsigned int	equip_location;				// ģ�͸��ǲ�λ�����ܵ��У�0-����ʾ��1-ͷ����2-���£�3-���£�4-���´����£�
-												// 5-Ь�ӣ�6-�۾���7-���ӣ�8-���ӣ�9-���Σ�10-���
-	unsigned int	action_type;				// �����Ķ����������ͣ����ܵ���: 0-����, 1-�̱�, 2-�̷�, 3-ذ��, 4-����, 5-����
-
-	namechar		show_level[16];				// װ��Ʒ������
-	int				level;						// װ���ȼ�
+	unsigned int	id;
+	unsigned int	id_major_type;
+	unsigned int	id_sub_type;
+	namechar		name[32];
+	unsigned int	equip_type;
+	unsigned int	equip_mask;
+	int				file_model_male;
+	int				file_model_female;
+	int				file_model_male_armor_xuanyuan;
+	int				file_model_female_armor_xuanyuan;
+	int				file_model_big_male;
+	int				file_model_big_female;
+	int				file_model_small_male;
+	int				file_model_small_female;
+	int				file_model_tiny_male;
+	int				file_model_tiny_female;
+	int				file_model_tetrapod_male;
+	int				file_model_big_male_left;
+	int				file_model_big_female_left;
+	int				file_model_back_male;
+	int				file_model_back_female;
+	int				file_model_female_taihao;
+	int				file_model_back_female_fash;
+	int				file_model_female_taihao_fash;
+	int				file_model_big_male_sword;
+	int				file_model_big_female_sword;
+	int				file_model_big_male_scythe;
+	int				file_model_big_female_scythe;
+	int				file_model_big_male_bow;
+	int				file_model_big_female_bow;
+	int				file_model_reserved1;
+	int				file_model_reserved2;
+	int				file_model_reserved3;
+	int				file_model_reserved4;
+	int				file_model_reserved5;
+	int				file_model_reserved6;
+	int				file_model_reserved7;
+	int				file_model_reserved8;
+	int				file_model_reserved9;
+	int				file_model_reserved10;
+	int				file_model_reserved11;
+	int				file_model_reserved12;
+	int				file_matter;
+	int				file_icon;
+	unsigned int	equip_location;
+	unsigned int	action_type;
+	namechar		show_level[16];
+	int				level;
 	int				grade;
 	int				unknown_1;
 	int				unknown_2;
 	int				unknown_3;
-
-	UInt64			character_combo_id;			// ְҵ����, �ӵ�λ����λ�ĺ���Ϊ��0-����, 1-��ʿ, 2-��ʿ, 3-սʿ, 4-��ʿ, 5-��ʦ, 6-��ʦ, 7-����, 8-����ʿ, 9-�̿�, 10-��ʥ, 11-����, 12-��˾, 13-�ط�ʦ, 14-�ٻ�ʹ
-	UInt64			character_combo_id2;		// ְҵ���ƣ���չְҵID�������ӵ�ְҵ��Added 2011-07-14
-	UInt64			character_combo_id3;		// ְҵ���ƣ���չְҵID�������ӵ�ְҵ��Added 2011-07-14
+	UInt64			character_combo_id;
+	UInt64			character_combo_id2;
 	UInt64			char_lev_1;
-	UInt64			char_lev_1_2;				// תְҵʱ��ְҵ���ƣ���չְҵID�����ְҵ���ƣ�Added 2011-07-15. 
+	UInt64			char_lev_1_2;
 	UInt64			char_lev_2;
-	UInt64			char_lev_2_2;				// תְҵʱ��ְҵ���ƣ���չְҵID�����ְҵ���ƣ�Added 2011-07-15. 
+	UInt64			char_lev_2_2;
 	UInt64			char_lev_3;
-	UInt64			char_lev_3_2;				// תְҵʱ��ְҵ���ƣ���չְҵID�����ְҵ���ƣ�Added 2011-07-15.
-	unsigned int	require_gender;				// �Ա����ƣ�0-�У�1-Ů��2-��Ů����
-	int				require_level;				// �ȼ�����
-	unsigned int	sect_mask;					// ����Ҫ��
-	unsigned int	sect_mask_1;				// ����Ҫ��
-	unsigned int	sect_mask_2;				// ����Ҫ��
-	unsigned int	sect_mask_3;				// ����Ҫ��
-	int				require_race;				// �������ƣ�0-���壬1-���壬 2-������
-	int				require_level2;				// ����ȼ�����
-	int				renascence_count;			// ת������Ҫ��
-	unsigned int	god_devil_mask;				// ��ħ
-	unsigned int	nation_position_mask;		// ְλҪ��
-												// 0x0001 ����
-												// 0x0002 ����
-												// 0x0004 ����
-												// 0x0008 ��
-												// 0x0010 ����
-												// 0x0020 ����
-	int				title_require;				// �ƺ�
+	UInt64			char_lev_3_2;
+	unsigned int	require_gender;
+	int				require_level;
+	unsigned int	sect_mask;
+	unsigned int	sect_mask_1;
+	unsigned int	sect_mask_2;
+	unsigned int	sect_mask_3;
+	int				require_race;
+	int				require_level2;
+	int				renascence_count;
+	unsigned int	god_devil_mask;
+	unsigned int	nation_position_mask;
+	int				title_require;
 
 	struct
 	{
@@ -316,68 +261,42 @@ struct EQUIPMENT_ESSENCE
 		int num;
 	} require_repu[2];
 
-	
-	/*
-	0   Ĭ��ֵ����ʾû���������
-	10	�������
-	20	˫ȫ����
-	40	��ɽ��ʿ
-	70	�ĺ�����
-	100	�������
-	130	���Ϸ���
-	160	��������
-	190	�˻�����
-	230	����Ӣ��
-	270	ʮ������
-	310	��ʤ�罫
-	350	ǧ������
-	390	�����˻�
-	760	��������
-	*/
-		
-	int				require_territory;			// �������
-	// ��������
-	int				hp;							// ����
-	int				mp;							// ħ��
-	int				dp;							// ����
-	int				deity_power;				// ��ʥ��
-	int				min_dmg;					// ��С������
-	int				max_dmg;					// ��󹥻���
-	int				defence;					// ������
-	int				attack;						// ����
-	int				armor;						// ����
-	
-	float			attack_range;				// ��������
-
-	// ��Ǯ
-	int				price;						// �����
-	int				shop_price;					// ������
-
-	int				id_addon1;					// ��1�ָ������Ե�����ID
-	int				id_addon2;					// ��2�ָ������Ե�����ID
-	int				id_addon3;					// ��3�ָ������Ե�����ID
-	int				id_addon4;					// ��4�ָ������Ե�����ID
-	int				id_addon5;					// ��5�ָ������Ե�����ID
+	int				require_territory;
+	int				hp;
+	int				mp;
+	int				dp;
+	int				deity_power;
+	int				min_dmg;
+	int				max_dmg;
+	int				defence;
+	int				attack;
+	int				armor;
+	float			attack_range;
+	int				price;
+	int				shop_price;
+	int				id_addon1;
+	int				id_addon2;
+	int				id_addon3;
+	int				id_addon4;
+	int				id_addon5;
 	int				id_addon6;
 	int				id_addon7;
 	int				id_addon8;
 	int				id_addon9;
 	int				id_addon10;
 	int				id_addon11;
+	int				fee_estone;
+	int				fee_install_pstone;
+	int				fee_uninstall_pstone;
+	int				fee_install_sstone;
+	int				fee_uninstall_sstone;
+	unsigned int	id_estone;
+	int				ehanced_value[20];
 
-	int				fee_estone;					// ����ǿ��������
-	int				fee_install_pstone;			// ����׷��������
-	int				fee_uninstall_pstone;		// ���β�ж׷��ʯ������
-	int				fee_install_sstone;			// ���Ӽ���������
-	int				fee_uninstall_sstone;		// ���β�ж����ʯ������
-
-	unsigned int	id_estone;					// ���õ�ǿ��ʯ
-	int				ehanced_value[20];			// 1~20��ǿ�������ֵ
-
-	struct 
+	struct
 	{
 		int			level;
-		
+
 		struct
 		{
 			int		id;
@@ -386,41 +305,29 @@ struct EQUIPMENT_ESSENCE
 
 	} hidden_prop[2];
 
-	int			blood_sacrifice;			// �Ƿ�����Ѫ�� 0��ʾ������
-	int			can_punching;				// �Ƿ�������� 0��ʾ������
-	int			color;						// �Ƿ�����Ⱦɫ 0��ʾ������
+	int			blood_sacrifice;
+	int			can_punching;
+	int			color;
+	int			fixed_color;
+	int			dyed;
+	int			soul_level;
 
-	// Added version 158
-	int			fixed_color;				// Dyed_Fixed_Color
-	int			dyed;						// Dyed
-
-	int				soul_level;					// ���Եȼ� 
-	//  ������������
-	struct  
+	struct
 	{
-		int level;		// �����ȼ�
-		int addon;		// ��������
-	}hidden_addon[3];
+		int level;
+		int addon;
+	} hidden_addon[3];
 
-	int				gem_slot_identify;		//����Ʒ�Ƿ��ܽ��б�ʯ��ۼ����� 0��ʾ���������༭����Ե�ʶ�ʹ��int
-	
+	int				gem_slot_identify;
 	int				unknown_4;
 	int				unknown_5;
 	int				unknown_6;
 	int				unknown_7;
-	int				unknown_8;
-
-	// �ѵ���Ϣ
-	int				pile_num_max;				// �ѵ�����
-
-	// ������ʽ
-	unsigned int	proc_type;					// �����¼��ַ�ʽ�����: ����ʱ�Ƿ���䣬�Ƿ�������ڵ��ϣ��Ƿ��������NPC�����������Ʒ���Ƿ������Ҽ佻�ף��Ƿ����������Ʒ���Ƿ�װ����󶨣�������ѡ�У�����GUID
-
+	int				pile_num_max;
+	unsigned int	proc_type;
 	int				unknown_9;
 	int				unknown_10;
 	int				unknown_11;
-	int				unknown_12;
-	int				unknown_13;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -479,6 +386,11 @@ struct TALISMAN_MAINPART_ESSENCE
 	int				fly_mode;					// ����ģʽ
 	float			fly_energy_drop_speed;
 	int				fly_exp_added;				// ÿ30�����ӷɽ�����ֵ
+
+	int auto_bloodsmelt_required_amount;
+	int bloodsmelt_item;
+	int auxilary_item;
+	int auxilary_item_amount;
 
 	// ��Ǯ
 	int				price;						// �����
@@ -950,6 +862,9 @@ struct SKILLMATTER_ESSENCE
 	unsigned int	cast_skill;					// 0ֻ������ʹ�ã�1�ɶԷ�����Ŀ��ʹ��
 	unsigned int	god_devil_mask;				// ��ħ �컯������/��/ħ/��ѡ1/2/3
 
+	int unknown_1;
+	int unknown_2;
+
 	int				price;						// �����
 	int				shop_price;					// ������
 
@@ -1177,20 +1092,6 @@ struct REVIVESCROLL_ESSENCE
 
 	float			use_time;					// ʹ��ʱ�䣨�룩
 	int				cool_time;					// ��ȴʱ�䣨���룩
-
-	int unknown_1;
-	int unknown_2;
-	int unknown_3;
-	int unknown_4;
-	int unknown_5;
-	int unknown_6;
-	int unknown_7;
-	int unknown_8;
-	int unknown_9;
-	int unknown_10;
-	int unknown_11;
-	int unknown_12;
-
 	int				price;						// �����
 	int				shop_price;					// ������
 
@@ -1938,160 +1839,136 @@ struct MONSTER_TYPE
 // ���ﱾ������
 struct MONSTER_ESSENCE
 {
-	unsigned int	id;							// ����(����)ID
-	unsigned int	id_type;					// ���ID
-	namechar		name[32];					// ����, ���15������
+	unsigned int	id;
+	unsigned int	id_type;
+	namechar		name[32];
 
-	namechar		prop[16];					// ��������, ���16������
-	namechar		desc[16];					// ��������, ���16������
-	namechar		monster_desc[16];			// ������������ʾ�ڹ�������֮�£����16������
+	namechar		prop[16];
+	namechar		desc[16];
+	namechar		monster_desc[16];
 
-	unsigned int	faction;					// �Լ�������Ӫ��ϴ���
-	unsigned int	enemy_faction;				// �ж���Ӫ��ϴ���
-	unsigned int	monster_faction;			// �������ϸ��ϵ����
+	unsigned int	faction;
+	unsigned int	enemy_faction;
+	unsigned int	monster_faction;
 
-	int				file_model;					// ģ��·����
-	int				head_icon;					// ͷ��
-	int				big_icon;					// ����ͼ������ͼ�꣬������ſ��������Added 2012-04-23.
+	int				file_model;
+	int				head_icon;
+	int				big_icon;
+
+	float			size;
+
+	unsigned int	name_color;
+
+	unsigned int	id_strategy;
+
+
+	unsigned int	select_strategy;
+	unsigned int    air_prop;
+	unsigned int	show_damage;
+	unsigned int	resist_valid;
+
+	int				level;
+	int				show_level;
+	unsigned int	is_boss;
+	unsigned int	killed_exp;
+	unsigned int	killed_drop;
+	int				is_drop_adjustby_skill;
+
+	unsigned int	immune_type;
+
 	int unknown_1;
+
+	float			sight_range;
+	float			attack_range;
+
+	unsigned int	aggressive_mode;
+	unsigned int	monster_faction_ask_help;
+	unsigned int	monster_faction_can_help;
+
+	float			aggro_range;
+	float			aggro_time;
+	float			dead_aggro_time;
+
+	unsigned int	patroll_mode;
+	unsigned int	stand_mode;
+
+	float			walk_speed;
+	float			run_speed;
+
 	int unknown_2;
-	
-	float			size;						// ��С
-
-	unsigned int	name_color;					// ������ɫ
-	
-	unsigned int	id_strategy;				// ���﹥������ID
-												// 0 ��ʾ�����ⲫ�����
-												// 1 ��ʾ�������������
-												// 2 ��ʾħ�������
-												// 3 ��ʾ�ⲫ��Զ�������
-												// 4 ������
-												// 5 ����������
-												// 6 ��׮��
-												// 7 ����ħ����
-
-	unsigned int	select_strategy;			// ���ﱻѡ�в���
-												// 0 ��������ѡ��
-												// Tab����ѡ��
-												// �κη�ʽ������ѡ��
-	unsigned int    air_prop;					// �Ƿ��ǿ��й� 0���� 1����
-	unsigned int	show_damage;				// �ͻ����Ƿ���ʾ�˺� 0���� 1: ��
-	unsigned int	resist_valid;				// Resist_Valid
-
-	int				level;						// ����ȼ�
-	int				show_level;					// ��ʾ�ȼ�
-	unsigned int	is_boss;					// �Ƿ�BOSS
 	int unknown_3;
-	unsigned int	killed_exp;					// ����ɱ���Ƿ���ʧ����
-	unsigned int	killed_drop;				// ����ɱ���Ƿ������Ʒ
-	int				is_drop_adjustby_skill;		// �����Ƿ��ܼ���Ӱ�� Ĭ��ֵΪ0����ʾ���䲻�ܼ��ܵ�Ӱ�죻1����ʾ������ܵ�����Ӱ��
-	
-	unsigned int	immune_type;				// �������ͣ�ΪMask��Ϸ�ʽ����λ�ĺ���ӵ͵�������Ϊ��
-												// ���߿־塢������ä�����߻��ˡ����߱����mp�����߼��ܷ����������߼��̶�ֵ����
-												// ����ѣ�Ρ��������������߻��������߳�Ĭ������˯�ߡ����߲��ơ����߽�ʳ�����߿���
-												// ���߳����˺������߳���������Ԫ���ɢ��������ħ�����߱������������ա�����Ѫ��
-												// ���߽��ͷ���%
-	int unknown_4;
 
-	float			sight_range;				// ��Ұ
-	float			attack_range;				// ��������
-	
-	unsigned int	aggressive_mode;			// ������ѡ��0 - ������1 - ����
-	unsigned int	monster_faction_ask_help;	// ����Щ��Ӫ�������ӹ�����ϸ��ϵ��ѡ��
-	unsigned int	monster_faction_can_help;	// ������Щ��Ӫ�������ӹ�����ϸ��ϵ��ѡ��
+	unsigned int	common_strategy;
 
-	float			aggro_range;				// ��޾���
-	float			aggro_time;					// ���ʱ��
-	float			dead_aggro_time;			// ����������ʱ��
+	unsigned int	after_death;
+	unsigned int	adjust_exp;
+	unsigned int	can_catch;
+	unsigned int	player_cannot_attack;
+	int				exp;
+	int 			money_average;
+	int				money_var;
+	int				hp;
+	int				hp_disp_lv;
+	int				mp;
+	int				dmg;
+	int				defense;
+	int				extra_damage;
+	int				extra_defence;
+	int				attack;
+	int				armor;
+	int				crit_rate;
+	int				crit_damage;
+	int				anti_stunt;
+	int				anti_weak;
+	int				anti_slow;
+	int				anti_silence;
+	int				anti_sleep;
+	int				anti_twist;
 
-	unsigned int	patroll_mode;				// Ѳ�߷�ʽ�����ܵ��У�����߶���...
-	unsigned int	stand_mode;					// վ����ʽ�����ܵ��У�����վ����˫��վ�������շ��е�
+	float			lvlup_exp;
+	float 			lvlup_money_average;
+	float			lvlup_money_var;
+	float			lvlup_hp;
+	float			lvlup_mp;
+	float			lvlup_dmg;
+	float			lvlup_defense;
+	float			lvlup_attack;
+	float			lvlup_armor;
+	float			lvlup_crit_rate;
+	float			lvlup_crit_damage;
+	float			lvlup_anti_stunt;
+	float			lvlup_anti_weak;
+	float			lvlup_anti_slow;
+	float			lvlup_anti_silence;
+	float			lvlup_anti_sleep;
+	float			lvlup_anti_twist;
 
-	float			walk_speed;					// �����ƶ��ٶ�(M/S)
-	float			run_speed;					// �����ƶ��ٶ�(M/S)
+	int				hp_gen1;
+	int				hp_gen2;
+	int				mp_gen1;
+	int				mp_gen2;
 
-	int unknown_5;
-	int unknown_6;
-	
-	unsigned int	common_strategy;			// �������
+	unsigned int	role_in_war;
 
-	unsigned int	after_death;				// ������������-0���Ա�-0x1������-0x2
-	unsigned int	adjust_exp;					// �����Ƿ��ܳͷ�ϵ��Ӱ��, Ĭ��Ϊ0������Ӱ�죬1Ϊ��Ӱ��
-	unsigned int	can_catch;					// �Ƿ���Բ�׽��Ĭ��0��ʾ���ɲ�׽��1-8��ʾ��׽���Ѷ�:
-												// �ӷǳ����ס����ס��Ƚ����ס��еȡ��ѡ��Ƚ��ѡ��ǳ��ѡ����ϼ���
-	unsigned int	player_cannot_attack;		// ��ҹ����Ƿ���Ч��:��Ч-0�� ��Ч-1								
-	int				exp;						// ��ʼ����
-	int 			money_average;				// ��ʼǮ����׼ֵ
-	int				money_var;					// ��ʼǮ������ֵ
-	int unknown_7;
-	int				hp;							// ��ʼ������
-	int				hp_disp_lv;					// Ѫ������
-	int				mp;							// ��ʼħ��
-	int				dmg;						// ��ʼ������
-	int				defense;					// ��ʼ������
-	int				extra_damage;				// �����˺�
-	int				extra_defence;				// �����˺�
-	int				attack;						// ��ʼ����
-	int				armor;						// ��ʼ����
-	int				crit_rate;					// ��ʼ����һ����(%)
-	int				crit_damage;				// ��ʼ����һ���˺�(%)
-	int				anti_stunt;					// ��ʼѣ�ο���
-	int				anti_weak;					// ��ʼ��������
-	int				anti_slow;					// ��ʼ��������
-	int				anti_silence;				// ��ʼ��Ĭ����
-	int				anti_sleep;					// ��ʼ˯�߿���
-	int				anti_twist;					// ��ʼ���ƿ���
 
-	float			lvlup_exp;					// ÿ��һ���������ľ���
-	float 			lvlup_money_average;		// ÿ��һ����������Ǯ����׼ֵ
-	float			lvlup_money_var;			// ÿ��һ����������Ǯ������ֵ
-	float			lvlup_hp;					// ÿ��һ����������������
-	float			lvlup_mp;					// ÿ��һ����������ħ��
-	float			lvlup_dmg;					// ÿ��һ���������Ĺ�����
-	float			lvlup_defense;				// ÿ��һ���������ķ�����
-	float			lvlup_attack;				// ÿ��һ��������������
-	float			lvlup_armor;				// ÿ��һ��������������
-	float			lvlup_crit_rate;			// ÿ��һ��������������һ����(%)
-	float			lvlup_crit_damage;			// ÿ��һ��������������һ���˺�(%)
-	float			lvlup_anti_stunt;			// ÿ��һ����������ѣ�ο���
-	float			lvlup_anti_weak;			// ÿ��һ������������������
-	float			lvlup_anti_slow;			// ÿ��һ���������Ļ�������
-	float			lvlup_anti_silence;			// ÿ��һ���������ĳ�Ĭ����
-	float			lvlup_anti_sleep;			// ÿ��һ����������˯�߿���
-	float			lvlup_anti_twist;			// ÿ��һ���������Ĳ��ƿ���
+	int				drop_times;
 
-	int				hp_gen1;					// ���ٻ�Ѫ�ٶ�
-	int				hp_gen2;					// ���ٻ�Ѫ�ٶ�
-	int				mp_gen1;					// ���ٻ�ħ�ٶ�
-	int				mp_gen2;					// ���ٻ�ħ�ٶ�
-
-	unsigned int	role_in_war;				// ��ս�������ݵĽ�ɫ
-												// 0 �ޣ�1 ���Ľ�����2 ������3 ������4 Ͷʯ����5 ���͵㣻6 ����㣻7 ����NPC��8 ռ���־��
-
-	int				drop_times;					// �������(1-10)
-
-	struct  
-	{
-		int		id_drop_table;						// ����� id
-		float	prop_drop_table;					// ������ĸ���
-	}drop_table[3];
-
-	// �����б�
 	struct
 	{
-		unsigned int	id_skill;				// ����ļ�������ID
-		int				level;					// ���ܵļ���
-	} skills[13];
+		int		id_drop_table;
+		float	prop_drop_table;
+	} drop_table[3];
 
-	float			dec_crit_rate;
-	float			dec_crit_dmg;
-	float			armor_prop;
-	float			attack_prop;
+	struct
+	{
+		unsigned int	id_skill;
+		int				level;
+	} skills[32];
 
-	unsigned int	tick_stratege;				// ��������Ƿ�ʼ��������ִ��
-	unsigned int	task_share;					// �ù����Ƿ����Ϊ���������ɱ�֣������󣬷��������¿ɹ���ɱ�� Added 2012-04-09.
-	unsigned int	item_drop_share;			// �ù��ﱻɱ�����Ƿ���������� Added 2012-04-09.
-	unsigned int	buff_area_id;				// ������ص�buff��������id
+	int unknown_4;
+	int unknown_5;
+	int unknown_6;
+	int unknown_7;
 	int unknown_8;
 	int unknown_9;
 	int unknown_10;
@@ -2108,6 +1985,17 @@ struct MONSTER_ESSENCE
 	int unknown_21;
 	int unknown_22;
 	int unknown_23;
+
+	float			dec_crit_rate;
+	float			dec_crit_dmg;
+	float			armor_prop;
+	float			attack_prop;
+
+	unsigned int	tick_stratege;
+	unsigned int	task_share;
+	unsigned int	item_drop_share;
+	unsigned int	buff_area_id;
+
 	int unknown_24;
 	int unknown_25;
 	int unknown_26;
@@ -2121,13 +2009,6 @@ struct MONSTER_ESSENCE
 	int unknown_34;
 	int unknown_35;
 	int unknown_36;
-	int unknown_37;
-	int unknown_38;
-	int unknown_39;
-	int unknown_40;
-	int unknown_41;
-	int unknown_42;
-	int unknown_43;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -2219,7 +2100,7 @@ struct NPC_TASK_IN_SERVICE
 	unsigned int	id;							// ����(����)ID
 	namechar		name[32];					// ����, ���15������	
 
-	unsigned int	id_tasks[512];				// ���Դ����������б�
+	unsigned int	id_tasks[256];				// ���Դ����������б�
 };
 
 // ����������Ʒ����
@@ -2267,7 +2148,7 @@ struct NPC_TRANSMIT_SERVICE
 		int unknown_3;
 		int unknown_4;
 		int			required_level;				// �ȼ�Ҫ��
-	} targets[25];
+	} targets[16];
 
 	unsigned int	id_dialog;					// �Ի�ID
 };
@@ -2421,104 +2302,105 @@ struct NPC_TYPE
 ///////////////////////////////////////////////////////////////////////////////////////
 struct NPC_ESSENCE
 {
-	unsigned int	id;							// NPC(����)ID
-	namechar		name[32];					// ����, ���15������
+	unsigned int	id;							// NPC(类型)ID
+	namechar		name[32];					// 名称, 最多15个汉字
 
-	unsigned int	id_type;					// NPC ����, ��NPC_TYPE��ѡȡ
-	
-	namechar		desc[16];					// NPC��������ʾ��NPC����֮�£����16������
+	unsigned int	id_type;					// NPC 类型, 从NPC_TYPE中选取
 
-	float			refresh_time;				// ˢ��ʱ��
+	namechar		desc[16];					// NPC描述，显示在NPC名字之下，最多16个汉字
 
-	unsigned int	attack_rule;				// �Ƿ񱻹��� 0-���ɱ�������1-�ɱ����������������2-�ɱ��������������
-	
-	int				file_model;					// ģ��·����
-	int				head_icon;					// ͷ��
+	float			refresh_time;				// 刷新时间
 
-	unsigned int	id_src_monster;				// �����������ԵĹ���ID������ʱ��ʾʹ�øù��������滻��NPC������
+	unsigned int	attack_rule;				// 是否被攻击 0-不可被攻击，1-可被攻击攻击变粉名，2-可被攻击攻击变红名
 
-	namechar		hello_msg[256];				// �����ף���һ�������ı�
+	int				file_model;					// 模型路径名
+	int				head_icon;					// 头像
 
-	unsigned int	id_to_discover;				// ���ֺʹ��ͷ������վID
+	unsigned int	id_src_monster;				// 基本属性来自的怪物ID，非零时表示使用该怪物属性替换本NPC的属性
 
-	unsigned int	domain_related;				// �Ƿ�������� 0-��1-��
-	unsigned int	guard_npc;					// �Ƿ�����NPC  0-��1-��
-	unsigned int	is_vehicle;					// �Ƿ�ͨ���� 0-��1-��
+	namechar		hello_msg[256];				// 开场白，是一个多行文本
 
-	unsigned int	war_role_config;			// ��ս��ɫ���Ա�id
+	unsigned int	id_to_discover;				// 发现和传送服务的驿站ID
 
-	// �����б�
-	unsigned int	id_talk_service;			// ��̸�ķ���ID
-	unsigned int	id_sell_service;			// ������Ʒ�ķ���ID
-	unsigned int	id_gshop_majortype;			// �ٱ�����۵Ĵ����ID
-	unsigned int	id_buy_service;				// �չ���Ʒ�ķ���ID
-	unsigned int	id_task_out_service;		// ������صķ���ID: �����������
-	unsigned int	id_task_in_service;			// ������صķ���ID: ��֤����������
-	unsigned int	id_task_matter_service;		// ������صķ���ID: ����������Ʒ����
-	unsigned int	id_heal_service;			// ���Ƶķ���ID
-	unsigned int	id_transmit_service;		// ���͵ķ���ID
-	unsigned int	id_proxy_service;			// ���۵ķ���ID
-	unsigned int	id_storage_service;			// �ֿ�ķ���ID
-	unsigned int	id_war_towerbuild_service;	// ��ս��������ķ���ID
-	unsigned int	id_resetprop_service;		// ϴ�����ID
-	unsigned int	id_equipbind_service;		// װ���󶨷���
-	unsigned int	id_equipdestroy_service;	// װ�����ٷ���
-	unsigned int	id_equipundestroy_service;	// װ��������ٷ���
-	unsigned int	id_war_archer_service;		// ��ս���򹭼��ַ���
-	unsigned int	id_item_trade_service[4];		// ���ｻ�׷���
-	unsigned int	id_equip_soul_service;		// �����ںϷ���ID��0��ʾ�������˷���
-	unsigned int	id_consign_service;			// ��Ʒ���۷���ID
-	unsigned int	id_reputation_shop_service;	// �����̵�ID
-	int				id_trans_dest_service;		// ���洫�ͷ���
-	int				id_open_trans;				// ��ĳ����������
-	unsigned int	combined_services;			// �򵥷�����ϣ����е�ÿһλ����һ������Ҫ�����ķ��񣬿��ܵ��У�
-												//		0��ѱ������1�����pk���ɸ�����2����Ʒ������3����վ���ַ���4�����ɷ���5���޸�������Ʒ��6���ʼķ���7����������8��˫������򿨷���
-												//		9���������ﵰ����10����ԭ���ﵰ����11����ս��������12���뿪ս������13���㿨���ۣ�14�����ɲֿ����
-												//		15��������ط���16����ս��������17��ս���볡����18����ս�ճ��������19������ѱ����20�����������
-												//		21������ϳɣ�22����������; 23: ��Ѫ������24��������Ƕ��25�����ǲ����26���ָ�������27��װ����⣻ 28������ս����������
-												//		29���ν�ս���������� 30���������������� 31�������ƹ����
+	unsigned int	domain_related;				// 是否领土相关 0-否，1-是
+	unsigned int	guard_npc;					// 是否卫兵NPC  0-否，1-是
+	unsigned int	is_vehicle;					// 是否交通工具 0-否，1-是
 
-	unsigned int	combined_services2;			// �򵥷�����ϣ����е�ÿһλ����һ������Ҫ�����ķ���
-												// 0�������޸ķ���1������װ��ǿ��; 2:���pk���������� 3�����pk��ս�߱��� 4:����ս���������� 5������������ط���
-												// 6�������������ָ�����7������ս��ս��8:��������սս�� 9������ս�������������ֽ�����10:���̳��ܷ��� 11:�޸��������Ʒ�����⣩ 
-												// 12: װ����������; 13: ���͵��������; 14: �ӿ�����ط���; 15: ������ս�ռ����; 16: ��ʯ��ۼ�������; 17: ��ʯ�����������;
-												// 18: ��ʯ��۶��Ʒ���; 19: ��ʯ��Ƕ����; 20: ��ʯ�������; 21: ��ʯ��Ʒ����; 22: ��ʯ��������; 23: ��ʯ��ȡ����; 24: ��ʯ��������;
-												// 25: ���С��pk��ӱ���; 26: ���С��pk���ӱ���; 27: ���С��pk���߱���; 28: ������ط���; 29: ��������������ʾ; 30: ��������
-												// 31: �������
+	unsigned int	war_role_config;			// 城战角色属性表id
 
-	unsigned int	combined_services3;			// �򵥷�����ϣ����е�ÿһλ����һ������Ҫ�����ķ���
-												// 0�����ɸ�����1������������2�����������ںϣ�3������������Ƕ��4�����ñ𹴣�5��װ��������ף�6��������Ƕ��7������ժ����8�����ñ�
-												// 9�����ñ𹴣�10������������� 11:����������� 12:��ս���� 13:�������Ȳ�ѯ 14:�������� 15:�������ܿ������� 16:����������������
-												// 17:��ˮϯս������ 18:���ɻ��� 19��������� 20: �ֱ�ר�� 21:����Ԫ���̳�
+	// 服务列表
+	unsigned int	id_talk_service;			// 交谈的服务ID
+	unsigned int	id_sell_service;			// 出售商品的服务ID
+	unsigned int	id_gshop_majortype;			// 百宝阁出售的大类号ID
+	unsigned int	id_buy_service;				// 收购商品的服务ID
+	unsigned int	id_task_out_service;		// 任务相关的服务ID: 发放任务服务
+	unsigned int	id_task_in_service;			// 任务相关的服务ID: 验证完成任务服务
+	unsigned int	id_task_matter_service;		// 任务相关的服务ID: 发放任务物品服务
+	unsigned int	id_heal_service;			// 治疗的服务ID
+	unsigned int	id_transmit_service;		// 传送的服务ID
+	unsigned int	id_proxy_service;			// 代售的服务ID
+	unsigned int	id_storage_service;			// 仓库的服务ID
+	unsigned int	id_war_towerbuild_service;	// 城战炮塔建造的服务ID
+	unsigned int	id_resetprop_service;		// 洗点服务ID
+	unsigned int	id_equipbind_service;		// 装备绑定服务
+	unsigned int	id_equipdestroy_service;	// 装备销毁服务
+	unsigned int	id_equipundestroy_service;	// 装备解除销毁服务
+	unsigned int	id_war_archer_service;		// 城战购买弓箭手服务
+	unsigned int	id_item_trade_service[4];		// 物物交易服务
+	unsigned int	id_equip_soul_service;		// 器魄融合服务ID：0表示不开启此服务
+	unsigned int	id_consign_service;			// 商品寄售服务ID
+	unsigned int	id_reputation_shop_service;	// 声望商店ID
+	int				id_trans_dest_service;		// 界面传送服务
+	int				id_open_trans;				// 打开某个传送区域
+	unsigned int id_item_trade2_service_1;
+	unsigned int id_item_trade2_service_2;
+	unsigned int	combined_services;			// 简单服务组合：其中的每一位代表一个不需要参数的服务，可能的有：
+	//		0：驯化服务；1：跨服pk隐仙阁报名；2：物品锁定；3：驿站发现服务；4：帮派服务；5：修复破损物品；6：邮寄服务；7：拍卖服务；8：双倍经验打卡服务；
+	//		9：孵化宠物蛋服务；10：还原宠物蛋服务；11：城战管理服务；12：离开战场服务；13：点卡寄售；14：帮派仓库服务；
+	//		15：法宝相关服务；16：城战报名服务；17：战场入场服务；18：城战日常建设服务；19：宠物驯养；20：宠物放生；
+	//		21：宠物合成；22：宠物命名; 23: 滴血认主；24：器魄镶嵌；25：器魄拆除；26：恢复魄力；27：装备拆解； 28：飞升战场管理服务
+	//		29：宋金战场报名服务 30：竞技场报名服务 31：线上推广服务
 
-	unsigned int	combined_services4;			// Special_Mode_2
-	unsigned int	combined_services5;			// Special_Mode_3
-	unsigned int	combined_services6;			// Special_Mode_4
+	unsigned int	combined_services2;			// 简单服务组合：其中的每一位代表一个不需要参数的服务：
+	// 0：形象修改服务；1：宠物装备强化; 2:跨服pk逸龙轩报名 3：跨服pk观战者报名 4:剧情战场报名服务 5：变身道具相关服务
+	// 6：变身卡灵力恢复服务；7：领土战宣战；8:进入领土战战场 9：领土战奖励（包括各种奖励）10:星盘充能服务 11:修复破碎的物品（特殊） 
+	// 12: 装备升级服务; 13: 传送到跨服服务; 14: 从跨服传回服务; 15: 进入挑战空间服务; 16: 宝石插槽鉴定服务; 17: 宝石插槽重铸服务;
+	// 18: 宝石插槽定制服务; 19: 宝石镶嵌服务; 20: 宝石拆除服务; 21: 宝石升品服务; 22: 宝石精炼服务; 23: 宝石萃取服务; 24: 宝石熔炼服务;
+	// 25: 跨服小队pk红队报名; 26: 跨服小队pk蓝队报名; 27: 跨服小队pk记者报名; 28: 副本相关服务; 29: 爬塔副本属性显示; 30: 改名服务
+	// 31: 家族改名
 
-	// ϴPKֵ����
-	unsigned int	has_pkvalue_service;		// �Ƿ��ṩϴPKֵ����
-	int				fee_per_pkvalue;			// ÿϴһ��PKֵ����Ļ���
+	unsigned int	combined_services3;			// 简单服务组合：其中的每一位代表一个不需要参数的服务：
+	// 0：帮派改名；1：法宝飞升；2：法宝技能融合；3：法宝技能镶嵌；4：无用别勾；5：装备星座打孔；6：星座镶嵌；7：星座摘除；8：无用别勾
+	// 9：无用别勾；10：跨服报名传回 11:跨服报名传送 12:国战报名 13:飞升进度查询 14:首饰升级 15:生产技能快速生产 16:金身法身快速制作
+	// 17:流水席战场报名 18:帮派基地 19：宠物飞升 20: 灾变专用 21:帮派元宝商城
 
-	bool			service_install;			// �Ƿ��ṩ��Ƕ����
-	bool			service_uninstall;			// �Ƿ��ṩ��ж����
-	bool			service_temp1;				// ռλ
-	bool			service_temp2;				// ռλ
+	unsigned int	combined_services4;
 
-	unsigned int	id_mine;					// �����Ŀ�
-	unsigned int	id_interaction_object;		// �ɽ�������
-	unsigned int	collision_in_server;		// �Ƿ������ײ
-	float			vehicle_min_length;			// ��ͨ���ߵ���С����
-	float			vehicle_min_width;			// ��ͨ���ߵ���С����
-	float			vehicle_min_height;			// ��ͨ���ߵ���С�߶�
+// 洗PK值服务
+	unsigned int	has_pkvalue_service;		// 是否提供洗PK值服务
+	int				fee_per_pkvalue;			// 每洗一点PK值所需的花费
+
+	bool			service_install;			// 是否提供镶嵌服务
+	bool			service_uninstall;			// 是否提供拆卸服务
+	bool			service_temp1;				// 占位
+	bool			service_temp2;				// 占位
+
+	unsigned int	id_mine;					// 附带的矿
+	unsigned int	id_interaction_object;		// 可交互物体
+	unsigned int	collision_in_server;		// 是否参与碰撞
+	float			vehicle_min_length;			// 交通工具的最小长度
+	float			vehicle_min_width;			// 交通工具的最小宽度
+	float			vehicle_min_height;			// 交通工具的最小高度
 	float			vehicle_max_length;
 	float			vehicle_max_width;
 	float			vehicle_max_height;
-	int				id_territory;				// ��������id������սר�ã�Ĭ��Ϊ0��ʾ������ս����npc
-	int				id_transcription;			// ����ģ��ID(Instance_1)��Ĭ�������Ϊ��0��ʾû�и������ŷ��� Added 2011-07-20.
-	int				id_transcription2;			// Instance_2
-	int				id_transcription3;			// Instance_3
-	int				id_transcription4;			// Instance_4
-	int				id_transcription5;			// Instance_5
+	int unknown_1;
+	int				id_territory;				// 所属区域id，领土战专用，默认为0表示非领土战区域npc
+	int				id_transcription;			// 副本模板ID，默认情况下为：0表示没有副本发放服务 Added 2011-07-20.
+	int				id_transcription2;
+	int				id_transcription3;
+	int				id_transcription4;
+	int				id_transcription5;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -3047,6 +2929,15 @@ struct PLAYER_LEVELEXP_CONFIG
 
 	double			exp[200];				// ��������1~200��ÿ������Ҫ�ľ���ֵ
 	double			exp_lev_1[200];			// 1ת��������1~200��ÿ������Ҫ�ľ���ֵ
+	int unknown_1;
+	int unknown_2;
+	int unknown_3;
+	int unknown_4;
+	int unknown_5;
+	int unknown_6;
+	int unknown_7;
+	int unknown_8;
+	int unknown_9;
 	double			exp_lev_2[200];			// 2ת��������1~200��ÿ������Ҫ�ľ���ֵ
 	double			exp_lev_3[200];			// 3ת��������1~200��ÿ������Ҫ�ľ���ֵ
 	int				talisman_exp[100];		// ������������1~100��ÿ������Ҫ�ľ���ֵ
@@ -3200,6 +3091,10 @@ struct SPECIAL_ID_CONFIG
 	int			id_rune2013_merge_extra_num[2];	// ��������ںϴ���id
 	int			id_matrix_card_break;		// ID_Matrix_Card_Break
 	int			fee_vehicle_enhance;		// Fee_Vehicle_Enhance
+
+	int id_change_face_item_2;
+	int id_change_face_item_3;
+	int unknown_3;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -3285,7 +3180,10 @@ struct ITEM_TRADE_CONFIG
 			{
 				unsigned int  type;  // �ķѣ��ɻ�ֵ or ...
 				int			  count;
-			}special_required[1];
+			} special_required[1];
+
+			int unknown_1;
+			int unknown_2;
 
 		} goods[48];
 	} pages[4];
@@ -3715,6 +3613,7 @@ struct CHANGE_SHAPE_PROP_CONFIG
 	int				is_equip_invalid;			// װ���Ƿ�ʧЧ 0����ʧЧ 1��ʧЧ
 	int				is_replace_prop;			// �Ƿ��滻���ﱾ������ 0�����滻��1���滻
 	int				is_buff_positive;			// ����buff��Ч����0������Ч�� 1������Ч��
+	int unknown_1;
 
 };
 
@@ -4709,8 +4608,11 @@ struct LIVENESS_CONFIG
 		int					require_level;			// ����ȼ�����
 		int					renascence_count;		// ת������Ҫ��
 		int					type_judge;				// �ж����ͣ�����require_id���ͷ�ʽ��0-����id��1-�����ͼid
+		int unknown_1;
 		int					require_id;				// �ж���ɵ�����id/�����ͼid
-	}element_list[120];
+		int unknown_2;
+		int unknown_3;
+	} element_list[120];
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4762,9 +4664,14 @@ struct SALE_PROMOTION_ITEM_ESSENCE
 		int		valid_time_start;			// ��Ч����ʼʱ��
 		int		valid_time_end;				// ��Ч�ڽ���ʱ��
 		int		get_count;					// ���ظ���ȡ����
+		int unknown_1;
+		int unknown_2;
 		int		condition_type;				// ǰ��������������ͣ��Ժ�߻��������ʾ
 		int		condition_arg1;				// ǰ���������������1
 		int		condition_arg2;				// ǰ���������������2
+		int		condition_arg3;
+		int		condition_arg4;
+		int		condition_arg5;
 		int		award_item1;				// ������Ʒ1
 		int		award_item1_count;			// ������Ʒ����1
 		int		award_item1_valid_time;		// ������Ʒ��Ч��1
@@ -4864,6 +4771,7 @@ struct LOTTERY_TANGYUAN_ITEM_ESSENCE
 	
 	int				file_matter;				// ���ڵ��ϵ�ģ��·��
 	int				file_icon;					// ͼ��·��
+	int unknown_1;
 
 	int				open_item;					// ����������Ʒid
 	int				open_item_num;				// ����������Ʒ����
@@ -5086,6 +4994,10 @@ struct RUNE2013_ITEM_ESSENCE
 	int				file_matter;				// ���ڵ��ϵ�ģ��·��
 	int				file_icon;					// ͼ��·��
 
+	int unknown_1;
+	int unknown_2;
+	int unknown_3;
+
 	int				quality;					// Ʒ��0:���� 1:�е� 2:�ߵ� 3:��Ʒ
 	int				prop_type;					// �������ͣ�enum PlayerPropType
 	float			add_value;					// ÿ��������ֵ
@@ -5108,7 +5020,7 @@ struct RUNE2013_CONFIG
 	namechar		name[32];					// ����, ���15������
 
 	int				lv_limit;					// �ȼ�����
-	int				lvup_exp[4][10];			// �����������辭�飬���ȡ��еȡ��ߵȡ���Ʒ 1-10
+	int				lvup_exp[10][10];			// �����������辭�飬���ȡ��еȡ��ߵȡ���Ʒ 1-10
 };
 
 // ���轱������
@@ -5221,6 +5133,19 @@ struct COLORANT_ITEM_ESSENCE
 
 	int				pile_num_max;				// �ѵ�����
 	unsigned int	proc_type;					// �����¼��ַ�ʽ�����: ����ʱ�Ƿ���䣬�Ƿ�������ڵ��ϣ��Ƿ��������NPC�����������Ʒ���Ƿ������Ҽ佻�ף��Ƿ����������Ʒ���Ƿ�װ����󶨣�������ѡ�У�����GUID
+};
+
+// List 178 COLORANT2_ITEM_ESSENCE added in between older lists which leads to shifting of the other tables upfront
+struct COLORANT2_ITEM_ESSENCE {
+	unsigned int id;
+	namechar name[32];
+	int file_matter;
+	int file_icon;
+	int price;
+	int shop_price;
+	int pile_num_max;
+	int proc_type;
+	int color_index_unlock;
 };
 
 //�ɻ����������ñ�
@@ -5413,7 +5338,7 @@ struct PHASE_CONFIG
 	unsigned int	id;								//ID
 	namechar		name[32];						//���ƣ����15������
 
-	unsigned int	phaselist[200];					//Ĭ����Ϣ
+	unsigned int	phaselist[550];					//Ĭ����Ϣ
 };
 
 //���6v6��Ʒ�һ���
@@ -5421,6 +5346,15 @@ struct CROSS6V6_ITEM_EXCHANGE_CONFIG
 {
 	unsigned int	id;								//ID
 	namechar		name[32];						//���ƣ����15������	
+
+	int unknown_1;
+	int unknown_2;
+	int unknown_3;
+	int unknown_4;
+	int unknown_5;
+	int unknown_6;
+	int unknown_7;
+	int unknown_8;
 	
 	struct cross6v6_item_exchange
 	{
@@ -5430,7 +5364,7 @@ struct CROSS6V6_ITEM_EXCHANGE_CONFIG
 		int				require_currnecy_num;		//����һ�������
 		int				time_limit;					//ʱ������
 		int exchange_count;
-	}cross6v6_item_exchange_info[15];
+	} cross6v6_item_exchange_info[64];
 };
 
 //�����������ñ�
@@ -5443,7 +5377,7 @@ struct TRANSCRIPT_STRATEGY_CONFIG
 	{
 		int level_type;						
 		int monster[10];
-	}level_list[10];
+	} level_list[10];
 };
 
 //�����̳����ñ�
@@ -5459,7 +5393,7 @@ struct FACTION_SHOP_CONFIG
 		int build_id;			//����id
 		int build_level;		//�����ȼ�
 		int contribution;		//���׶ȼ۸�
-	}faction_item_list[100];
+	} faction_item_list[100];
 };
 
 
@@ -5476,7 +5410,7 @@ struct FACTION_AUCTION_CONFIG
 		int		file_icon;				//��Ʒ��ͼ��
 		int		aucitontime;			//����ʱ��
 		namechar words[100];			//��������
-	}faction_auction_list[100];
+	} faction_auction_list[100];
 };
 
 //����Ԫ���̳����ñ�
@@ -5524,11 +5458,7 @@ struct COLORANT_DEFAULT_CONFIG
 	int				colorant[10];					//Ⱦɫ��ID			
 };
 
-//=============================================================================
 
-// Mitkos Changes elements.data v158
-
-// List[193]
 struct SIGN_IN_CONFIG
 {
 	unsigned int	id;
@@ -5547,12 +5477,13 @@ struct SIGN_IN_CONFIG
 	} package_list_info[4];
 };
 
-// List[194]
+
 struct BABY_ESSENCE
 {
 	unsigned int	id;
 	namechar		name[32];
 	int				file_model;
+	int file_model_reserved_1;
 	int				initweapon_model;
 	int				initbody_model;
 	int				init_foot_model;
@@ -5567,6 +5498,10 @@ struct BABY_ESSENCE
 	int				file_model_sha_back;
 	int				file_model_sha_01;
 	int				file_model_sha_02;
+	int file_model_reserved_2;
+	int file_model_reserved_3;
+	int file_model_reserved_4;
+	int file_model_reserved_5;
 	int				gender;
 	int				sect_mask;
 	float			attack_range;
@@ -5588,7 +5523,7 @@ struct BABY_ESSENCE
 	namechar		description[100];
 };
 
-// List[195]
+
 struct CLASS_BABY_RELATION_CONFIG
 {
 	unsigned int	id;
@@ -5602,7 +5537,7 @@ struct CLASS_BABY_RELATION_CONFIG
 	} class_baby_relation_list[100];
 };
 
-// List[196]
+
 struct BABY_CONFIG
 {
 	unsigned int	id;
@@ -5627,7 +5562,7 @@ struct BABY_CONFIG
 	} skill_deity_reg_info[15];
 };
 
-// List[197]
+
 struct BABY_PROPERTY_CONFIG
 {
 	unsigned int	id;
@@ -5647,7 +5582,7 @@ struct BABY_PROPERTY_CONFIG
 	} deity_ratio_info[100];
 };
 
-// List[198]
+
 struct BABY_UPGRADE_CONFIG
 {
 	unsigned int	id;
@@ -5662,7 +5597,6 @@ struct BABY_UPGRADE_CONFIG
 	} baby_upqrade_list[100];
 };
 
-// List[199]
 struct BABY_FASHION_ESSENCE
 {
 	unsigned int	id;
@@ -5671,6 +5605,7 @@ struct BABY_FASHION_ESSENCE
 	int				model_path_id;
 	int				icon_path_id;
 	int				equip_mask;
+	int unknown_1;
 	int				equip_location;
 	int				action_type;
 
@@ -5684,6 +5619,7 @@ struct BABY_FASHION_ESSENCE
 	int				file_model_sha_back;
 	int				file_model_sha_01;
 	int				file_model_sha_02;
+	int file_model_reserved_1;
 
 	int				require_gender;
 	int				require_level;
@@ -5711,10 +5647,10 @@ struct BABY_FASHION_ESSENCE
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[200]
+
 struct BABY_TOY_ESSENCE
 {
 	unsigned int	id;
@@ -5736,10 +5672,10 @@ struct BABY_TOY_ESSENCE
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[201]
+
 struct BABY_BOOK_ESSENCE
 {
 	unsigned int	id;
@@ -5756,10 +5692,10 @@ struct BABY_BOOK_ESSENCE
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[202]
+
 struct MATRIX_CARD_ESSENCE
 {
 	unsigned int	id;
@@ -5793,10 +5729,10 @@ struct MATRIX_CARD_ESSENCE
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[203]
+
 struct MATRIX_EQUIP_ESSENCE
 {
 	unsigned int	id;
@@ -5823,10 +5759,10 @@ struct MATRIX_EQUIP_ESSENCE
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[204]
+
 struct MATRIX_EXP_CONFIG
 {
 	unsigned int	id;
@@ -5840,7 +5776,7 @@ struct MATRIX_EXP_CONFIG
 	} config[7];
 };
 
-// List[205]
+
 struct MATRIX_COLLECT_CONFIG
 {
 	unsigned int	id;
@@ -5854,7 +5790,7 @@ struct MATRIX_COLLECT_CONFIG
 	} matrixsets[4];
 };
 
-// List[206]
+
 struct MATRIX_CARD_UPGREAD_CONFIG
 {
 	unsigned int	id;
@@ -5864,7 +5800,7 @@ struct MATRIX_CARD_UPGREAD_CONFIG
 	float			val[4];
 };
 
-// List[207]
+
 struct MATRIX_COMBINE_CONFIG
 {
 	unsigned int	id;
@@ -5885,7 +5821,7 @@ struct MATRIX_COMBINE_CONFIG
 	} recipes[120];
 };
 
-// List[208]
+
 struct BABY_FOOD_ESSENCE
 {
 	unsigned int	id;
@@ -5899,10 +5835,10 @@ struct BABY_FOOD_ESSENCE
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[209]
+
 struct BABY_TITLE_ESSENCE
 {
 	unsigned int	id;
@@ -5916,10 +5852,10 @@ struct BABY_TITLE_ESSENCE
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[210]
+
 struct BABY_TITLE_LIST
 {
 	unsigned int	id;
@@ -5928,7 +5864,7 @@ struct BABY_TITLE_LIST
 	int				title_list[100];
 };
 
-// List[211]
+
 struct VEHICLE_ENHANCE_ESSENCE
 {
 	unsigned int	id;
@@ -5943,10 +5879,10 @@ struct VEHICLE_ENHANCE_ESSENCE
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[212]
+
 struct TALENT_SCROLL_ESSENCE
 {
 	unsigned int	id;
@@ -5955,6 +5891,9 @@ struct TALENT_SCROLL_ESSENCE
 	int				model_path_id;
 	int				icon_path_id;
 	int				big_icon;
+
+	int unknown_1;
+	int unknown_2;
 
 	int				talent_scroll_config;
 	int				position;
@@ -5965,15 +5904,18 @@ struct TALENT_SCROLL_ESSENCE
 	int				refine_id;
 	int				refine_fee;
 
+	int unknown_3;
+	int unknown_4;
+
 	int				refine_num[10];
 
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[213]
+
 struct TALENT_SCROLL_CONFIG
 {
 	unsigned int	id;
@@ -5993,10 +5935,10 @@ struct TALENT_SCROLL_CONFIG
 
 	float			level_prob[5];
 
-	int				profession_addon_skill[15];
+	int				profession_addon_skill[18];
 };
 
-// List[214]
+
 struct TALENT_SCROLL_SKILL_CONFIG
 {
 	unsigned int	id;
@@ -6011,7 +5953,7 @@ struct TALENT_SCROLL_SKILL_CONFIG
 	} skill[16];
 };
 
-// List[215]
+
 struct SKILL_REPLACE_CONFIG
 {
 	unsigned int	id;
@@ -6024,7 +5966,7 @@ struct SKILL_REPLACE_CONFIG
 	} skill[168];
 };
 
-// List[216]
+
 struct HILL_TRANSCRIPTION_CONFIG
 {
 	unsigned int	id;
@@ -6081,7 +6023,7 @@ struct HILL_TRANSCRIPTION_CONFIG
 	int				difficulty;
 };
 
-// List[217]
+
 struct CONSUME_AWARD_CONFIG
 {
 	unsigned int	id;
@@ -6100,7 +6042,7 @@ struct CONSUME_AWARD_CONFIG
 	} consume_award_info[7];
 };
 
-// List[218]
+
 struct MULTI_TOWER_PROPERTY_CONFIG
 {
 	unsigned int	id;
@@ -6147,7 +6089,7 @@ struct MULTI_TOWER_PROPERTY_CONFIG
 	award_item		single_time_award[5];
 };
 
-// List[219]
+
 struct RAID18V18_AWARD_CONFIG
 {
 	unsigned int	id;
@@ -6167,7 +6109,7 @@ struct RAID18V18_AWARD_CONFIG
 	} award_list[20];
 };
 
-// List[220]
+
 struct EGGS_GIFT_BAG_ESSENCE
 {
 	unsigned int	id;
@@ -6245,10 +6187,10 @@ struct EGGS_GIFT_BAG_ESSENCE
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[221]
+
 struct ITEM_TRADE2_CONFIG
 {
 	unsigned int	id;
@@ -6276,7 +6218,7 @@ struct ITEM_TRADE2_CONFIG
 	int				dialog_id;
 };
 
-// List[222]
+
 struct GUESS_ESSENCE
 {
 	unsigned int	id;
@@ -6288,10 +6230,10 @@ struct GUESS_ESSENCE
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[223]
+
 struct ELITE_GAME_RESULT_CONFIG
 {
 	unsigned int	id;
@@ -6300,7 +6242,7 @@ struct ELITE_GAME_RESULT_CONFIG
 	int				result;
 };
 
-// List[224]
+
 struct ELITE_GAME_AWARD_CONFIG
 {
 	unsigned int	id;
@@ -6323,7 +6265,7 @@ struct ELITE_GAME_AWARD_CONFIG
 	} award_info[6];
 };
 
-// List[225]
+
 struct TITLE_ITEM_ESSENCE
 {
 	unsigned int	id;
@@ -6334,14 +6276,15 @@ struct TITLE_ITEM_ESSENCE
 
 	int				title;
 	namechar		speak[100];
+	int unknown_1;
 
 	int				sell_price;
 	int				buy_price;
 	int				pile_num_max;
-	int				trade_behavior;
+	int				proc_type;
 };
 
-// List[226]
+
 struct SOUL_ENHANCE_CONFIG
 {
 	unsigned int	id;
@@ -6361,7 +6304,7 @@ struct SOUL_ENHANCE_CONFIG
 	} level_up_list[50];
 };
 
-// List[227]
+
 struct SOUL_EXCHANGE_CONFIG
 {
 	unsigned int	id;
@@ -6374,7 +6317,7 @@ struct SOUL_EXCHANGE_CONFIG
 	} exchange_list[10];
 };
 
-// List[228]
+
 struct SOUL_DROP_CONFIG
 {
 	unsigned int	id;
@@ -6391,7 +6334,7 @@ struct SOUL_DROP_CONFIG
 	} soul_drop_list[4];
 };
 
-// List[229]
+
 struct DAILY_SIGN_CONFIG
 {
 	unsigned int	id;
@@ -6408,8 +6351,1438 @@ struct DAILY_SIGN_CONFIG
 	int				cost_list[30];
 };
 
-// Mitkos Changes elements.data v158 END
+struct RED_PACKETS_ESSENCE
+{
+	unsigned int	id;
+	namechar		name[32];
+	unsigned int	file_matter;
+	unsigned int	file_icon;
+	unsigned int	cooltime;
+	unsigned int	min_money;
+	unsigned int	max_money;
+	unsigned int	min_gold_coin;
+	unsigned int	max_gold_coin;
+	unsigned int	min_player;
+	unsigned int	max_player;
+	unsigned int	summon_npc_id;
+	unsigned int	buff_id;
+	unsigned int	buff_level;
+	unsigned int	file_gfx_1;
+	unsigned int	file_gfx_2;
+	unsigned int	price;
+	unsigned int	shop_price;
+	unsigned int	pile_num_max;
+	unsigned int	proc_type;
+};
 
+struct FORBID_COMMON_SKILL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct forbid_skill_list
+	{
+		unsigned int skill_id[9];
+	} skill_list[18];
+};
+
+struct FORBID_GODEVIL_SKILL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct forbid_skill_list
+	{
+		unsigned int skill_id[15];
+	} skill_list[18];
+};
+
+struct FORCE_CD_SKILL_CONFIG 
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct force_cd_skill_list
+	{
+		unsigned int skill_id[5];
+	} skill_list[18];
+};
+
+struct TALENT_SCROLL_REFINE_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	int file_matter;
+	int file_icon;
+	int refine_type;
+	int refine_type_mask;
+	int price;
+	int shop_price;
+	int pile_num_max;
+	int proc_type;
+};
+
+struct FACTION_BASE_ACTIVITY_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct activity_list
+	{
+		namechar title[8];
+		unsigned int build_id;
+		unsigned int build_level;
+		int res_type;
+		int res_count;
+		unsigned int controller_id;
+		unsigned int region_index;
+	} activity_list[4];
+};
+
+struct AMULET_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	namechar title[16];
+	
+	UInt64 character_combo_id;
+	UInt64 character_combo_id_2;
+
+	int require_gender;
+	unsigned int require_level;
+	
+	unsigned int sect_1;
+	unsigned int sect_2;
+	unsigned int sect_3;
+	unsigned int sect_4;
+
+	unsigned int require_race;
+	unsigned int require_level_2;
+	unsigned int require_ascenstion_count;
+
+	unsigned int fee_estone;
+	unsigned int estone_id;
+	unsigned int config_id;
+
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned pile_num_max;
+	unsigned proc_type;
+
+};
+
+struct AMULET_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	float prop_probability[4];
+
+	struct base_prop_list
+	{
+		unsigned int prop_id;
+		float max_value;
+		float min_value;
+		float add_value;
+		float probability;
+	} base_prop_list[12];
+
+	struct hide_prop_list
+	{
+		unsigned int level;
+		struct props
+		{
+			unsigned int prop_id;
+			float probability;
+			float value;
+		} props[10];
+		
+
+	} hide_prop_list[5];
+
+	float level_probability[5];
+	int hole_level[8];
+};
+
+struct AMULET_STONE_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned pile_num_max;
+	unsigned int proc_type;
+};
+
+struct SPECIAL_VIP_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct card_list
+	{
+		unsigned int money;
+		unsigned int open_day;
+		unsigned int gift_bag_id;
+		unsigned int exp_per_day;
+		unsigned int exp_added;
+		unsigned int free_helper;
+		unsigned int no_exp_loss;
+
+		struct buff_list
+		{
+			unsigned int skill_id;
+			unsigned int skill_level;
+		} buff_list[3];
+	} card_list[3];
+
+	unsigned int remote_bag_money;
+	unsigned int remote_bag_day;
+	unsigned int remote_exp_per_day;
+	unsigned int free_fly_money;
+	unsigned int free_fly_day;
+	unsigned int fly_exp_per_day;
+	
+	struct item_list
+	{
+		unsigned int item_id;
+		unsigned int money;
+		unsigned int exp_required;
+	} item_list[3];
+
+	unsigned int max_exp;
+};
+
+struct CHARGE_AWARD_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct feedback_list
+	{
+		struct item_list
+		{
+			unsigned int score_min;
+			unsigned int item_id;
+			unsigned int item_num;
+			unsigned int indate;
+		} item_list[24];
+
+	} feedback_list[6];
+
+	struct exchange_list
+	{
+		struct item_exchange_list
+		{
+			unsigned int score_required;
+			unsigned int item_id;
+			unsigned int item_num;
+			unsigned int indate;
+			unsigned int unknown;
+		} item_exchange_list[24];
+	} exchange_list[6];
+
+	unsigned int version;
+	unsigned int activity_open;
+	unsigned int unknown[6];
+
+	unsigned int start_time;
+	unsigned int end_time;
+	
+	float score_multiplier;
+
+	struct extra_item_list
+	{
+		unsigned int score_min;
+		unsigned int score_max;
+		unsigned int item_id;
+		unsigned int item_num;
+		unsigned int indate;
+	} extra_item_list[4];
+
+	unsigned int extra_award_open;
+	unsigned int extra_award_start_time;
+	unsigned int extra_award_end_time;
+};
+
+struct NEW_TOWNSCROLL_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int use_time;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct EQUIPMENT_RANDOMEXT_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	float prop_probability[6];
+
+	struct base_prop_list
+	{
+		unsigned int prop_id;
+		float max_value;
+		float min_value;
+		float add_value;
+		float probability;
+	} base_prop_list[12];
+
+	float level_probability[5];
+};
+
+struct INDISCRIMINATION_BATTLE_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	
+	unsigned int max_repeats;
+	unsigned int need_win_num[48];
+	unsigned int char_add_fee[48];
+	unsigned int char_mask_fee[8];
+
+	namechar player_name[16][80];
+
+	unsigned int first_win_award_id;
+
+	struct award_list
+	{	
+		unsigned int item_id;
+		unsigned int item_num;
+		unsigned int score;
+		unsigned int time_limit;
+	} award_list[12];
+
+};
+
+struct GROUPRAID_EVALAWARD_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct eval
+	{
+		unsigned int max;
+		unsigned int min;
+	} eval[4];
+
+	unsigned int award_id[6];
+
+	struct raid_level
+	{
+		unsigned int boss_id;
+		unsigned int evalid;
+		unsigned int timeid;
+		unsigned int controller_id;
+	} raid_level[10];
+};
+
+struct EQUIPMENT_IDENTIFY_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct identify_config
+	{
+		unsigned int equipment_id;
+		UInt64 character_combo_id;
+		UInt64 character_combo_id_2;
+		unsigned int require_gender;
+		unsigned int equip_prod_id;
+	} identify_config[150];
+};
+
+struct HEADFRAME_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int file_matter;
+	unsigned int icon_matter;
+	
+	unsigned int time;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+	
+	struct file
+	{
+		unsigned int head_frame;
+		unsigned int head_frame_gfx;
+
+	} file[4];
+};
+
+struct CONVERT_EQUIP_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct item_list
+	{
+		unsigned int equip_require_id;
+		unsigned int stone_id;
+		unsigned int stone_amount;
+		unsigned int output_equip_id;
+	} item_list[200];
+};
+
+struct AUSPICIOUS_HALL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int unknown[324];
+};
+
+struct DIVINE_ACCESSORY_IMBUE_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct item_list
+	{
+		unsigned int pstone_id;
+		unsigned int equipment_id;
+	} item_list[50];
+};
+
+struct LEVEL_UP_REWARD_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	
+	struct list_levels
+	{
+		unsigned int level_required;
+		unsigned int unknown;
+
+		struct awards
+		{	
+			unsigned int award_id;
+			unsigned int award_amount;
+			unsigned int time_limit;
+		} awards[8];
+	} list_levels[31];
+};
+
+struct NEW_BOX_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+
+	unsigned int required_level;
+	unsigned int unknown_2;
+	unsigned int unknown_3;
+	unsigned int required_gender;
+	unsigned int unknown_5;
+	UInt64 character_combo_id_1;
+	UInt64 character_combo_id_2;
+	unsigned int god_devil_mask;
+	unsigned int unknown_9;
+
+	struct gifts
+	{
+		unsigned int gift_id;
+		unsigned int gift_amount;
+		unsigned int gift_bind;
+		unsigned int time_limit;
+	} gift[60];
+
+	unsigned int unknowns[102];
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct NEW_FASHION_PACK_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int item_duration;
+	unsigned int bind_items;
+
+	struct options
+	{
+		UInt64 character_combo_id_1;
+		UInt64 character_combo_id_2;
+		unsigned int require_gender;
+		unsigned int require_ascension;
+		unsigned int require_min_level;
+		unsigned int require_max_level;
+
+		struct awards
+		{
+			unsigned int award_id;
+			unsigned int award_amount;
+		} award[10];
+		
+	} option[36];
+
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct NEW_CRAFTING_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int recipe_id[62];
+};
+
+struct FAIRYHOUSE_GENERAL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	
+	unsigned int unknown[11];
+
+	struct props
+	{
+		namechar prop_name[16];
+		unsigned int prop_id;
+		unsigned int prop_level;
+	} props[64];
+
+	struct more_props
+	{
+		namechar more_prop_name[16];
+		unsigned int unknown_1;
+		unsigned int unknown_2;
+		unsigned int unknown_3;
+		unsigned int unknown_4;
+	} more_props[3];
+};
+
+struct FAIRYHOUSE_PROBABILITY_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct props
+	{
+		unsigned prop_id;
+		float probability;
+	} props[128];
+
+	float unknown_1;
+
+	struct props_2
+	{
+		unsigned int prop_id;
+		float probability;
+	} props_2[16];
+};
+
+
+struct FAIRYHOUSE_BABY_TRAIT_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int item_id_1;
+	float unknown_2;
+	float unknown_3;
+	unsigned int unknown_4;
+	unsigned int item_id_2;
+	float unknown_6;
+	unsigned int unknown_7;
+};
+
+struct FAIRYHOUSE_PET_TRAIT_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int spell_id;
+	unsigned int spell_level;
+	float probability_1;
+	unsigned int spell_level_2;
+	float probability_2;
+	unsigned int unknown_1;
+};
+
+struct FAIRYHOUSE_CHALLENGE_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int unknown[10];
+
+	unsigned int transcription_id;
+
+	unsigned int unknown_11;
+
+	unsigned int controller_id; // not kind sure is this
+	unsigned int controller_exist_time; // not sure is this.
+	unsigned int unknown_12;
+	unsigned int unknown_13;
+	unsigned int unknown_14;
+	unsigned int unknown_15;
+	unsigned int unknown_16;
+	unsigned int unknown_17;
+
+	struct awards
+	{
+		unsigned int award_id;
+		unsigned int award_amount;
+	} awards[8];
+
+	unsigned int unknown_18;
+	unsigned int unknown_19;
+	unsigned int unknown_20;
+	float unknown_probability_1;
+	unsigned int unknown_21;
+	float unknown_probability_2;
+	unsigned int unknown_22;
+	float unknown_probability_3;
+	unsigned int unknown_23;
+	float unknown_probability_4;
+	unsigned int unknown_24;
+};
+
+struct FAIRYHOUSE_BABY_GEAR_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int shorten_challenge_time;
+	unsigned int unknown_1;
+	unsigned int pet_type; // 10: Random, 2: Luna, 1: Sola, 7: Terro, 9: Logi, 8: Nestun, 6: Magmas, 5: Flowen, 3: Auris, 4: Arborik
+	float probability;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct FAIRYHOUSE_PET_GEAR_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int file_matter;
+	unsigned int file_icon;
+
+	unsigned int pet_trait_config_id;
+	float pet_trait_probability;
+
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct FAIRYHOUSE_TRAIT_LEARN_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+
+	unsigned int unknown[9];
+	unsigned int pet_trait_config_id;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct PREPAID_BOOK_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	namechar window_title[16];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int unknown_1;
+	unsigned int unknown_2;
+	unsigned int unknown_3;
+	UInt64 combo_character_id_1;
+	UInt64 combo_character_id_2;
+	namechar description_1[100];
+	unsigned int unknown_4;
+	unsigned int unknown_5;
+	namechar description_2[250];
+	namechar description_3[250];
+	namechar description_4[250];
+	namechar description_5[250];
+	namechar description_6[100];
+
+	unsigned int unknown_6;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct TOKEN_BAG_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct items
+	{
+		namechar item_title[16];
+		unsigned int unknown;
+		unsigned int item_1;
+		unsigned int item_2;
+		unsigned int unknown_1;
+		unsigned int unknown_2;
+		unsigned int unknown_3;
+	} items[100];
+};
+
+struct TIMELIMIT_BEAD_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	float add_value;
+	unsigned int start_time;
+	unsigned int end_time;
+	unsigned int unknown_1;
+	unsigned int min_level;
+	unsigned int max_level;
+	unsigned int unknown_2;
+	unsigned int unknown_3;
+	unsigned int unknown_4;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct EXTRA_TIMELIMIT_BEAD_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int start_time;
+	unsigned int end_time;
+	unsigned int min_level;
+	unsigned int max_level;
+	unsigned int unknown_1;
+	unsigned int level_up;
+	unsigned int unknown_2;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct CONSTELLATIONEXP_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	float unknown_prob_1;
+	float unknown_prob_2;
+	float unknown_prob_3;
+	float unknown_prob_4;
+	float unknown_prob_5;
+	float unknown_prob_6;
+	float unknown_prob_7;
+	float unknown_prob_8;
+	float unknown_prob_9;
+	float unknown_prob_10;
+	float unknown_prob_11;
+	float unknown_prob_12;
+
+	struct level
+	{
+		unsigned int level;
+		float prob_1;
+		float prob_2;
+		float prob_3;
+		float prob_4;
+		float prob_5;
+		float prob_6;
+		float prob_7;
+		float prob_8;
+	} level[49];
+
+	float unknown_2_prob[10];
+};
+
+struct CONSTELLATION_SKILL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct list
+	{
+		float list_probability;
+		struct skills
+		{
+			unsigned int skill_id;
+			float probability;
+		} skill[3];
+		
+	} list[10];
+};
+
+struct CONSTELLATION_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	float unknown[131];
+	unsigned int pre_star_config[12];
+	unsigned int star_id[24];
+};
+
+struct CONSTELLATION_STARS_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int file_orb_icon;
+	unsigned int constellationexp_config_id;
+	unsigned int star_type;
+	unsigned int slot_type;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+	unsigned int constellation_skill_config[18]; // I assume this will grow with newer classes.
+};
+
+struct CONSTELLATION_SKILL_RELATION_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct skill_relations
+	{
+		unsigned int normal_skill_id;
+		unsigned int upgraded_skill_id;
+	} relations[306];
+};
+
+struct TALENT_SCROLL_TRIGGER_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct tomes
+	{
+		unsigned int tome_book_id;
+		unsigned int useable_on_star;
+		unsigned int increase_reforge_limit;
+	} tomes[4];
+};
+
+struct EVENT_REWARD_SET_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int unknown[5];
+
+	struct rewards
+	{
+		unsigned int award_id;
+		unsigned int award_amount;
+		unsigned int points_required;
+	} reward[20];
+};
+
+struct EXTRA_LOTTERY_ESSENCE {
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	
+	unsigned int unknown[14];
+
+	struct awards
+	{
+		unsigned int award_id;
+		unsigned int award_amount;
+	} award[30];
+
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct SKILL_SET_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int skill_id[100];
+};
+
+struct GEAR_SCRIPTURE_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct scripture
+	{
+		unsigned int scripture_id;
+		struct requirements
+		{
+			unsigned int required_item_id;
+			unsigned int required_item_amount;
+		} requirement[3];
+
+		unsigned int unknown[7];
+
+	} scripture[50];
+};
+
+struct FIREWORK_ARRAY_ESSENCE {
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int rewards_amount;
+	unsigned int file_gfx;
+	unsigned int unknown[3];
+	namechar text[100];
+
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct RESET_ITEM_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int unknown;
+	unsigned int reset_type;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct MARRIAGE_REWARD_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct rewards
+	{
+		unsigned int unknown;
+		unsigned int reward_id;
+	} reward[8];
+};
+
+struct MYSTIC_ENHANCE_MATERIAL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct refinery
+	{
+		unsigned int talisman_id;
+		unsigned int talisman_amount;
+	} refinery[20];
+};
+
+struct LUCK_VALUE_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int unknown_1;
+
+	struct luck
+	{
+		unsigned int unknown;
+		float unknown_float;
+	} luck[10];
+
+	unsigned int unknowns[7];
+};
+
+struct CLASS_ITEM_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int mold_id;
+
+	struct refinery
+	{
+		unsigned int equipment_id;
+		unsigned int refinery_min;
+		unsigned int refinery_max;
+	} refinery[10];
+};
+
+struct NEW_GEAR_IDENTIFY_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct gear_list
+	{
+		unsigned int spirit_stone_id;
+		unsigned int equipment_id[30];
+	} gear_list[5];
+};
+
+struct NEW_GEAR_LIST_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int equipment_id[150];
+};
+
+struct INSTANCE_INTERCHANGE_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int unknown_id[200];
+};
+
+struct SPIRIT_STONE_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int unknown;
+	namechar text[16];
+	unsigned int addon_id;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct VALUE_COST_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int unknown[140];
+};
+
+// UNDER DEVELOPMENT
+struct ANNIVERSARY_ITEM_ESSENCE
+{
+	unsigned int id;              // 0x000
+	namechar name[32];            // 0x004, 64 bytes
+	unsigned int file_matter;     // 0x044
+	unsigned int file_icon;       // 0x048
+	unsigned int mode;            // 0x04C
+
+	struct award_with_text
+	{
+		float probability;
+		unsigned int active_score;
+		namechar text[100];       // 200 bytes
+		unsigned int award_id;
+		unsigned int award_amount;
+		unsigned int award_bind;
+		unsigned int award_expire;
+	} award_text[3];              // 3 * 224 = 672 bytes
+
+	struct award_no_text
+	{
+		float probability;
+		unsigned int award_id;
+		unsigned int award_amount;
+		unsigned int award_bind;
+		unsigned int award_expire;
+	} award_4;                    // 20 bytes
+
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct SPIRIT_EXRACTION_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct equip_config
+	{
+		unsigned int level;
+		unsigned int amount;
+		unsigned int unknown;
+	} config[10];
+};
+
+struct NEW_DOTA_SKILL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int type;
+
+	struct skills
+	{
+		unsigned int skill_id;
+	} skill[22];
+};
+
+struct ANOTHER_DOTA_SKILL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int type;
+
+	struct skills
+	{
+		unsigned int skill_id;
+	} skill[184];
+};
+
+struct EXTRA_DOTA_SKILL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int gender; // 0 - male, 1 - female
+		
+	struct skills
+	{
+		unsigned int skill_id;
+	} skill[24];
+};
+
+struct WARDOBE_FASHION_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int unknown_1;
+	unsigned int fashion_id[149];
+	unsigned int unknown_2;
+	unsigned int unknown_3;
+};
+
+struct NEW_DYE_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct config
+	{
+		namechar text[256];
+		unsigned int colorant_id;
+		unsigned int unknown_1;
+		unsigned int unknown_2;
+		unsigned int unknown_3;
+	} config[14];
+};
+
+struct EMBROIDERY_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int unknown[3];
+};
+
+struct MERGED_STAR_SOUL_LIMIT_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int type;
+	unsigned int min_level;
+	unsigned int max_level;
+	unsigned int unknown[36];
+};
+
+struct MERGED_STAR_SOUL_GROWTH_CONFIG
+{
+	unsigned int	id;
+	namechar		name[32];
+
+	int				per_point_soul_req;
+
+	float			props_list[36];
+
+	struct level_up_info
+	{
+		int			points_req;
+		float		success_prob;
+		float		failed_return_ratio;
+	} level_up_list[100];
+};
+
+struct MERGED_STAR_SOUL_SLOT_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int required_points[36];
+};
+
+struct RUNE2013_MATERIAL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct consumeables
+	{
+		unsigned int item_id;
+		unsigned int receive_soul_points;
+		unsigned int unknown;
+	} consumeable[100];
+};
+
+struct NEW_VIP_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int unknown[31];
+};
+
+struct RUNE2013_CONSUMPTION_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int unknown[101];
+};
+
+struct FORBID_DIVINE_SKILL_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	unsigned int skill_id[216];
+};
+
+struct GIFT_LETTER_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int pre_unknown[8];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int unknown[3];
+	UInt64 character_combo_id_1;
+	UInt64 character_combo_id_2;
+	unsigned int unknown_4;
+	namechar title[100];
+	unsigned int unknown_5;
+	unsigned int unknown_6;
+	namechar text[1000];
+
+	struct awards
+	{
+		unsigned int unknown;
+		unsigned int award_id;
+		unsigned int bind;
+		unsigned int award_amount;
+	} award[10];
+
+	unsigned int unknown_7;
+
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct WARDOBE_WEAPON_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int order;
+	unsigned int file_surfaces;
+	unsigned int equipment_id;
+	unsigned int unknown_1;
+	unsigned int unknown_2;
+	namechar text[250];
+	unsigned int unknown_3;
+	unsigned int unknown_4;
+	unsigned int unknown_5;
+	unsigned int unknown_6;
+};
+
+struct WARDOBE_FOOTPRINT_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int order;
+	unsigned int file_surfaces;
+	unsigned int footprint_id;
+	unsigned int unknown_1;
+	unsigned int unknown_2;
+	namechar text[250];
+	unsigned int unknown_3;
+	unsigned int unknown_4;
+	unsigned int unknown_5;
+	unsigned int unknown_6;
+};
+
+// Not yet implemented in this expansion.
+struct WARDOBE_PET_CONFIG
+{
+
+};
+
+struct FOOTPRINT_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int file_gfx[3];
+	unsigned int unknown_1;
+	unsigned int unknown_2;
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int unknown_3;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct FORTUNE_GIFT_PACK_ESSENCE
+{
+	unsigned int id;
+	namechar name[32];
+	namechar ui_name[16];
+	unsigned int file_matter;
+	unsigned int file_icon;
+	unsigned int timeframe_start;
+	unsigned int timeframe_end;
+	unsigned int timeleft_days;
+	unsigned int unknown_2;
+
+	struct awards
+	{
+		unsigned int require_ascension_count;
+		unsigned int require_level_min;
+		unsigned int unknown[6];
+		
+		unsigned int award_id;
+		unsigned int award_count;
+		unsigned int award_expire;
+		unsigned int award_bind;
+
+		unsigned int gift_award_id;
+		unsigned int gift_award_amount;
+		unsigned int gift_award_expire;
+		unsigned int gift_award_bind;
+		namechar description[100];
+
+	} awards[20];
+	unsigned int unknown[5];
+	unsigned int price;
+	unsigned int shop_price;
+	unsigned int pile_num_max;
+	unsigned int proc_type;
+};
+
+struct CANTEEN_EVENT_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct awards_list
+	{
+		struct awards {
+			unsigned int award_id;
+			unsigned int award_amount;
+			unsigned int award_expire;
+		} award[3];
+
+		unsigned int unknown[4];
+	} award_list[100];
+};
+
+struct RETURN_AWARD_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int unknown[250];
+};
+
+struct MOBILE_PHONE_INFO_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	namechar text[1000];
+
+	struct awards
+	{
+		unsigned int award_id;
+		unsigned int award_amount;
+		unsigned int award_bind;
+		unsigned int award_expire;
+	} award[4];
+};
+
+struct BEGINNER_ONLINE_REWARD_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct online_rewards
+	{
+		unsigned int gift_bad_id;
+		unsigned int wait_time_seconds;
+	} online_reward[10];
+};
+
+struct MONTHLY_RETURN_AWARD_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct award_lists
+	{
+		unsigned int item_order;
+		unsigned int list_index;
+		unsigned int award_id;
+	} award_list[15];
+};
+
+struct INSTANT_TIER_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+
+	struct configs
+	{
+		unsigned int occupation_id;
+		unsigned int required_level;
+	} config[4];
+
+	unsigned int unknown[13];
+};
+
+struct PLOT_REWARD_CONFIG
+{
+	unsigned int id;
+	namechar name[32];
+	unsigned int unknown[1230];
+};
 
 //=============================================================================
 // ID space and data type enumerations (must come after all struct definitions)
@@ -6607,6 +7980,7 @@ enum DATA_TYPE
 	DT_TEAM_SEASON_AWARD_CONFIG,
 	DT_WEEK_CURRNCY_AWARD_CONFIG,
 	DT_COLORANT_ITEM_ESSENCE,
+	DT_COLORANT2_ITEM_ESSENCE,
 	DT_INTERACTION_OBJECT_ESSENCE,
 	DT_INTERACTION_OBJECT_HOOK_CONFIG,
 	DT_COLORANT_CONFIG,
@@ -6660,6 +8034,91 @@ enum DATA_TYPE
 	DT_SOUL_EXCHANGE_CONFIG,
 	DT_SOUL_DROP_CONFIG,
 	DT_DAILY_SIGN_CONFIG,
+	DT_RED_PACKETS_ESSENCE,
+	DT_FORBID_COMMON_SKILL_CONFIG,
+	DT_FORBID_GODEVIL_SKILL_CONFIG,
+	DT_FORCE_CD_SKILL_CONFIG,
+	DT_TALENT_SCROLL_REFINE_ESSENCE,
+	DT_FACTION_BASE_ACTIVITY_CONFIG,
+	DT_AMULET_ESSENCE,
+	DT_AMULET_CONFIG,
+	DT_AMULET_STONE_ESSENCE,
+	DT_SPECIAL_VIP_CONFIG,
+	DT_CHARGE_AWARD_CONFIG,
+	DT_NEW_TOWNSCROLL_ESSENCE,
+	DT_EQUIPMENT_RANDOMEXT_CONFIG,
+	DT_INDISCRIMINATION_BATTLE_CONFIG,
+	DT_GROUPRAID_EVALAWARD_CONFIG,
+	DT_EQUIPMENT_IDENTIFY_CONFIG,
+	DT_HEADFRAME_ESSENCE,
+	DT_CONVERT_EQUIP_CONFIG,
+	DT_AUSPICIOUS_HALL_CONFIG,
+	DT_DIVINE_ACCESSORY_IMBUE_CONFIG,
+	DT_LEVEL_UP_REWARD_CONFIG,
+	DT_NEW_BOX_ESSENCE,
+	DT_NEW_FASHION_PACK_ESSENCE,
+	DT_NEW_CRAFTING_CONFIG,
+	DT_FAIRYHOUSE_GENERAL_CONFIG,
+	DT_FAIRYHOUSE_PROBABILITY_CONFIG,
+	DT_FAIRYHOUSE_BABY_TRAIT_CONFIG,
+	DT_FAIRYHOUSE_PET_TRAIT_CONFIG,
+	DT_FAIRYHOUSE_CHALLENGE_CONFIG,
+	DT_FAIRYHOUSE_BABY_GEAR_ESSENCE,
+	DT_FAIRYHOUSE_PET_GEAR_ESSENCE,
+	DT_FAIRYHOUSE_TRAIT_LEARN_ESSENCE,
+	DT_PREPAID_BOOK_ESSENCE,
+	DT_TOKEN_BAG_CONFIG,
+	DT_TIMELIMIT_BEAD_ESSENCE,
+	DT_EXTRA_TIMELIMIT_BEAD_ESSENCE,
+	DT_CONSTELLATIONEXP_CONFIG,
+	DT_CONSTELLATION_SKILL_CONFIG,
+	DT_CONSTELLATION_CONFIG,
+	DT_CONSTELLATION_STARS_ESSENCE,
+	DT_CONSTELLATION_SKILL_RELATION_CONFIG,
+	DT_TALENT_SCROLL_TRIGGER_CONFIG,
+	DT_EVENT_REWARD_SET_CONFIG,
+	DT_EXTRA_LOTTERY_ESSENCE,
+	DT_SKILL_SET_CONFIG,
+	DT_GEAR_SCRIPTURE_CONFIG,
+	DT_FIREWORK_ARRAY_ESSENCE,
+	DT_RESET_ITEM_ESSENCE,
+	DT_MARRIAGE_REWARD_CONFIG,
+	DT_MYSTIC_ENHANCE_MATERIAL_CONFIG,
+	DT_LUCK_VALUE_CONFIG,
+	DT_CLASS_ITEM_CONFIG,
+	DT_NEW_GEAR_IDENTIFY_CONFIG,
+	DT_NEW_GEAR_LIST_CONFIG,
+	DT_INSTANCE_INTERCHANGE_CONFIG,
+	DT_SPIRIT_STONE_ESSENCE,
+	DT_VALUE_COST_CONFIG,
+	DT_ANNIVERSARY_ITEM_ESSENCE,
+	DT_SPIRIT_EXRACTION_CONFIG,
+	DT_NEW_DOTA_SKILL_CONFIG,
+	DT_ANOTHER_DOTA_SKILL_CONFIG,
+	DT_EXTRA_DOTA_SKILL_CONFIG,
+	DT_WARDOBE_FASHION_CONFIG,
+	DT_NEW_DYE_CONFIG,
+	DT_EMBROIDERY_CONFIG,
+	DT_MERGED_STAR_SOUL_LIMIT_CONFIG,
+	DT_MERGED_STAR_SOUL_GROWTH_CONFIG,
+	DT_MERGED_STAR_SOUL_SLOT_CONFIG,
+	DT_RUNE2013_MATERIAL_CONFIG,
+	DT_NEW_VIP_CONFIG,
+	DT_RUNE2013_CONSUMPTION_CONFIG,
+	DT_FORBID_DIVINE_SKILL_CONFIG,
+	DT_GIFT_LETTER_ESSENCE,
+	DT_WARDOBE_WEAPON_CONFIG,
+	DT_WARDOBE_FOOTPRINT_CONFIG,
+	//DT_WARDOBE_PET_CONFIG,
+	DT_FOOTPRINT_ESSENCE,
+	DT_FORTUNE_GIFT_PACK_ESSENCE,
+	DT_CANTEEN_EVENT_CONFIG,
+	DT_RETURN_AWARD_CONFIG,
+	DT_MOBILE_PHONE_INFO_CONFIG,
+	DT_BEGINNER_ONLINE_REWARD_CONFIG,
+	DT_MONTHLY_RETURN_AWARD_CONFIG,
+	DT_INSTANT_TIER_CONFIG,
+	DT_PLOT_REWARD_CONFIG,
 	DT_MAX,              //数据类型标志，以下枚举项目顺序不能更改
 };
 
