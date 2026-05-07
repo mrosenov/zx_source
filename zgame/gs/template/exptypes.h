@@ -7650,7 +7650,18 @@ struct WARDOBE_FOOTPRINT_CONFIG
 // Not yet implemented in this expansion.
 struct WARDOBE_PET_CONFIG
 {
-
+	unsigned int id;
+	namechar name[32];
+	unsigned int order;
+	unsigned int file_surfaces;
+	unsigned int petconfig_id;
+	unsigned int unknown_1;
+	unsigned int unknown_2;
+	namechar text[250];
+	unsigned int unknown_3;
+	unsigned int unknown_4;
+	unsigned int unknown_5;
+	unsigned int unknown_6;
 };
 
 struct FOOTPRINT_ESSENCE
