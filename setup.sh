@@ -3,7 +3,16 @@
 #	zgame zskill znet  Jade Dynasty Server side compilation
 #######################################################################
 
-LOGFILE="/root/zx_source/build.log"
+LOGFILE="/root/zx/build.log"
+
+# Ensure directory exists
+mkdir -p "$(dirname "$LOGFILE")"
+
+# Create or clear the log file
+: > "$LOGFILE"
+
+# Redirect ALL output (stdout + stderr) to console AND logfile
+exec > >(tee "$LOGFILE") 2>&1
 
 # Redirect ALL output (stdout + stderr) to console AND logfile
 exec > >(tee -a "$LOGFILE") 2>&1
@@ -291,6 +300,8 @@ if [ $# -gt 0 ]; then
 		buildgslib;
 	elif [ "$1" = "dumpitem" ]; then
 		builddumpitem;
+	elif [ "$1" = "libtask" ]; then
+		buildtask;
 	fi
 fi
 
