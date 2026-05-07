@@ -324,6 +324,7 @@ public:
 	void add_structure(unsigned int id, WARDOBE_FASHION_CONFIG& data);
 	void add_structure(unsigned int id, NEW_DYE_CONFIG& data);
 	void add_structure(unsigned int id, EMBROIDERY_CONFIG& data);
+	void add_structure(unsigned int id, UNIDENTIFIED_TABLE1736& data);
 	void add_structure(unsigned int id, MERGED_STAR_SOUL_LIMIT_CONFIG& data);
 	void add_structure(unsigned int id, MERGED_STAR_SOUL_GROWTH_CONFIG& data);
 	void add_structure(unsigned int id, MERGED_STAR_SOUL_SLOT_CONFIG& data);
@@ -334,6 +335,7 @@ public:
 	void add_structure(unsigned int id, GIFT_LETTER_ESSENCE& data);
 	void add_structure(unsigned int id, WARDOBE_WEAPON_CONFIG& data);
 	void add_structure(unsigned int id, WARDOBE_FOOTPRINT_CONFIG& data);
+	void add_structure(unsigned int id, WARDOBE_PET_CONFIG& data);
 	void add_structure(unsigned int id, FOOTPRINT_ESSENCE& data);
 	void add_structure(unsigned int id, FORTUNE_GIFT_PACK_ESSENCE& data);
 	void add_structure(unsigned int id, CANTEEN_EVENT_CONFIG& data);
@@ -342,6 +344,8 @@ public:
 	void add_structure(unsigned int id, BEGINNER_ONLINE_REWARD_CONFIG& data);
 	void add_structure(unsigned int id, MONTHLY_RETURN_AWARD_CONFIG& data);
 	void add_structure(unsigned int id, INSTANT_TIER_CONFIG& data);
+	void add_structure(unsigned int id, UNIDENTIFIED_TABLE1792A& data);
+	void add_structure(unsigned int id, UNIDENTIFIED_TABLE1792B& data);
 	void add_structure(unsigned int id, PLOT_REWARD_CONFIG& data);
 	//////////////////////////////////////////////////////////////////////////
 public:
@@ -724,6 +728,7 @@ protected:
 	array<WARDOBE_FASHION_CONFIG> wardobe_fashion_config_array;
 	array<NEW_DYE_CONFIG> new_dye_config_array;
 	array<EMBROIDERY_CONFIG> embroidery_config_array;
+	array<UNIDENTIFIED_TABLE1736> unidentified_table_array;
 	array<MERGED_STAR_SOUL_LIMIT_CONFIG> merged_star_soul_limit_config_array;
 	array<MERGED_STAR_SOUL_GROWTH_CONFIG> merged_star_soul_growth_config_array;
 	array<MERGED_STAR_SOUL_SLOT_CONFIG> merged_star_soul_slot_config_array;
@@ -734,6 +739,7 @@ protected:
 	array<GIFT_LETTER_ESSENCE> gift_letter_essence_array;
 	array<WARDOBE_WEAPON_CONFIG> wardobe_weapon_config_array;
 	array<WARDOBE_FOOTPRINT_CONFIG> wardobe_footprint_config_array;
+	array<WARDOBE_PET_CONFIG> wardobe_pet_config_array;
 	array<FOOTPRINT_ESSENCE> footprint_essence_array;
 	array<FORTUNE_GIFT_PACK_ESSENCE> fortune_gift_pack_essence_array;
 	array<CANTEEN_EVENT_CONFIG> canteen_event_config_array;
@@ -742,6 +748,8 @@ protected:
 	array<BEGINNER_ONLINE_REWARD_CONFIG> beginner_online_reward_config_array;
 	array<MONTHLY_RETURN_AWARD_CONFIG> monthly_return_award_config_array;
 	array<INSTANT_TIER_CONFIG> instant_tier_config_array;
+	array<UNIDENTIFIED_TABLE1792A> unidentified_table1792a_array;
+	array<UNIDENTIFIED_TABLE1792B> unidentified_table1792b_array;
 	array<PLOT_REWARD_CONFIG> plot_reward_config_array;
 
 	// the global hash_map for each id space

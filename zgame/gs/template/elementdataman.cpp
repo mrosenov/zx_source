@@ -338,6 +338,7 @@ const char * DataTypeName[DT_MAX+1] =
 	"DT_WARDOBE_FASHION_CONFIG",
 	"DT_NEW_DYE_CONFIG",
 	"DT_EMBROIDERY_CONFIG",
+	"DT_UNIDENTIFIED_TABLE1736",
 	"DT_MERGED_STAR_SOUL_LIMIT_CONFIG",
 	"DT_MERGED_STAR_SOUL_GROWTH_CONFIG",
 	"DT_MERGED_STAR_SOUL_SLOT_CONFIG",
@@ -348,7 +349,7 @@ const char * DataTypeName[DT_MAX+1] =
 	"DT_GIFT_LETTER_ESSENCE",
 	"DT_WARDOBE_WEAPON_CONFIG",
 	"DT_WARDOBE_FOOTPRINT_CONFIG",
-	//"DT_WARDOBE_PET_CONFIG",
+	"DT_WARDOBE_PET_CONFIG",
 	"DT_FOOTPRINT_ESSENCE",
 	"DT_FORTUNE_GIFT_PACK_ESSENCE",
 	"DT_CANTEEN_EVENT_CONFIG",
@@ -357,6 +358,8 @@ const char * DataTypeName[DT_MAX+1] =
 	"DT_BEGINNER_ONLINE_REWARD_CONFIG",
 	"DT_MONTHLY_RETURN_AWARD_CONFIG",
 	"DT_INSTANT_TIER_CONFIG",
+	"DT_UNIDENTIFIED_TABLE1792A",
+	"DT_UNIDENTIFIED_TABLE1792B",
 	"DT_PLOT_REWARD_CONFIG",
 	"DT_MAX",
 };
@@ -718,6 +721,7 @@ elementdataman::elementdataman()
 	type_size_array.push_back(sizeof(WARDOBE_FASHION_CONFIG));
 	type_size_array.push_back(sizeof(NEW_DYE_CONFIG));
 	type_size_array.push_back(sizeof(EMBROIDERY_CONFIG));
+	type_size_array.push_back(sizeof(UNIDENTIFIED_TABLE1736));
 	type_size_array.push_back(sizeof(MERGED_STAR_SOUL_LIMIT_CONFIG));
 	type_size_array.push_back(sizeof(MERGED_STAR_SOUL_GROWTH_CONFIG));
 	type_size_array.push_back(sizeof(MERGED_STAR_SOUL_SLOT_CONFIG));
@@ -728,6 +732,7 @@ elementdataman::elementdataman()
 	type_size_array.push_back(sizeof(GIFT_LETTER_ESSENCE));
 	type_size_array.push_back(sizeof(WARDOBE_WEAPON_CONFIG));
 	type_size_array.push_back(sizeof(WARDOBE_FOOTPRINT_CONFIG));
+	type_size_array.push_back(sizeof(WARDOBE_PET_CONFIG));
 	type_size_array.push_back(sizeof(FOOTPRINT_ESSENCE));
 	type_size_array.push_back(sizeof(FORTUNE_GIFT_PACK_ESSENCE));
 	type_size_array.push_back(sizeof(CANTEEN_EVENT_CONFIG));
@@ -736,6 +741,8 @@ elementdataman::elementdataman()
 	type_size_array.push_back(sizeof(BEGINNER_ONLINE_REWARD_CONFIG));
 	type_size_array.push_back(sizeof(MONTHLY_RETURN_AWARD_CONFIG));
 	type_size_array.push_back(sizeof(INSTANT_TIER_CONFIG));
+	type_size_array.push_back(sizeof(UNIDENTIFIED_TABLE1792A));
+	type_size_array.push_back(sizeof(UNIDENTIFIED_TABLE1792B));
 	type_size_array.push_back(sizeof(PLOT_REWARD_CONFIG));
 	type_size_array.push_back(sizeof(0));	//DT_MAX
 }
@@ -2629,7 +2636,7 @@ void elementdataman::add_structure(unsigned int id,	 UPGRADE_EQUIP_CONFIG_1 & da
 	upgrade_equip_config_1_array.push_back(data);
 	
 	unsigned int pos = upgrade_equip_config_1_array.size()-1;
-	add_id_index(ID_SPACE_CONFIG, id, DT_UPGRADE_EQUIP_CONFIG, pos, &(upgrade_equip_config_1_array[0]));
+	add_id_index(ID_SPACE_CONFIG, id, DT_UPGRADE_EQUIP_CONFIG_1, pos, &(upgrade_equip_config_1_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id,	 DEITY_CHARACTER_CONFIG & data)
@@ -3432,6 +3439,14 @@ void elementdataman::add_structure(unsigned int id, EMBROIDERY_CONFIG& data)
 	add_id_index(ID_SPACE_CONFIG, id, DT_EMBROIDERY_CONFIG, pos, &(embroidery_config_array[0]));
 }
 
+void elementdataman::add_structure(unsigned int id, UNIDENTIFIED_TABLE1736& data)
+{
+	unidentified_table_array.push_back(data);
+
+	unsigned int pos = unidentified_table_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_UNIDENTIFIED_TABLE1736, pos, &(unidentified_table_array[0]));
+}
+
 void elementdataman::add_structure(unsigned int id, MERGED_STAR_SOUL_LIMIT_CONFIG& data)
 {
 	merged_star_soul_limit_config_array.push_back(data);
@@ -3515,6 +3530,14 @@ void elementdataman::add_structure(unsigned int id, WARDOBE_FOOTPRINT_CONFIG& da
 	add_id_index(ID_SPACE_CONFIG, id, DT_WARDOBE_FOOTPRINT_CONFIG, pos, &(wardobe_footprint_config_array[0]));
 }
 
+void elementdataman::add_structure(unsigned int id, WARDOBE_PET_CONFIG& data)
+{
+	wardobe_pet_config_array.push_back(data);
+
+	unsigned int pos = wardobe_pet_config_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_WARDOBE_PET_CONFIG, pos, &(wardobe_pet_config_array[0]));
+}
+
 void elementdataman::add_structure(unsigned int id, FOOTPRINT_ESSENCE& data)
 {
 	if (data.pile_num_max == 0)		data.pile_num_max = 1;
@@ -3583,6 +3606,23 @@ void elementdataman::add_structure(unsigned int id, INSTANT_TIER_CONFIG& data)
 
 	unsigned int pos = instant_tier_config_array.size() - 1;
 	add_id_index(ID_SPACE_CONFIG, id, DT_INSTANT_TIER_CONFIG, pos, &(instant_tier_config_array[0]));
+}
+
+
+void elementdataman::add_structure(unsigned int id, UNIDENTIFIED_TABLE1792A& data)
+{
+	unidentified_table1792a_array.push_back(data);
+
+	unsigned int pos = unidentified_table1792a_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_UNIDENTIFIED_TABLE1792A, pos, &(unidentified_table1792a_array[0]));
+}
+
+void elementdataman::add_structure(unsigned int id, UNIDENTIFIED_TABLE1792B& data)
+{
+	unidentified_table1792b_array.push_back(data);
+
+	unsigned int pos = unidentified_table1792b_array.size() - 1;
+	add_id_index(ID_SPACE_CONFIG, id, DT_UNIDENTIFIED_TABLE1792B, pos, &(unidentified_table1792b_array[0]));
 }
 
 void elementdataman::add_structure(unsigned int id, PLOT_REWARD_CONFIG& data)
@@ -4353,6 +4393,7 @@ for(i=0; i<arr.size(); i++)\
 	ADD_HASH_MAP(config, DT_WARDOBE_FASHION_CONFIG, wardobe_fashion_config_array);
 	ADD_HASH_MAP(config, DT_NEW_DYE_CONFIG, new_dye_config_array);
 	ADD_HASH_MAP(config, DT_EMBROIDERY_CONFIG, embroidery_config_array);
+	ADD_HASH_MAP(config, DT_UNIDENTIFIED_TABLE1736, unidentified_table_array);
 	ADD_HASH_MAP(config, DT_MERGED_STAR_SOUL_LIMIT_CONFIG, merged_star_soul_limit_config_array);
 	ADD_HASH_MAP(config, DT_MERGED_STAR_SOUL_GROWTH_CONFIG, merged_star_soul_growth_config_array);
 	ADD_HASH_MAP(config, DT_MERGED_STAR_SOUL_SLOT_CONFIG, merged_star_soul_slot_config_array);
@@ -4363,6 +4404,7 @@ for(i=0; i<arr.size(); i++)\
 	ADD_HASH_MAP(essence, DT_GIFT_LETTER_ESSENCE, gift_letter_essence_array);
 	ADD_HASH_MAP(config, DT_WARDOBE_WEAPON_CONFIG, wardobe_weapon_config_array);
 	ADD_HASH_MAP(config, DT_WARDOBE_FOOTPRINT_CONFIG, wardobe_footprint_config_array);
+	ADD_HASH_MAP(config, DT_WARDOBE_PET_CONFIG, wardobe_pet_config_array);
 	ADD_HASH_MAP(essence, DT_FOOTPRINT_ESSENCE, footprint_essence_array);
 	ADD_HASH_MAP(essence, DT_FORTUNE_GIFT_PACK_ESSENCE, fortune_gift_pack_essence_array);
 	ADD_HASH_MAP(config, DT_CANTEEN_EVENT_CONFIG, canteen_event_config_array);
@@ -4371,6 +4413,8 @@ for(i=0; i<arr.size(); i++)\
 	ADD_HASH_MAP(config, DT_BEGINNER_ONLINE_REWARD_CONFIG, beginner_online_reward_config_array);
 	ADD_HASH_MAP(config, DT_MONTHLY_RETURN_AWARD_CONFIG, monthly_return_award_config_array);
 	ADD_HASH_MAP(config, DT_INSTANT_TIER_CONFIG, instant_tier_config_array);
+	ADD_HASH_MAP(config, DT_UNIDENTIFIED_TABLE1792A, unidentified_table1792a_array);
+	ADD_HASH_MAP(config, DT_UNIDENTIFIED_TABLE1792B, unidentified_table1792b_array);
 	ADD_HASH_MAP(config, DT_PLOT_REWARD_CONFIG, plot_reward_config_array);
 #undef ADD_HASH_MAP
 }
@@ -5041,13 +5085,10 @@ int elementdataman::load_data(const char * pathname)
 	LOAD_ARRAY(wardobe_fashion_config_array);
 	LOAD_ARRAY(new_dye_config_array);
 	LOAD_ARRAY(embroidery_config_array);
+	LOAD_ARRAY(unidentified_table_array);
 	LOAD_ARRAY(merged_star_soul_limit_config_array);
 	LOAD_ARRAY(merged_star_soul_growth_config_array);
 	LOAD_ARRAY(merged_star_soul_slot_config_array);
-
-	md5pos[4] = ftell(file);
-	fseek(file, 8, SEEK_CUR);
-
 	LOAD_ARRAY(rune2013_material_config_array);
 	LOAD_ARRAY(new_vip_config_array);
 	LOAD_ARRAY(rune2013_consumption_config_array);
@@ -5055,6 +5096,7 @@ int elementdataman::load_data(const char * pathname)
 	LOAD_ARRAY(gift_letter_essence_array);
 	LOAD_ARRAY(wardobe_weapon_config_array);
 	LOAD_ARRAY(wardobe_footprint_config_array);
+	LOAD_ARRAY(wardobe_pet_config_array);
 	LOAD_ARRAY(footprint_essence_array);
 	LOAD_ARRAY(fortune_gift_pack_essence_array);
 	LOAD_ARRAY(canteen_event_config_array);
@@ -5063,6 +5105,8 @@ int elementdataman::load_data(const char * pathname)
 	LOAD_ARRAY(beginner_online_reward_config_array);
 	LOAD_ARRAY(monthly_return_award_config_array);
 	LOAD_ARRAY(instant_tier_config_array);
+	LOAD_ARRAY(unidentified_table1792a_array);
+	LOAD_ARRAY(unidentified_table1792b_array);
 	LOAD_ARRAY(plot_reward_config_array);
 
 	gs_log("load_data: loading talk_proc entries");
